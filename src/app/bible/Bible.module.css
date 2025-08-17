@@ -1,3 +1,4 @@
+
 .container {
   padding: 2.5rem 1.5rem;
   background-color: var(--color-background-start);
@@ -12,6 +13,7 @@
   overflow-x: hidden;
 }
 
+/* Page Title */
 .title {
   font-size: 2.5rem;
   margin-bottom: 2.5rem;

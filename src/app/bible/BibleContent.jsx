@@ -128,7 +128,7 @@ export default function BibleContent() {
         }
         const data = await response.json();
         setBookNamesData(data);
-        setTafseerIndex(data);
+        setTafseerIndex(data.tafseer || []);
         setHasBookNamesError(false);
       } catch (error) {
         setBookNamesData({});

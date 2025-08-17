@@ -40,6 +40,9 @@ function LandingPage() {
     const [dailyVerse, setDailyVerse] = useState(null);
     const [isLoadingVerse, setIsLoadingVerse] = useState(true);
 
+    const [copiedMessage, setCopiedMessage] = useState('');
+    const [favouriteMessage, setFavouriteMessage] = useState('');
+
     useEffect(() => {
         const savedLang = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
         if (savedLang) {
@@ -103,6 +106,22 @@ function LandingPage() {
             setSelectedLanguage(language);
         }
     }, [language, selectedLanguage]);
+    
+    // Manage confirmation messages
+    useEffect(() => {
+      let timerId;
+      if (copiedMessage || favouriteMessage) {
+        timerId = setTimeout(() => {
+          setCopiedMessage('');
+          setFavouriteMessage('');
+        }, 2000);
+      }
+      return () => {
+        if (timerId) {
+          clearTimeout(timerId);
+        }
+      };
+    }, [copiedMessage, favouriteMessage]);
 
 
     const handleChange = (e) => {
@@ -118,10 +137,72 @@ function LandingPage() {
     const goToBible = () => {
         router.push('/bible');
     };
-
+    
     const getText = (ar, en, fr) => {
         return selectedLanguage === 'ar' ? ar : selectedLanguage === 'en' ? en : fr;
     };
+    
+    const convertToArabicNumber = (num) => {
+        const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        return num.toString().split('').map(d => arabicNums[+d]).join('');
+    };
+
+    // New functions for Copy and Favorite
+    const handleCopyDailyVerse = async () => {
+        if (!dailyVerse) return;
+        const textToCopy = `"${dailyVerse.verse}" - ${dailyVerse.reference}`;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(textToCopy);
+            } else {
+                const el = document.createElement('textarea');
+                el.value = textToCopy;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+            }
+            setCopiedMessage(getText('تم النسخ!', 'Copied!', 'Copié!'));
+        } catch (err) {
+            setCopiedMessage(getText('فشل النسخ!', 'Failed to copy!', 'Échec de la copie!'));
+        }
+    };
+
+    const handleFavouriteDailyVerse = () => {
+        if (!dailyVerse) return;
+        try {
+            const favVerses = JSON.parse(localStorage.getItem('favourite_verses')) || {};
+            const chapterKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}`;
+            const verseKey = `${chapterKey}-${language}`;
+            
+            if (favVerses[verseKey]) {
+                delete favVerses[verseKey];
+                setFavouriteMessage(getText('تم حذف الآية من المفضلة!', 'Verse removed from favorites!', 'Verset retiré des favoris!'));
+            } else {
+                favVerses[verseKey] = {
+                    type: 'verse',
+                    verseKey,
+                    text: dailyVerse.verse,
+                    bookName: getText('آية اليوم', 'Verse of the Day', 'Verset du jour'),
+                    bookNameAbbrev: 'Daily',
+                    chapter: dailyVerse.month,
+                    verseIndex: dailyVerse.day,
+                    language: selectedLanguage,
+                    isDailyVerse: true
+                };
+                setFavouriteMessage(getText('تم إضافة الآية إلى المفضلة!', 'Verse added to favorites!', 'Verset ajouté aux favoris!'));
+            }
+            localStorage.setItem('favourite_verses', JSON.stringify(favVerses));
+        } catch (error) {
+            setFavouriteMessage(getText('حدث خطأ في الحفظ!', 'Error saving favorite!', 'Erreur lors de la sauvegarde du favori!'));
+        }
+    };
+    
+    // Check if the current daily verse is already a favorite
+    const isDailyVerseFavourite = dailyVerse && 
+        JSON.parse(localStorage.getItem('favourite_verses') || '{}')
+        [`daily-verse-${dailyVerse.month}-${dailyVerse.day}-${language}`];
+
 
     return (
         <main className={`${styles.container} ${selectedLanguage === 'ar' ? styles.rtl : ''}`}>
@@ -145,10 +226,39 @@ function LandingPage() {
                         <p className={styles.dailyVerseReference}>
                             {dailyVerse.reference}
                         </p>
+                        {/* Action buttons for daily verse */}
+                        <div className={styles.dailyVerseActions}>
+                            <button 
+                                onClick={handleCopyDailyVerse} 
+                                className={styles.actionButton}
+                                title={getText('نسخ الآية', 'Copy Verse', 'Copier le verset')}
+                            >
+                                📋 {getText('نسخ', 'Copy', 'Copier')}
+                            </button>
+                            <button 
+                                onClick={handleFavouriteDailyVerse} 
+                                className={`${styles.actionButton} ${isDailyVerseFavourite ? styles.isFavourite : ''}`}
+                                title={getText('أضف للمفضلة', 'Add to Favorites', 'Ajouter aux favoris')}
+                            >
+                                ⭐ {isDailyVerseFavourite ? getText('مضافة', 'Added', 'Ajouté') : getText('مفضلة', 'Favorite', 'Favoris')}
+                            </button>
+                        </div>
                     </div>
                 )
             )}
-
+            
+            {/* Confirmation messages */}
+            {copiedMessage && (
+              <div className={`${styles.messageBox} ${styles.copiedMessage}`}>
+                {copiedMessage}
+              </div>
+            )}
+            {favouriteMessage && (
+              <div className={`${styles.messageBox} ${styles.favouriteMessage}`}>
+                {favouriteMessage}
+              </div>
+            )}
+            
         </main>
     );
 }
