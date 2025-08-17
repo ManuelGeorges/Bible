@@ -19,7 +19,6 @@
     --color-shadow-light: rgba(0, 0, 0, 0.2); /* ظل ناعم */
     --color-shadow-medium: rgba(0, 0, 0, 0.35); /* ظل متوسط */
 
-    /* ألوان الأزرار */
     --button-bg-1: #6A82FB; /* أزرق سماوي - للزر الأول */
     --button-hover-1: #516CDE; /* أزرق سماوي أغمق عند التمرير */
     --button-bg-2: #8A2BE2; /* بنفسجي جمشت - للزر الثاني */
@@ -27,7 +26,6 @@
     --button-text-color: #FFFFFF; /* لون نص الأزرار */
 }
 
-/* --- الوضع المظلم: ألوان أعمق وأكثر ثراءً --- */
 @media (prefers-color-scheme: dark) {
     :root {
         --color-primary-dark: #1F2C3A; /* أزرق داكن أعمق لوضع الظلام */
@@ -58,7 +56,24 @@ body {
     color: var(--color-text-light); 
     min-height: 100vh; 
 }
+:root {
+  --color-background-start: #1a1a2e;
+  --color-background-end: #16213e;
+  --color-card-bg: rgba(25, 30, 50, 0.9);
+  --color-text-light: #f0f0f0;
+  --color-text-medium: #b0b0b0;
+  --color-primary-dark: #0f1521;
+  --color-accent-gold: #ffc107;
+  --color-border-light: rgba(255, 255, 255, 0.1);
+  --color-shadow-light: rgba(0, 0, 0, 0.2);
+  --color-shadow-medium: rgba(0, 0, 0, 0.4);
+}
 
+body {
+  margin: 0;
+  font-family: 'Cairo', 'Arial', sans-serif;
+  direction: rtl; /* Set default direction to RTL */
+}
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
