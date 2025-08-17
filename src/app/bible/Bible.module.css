@@ -1,6 +1,5 @@
-
 .container {
-  padding: 2.5rem 1.5rem;
+  padding: clamp(1rem, 4vw, 2.5rem) clamp(1rem, 3vw, 1.5rem);
   background-color: var(--color-background-start);
   background-image: linear-gradient(135deg, var(--color-background-start) 0%, var(--color-background-end) 100%);
   min-height: 100vh;
@@ -11,36 +10,37 @@
   align-items: center;
   box-sizing: border-box;
   overflow-x: hidden;
+  width: 100%;
 }
 
-/* Page Title */
 .title {
-  font-size: 2.5rem;
-  margin-bottom: 2.5rem;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
   color: var(--color-accent-gold);
   text-align: center;
   font-weight: 700;
   letter-spacing: 0.02em;
-  padding-bottom: 0.5rem;
+  padding-bottom: clamp(0.3rem, 1vw, 0.5rem);
   border-bottom: 3px solid var(--color-accent-gold);
   display: inline-block;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
-/* Controls Section */
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(0.8rem, 2vw, 1.5rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
   width: 100%;
-  max-width: 800px;
+  max-width: min(800px, 100%);
   justify-content: center;
 }
 
 .customSelectWrapper {
   position: relative;
   width: 100%;
-  min-width: 280px;
+  min-width: 0;
   box-shadow: 0 4px 10px var(--color-shadow-light);
   border-radius: 8px;
   transition: box-shadow 0.3s ease;
@@ -55,27 +55,35 @@
   color: var(--color-text-light);
   margin-bottom: 0.5rem;
   display: block;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
 }
 
 .selectTrigger {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.85rem 1rem;
+  padding: clamp(0.7rem, 1.5vw, 0.85rem) clamp(0.8rem, 1.5vw, 1rem);
   width: 100%;
   border-radius: 8px;
   border: 1px solid var(--color-border-light);
   background-color: var(--color-card-bg);
   color: var(--color-text-light);
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
-.selectTrigger:hover {
+.selectTrigger:hover,
+.selectTrigger:focus {
   border-color: var(--color-accent-gold);
   filter: brightness(1.1);
+  outline: none;
+}
+
+.selectTrigger:focus {
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
 }
 
 .selectTrigger.active {
@@ -88,6 +96,9 @@
   flex-grow: 1;
   text-align: right;
   margin-right: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [dir="rtl"] .selectTrigger span {
@@ -103,6 +114,7 @@
   border-right: 6px solid transparent;
   border-top: 6px solid var(--color-accent-gold);
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .selectTrigger.active .arrow {
@@ -126,13 +138,13 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  background-color: var(--color-card-bg); /* Use a solid color */
+  background-color: var(--color-card-bg);
   border: 1px solid var(--color-border-light);
   border-top: none;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   box-shadow: 0 6px 15px var(--color-shadow-medium);
-  max-height: 200px;
+  max-height: min(300px, 50vh);
   overflow-y: auto;
   z-index: 100;
   opacity: 0;
@@ -148,19 +160,25 @@
 }
 
 .dropdownItem {
-  padding: 0.8rem 1rem;
+  padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(0.8rem, 1.5vw, 1rem);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
   text-align: right;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
 }
 
 [dir="rtl"] .dropdownItem {
   text-align: left;
 }
 
-.dropdownItem:hover {
+.dropdownItem:hover,
+.dropdownItem:focus {
   background-color: var(--color-accent-gold);
   color: var(--color-primary-dark);
+  outline: none;
 }
 
 .dropdownItem.selected {
@@ -169,81 +187,87 @@
   font-weight: bold;
 }
 
-/* Chapter & Verses */
 .chapterTitle {
-  margin-top: 2.5rem;
-  font-size: 2rem;
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+  font-size: clamp(1.5rem, 4vw, 2rem);
   color: var(--color-accent-gold);
   text-align: center;
   font-weight: 600;
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .verseContainer {
-  padding: 1.5rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
   width: 100%;
-  max-width: 800px;
-  font-size: 1.2rem;
-  line-height: 1.8;
+  max-width: min(800px, 100%);
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  line-height: clamp(1.6, 0.2vw + 1.5, 1.8);
   background-color: var(--color-card-bg);
   border-radius: 10px;
   box-shadow: 0 4px 10px var(--color-shadow-light);
   text-align: justify;
+  box-sizing: border-box;
 }
 
 .singleVerse {
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.8rem 1rem;
-  margin-bottom: 1.2rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  padding: clamp(0.5rem, 1.5vw, 0.8rem) clamp(0.8rem, 1.5vw, 1rem);
+  margin-bottom: clamp(0.8rem, 2vw, 1.2rem);
   border-radius: 8px;
   transition: background-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
+  min-height: 44px;
 }
 
-.singleVerse:hover {
+.singleVerse:hover,
+.singleVerse:focus {
   background-color: rgba(255, 255, 255, 0.05);
+  outline: none;
 }
 
 .verseNumberAndText {
   display: flex;
   flex-grow: 1;
-  font-size: 1.2rem;
-  line-height: 1.8;
+  font-size: inherit;
+  line-height: inherit;
   color: var(--color-text-light);
   text-align: justify;
+  align-items: flex-start;
 }
 
 .verseNumber {
   font-weight: bold;
   color: var(--color-accent-gold);
-  margin-right: 0.7rem;
-  min-width: 1.8em;
+  margin-right: clamp(0.5rem, 1vw, 0.7rem);
+  min-width: clamp(1.5em, 2vw, 1.8em);
   text-align: right;
   flex-shrink: 0;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
   padding-top: 0.2rem;
 }
 
 [dir="rtl"] .verseNumber {
   text-align: left;
-  margin-left: 0.7rem;
+  margin-left: clamp(0.5rem, 1vw, 0.7rem);
   margin-right: 0;
 }
 
-/* Action Buttons for single verse */
 .verseActions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
   margin-top: 0.2rem;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.singleVerse:hover .verseActions {
+.singleVerse:hover .verseActions,
+.singleVerse:focus .verseActions {
   opacity: 1;
 }
 
@@ -253,18 +277,26 @@
   color: var(--color-text-light);
   border: 1px solid var(--color-border-light);
   border-radius: 5px;
-  padding: 0.4rem 0.6rem;
+  padding: clamp(0.3rem, 1vw, 0.4rem) clamp(0.4rem, 1vw, 0.6rem);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
   transition: all 0.3s ease;
   white-space: nowrap;
+  min-height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .copyButton:hover,
-.favouriteButton:hover {
+.favouriteButton:hover,
+.copyButton:focus,
+.favouriteButton:focus {
   background-color: var(--color-accent-gold);
   color: var(--color-primary-dark);
   border-color: var(--color-accent-gold);
+  outline: none;
 }
 
 .favouriteButton.isFavourite {
@@ -273,18 +305,22 @@
   border-color: var(--color-accent-gold);
 }
 
-/* Collective Action Buttons for selected verses */
 .actionButtons {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: clamp(0.8rem, 2vw, 1rem);
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
   width: 100%;
-  max-width: 800px;
-  opacity: 0; /* Hidden by default */
-  visibility: hidden;
+  max-width: min(800px, 100%);
+  opacity: 1;
+  visibility: visible;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.actionButtons.hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .actionButtons.visible {
@@ -301,117 +337,207 @@
   color: var(--color-text-light);
   border: 2px solid var(--color-accent-gold);
   border-radius: 8px;
-  padding: 1rem 1.5rem;
+  padding: clamp(0.8rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: clamp(1.1rem, 2.2vw, 1.2rem);
   font-weight: bold;
   transition: all 0.3s ease;
   flex: 1;
-  min-width: 250px;
+  min-width: min(200px, 100%);
   text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .copySelectedButton:hover,
 .favouriteSelectedButton:hover,
 .copyChapterButton:hover,
 .favouriteChapterButton:hover,
-.tafsirButton:hover {
+.tafsirButton:hover,
+.copySelectedButton:focus,
+.favouriteSelectedButton:focus,
+.copyChapterButton:focus,
+.favouriteChapterButton:focus,
+.tafsirButton:focus {
   background-color: var(--color-accent-gold);
   color: var(--color-primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 6px 15px var(--color-shadow-medium);
+  outline: none;
 }
 
-/* Verse States */
 .selectedVerse {
   background-color: rgba(255, 215, 0, 0.1);
   border-right: 3px solid var(--color-accent-gold);
-  padding-left: 1rem;
-  padding-right: 0.7rem;
+  padding-left: clamp(0.8rem, 1.5vw, 1rem);
+  padding-right: clamp(0.5rem, 1vw, 0.7rem);
 }
 
 [dir="ltr"] .selectedVerse {
   border-left: 3px solid var(--color-accent-gold);
   border-right: none;
-  padding-left: 0.7rem;
-  padding-right: 1rem;
+  padding-left: clamp(0.5rem, 1vw, 0.7rem);
+  padding-right: clamp(0.8rem, 1.5vw, 1rem);
 }
 
 .favouriteVerse {
   background-color: rgba(255, 215, 0, 0.2);
   border-right: 3px solid var(--color-accent-gold);
-  padding-left: 1rem;
-  padding-right: 0.7rem;
+  padding-left: clamp(0.8rem, 1.5vw, 1rem);
+  padding-right: clamp(0.5rem, 1vw, 0.7rem);
 }
 
 [dir="ltr"] .favouriteVerse {
   border-left: 3px solid var(--color-accent-gold);
   border-right: none;
-  padding-left: 0.7rem;
-  padding-right: 1rem;
+  padding-left: clamp(0.5rem, 1vw, 0.7rem);
+  padding-right: clamp(0.8rem, 1.5vw, 1rem);
 }
 
+.loadingMessage,
+.errorMessage,
+.noVersesMessage {
+  text-align: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  color: var(--color-text-light);
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.6;
+}
 
-/* Responsive design */
-@media (max-width: 768px) {
+.messageBox {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: clamp(0.8rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  z-index: 1000;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  max-width: calc(100vw - 40px);
+  word-wrap: break-word;
+}
+
+.copiedMessage {
+  background-color: #28a745;
+}
+
+.favouriteMessage {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+[dir="rtl"] .messageBox {
+  right: auto;
+  left: 20px;
+}
+
+@media (max-width: 480px) {
   .container {
-    padding: 1rem;
+    padding: 1rem 0.8rem;
   }
-  .title {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-  }
+  
   .controls {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
-  .label {
-    font-size: 1rem;
-  }
-  .selectTrigger {
-    font-size: 0.95rem;
-    padding: 0.7rem 1rem;
-  }
-  .chapterTitle {
-    font-size: 1.5rem;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-  }
-  .verseContainer {
-    padding: 1rem;
-  }
-  .singleVerse {
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap; /* Allow items to wrap */
-  }
-  .verseNumberAndText {
-    font-size: 1.05rem;
-    line-height: 1.7;
-    flex-grow: 1;
-    display: flex;
-    align-items: flex-start;
-  }
-  .verseNumber {
-    font-size: 0.95rem;
-    min-width: 1.5em;
-    padding-top: 0.2rem;
-    flex-shrink: 0;
-  }
+  
   .verseActions {
-    display: none; /* Hide single verse actions on mobile */
+    display: none;
   }
+  
   .actionButtons {
     flex-direction: column;
-    gap: 0.8rem;
   }
+  
   .copySelectedButton,
   .favouriteSelectedButton,
   .copyChapterButton,
   .favouriteChapterButton,
   .tafsirButton {
     min-width: unset;
-    font-size: 1.1rem;
-    padding: 0.8rem;
+  }
+  
+  .messageBox {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    margin: 1rem 0;
+    text-align: center;
+  }
+  
+  .dropdownMenu {
+    max-height: 40vh;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .controls {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 600px;
+  }
+  
+  .actionButtons {
+    flex-direction: row;
+  }
+  
+  .copySelectedButton,
+  .favouriteSelectedButton,
+  .copyChapterButton,
+  .favouriteChapterButton,
+  .tafsirButton {
+    min-width: 180px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .container {
+    padding: 2.5rem 2rem;
+  }
+  
+  .controls {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 700px;
+  }
+  
+  .verseContainer {
+    padding: 2rem;
+  }
+  
+  .dropdownMenu {
+    max-height: 400px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    padding: 3rem 2.5rem;
+  }
+  
+  .verseContainer {
+    max-width: 900px;
+  }
+  
+  .actionButtons {
+    max-width: 900px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .singleVerse .verseActions {
+    opacity: 1;
+    position: static;
+    margin-top: 0.5rem;
+    justify-content: flex-end;
+  }
+  
+  .copyButton,
+  .favouriteButton {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.6rem;
   }
 }
