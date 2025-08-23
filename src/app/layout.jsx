@@ -5,17 +5,19 @@ import { LanguageProvider } from '../context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
 
 export const metadata = {
-  title: 'Bible App',
+  title: 'Agios Bible',
   description: 'Your Bible Study Application',
 };
 
 export default function RootLayout({ children }) {
-  return (
+  return(
     <html lang="ar" dir="rtl">
+      <head>
+        <link rel="icon" href="/favicon.png" />
+      </head>
       <body>
         <LanguageProvider>
           <BibleNavbar />
-          {/* تطبيق الأنماط هنا */}
           <main className={styles.mainContent}>
             <div className={styles.container}>
               {children}

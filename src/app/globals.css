@@ -1,86 +1,75 @@
-/* src/app/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap');
 
-/*
-   هذا الملف مخصص لتعريف المتغيرات العامة والأنماط التي تنطبق على التطبيق بأكمله.
-   لا ينبغي أن يكون ملف CSS Module.
-*/
-
-/* --- تعريف متغيرات الألوان الجديدة للوحة ألوان راقية وهادئة --- */
 :root {
-    --color-primary-dark: #2C3E50; /* أزرق كحلي عميق - للعنوان والخلفيات الداكنة */
-    --color-primary-light: #34495E; /* أزرق كحلي أفتح قليلاً - للخلفيات الفرعية */
-    --color-accent-gold: #FFD700; /* ذهبي - للآيات والعناصر المميزة */
-    --color-text-light: #ECF0F1; /* رمادي فاتح / أبيض مصفر - للنصوص الرئيسية */
-    --color-text-dark: #34495E; /* رمادي داكن - للنصوص في العناصر الفاتحة */
-    --color-background-start: #34495E; /* بداية التدرج اللوني للخلفية - أزرق-رمادي عميق */
-    --color-background-end: #4A607A;   /* نهاية التدرج اللوني للخلفية - أزرق باهت */
-    --color-card-bg: rgba(255, 255, 255, 0.1); /* أبيض شفاف لتأثير الزجاج */
-    --color-border-light: rgba(255, 255, 255, 0.3); /* حدود فاتحة للتباين */
-    --color-shadow-light: rgba(0, 0, 0, 0.2); /* ظل ناعم */
-    --color-shadow-medium: rgba(0, 0, 0, 0.35); /* ظل متوسط */
-
-    --button-bg-1: #6A82FB; /* أزرق سماوي - للزر الأول */
-    --button-hover-1: #516CDE; /* أزرق سماوي أغمق عند التمرير */
-    --button-bg-2: #8A2BE2; /* بنفسجي جمشت - للزر الثاني */
-    --button-hover-2: #721CBB; /* بنفسجي جمشت أغمق عند التمرير */
-    --button-text-color: #FFFFFF; /* لون نص الأزرار */
+  --color-primary: #1a1a2e;
+  --color-secondary: #16213e;
+  --color-primary-dark: #2C3E50;
+  --color-primary-light: #34495E;
+  --color-accent-gold: #ffc107;
+  --color-text-light: #f8f9fa;
+  --color-text-medium: #b0b0b0;
+  --color-text-dark: #34495E;
+  --color-background-start: #1a1a2e;
+  --color-background-end: #16213e;
+  --color-card-bg: rgba(255, 255, 255, 0.1);
+  --color-border-light: rgba(255, 255, 255, 0.2);
+  --color-shadow-light: rgba(0, 0, 0, 0.1);
+  --color-shadow-medium: rgba(0, 0, 0, 0.2);
+  --color-button-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-button-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --button-bg-1: #6A82FB;
+  --button-hover-1: #516CDE;
+  --button-bg-2: #8A2BE2;
+  --button-hover-2: #721CBB;
+  --button-text-color: #FFFFFF;
+  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --border-radius: 16px;
+  --gap-small: 16px;
+  --gap-medium: 24px;
+  --gap-large: 32px;
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --color-primary-dark: #1F2C3A; /* أزرق داكن أعمق لوضع الظلام */
-        --color-primary-light: #2C3E50; /* أزرق-رمادي داكن */
-        --color-accent-gold: #FFD700; /* الذهبي يبقى كما هو */
-        --color-text-light: #E0E0E0; /* أبيض أغمق قليلاً لسهولة القراءة */
-        --color-text-dark: #ECF0F1; /* نص فاتح للعناصر على خلفية داكنة */
-        --color-background-start: #1A202C; /* أغمق أزرق لبداية التدرج */
-        --color-background-end: #2C3A4F;   /* أزرق-رمادي عميق لنهاية التدرج */
-        --color-card-bg: rgba(0, 0, 0, 0.3); /* أسود شفاف أكثر لوضع الظلام */
-        --color-border-light: rgba(255, 255, 255, 0.15); /* حدود أقل وضوحًا */
-        --color-shadow-light: rgba(0, 0, 0, 0.3);
-        --color-shadow-medium: rgba(0, 0, 0, 0.5);
-
-        --button-bg-1: #4A607A; 
-        --button-hover-1: #3A4B5F;
-        --button-bg-2: #6A4A7A;
-        --button-hover-2: #5A3A6A;
-    }
+  :root {
+    --color-primary-dark: #1F2C3A;
+    --color-primary-light: #2C3E50;
+    --color-accent-gold: #FFD700;
+    --color-text-light: #E0E0E0;
+    --color-text-dark: #ECF0F1;
+    --color-background-start: #1A202C;
+    --color-background-end: #2C3A4F;
+    --color-card-bg: rgba(0, 0, 0, 0.3);
+    --color-border-light: rgba(255, 255, 255, 0.15);
+    --color-shadow-light: rgba(0, 0, 0, 0.3);
+    --color-shadow-medium: rgba(0, 0, 0, 0.5);
+    --button-bg-1: #4A607A;
+    --button-hover-1: #3A4B5F;
+    --button-bg-2: #6A4A7A;
+    --button-hover-2: #5A3A6A;
+  }
 }
 
-/* أنماط أساسية للجسم */
-body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    background: linear-gradient(135deg, var(--color-background-start) 0%, var(--color-background-end) 100%);
-    color: var(--color-text-light); 
-    min-height: 100vh; 
-}
-:root {
-  --color-background-start: #1a1a2e;
-  --color-background-end: #16213e;
-  --color-card-bg: rgba(25, 30, 50, 0.9);
-  --color-text-light: #f0f0f0;
-  --color-text-medium: #b0b0b0;
-  --color-primary-dark: #0f1521;
-  --color-accent-gold: #ffc107;
-  --color-border-light: rgba(255, 255, 255, 0.1);
-  --color-shadow-light: rgba(0, 0, 0, 0.2);
-  --color-shadow-medium: rgba(0, 0, 0, 0.4);
-}
-
-body {
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: 'Cairo', 'Arial', sans-serif;
-  direction: rtl; /* Set default direction to RTL */
+  padding: 0;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
 
-/* يمكنك إضافة أي أنماط CSS عامة أخرى هنا */
-
-html, body{
-    height: 100%;
-    width: 100%;
+body {
+  font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, var(--color-background-start) 0%, var(--color-background-end) 100%);
+  color: var(--color-text-light);
+  min-height: 100vh;
+  direction: rtl;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from 'use-debounce';
+import { useQuery } from '@tanstack/react-query';
+import Fuse from 'fuse.js';
+import _ from 'lodash';
 import styles from './search.module.css';
 
-// دالة لتحويل الأرقام إلى عربية
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   return num.toString().split('').map(d => arabicNums[+d]).join('');
 }
 
-// مكون CustomSelect المخصص
 function CustomSelect({ label, options, value, onChange, dir }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
@@ -61,7 +63,192 @@ function CustomSelect({ label, options, value, onChange, dir }) {
   );
 }
 
-// المكون الرئيسي للصفحة
+function normalizeArabicText(text) {
+  return text
+    .replace(/[ًٌٍَُِْ]/g, '')
+    .replace(/[أآإ]/g, 'ا')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[ة]/g, 'ه')
+    .replace(/[ءئؤ]/g, '')
+    .trim();
+}
+
+function extractArabicRoot(word) {
+  try {
+    let cleanWord = normalizeArabicText(word);
+    
+    // Step 1: Handle specific cases with known roots for accuracy
+    const specificRoots = {
+      'خاف': 'خوف',
+      'خوف': 'خوف',
+      'مخيف': 'خوف',
+      'خائف': 'خوف',
+      'يخاف': 'خوف',
+      'قال': 'قول',
+      'قول': 'قول',
+      'يقول': 'قول',
+      'سار': 'سير',
+      'سير': 'سير',
+      'باع': 'بيع',
+      'بيع': 'بيع',
+      'زاد': 'زيد',
+      'جاء': 'جيء',
+      'حب': 'حبب',
+      'محبه': 'حبب',
+      'أحب': 'حبب',
+      'حبيب': 'حبب'
+    };
+    if (specificRoots[cleanWord]) {
+      return specificRoots[cleanWord];
+    }
+
+    // Step 2: A more robust algorithm for hollow verbs (أجوف)
+    if (cleanWord.length === 3 && (cleanWord[1] === 'ا')) {
+      const firstChar = cleanWord[0];
+      const lastChar = cleanWord[2];
+      // Heuristic to guess the original middle letter
+      // This is a simple guess and can be improved with a dictionary
+      const potentialRoot = firstChar + 'و' + lastChar;
+      return potentialRoot;
+    }
+
+    // Step 3: Simple stemming for common prefixes and suffixes
+    const prefixes = ['ال', 'و', 'ف', 'ب', 'ل', 'ت', 'ي', 'أ', 'ن', 'م', 'ست', 'است'];
+    for (const prefix of prefixes) {
+      if (cleanWord.startsWith(prefix) && cleanWord.length > prefix.length + 1) {
+        cleanWord = cleanWord.substring(prefix.length);
+        break;
+      }
+    }
+    
+    const suffixes = ['ه', 'ها', 'هم', 'هن', 'ني', 'تي', 'تك', 'تكم', 'ين', 'ون', 'ات', 'ان', 'وا', 'تم', 'تن'];
+    for (const suffix of suffixes) {
+      if (cleanWord.endsWith(suffix) && cleanWord.length > suffix.length + 1) {
+        cleanWord = cleanWord.substring(0, cleanWord.length - suffix.length);
+        break;
+      }
+    }
+    
+    if (cleanWord.length < 2) {
+      return word;
+    }
+    
+    // Final check for common root patterns
+    if (cleanWord.length === 3) {
+      return cleanWord;
+    }
+
+    return word;
+  } catch (error) {
+    console.error('Error extracting root:', error);
+    return word;
+  }
+}
+
+function generateDerivatives(root) {
+  const derivatives = new Set([root, normalizeArabicText(root)]);
+  
+  const patterns = [
+    (r) => r,
+    (r) => r + 'ه',
+    (r) => r + 'اً',
+    (r) => r.charAt(0) + 'ا' + r.slice(1),
+    (r) => r.charAt(0) + 'ا' + r.charAt(2), // for roots like خوف -> خاف
+    (r) => 'م' + r,
+    (r) => 'م' + r + 'ه',
+    (r) => 'ي' + r,
+    (r) => 'ت' + r,
+    (r) => 'أ' + r,
+    (r) => 'ن' + r,
+    (r) => r + 'ان',
+    (r) => 'إ' + r,
+    (r) => r + 'ي',
+    (r) => r + 'يه',
+    (r) => r + 'ين',
+    (r) => r + 'ون',
+    (r) => r + 'ات',
+    (r) => 'است' + r,
+    (r) => 'مست' + r,
+    (r) => 'ت' + r.charAt(0) + 'ا' + r.slice(1),
+    (r) => 'ان' + r,
+    (r) => 'من' + r,
+  ];
+  
+  patterns.forEach(pattern => {
+    try {
+      const derivative = pattern(root);
+      if (derivative && derivative.length >= 2 && derivative.length <= 10) {
+        derivatives.add(derivative);
+        derivatives.add(normalizeArabicText(derivative));
+      }
+    } catch (error) {
+    }
+  });
+  
+  // Add common derivatives for 'خوف' root
+  if (root === 'خوف') {
+    derivatives.add('خاف');
+    derivatives.add('يخاف');
+    derivatives.add('خيفة');
+    derivatives.add('خائف');
+    derivatives.add('مخيف');
+    derivatives.add('مخوف');
+    derivatives.add('خوفا');
+    derivatives.add('خائفون');
+  }
+
+  // Add common derivatives for 'حبب' root
+  if (root === 'حبب') {
+    derivatives.add('حب');
+    derivatives.add('أحب');
+    derivatives.add('محبة');
+    derivatives.add('محبوب');
+    derivatives.add('حبيب');
+    derivatives.add('أحبب');
+    derivatives.add('يُحِبّ');
+  }
+
+  return Array.from(derivatives).filter(word => word && word.length > 1);
+}
+
+function searchWithDerivatives(searchTerm, verses) {
+  if (!searchTerm || searchTerm.length < 2) return { results: [], searchInfo: null };
+  
+  try {
+    const root = extractArabicRoot(searchTerm);
+    const derivatives = generateDerivatives(root);
+    
+    const searchInfo = {
+      originalTerm: searchTerm,
+      extractedRoot: root,
+      derivatives: derivatives.slice(0, 20)
+    };
+    
+    const normalizedDerivatives = derivatives.map(d => normalizeArabicText(d)).join('|');
+    const derivativePattern = new RegExp(`(?:\\b${normalizedDerivatives})`, 'i');
+
+    const results = verses.filter(verse => {
+      const normalizedVerseText = normalizeArabicText(verse.text);
+      return derivativePattern.test(normalizedVerseText);
+    });
+    
+    return { results, searchInfo };
+  } catch (error) {
+    console.error('Error in derivative search:', error);
+    const fallbackResults = verses.filter(verse => 
+      normalizeArabicText(verse.text).includes(normalizeArabicText(searchTerm))
+    );
+    return { results: fallbackResults, searchInfo: null };
+  }
+}
+
+function searchLiteral(searchTerm, verses) {
+  const normalizedTerm = normalizeArabicText(searchTerm);
+  return verses.filter(verse => 
+    normalizeArabicText(verse.text).includes(normalizedTerm)
+  );
+}
+
 export default function BibleSearchPage() {
   const [inputTerm, setInputTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,6 +256,7 @@ export default function BibleSearchPage() {
   const [bibleData, setBibleData] = useState(null);
   const [bookNamesData, setBookNamesData] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [searchInfo, setSearchInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [allVerses, setAllVerses] = useState([]);
@@ -85,6 +273,8 @@ export default function BibleSearchPage() {
   const [pressTimer, setPressTimer] = useState(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const didHoldRef = useRef(false);
+
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   const fetchFavourites = useCallback(() => {
     try {
@@ -269,7 +459,6 @@ export default function BibleSearchPage() {
     setTimeout(() => setFavouriteMessage(''), 2000);
   };
 
-  // useEffect لجلب البيانات عند تحميل الصفحة
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -288,7 +477,6 @@ export default function BibleSearchPage() {
         setBibleData(bibleJson);
         setBookNamesData(bookNamesJson);
 
-        // التعديل الرئيسي هنا: تعبئة allVerses بشكل صحيح
         const flattenedVerses = bibleJson.flatMap((book, bookIndex) => {
           const bookMeta = bookNamesJson?.[language]?.[bookIndex];
           if (!bookMeta) return [];
@@ -332,57 +520,77 @@ export default function BibleSearchPage() {
     setSearchQuery(inputTerm.trim());
   };
 
-  // useEffect للبحث بناءً على المدخلات والفلاتر
   useEffect(() => {
     if (allVerses.length > 0) {
       let filteredVerses = allVerses;
       
-      // فلترة حسب العهد
       if (selectedTestament) {
         filteredVerses = filteredVerses.filter(verse => verse.testament === selectedTestament);
       }
 
-      // فلترة حسب السفر
       if (selectedBookIndex !== '') {
         filteredVerses = filteredVerses.filter(verse => verse.book_index.toString() === selectedBookIndex.toString());
       }
 
-      // فلترة حسب الأصحاح
       if (selectedChapter !== '') {
         filteredVerses = filteredVerses.filter(verse => verse.chapter.toString() === selectedChapter.toString());
       }
       
-      // البحث عن الكلمة أو الجملة
       let results = [];
-      if (searchQuery.length > 0) {
-         results = filteredVerses.filter(verse => verse.text.includes(searchQuery));
+      let searchInfoData = null;
+      
+      if (debouncedSearchQuery.length > 0) {
+        if (searchType === 'derivatives') {
+          const searchResult = searchWithDerivatives(debouncedSearchQuery, filteredVerses);
+          results = searchResult.results;
+          searchInfoData = searchResult.searchInfo;
+        } else {
+          results = searchLiteral(debouncedSearchQuery, filteredVerses);
+        }
       } else if (selectedBookIndex !== '' || selectedChapter !== '') {
         results = filteredVerses;
       }
       
       setSearchResults(results);
+      setSearchInfo(searchInfoData);
     } else {
       setSearchResults([]);
+      setSearchInfo(null);
     }
-  }, [searchQuery, allVerses, selectedTestament, selectedBookIndex, selectedChapter]);
+  }, [debouncedSearchQuery, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
 
   const renderHighlightedText = (text, highlight) => {
     if (!highlight) return text;
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-    return (
-      <span>
-        {parts.map((part, i) => (
-          <span key={i} className={part.toLowerCase() === highlight.toLowerCase() ? styles.highlight : ''}>
-            {part}
-          </span>
-        ))}
-      </span>
-    );
+    
+    if (searchType === 'derivatives' && searchInfo) {
+      try {
+        const derivatives = searchInfo.derivatives;
+        let highlightedText = text;
+        
+        derivatives.forEach(derivative => {
+          const normalizedDerivative = normalizeArabicText(derivative);
+          const regex = new RegExp(`(${derivative}|${normalizedDerivative})`, 'gi');
+          highlightedText = highlightedText.replace(regex, `<span class="${styles.highlight}">$1</span>`);
+        });
+        
+        return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+      } catch (error) {
+        console.error('Error highlighting derivatives:', error);
+        const normalizedHighlight = normalizeArabicText(highlight);
+        const regex = new RegExp(`(${highlight}|${normalizedHighlight})`, 'gi');
+        const highlightedText = text.replace(regex, `<span class="${styles.highlight}">$1</span>`);
+        return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+      }
+    } else {
+      const normalizedHighlight = normalizeArabicText(highlight);
+      const regex = new RegExp(`(${highlight}|${normalizedHighlight})`, 'gi');
+      const highlightedText = text.replace(regex, `<span class="${styles.highlight}">$1</span>`);
+      return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+    }
   };
   
   const allBooks = bookNamesData ? bookNamesData[language] : [];
   
-  // فلترة قائمة الأسفار المتاحة بناءً على العهد المختار
   const availableBooks = allBooks.filter(book => {
     if (!selectedTestament) return true;
     return book.testament === selectedTestament;
@@ -397,7 +605,7 @@ export default function BibleSearchPage() {
       <div className={styles.card}>
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
         <p className={styles.description}>
-          ابحث في الكتاب المقدس باللغة العربية عن آيات أو كلمات محددة، مع خيارات لتحديد العهد أو السفر أو الأصحاح لتصفية نتائج البحث.
+          ابحث في الكتاب المقدس باللغة العربية عن آيات أو كلمات محددة، مع خيارات البحث الحرفي أو البحث بالمشتقات لتحديد العهد أو السفر أو الأصحاح لتصفية نتائج البحث.
         </p>
         <form onSubmit={handleSearch} className={styles.controls}>
           <div className={styles.inputGroup}>
@@ -419,6 +627,15 @@ export default function BibleSearchPage() {
                 onChange={() => setSearchType('literal')}
               />
               بحث حرفي
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type="radio"
+                value="derivatives"
+                checked={searchType === 'derivatives'}
+                onChange={() => setSearchType('derivatives')}
+              />
+              بحث بالمشتقات
             </label>
           </div>
           <div className={styles.inputGroup}>
@@ -445,18 +662,35 @@ export default function BibleSearchPage() {
             />
           </div>
         </form>
+        
+        {searchInfo && searchType === 'derivatives' && (
+          <div className={styles.searchInfoBox}>
+            <h3>معلومات البحث بالمشتقات:</h3>
+            <p><strong>الكلمة المدخلة:</strong> {searchInfo.originalTerm}</p>
+            <p><strong>الجذر المستخرج:</strong> {searchInfo.extractedRoot}</p>
+            <div>
+              <strong>المشتقات المولدة:</strong>
+              <div className={styles.derivativesList}>
+                {searchInfo.derivatives.map((derivative, index) => (
+                  <span key={index} className={styles.derivativeItem}>{derivative}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {isLoading && <p className={styles.loading}>يتم تحميل البيانات...</p>}
         {error && <p className={styles.error}>{error}</p>}
         {!isLoading && !error && (
           <div className={styles.resultsWrapper}>
-            {searchResults.length > 0 && searchQuery && (
+            {searchResults.length > 0 && debouncedSearchQuery && (
               <p className={styles.resultsCount}>
-                {`تم العثور على ${convertToArabicNumber(searchResults.length)} نتيجة لـ "${searchQuery}"`}
+                {`تم العثور على ${convertToArabicNumber(searchResults.length)} نتيجة لـ "${debouncedSearchQuery}" ${searchType === 'derivatives' ? '(بحث بالمشتقات)' : '(بحث حرفي)'}`}
               </p>
             )}
-            {searchResults.length === 0 && searchQuery && (
+            {searchResults.length === 0 && debouncedSearchQuery && (
               <p className={styles.noResults}>
-                لم يتم العثور على نتائج لـ "{searchQuery}"
+                لم يتم العثور على نتائج لـ "{debouncedSearchQuery}" {searchType === 'derivatives' ? '(بحث بالمشتقات)' : '(بحث حرفي)'}
               </p>
             )}
             {searchResults.length > 0 && (
@@ -495,44 +729,45 @@ export default function BibleSearchPage() {
 
                     return (
                       <div
-                        key={verseKey}
-                        className={`${styles.verseItem} ${isSelected ? styles.selectedVerse : ''} ${isFavourite ? styles.isFavourite : ''}`}
+                        key={index}
+                        className={`${styles.verseCard} ${isSelected ? styles.selected : ''}`}
                         {...verseProps}
                       >
-                        <div className={styles.verseHeader}>
-                          {!isSmallScreen && (
-                            <input
-                              type="checkbox"
-                              className={styles.verseCheckbox}
-                              checked={isSelected}
-                              readOnly
-                            />
-                          )}
-                          <span className={styles.verseReference}>
-                            {`${verse.book} ${convertToArabicNumber(verse.chapter + 1)}:${convertToArabicNumber(verse.verse + 1)}`}
+                        <div className={styles.verseText}>
+                          <span className={styles.verseNumber}>
+                            {language === 'ar' ? convertToArabicNumber(verse.verse + 1) : verse.verse + 1}
                           </span>
-                          <div className={styles.verseActions}>
+                          {renderHighlightedText(verse.text, debouncedSearchQuery)}
+                        </div>
+                        <div className={styles.verseReference}>
+                          <span className={styles.referenceLink}>
+                            {`${verse.book} ${language === 'ar' ? convertToArabicNumber(verse.chapter + 1) : verse.chapter + 1}:${language === 'ar' ? convertToArabicNumber(verse.verse + 1) : verse.verse + 1}`}
+                          </span>
+                          <div className={styles.actions}>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCopySingleVerse(verse); }}
-                              title="نسخ الآية"
+                              aria-label="نسخ الآية"
                             >
-                              📋
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1h-4v-1a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1h-4v-1z"/>
+                              </svg>
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleFavouriteSingleVerse(verse); }}
-                              className={`${styles.favouriteButton} ${isFavourite ? styles.isFavourite : ''}`}
-                              title={isFavourite ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
+                              className={isFavourite ? styles.favourited : ''}
+                              aria-label={isFavourite ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
                             >
-                              {isFavourite ? '⭐' : '☆'}
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                {isFavourite ? (
+                                  <path fillRule="evenodd" d="M2 13.5V14a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5H9.5L9.245.879A.5.5 0 0 0 8.754.5L8 .5A.5.5 0 0 0 7.246.879L6.755 1.5H2.5A1.5 1.5 0 0 0 1 3v11a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V3a1.5 1.5 0 0 0-1.5-1.5H9.5z"/>
+                                ) : (
+                                  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5V2zm2 13.5V2h8v13.5L8 12.3l-4 2.2z"/>
+                                )}
+                              </svg>
                             </button>
                           </div>
                         </div>
-                        <p
-                          className={styles.verseText}
-                          style={{ fontSize: isSmallScreen ? '0.9em' : '1em' }}
-                        >
-                          {renderHighlightedText(verse.text, searchQuery)}
-                        </p>
                       </div>
                     );
                   })}

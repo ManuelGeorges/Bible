@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['arabic-stemmer'],
+
   async rewrites() {
     return [
       {
