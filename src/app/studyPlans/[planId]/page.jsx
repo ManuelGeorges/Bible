@@ -2,7 +2,7 @@
 
 'use client'; 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './PlanDetails.module.css';
@@ -13,6 +13,7 @@ const allPlans = studyPlansData.plans;
 export default function PlanDetailsPage() {
   const params = useParams();
   const { planId } = params;
+  const readingsListRef = useRef(null);
 
   const plan = allPlans.find((p) => p.id === parseInt(planId));
 
@@ -21,6 +22,7 @@ export default function PlanDetailsPage() {
   }
 
   const [completedDays, setCompletedDays] = useState({});
+  const [goToDay, setGoToDay] = useState('');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -38,14 +40,47 @@ export default function PlanDetailsPage() {
   }, [completedDays, planId]);
 
   const handleCheck = (day) => {
+    if (day > 1 && !completedDays[day - 1] && !completedDays[day]) {
+      return;
+    }
+
     setCompletedDays((prevCompletedDays) => {
       const newCompletedDays = {
         ...prevCompletedDays,
         [day]: !prevCompletedDays[day],
       };
+      
+      if (!newCompletedDays[day]) {
+        for (let i = day + 1; i <= plan.readings.length; i++) {
+          newCompletedDays[i] = false;
+        }
+      }
       return newCompletedDays;
     });
   };
+
+  const handleGoToDayChange = (e) => {
+    setGoToDay(e.target.value);
+  };
+
+  const handleGoToDaySubmit = (e) => {
+    e.preventDefault();
+    const day = parseInt(goToDay, 10);
+    if (day > 0 && day <= plan.readings.length) {
+      const dayElement = readingsListRef.current.querySelector(`[data-day="${day}"]`);
+      if (dayElement) {
+        dayElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        dayElement.classList.add(styles.highlight);
+        setTimeout(() => {
+          dayElement.classList.remove(styles.highlight);
+        }, 2000);
+      }
+    }
+  };
+
+  const totalDays = plan.readings.length;
+  const daysCompletedCount = Object.values(completedDays).filter(Boolean).length;
+  const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
 
   return (
     <div className={styles.container}>
@@ -65,15 +100,46 @@ export default function PlanDetailsPage() {
         </div>
       </div>
 
+      <div className={styles.goToDayContainer}>
+        <form onSubmit={handleGoToDaySubmit}>
+          <input
+            type="number"
+            value={goToDay}
+            onChange={handleGoToDayChange}
+            placeholder="اذهب إلى يوم..."
+            className={styles.goToDayInput}
+            min="1"
+            max={plan.readings.length}
+          />
+          <button type="submit" className={styles.goToDayButton}>اذهب</button>
+        </form>
+      </div>
+
+      <div className={styles.completionSummary}>
+        <div className={styles.completionText}>
+          <span className={styles.completedCount}>{daysCompletedCount}</span> / {totalDays} يوم
+        </div>
+        <div className={styles.progressBar}>
+          <div 
+            className={styles.progressFill} 
+            style={{ width: `${completionPercentage}%` }}
+          ></div>
+        </div>
+        <div className={styles.percentageText}>{completionPercentage}%</div>
+      </div>
+
       <main className={styles.mainContent}>
         <h2 className={styles.readingsTitle}>قراءات الخطة</h2>
-        <ul className={styles.readingsList}>
+        <ul className={styles.readingsList} ref={readingsListRef}>
           {plan.readings.map((reading) => {
             const isCompleted = completedDays[reading.day];
+            const canCheck = reading.day === 1 || completedDays[reading.day - 1];
+
             return (
               <li 
                 key={reading.day} 
-                className={`${styles.readingItem} ${isCompleted ? styles.completedDay : ''}`}
+                data-day={reading.day}
+                className={`${styles.readingItem} ${isCompleted ? styles.completedDay : ''} ${!canCheck && !isCompleted ? styles.disabledDay : ''}`}
               >
                 <div className={styles.readingHeader}>
                   <div className={styles.dayNumber}>يوم {reading.day}</div>
@@ -82,6 +148,7 @@ export default function PlanDetailsPage() {
                     checked={isCompleted || false}
                     onChange={() => handleCheck(reading.day)}
                     className={styles.completionCheckbox}
+                    disabled={!canCheck && !isCompleted}
                   />
                 </div>
                 <div className={styles.books}>

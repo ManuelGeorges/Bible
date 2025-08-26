@@ -1,71 +1,68 @@
-// src/app/studyPlans/page.jsx
+'use client';
 
-"use client";
 import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import styles from './studyPlans.module.css';
 import studyPlansData from './studyPlansData.json';
 
 const allPlans = studyPlansData.plans;
 
-export default function StudyPlansPage() {
-  const [filteredPlans, setFilteredPlans] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('all');
+export default function StudyPlans() {
+  const [activeFilter, setActiveFilter] = useState('الكل');
+  const [completionData, setCompletionData] = useState({});
 
   useEffect(() => {
-    setFilteredPlans(allPlans);
+    // This code will only run on the client-side
+    const data = {};
+    allPlans.forEach(plan => {
+      const storedCompletedDays = localStorage.getItem(`completedDays_${plan.id}`);
+      if (storedCompletedDays) {
+        const completedDays = JSON.parse(storedCompletedDays);
+        const daysCompletedCount = Object.values(completedDays).filter(Boolean).length;
+        const totalDays = plan.readings.length;
+        const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
+        data[plan.id] = { daysCompletedCount, totalDays, completionPercentage };
+      }
+    });
+    setCompletionData(data);
   }, []);
 
-  const filterPlans = (type) => {
-    setActiveFilter(type);
-    if (type === 'all') {
-      setFilteredPlans(allPlans);
-    } else {
-      setFilteredPlans(allPlans.filter(plan => plan.type === type));
+  const filteredPlans = allPlans.filter(plan => {
+    if (activeFilter === 'الكل') {
+      return true;
     }
-  };
+    return plan.type === activeFilter;
+  });
+
+  const filters = ['الكل', ...new Set(allPlans.map(plan => plan.type))];
 
   return (
-    <>
-      <Head>
-        <title>خطط دراسة الكتاب المقدس - موقعك</title>
-      </Head>
-      <main className={styles.container}>
-        <section className={styles.heroSection}>
-          <h1 className={styles.title}>خطط دراسة الكتاب المقدس</h1>
-          <p className={styles.description}>اكتشف طرقًا متنوعة ومنظمة للتعمق في كلمة الله. اختر الخطة التي تناسبك وابدأ رحلتك الآن.</p>
-        </section>
+    <div className={styles.container}>
+      <div className={styles.heroSection}>
+        <h1 className={styles.title}>خطط قراءة الكتاب المقدس</h1>
+        <p className={styles.description}>
+          اختر خطة القراءة التي تناسبك و ابدأ رحلتك في كلمة الله اليوم. سواء كنت تفضل خطة سنوية شاملة أو خطة قصيرة للمزامير والأناجيل، ستجد ما يعينك على النمو الروحي.
+        </p>
+      </div>
+      
+      <div className={styles.filterSection}>
+        {filters.map(filter => (
+          <button
+            key={filter}
+            className={`${styles.filterButton} ${activeFilter === filter ? styles.activeFilter : ''}`}
+            onClick={() => setActiveFilter(filter)}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
 
-        <section className={styles.filterSection}>
-          <button 
-            onClick={() => filterPlans('all')} 
-            className={`${styles.filterButton} ${activeFilter === 'all' ? styles.activeFilter : ''}`}
-          >
-            الكل
-          </button>
-          <button 
-            onClick={() => filterPlans('سنة')} 
-            className={`${styles.filterButton} ${activeFilter === 'سنة' ? styles.activeFilter : ''}`}
-          >
-            خطط سنوية
-          </button>
-          <button 
-            onClick={() => filterPlans('موضوعي')} 
-            className={`${styles.filterButton} ${activeFilter === 'موضوعي' ? styles.activeFilter : ''}`}
-          >
-            موضوعي
-          </button>
-          <button 
-            onClick={() => filterPlans('قصيرة')} 
-            className={`${styles.filterButton} ${activeFilter === 'قصيرة' ? styles.activeFilter : ''}`}
-          >
-            قصيرة المدى
-          </button>
-        </section>
+      <div className={styles.plansGrid}>
+        {filteredPlans.map(plan => {
+          const planCompletionData = completionData[plan.id] || { daysCompletedCount: 0, totalDays: plan.readings.length, completionPercentage: 0 };
+          const hasStarted = planCompletionData.daysCompletedCount > 0;
 
-        <section className={styles.plansGrid}>
-          {filteredPlans.map((plan) => (
+          return (
             <div key={plan.id} className={styles.card}>
               <div className={styles.cardImageContainer}>
                 <img src={plan.image} alt={plan.title} className={styles.cardImage} />
@@ -83,16 +80,29 @@ export default function StudyPlansPage() {
                     <span className={styles.detailValue}>{plan.type}</span>
                   </div>
                 </div>
+                {hasStarted && (
+                  <div className={styles.completionStatus}>
+                    <div className={styles.completionSummary}>
+                      {planCompletionData.daysCompletedCount} / {planCompletionData.totalDays} يوم
+                    </div>
+                    <div className={styles.progressBar}>
+                      <div 
+                        className={styles.progressFill} 
+                        style={{ width: `${planCompletionData.completionPercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
                 <div className={styles.cardActions}>
                   <Link href={`/studyPlans/${plan.id}`} className={styles.cardButton}>
-                    ابدأ الآن
+                    {hasStarted ? `متابعة الخطة (${planCompletionData.completionPercentage}%)` : 'ابدأ الآن'}
                   </Link>
                 </div>
               </div>
             </div>
-          ))}
-        </section>
-      </main>
-    </>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -3,6 +3,10 @@
 import React, { useEffect, useState, createContext, useContext, useCallback, useMemo } from 'react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
+import studyPlansData from './studyPlans/studyPlansData.json';
+import Link from 'next/link';
+
+const allPlans = studyPlansData.plans;
 
 const LanguageContext = createContext();
 
@@ -65,7 +69,10 @@ const TEXT_TRANSLATIONS = {
     copyFailed: { ar: 'فشل النسخ!', en: 'Failed to copy!', fr: 'Échec de la copie!' },
     addedToFav: { ar: 'تم إضافة الآية إلى المفضلة!', en: 'Verse added to favorites!', fr: 'Verset ajouté aux favoris!' },
     removedFromFav: { ar: 'تم حذف الآية من المفضلة!', en: 'Verse removed from favorites!', fr: 'Verset retiré des favoris!' },
-    saveError: { ar: 'حدث خطأ في الحفظ!', en: 'Error saving favorite!', fr: 'Erreur lors de la sauvegarde du favori!' }
+    saveError: { ar: 'حدث خطأ في الحفظ!', en: 'Error saving favorite!', fr: 'Erreur lors de la sauvegarde du favori!' },
+    continuePlans: { ar: 'تابع خططك', en: 'Continue Your Plans', fr: 'Continuer vos plans' },
+    continueReading: { ar: 'متابعة الخطة', en: 'Continue Reading', fr: 'Continuer la lecture' },
+    startNow: { ar: 'ابدأ الآن', en: 'Start Now', fr: 'Commencer maintenant' }
 };
 
 const useMessage = (duration = 2000) => {
@@ -95,6 +102,30 @@ const useFavorites = () => {
     return { getFavorites, saveFavorites };
 };
 
+const getPlanCompletionData = (planId) => {
+  if (typeof window !== 'undefined') {
+    const storedCompletedDays = localStorage.getItem(`completedDays_${planId}`);
+    if (storedCompletedDays) {
+      const completedDays = JSON.parse(storedCompletedDays);
+      const daysCompletedCount = Object.values(completedDays).filter(Boolean).length;
+      const totalDays = allPlans.find(p => p.id === planId)?.readings.length || 0;
+      const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
+      return { daysCompletedCount, totalDays, completionPercentage };
+    }
+  }
+  return { daysCompletedCount: 0, totalDays: 0, completionPercentage: 0 };
+};
+
+const getStartedPlans = () => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+  return allPlans.filter(plan => {
+    const completionData = getPlanCompletionData(plan.id);
+    return completionData.daysCompletedCount > 0;
+  });
+};
+
 const LandingPage = () => {
     const router = useRouter();
     const { language, changeLanguage } = useLanguage();
@@ -104,6 +135,7 @@ const LandingPage = () => {
     const [copiedMessage, showCopiedMessage] = useMessage();
     const [favouriteMessage, showFavouriteMessage] = useMessage();
     const { getFavorites, saveFavorites } = useFavorites();
+    const [startedPlans, setStartedPlans] = useState([]);
 
     const getText = useCallback((key) => TEXT_TRANSLATIONS[key]?.[selectedLanguage], [selectedLanguage]);
 
@@ -201,6 +233,7 @@ const LandingPage = () => {
         const initialLang = savedLang || 'ar';
         setSelectedLanguage(initialLang);
         changeLanguage(initialLang);
+        setStartedPlans(getStartedPlans());
     }, [changeLanguage]);
 
     useEffect(() => {
@@ -212,11 +245,6 @@ const LandingPage = () => {
             setSelectedLanguage(language);
         }
     }, [language, selectedLanguage]);
-
-    const navigationButtons = [
-        { text: getText('copy'), onClick: () => router.push('/bible/search') },
-        { text: getText('favorite'), onClick: () => router.push('/bible') }
-    ];
 
     return (
         <main className={`${styles.container} ${selectedLanguage === 'ar' ? styles.rtl : ''}`}>
@@ -283,6 +311,54 @@ const LandingPage = () => {
                 <div className={`${styles.messageBox} ${styles.favouriteMessage}`}>
                     {favouriteMessage}
                 </div>
+            )}
+            
+            {startedPlans.length > 0 && (
+                <section className={styles.plansSection}>
+                    <h2 className={styles.plansSectionTitle}>{getText('continuePlans')}</h2>
+                    <div className={styles.plansGrid}>
+                        {startedPlans.map(plan => {
+                            const { daysCompletedCount, totalDays, completionPercentage } = getPlanCompletionData(plan.id);
+                            return (
+                                <div key={plan.id} className={styles.card}>
+                                    <div className={styles.cardImageContainer}>
+                                        <img src={plan.image} alt={plan.title} className={styles.cardImage} />
+                                    </div>
+                                    <div className={styles.cardContent}>
+                                        <h3 className={styles.cardTitle}>{plan.title}</h3>
+                                        <p className={styles.cardDescription}>{plan.description}</p>
+                                        <div className={styles.cardDetails}>
+                                            <div className={styles.detailItem}>
+                                                <span className={styles.detailLabel}>المدة:</span>
+                                                <span className={styles.detailValue}>{plan.duration}</span>
+                                            </div>
+                                            <div className={styles.detailItem}>
+                                                <span className={styles.detailLabel}>النوع:</span>
+                                                <span className={styles.detailValue}>{plan.type}</span>
+                                            </div>
+                                        </div>
+                                        <div className={styles.completionStatus}>
+                                            <div className={styles.completionSummary}>
+                                                {daysCompletedCount} / {totalDays} يوم
+                                            </div>
+                                            <div className={styles.progressBar}>
+                                                <div 
+                                                    className={styles.progressFill} 
+                                                    style={{ width: `${completionPercentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.cardActions}>
+                                            <Link href={`/studyPlans/${plan.id}`} className={styles.cardButton}>
+                                                {getText('continueReading')}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
             )}
         </main>
     );

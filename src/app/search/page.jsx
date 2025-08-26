@@ -185,29 +185,6 @@ function generateDerivatives(root) {
     }
   });
   
-  // Add common derivatives for 'خوف' root
-  if (root === 'خوف') {
-    derivatives.add('خاف');
-    derivatives.add('يخاف');
-    derivatives.add('خيفة');
-    derivatives.add('خائف');
-    derivatives.add('مخيف');
-    derivatives.add('مخوف');
-    derivatives.add('خوفا');
-    derivatives.add('خائفون');
-  }
-
-  // Add common derivatives for 'حبب' root
-  if (root === 'حبب') {
-    derivatives.add('حب');
-    derivatives.add('أحب');
-    derivatives.add('محبة');
-    derivatives.add('محبوب');
-    derivatives.add('حبيب');
-    derivatives.add('أحبب');
-    derivatives.add('يُحِبّ');
-  }
-
   return Array.from(derivatives).filter(word => word && word.length > 1);
 }
 
