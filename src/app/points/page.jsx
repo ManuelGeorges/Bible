@@ -146,7 +146,9 @@ export default function Points() {
         setTimeframe(newTimeframe);
     };
 
-    const formattedPoints = pointsData ? convertToArabicNumber(pointsData.totalPoints) : '٠';
+    // Corrected: Now formattedPoints is calculated from the *time-filtered* summary
+    const activitiesSummary = pointsData ? categorizeActivities(pointsData.history, timeframe) : null;
+    const formattedPoints = activitiesSummary ? convertToArabicNumber(activitiesSummary.totalPoints) : '٠';
 
     const renderActivityList = (activity) => {
         if (activity.items.length === 0) {
@@ -186,7 +188,6 @@ export default function Points() {
                 });
                 return () => unsubscribeFirestore();
             } else {
-                // المستخدم غير مسجل، جلب البيانات من localStorage
                 const localData = localStorage.getItem('guestPointsData');
                 if (localData) {
                     const data = JSON.parse(localData);
@@ -217,7 +218,6 @@ export default function Points() {
         return <div className={styles.loading}>جاري تحميل البيانات...</div>;
     }
 
-    const activitiesSummary = pointsData ? categorizeActivities(pointsData.history, timeframe) : null;
     const showDailyQuestions = activitiesSummary?.dailyQuestions.count > 0;
     const showCompletedChapters = activitiesSummary?.completedChapters.count > 0;
     const showFavouriteVerses = activitiesSummary?.favouriteVerses.count > 0;

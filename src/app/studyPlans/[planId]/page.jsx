@@ -34,7 +34,7 @@ export default function PlanDetailsPage() {
   const saveProgressToFirestore = useCallback(async (loggedInUser, currentPlanId, updatedCompletedDays) => {
     if (!loggedInUser || !firestore) return;
     try {
-      const daysCompletedCount = Object.keys(updatedCompletedDays).filter(day => updatedCompletedDays[day].isCompleted).length;
+      const daysCompletedCount = Object.keys(updatedCompletedDays).filter(day => updatedCompletedDays[day]?.isCompleted).length;
       const totalDays = plan.readings.length;
       const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
       
@@ -53,47 +53,61 @@ export default function PlanDetailsPage() {
     }
   }, [plan]);
 
-  const fetchCompletedDaysFromFirestore = useCallback(async (loggedInUser) => {
+  const syncProgress = useCallback(async (loggedInUser) => {
     if (!loggedInUser || !firestore) return;
 
     try {
+      // 1. Get data from Firestore
       const userRef = doc(firestore, 'users', loggedInUser.uid);
       const userSnap = await getDoc(userRef);
-      if (userSnap.exists() && userSnap.data().completedPlans?.[planId]) {
-        const firestoreData = userSnap.data().completedPlans[planId].completedDays;
-        setCompletedDays(firestoreData || {});
-      } else {
-        setCompletedDays({});
+      const firestoreData = userSnap.exists() ? userSnap.data().completedPlans?.[planId]?.completedDays || {} : {};
+
+      // 2. Get data from LocalStorage
+      const storedData = typeof window !== 'undefined' ? localStorage.getItem(`completedDays_${planId}`) : null;
+      const localStorageData = storedData ? JSON.parse(storedData) : {};
+
+      // 3. Merge data
+      const mergedData = { ...firestoreData, ...localStorageData };
+
+      // 4. Update states with the merged data
+      setCompletedDays(mergedData);
+
+      // 5. Save the merged data back to Firestore
+      await saveProgressToFirestore(loggedInUser, planId, mergedData);
+
+      // 6. Save the merged data back to LocalStorage for consistency
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`completedDays_${planId}`, JSON.stringify(mergedData));
       }
+
     } catch (error) {
-      console.error("Error fetching completed days from Firestore:", error);
+      console.error("Error syncing progress:", error);
     }
-  }, [planId]);
+  }, [planId, saveProgressToFirestore]);
 
   useEffect(() => {
     if (auth) {
       const unsubscribe = auth.onAuthStateChanged((loggedInUser) => {
         setUser(loggedInUser);
         if (loggedInUser) {
-          fetchCompletedDaysFromFirestore(loggedInUser);
+          syncProgress(loggedInUser);
+        } else {
+          const storedCompletedDays = localStorage.getItem(`completedDays_${planId}`);
+          if (storedCompletedDays) {
+            setCompletedDays(JSON.parse(storedCompletedDays));
+          } else {
+            setCompletedDays({});
+          }
         }
       });
       return () => unsubscribe();
     }
-  }, [fetchCompletedDaysFromFirestore]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !user) {
-      const storedCompletedDays = localStorage.getItem(`completedDays_${planId}`);
-      if (storedCompletedDays) {
-        setCompletedDays(JSON.parse(storedCompletedDays));
-      }
-    }
-  }, [planId, user]);
+  }, [syncProgress, planId]);
 
   const handleCheck = (day) => {
     const isCompleted = completedDays[day]?.isCompleted;
     if (day > 1 && !completedDays[day - 1]?.isCompleted && !isCompleted) {
+      // Show an error message or toast if desired
       return;
     }
 
@@ -102,12 +116,14 @@ export default function PlanDetailsPage() {
         ...prevCompletedDays,
         [day]: isCompleted 
           ? { isCompleted: false, dateCompleted: null }
-          : { isCompleted: true, dateCompleted: new Date().toLocaleDateString('en-CA') }, // 'en-CA' for YYYY-MM-DD
+          : { isCompleted: true, dateCompleted: new Date().toISOString() }, 
       };
       
-      if (isCompleted) { // If unchecking
+      if (isCompleted) { 
         for (let i = day + 1; i <= plan.readings.length; i++) {
-          newCompletedDays[i] = { isCompleted: false, dateCompleted: null };
+          if (newCompletedDays[i]) {
+            newCompletedDays[i] = { isCompleted: false, dateCompleted: null };
+          }
         }
       }
 
@@ -141,7 +157,7 @@ export default function PlanDetailsPage() {
   };
 
   const totalDays = plan.readings.length;
-  const daysCompletedCount = Object.keys(completedDays).filter(day => completedDays[day]?.isCompleted).length;
+  const daysCompletedCount = Object.values(completedDays).filter(day => day?.isCompleted).length;
   const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
 
   return (
@@ -206,7 +222,7 @@ export default function PlanDetailsPage() {
               >
                 <div className={styles.readingHeader}>
                   <div className={styles.dayNumber}>
-                    يوم {reading.day} {dateCompleted && <span> - {dateCompleted}</span>}
+                    يوم {reading.day} {dateCompleted && <span> - {new Date(dateCompleted).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</span>}
                   </div>
                   <input
                     type="checkbox"

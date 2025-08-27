@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
   return(
     <html lang="ar" dir="rtl">
       <head>
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/images/logo.png" />
         <meta property="og:title" content="Agios Bible"/>
         <meta property="og:description" content=" موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات"/>
         <meta property="og:type" content="website"/>

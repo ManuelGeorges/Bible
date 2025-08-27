@@ -19,7 +19,8 @@ const useMessage = (duration = 2000) => {
 
     const showMessage = useCallback((msg) => {
         setMessage(msg);
-        setTimeout(() => setMessage(''), duration);
+        const timer = setTimeout(() => setMessage(''), duration);
+        return () => clearTimeout(timer);
     }, [duration]);
 
     return [message, showMessage];
@@ -42,27 +43,27 @@ const useFavorites = () => {
 };
 
 const getPlanCompletionData = (planId) => {
-  if (typeof window !== 'undefined') {
-    const storedCompletedDays = localStorage.getItem(`completedDays_${planId}`);
-    if (storedCompletedDays) {
-      const completedDays = JSON.parse(storedCompletedDays);
-      const daysCompletedCount = Object.values(completedDays).filter(Boolean).length;
-      const totalDays = allPlans.find(p => p.id === planId)?.readings.length || 0;
-      const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
-      return { daysCompletedCount, totalDays, completionPercentage };
+    if (typeof window !== 'undefined') {
+        const storedCompletedDays = localStorage.getItem(`completedDays_${planId}`);
+        if (storedCompletedDays) {
+            const completedDays = JSON.parse(storedCompletedDays);
+            const daysCompletedCount = Object.values(completedDays).filter(Boolean).length;
+            const totalDays = allPlans.find(p => p.id === planId)?.readings.length || 0;
+            const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
+            return { daysCompletedCount, totalDays, completionPercentage };
+        }
     }
-  }
-  return { daysCompletedCount: 0, totalDays: 0, completionPercentage: 0 };
+    return { daysCompletedCount: 0, totalDays: 0, completionPercentage: 0 };
 };
 
 const getStartedPlans = () => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
-  return allPlans.filter(plan => {
-    const completionData = getPlanCompletionData(plan.id);
-    return completionData.daysCompletedCount > 0;
-  });
+    if (typeof window === 'undefined') {
+        return [];
+    }
+    return allPlans.filter(plan => {
+        const completionData = getPlanCompletionData(plan.id);
+        return completionData.daysCompletedCount > 0;
+    });
 };
 
 const LandingPage = () => {
@@ -79,59 +80,13 @@ const LandingPage = () => {
     const [startedPlans, setStartedPlans] = useState([]);
     const [user, setUser] = useState(null);
 
-    const checkAndSyncLocalAnswers = useCallback(async (loggedInUser) => {
-        if (!loggedInUser || !firestore) return;
-
-        const dateKey = new Date().toISOString().split('T')[0];
-        const userAnswers = JSON.parse(localStorage.getItem('userAnswers') || '{}');
-        const answerForToday = userAnswers[dateKey];
-        const firestoreAnswered = localStorage.getItem(`questionAnswered_${dateKey}_firestore`);
-
-        if (answerForToday && !firestoreAnswered) {
-            try {
-                const userRef = doc(firestore, 'users', loggedInUser.uid);
-                const userSnap = await getDoc(userRef);
-                let userData = {};
-                if (userSnap.exists()) {
-                    userData = userSnap.data();
-                }
-
-                const updatedNotes = (userData.notes || 0) + answerForToday.points;
-                const updatedAnsweredQuestions = {
-                    ...userData.answeredQuestions,
-                    [dateKey]: {
-                        answered: true,
-                        isCorrect: answerForToday.isCorrect,
-                        question: answerForToday.question,
-                        userAnswer: answerForToday.userAnswer,
-                        date: dateKey
-                    }
-                };
-
-                await setDoc(userRef, {
-                    notes: updatedNotes,
-                    answeredQuestions: updatedAnsweredQuestions
-                }, { merge: true });
-
-                localStorage.setItem(`questionAnswered_${dateKey}_firestore`, 'true');
-                console.log("Local answer synced to Firestore successfully!");
-            } catch (error) {
-                console.error("Error syncing local answer to Firestore:", error);
-            }
-        }
+    const getTodayDateKey = useCallback(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }, []);
-
-    useEffect(() => {
-        if (auth) {
-            const unsubscribe = auth.onAuthStateChanged((user) => {
-                setUser(user);
-                if (user) {
-                    checkAndSyncLocalAnswers(user);
-                }
-            });
-            return () => unsubscribe();
-        }
-    }, [checkAndSyncLocalAnswers]);
 
     const fetchDailyVerse = useCallback(async () => {
         setIsLoadingVerse(true);
@@ -156,33 +111,80 @@ const LandingPage = () => {
         }
     }, []);
 
-    const fetchDailyQuestion = useCallback(async () => {
-        const today = new Date();
-        const dateKey = today.toISOString().split('T')[0];
-        const currentMonth = today.getMonth() + 1;
-        const currentDay = today.getDate();
-
+    const fetchDailyQuestion = useCallback(async (loggedInUser) => {
+        const dateKey = getTodayDateKey();
         try {
-            const answeredToday = localStorage.getItem(`questionAnswered_${dateKey}`);
-            setHasAnswered(!!answeredToday);
-            
             const response = await fetch('/data/dailyQuestions.json');
             if (!response.ok) {
                 throw new Error('Network response for daily questions was not ok');
             }
             const dailyQuestionsData = await response.json();
-            
-            const questionForToday = dailyQuestionsData.find(q => q.month === currentMonth && q.day === currentDay);
+            const questionForToday = dailyQuestionsData.find(q => q.month === new Date().getMonth() + 1 && q.day === new Date().getDate());
             setDailyQuestion(questionForToday || null);
+
+            let answeredLocally = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
+
+            if (loggedInUser) {
+                const userRef = doc(firestore, 'users', loggedInUser.uid);
+                const userSnap = await getDoc(userRef);
+                const firestoreAnsweredQuestions = userSnap.exists() && userSnap.data().answeredQuestions ? userSnap.data().answeredQuestions : {};
+                
+                if (firestoreAnsweredQuestions[dateKey]?.answered) {
+                    setHasAnswered(true);
+                    localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
+                } else if (answeredLocally) {
+                    const userAnswers = JSON.parse(localStorage.getItem('userAnswers') || '{}');
+                    const answerForToday = userAnswers[dateKey];
+                    if (answerForToday) {
+                        await setDoc(userRef, {
+                            notes: (userSnap.data().notes || 0) + answerForToday.points,
+                            answeredQuestions: {
+                                ...firestoreAnsweredQuestions,
+                                [dateKey]: {
+                                    answered: true,
+                                    isCorrect: answerForToday.isCorrect,
+                                    question: answerForToday.question,
+                                    userAnswer: answerForToday.userAnswer,
+                                    date: dateKey
+                                }
+                            }
+                        }, { merge: true });
+                        setHasAnswered(true);
+                    }
+                } else {
+                    setHasAnswered(false);
+                }
+            } else {
+                setHasAnswered(answeredLocally);
+            }
         } catch (error) {
             console.error(`Error loading questions:`, error);
             setDailyQuestion(null);
+            setError('حدث خطأ في تحميل السؤال.');
         }
+    }, [getTodayDateKey]);
+
+    useEffect(() => {
+        if (auth) {
+            const unsubscribe = auth.onAuthStateChanged((loggedInUser) => {
+                setUser(loggedInUser);
+                fetchDailyQuestion(loggedInUser);
+            });
+            return () => unsubscribe();
+        }
+        fetchDailyQuestion(null);
+    }, [fetchDailyQuestion]);
+
+    useEffect(() => {
+        fetchDailyVerse();
+    }, [fetchDailyVerse]);
+
+    useEffect(() => {
+        setStartedPlans(getStartedPlans());
     }, []);
 
     const copyDailyVerse = useCallback(async () => {
         if (!dailyVerse) return;
-        
         const textToCopy = `"${dailyVerse.verse}" - ${dailyVerse.reference}`;
         try {
             if (navigator.clipboard?.writeText) {
@@ -201,35 +203,49 @@ const LandingPage = () => {
         }
     }, [dailyVerse, showCopiedMessage]);
 
-    const toggleFavoriteDailyVerse = useCallback(() => {
+    const toggleFavoriteDailyVerse = useCallback(async () => {
         if (!dailyVerse) return;
-        
         try {
-            const favorites = getFavorites();
             const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
-            
-            if (favorites[verseKey]) {
-                delete favorites[verseKey];
+            const favorites = getFavorites();
+
+            const isCurrentlyFavorite = !!favorites[verseKey];
+            let newFavorites;
+
+            if (isCurrentlyFavorite) {
+                newFavorites = { ...favorites };
+                delete newFavorites[verseKey];
                 showFavouriteMessage('تم حذف الآية من المفضلة!');
             } else {
-                favorites[verseKey] = {
-                    type: 'verse',
-                    verseKey,
-                    text: dailyVerse.verse,
-                    bookName: 'آية اليوم',
-                    bookNameAbbrev: 'Daily',
-                    chapter: dailyVerse.month,
-                    verseIndex: dailyVerse.day,
-                    language: 'ar',
-                    isDailyVerse: true
+                newFavorites = {
+                    ...favorites,
+                    [verseKey]: {
+                        type: 'verse',
+                        verseKey,
+                        text: dailyVerse.verse,
+                        bookName: 'آية اليوم',
+                        bookNameAbbrev: 'Daily',
+                        chapter: dailyVerse.month,
+                        verseIndex: dailyVerse.day,
+                        language: 'ar',
+                        isDailyVerse: true,
+                        dateAdded: new Date().toISOString()
+                    }
                 };
                 showFavouriteMessage('تم إضافة الآية إلى المفضلة!');
             }
-            saveFavorites(favorites);
+            saveFavorites(newFavorites);
+
+            if (user && firestore) {
+                const userRef = doc(firestore, 'users', user.uid);
+                await setDoc(userRef, {
+                    favorites: { verses: newFavorites }
+                }, { merge: true });
+            }
         } catch {
             showFavouriteMessage('حدث خطأ في الحفظ!');
         }
-    }, [dailyVerse, getFavorites, saveFavorites, showFavouriteMessage]);
+    }, [dailyVerse, getFavorites, saveFavorites, showFavouriteMessage, user]);
 
     const isDailyVerseFavorite = useMemo(() => {
         if (!dailyVerse) return false;
@@ -238,56 +254,46 @@ const LandingPage = () => {
         return !!favorites[verseKey];
     }, [dailyVerse, getFavorites]);
 
-    const handleAnswerSubmit = useCallback(async () => {
-        const today = new Date();
-        const dateKey = today.toISOString().split('T')[0];
-
-        if (hasAnswered || !dailyQuestion || selectedAnswer === null) {
-            showQuestionMessage('لقد أجبت على سؤال اليوم بالفعل أو لم تختار إجابة.');
+    const handleOptionClick = useCallback(async (index) => {
+        const dateKey = getTodayDateKey();
+        if (hasAnswered || !dailyQuestion || selectedAnswer !== null) {
             return;
         }
 
+        setSelectedAnswer(index);
+        
         try {
-            const isCorrect = selectedAnswer === dailyQuestion.answerIndex;
+            const isCorrect = index === dailyQuestion.answerIndex;
             const pointsToAdd = isCorrect ? 5 : 0;
             
-            const notes = parseInt(localStorage.getItem('notes') || '0', 10);
-            localStorage.setItem('notes', notes + pointsToAdd);
-
             const userAnswers = JSON.parse(localStorage.getItem('userAnswers') || '{}');
             userAnswers[dateKey] = {
                 question: dailyQuestion.question,
-                userAnswer: dailyQuestion.options[selectedAnswer],
+                userAnswer: dailyQuestion.options[index],
                 correctAnswer: dailyQuestion.options[dailyQuestion.answerIndex],
                 isCorrect: isCorrect,
                 points: pointsToAdd
             };
             localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
             localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
-
-            showQuestionMessage(isCorrect ? 'إجابة صحيحة!' : 'إجابة خاطئة.');
-            if (isCorrect) {
-                showQuestionMessage('تمت إضافة 5 نقاط إلى ملاحظاتك!');
-            }
-            
             setHasAnswered(true);
+            showQuestionMessage(isCorrect ? 'إجابة صحيحة!' : 'إجابة خاطئة.');
+
+            const currentNotes = parseInt(localStorage.getItem('notes') || '0', 10) + pointsToAdd;
+            localStorage.setItem('notes', currentNotes.toString());
 
             if (user && firestore) {
                 const userRef = doc(firestore, 'users', user.uid);
                 const userSnap = await getDoc(userRef);
-                let userData = {};
-                if (userSnap.exists()) {
-                    userData = userSnap.data();
-                }
-
+                const userData = userSnap.exists() ? userSnap.data() : {};
                 const updatedNotes = (userData.notes || 0) + pointsToAdd;
                 const updatedAnsweredQuestions = {
-                    ...userData.answeredQuestions,
+                    ...(userData.answeredQuestions || {}),
                     [dateKey]: {
                         answered: true,
                         isCorrect: isCorrect,
                         question: dailyQuestion.question,
-                        userAnswer: dailyQuestion.options[selectedAnswer],
+                        userAnswer: dailyQuestion.options[index],
                         date: dateKey
                     }
                 };
@@ -302,23 +308,7 @@ const LandingPage = () => {
             console.error("Error submitting answer:", error);
             showQuestionMessage("حدث خطأ في إرسال الإجابة.");
         }
-    }, [hasAnswered, selectedAnswer, dailyQuestion, showQuestionMessage, user]);
-
-    useEffect(() => {
-        setStartedPlans(getStartedPlans());
-    }, []);
-
-    useEffect(() => {
-        fetchDailyVerse();
-        fetchDailyQuestion();
-    }, [fetchDailyVerse, fetchDailyQuestion]);
-
-    const handleOptionClick = (index) => {
-        if (!hasAnswered) {
-            setSelectedAnswer(index);
-            handleAnswerSubmit();
-        }
-    };
+    }, [hasAnswered, selectedAnswer, dailyQuestion, showQuestionMessage, user, getTodayDateKey]);
 
     const getOptionClassName = (index) => {
         if (!hasAnswered) {

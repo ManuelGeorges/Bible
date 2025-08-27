@@ -1,8 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
 import styles from './favourites.module.css';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from '/lib/firebase';
+
+const auth = typeof window !== 'undefined' ? getAuth() : null;
+const firestore = db;
 
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -10,12 +15,12 @@ function convertToArabicNumber(num) {
 }
 
 export default function FavouritesPage() {
-  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState('verses');
   const [favourites, setFavourites] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
+  const [user, setUser] = useState(null);
+
   const saveFavouritesToLocalStorage = useCallback((key, data) => {
     try {
       localStorage.setItem(key, JSON.stringify(data));
@@ -24,108 +29,126 @@ export default function FavouritesPage() {
     }
   }, []);
 
-  const fetchFavourites = useCallback(() => {
+  const saveFavouritesToFirebase = useCallback(async (loggedInUser, key, data) => {
+    if (!loggedInUser || !firestore) return;
+    try {
+      const userRef = doc(firestore, 'users', loggedInUser.uid);
+      await setDoc(userRef, {
+        favorites: { [key]: data }
+      }, { merge: true });
+    } catch (e) {
+      console.error("Error saving favorites to Firebase:", e);
+    }
+  }, []);
+
+  const fetchFavourites = useCallback(async (loggedInUser) => {
     setIsLoading(true);
     setError('');
     try {
-      const key = activeTab === 'verses' ? 'favourite_verses' : 'favourite_chapters';
-      const data = JSON.parse(localStorage.getItem(key)) || {};
+      const key = activeTab === 'verses' ? 'verses' : 'chapters';
+      const localStorageKey = `favourite_${key}`;
       
-      const favouritesArray = Object.values(data);
-      setFavourites(favouritesArray);
+      const localData = JSON.parse(localStorage.getItem(localStorageKey)) || {};
+      let firestoreData = {};
+
+      if (loggedInUser) {
+        const userRef = doc(firestore, 'users', loggedInUser.uid);
+        const userSnap = await getDoc(userRef);
+        firestoreData = userSnap.exists() && userSnap.data().favorites ? userSnap.data().favorites[key] || {} : {};
+
+        const mergedData = { ...firestoreData, ...localData };
+        setFavourites(Object.values(mergedData));
+        saveFavouritesToLocalStorage(localStorageKey, mergedData);
+        saveFavouritesToFirebase(loggedInUser, key, mergedData);
+      } else {
+        setFavourites(Object.values(localData));
+      }
     } catch (e) {
       console.error(e);
-      setError(language === 'ar' ? 'فشل تحميل المفضلة.' : 'Failed to load favorites.');
+      setError('فشل تحميل المفضلة.');
       setFavourites([]);
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, language]);
+  }, [activeTab, saveFavouritesToLocalStorage, saveFavouritesToFirebase]);
 
   useEffect(() => {
-    fetchFavourites();
-  }, [activeTab, fetchFavourites]);
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
+        setUser(loggedInUser);
+        fetchFavourites(loggedInUser);
+      });
+      return () => unsubscribe();
+    }
+  }, [fetchFavourites]);
 
-  const handleRemove = (itemToRemove) => {
+  const handleRemove = useCallback(async (itemToRemove) => {
     try {
-      let key;
-      let existingFavourites;
-
+      let key, itemIdentifier;
       if (itemToRemove.type === 'verse') {
-        key = 'favourite_verses';
-        existingFavourites = JSON.parse(localStorage.getItem(key)) || {};
-        delete existingFavourites[itemToRemove.verseKey];
+        key = 'verses';
+        itemIdentifier = itemToRemove.verseKey;
       } else if (itemToRemove.type === 'chapter') {
-        key = 'favourite_chapters';
-        existingFavourites = JSON.parse(localStorage.getItem(key)) || {};
-        delete existingFavourites[itemToRemove.chapterKey];
+        key = 'chapters';
+        itemIdentifier = itemToRemove.chapterKey;
       }
       
-      if (key && existingFavourites) {
-        saveFavouritesToLocalStorage(key, existingFavourites);
-        
-        const updatedFavouritesArray = Object.values(existingFavourites);
-        setFavourites(updatedFavouritesArray);
+      if (!key || !itemIdentifier) return;
+
+      const localStorageKey = `favourite_${key}`;
+      const existingFavourites = JSON.parse(localStorage.getItem(localStorageKey)) || {};
+      delete existingFavourites[itemIdentifier];
+      saveFavouritesToLocalStorage(localStorageKey, existingFavourites);
+
+      if (user) {
+        const userRef = doc(firestore, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const firestoreFavourites = userSnap.exists() && userSnap.data().favorites ? userSnap.data().favorites[key] || {} : {};
+        delete firestoreFavourites[itemIdentifier];
+        await setDoc(userRef, {
+          favorites: { [key]: firestoreFavourites }
+        }, { merge: true });
       }
+
+      setFavourites(Object.values(existingFavourites));
     } catch (e) {
       console.error('Failed to remove item:', e);
-      setError(language === 'ar' ? 'فشل حذف العنصر.' : 'Failed to remove item.');
+      setError('فشل حذف العنصر.');
     }
-  };
-
-  const getTitle = () => {
-    if (language === 'ar') {
-      return activeTab === 'verses' ? 'الآيات المفضلة' : 'الاصحاحات المفضلة';
-    } else if (language === 'en') {
-      return activeTab === 'verses' ? 'Favorite Verses' : 'Favorite Chapters';
-    } else {
-      return activeTab === 'verses' ? 'Verset favoris' : 'Chapitres favoris';
-    }
-  };
+  }, [saveFavouritesToLocalStorage, user]);
 
   const getReferenceText = (item) => {
     const bookName = item.bookName;
     const chapterNumber = item.chapter + 1;
-    let reference;
-
-    if (language === 'ar') {
-      reference = `${bookName} ${convertToArabicNumber(chapterNumber)}`;
-      if (item.verseIndex !== undefined) {
-        reference += `:${convertToArabicNumber(item.verseIndex + 1)}`;
-      }
-    } else {
-      reference = `${bookName} ${chapterNumber}`;
-      if (item.verseIndex !== undefined) {
-        reference += `:${item.verseIndex + 1}`;
-      }
+    let reference = `${bookName} ${convertToArabicNumber(chapterNumber)}`;
+    if (item.verseIndex !== undefined) {
+      reference += `:${convertToArabicNumber(item.verseIndex + 1)}`;
     }
     return reference;
   };
 
   return (
-    <main className={`${styles.container} ${language === 'ar' ? styles.ar : ''}`}>
-      <h1 className={styles.title}>
-        {language === 'ar' ? '⭐ المفضلة' : language === 'en' ? '⭐ Favorites' : '⭐ Favoris'}
-      </h1>
+    <main className={`${styles.container} ${styles.ar}`}>
+      <h1 className={styles.title}>⭐ المفضلة</h1>
 
       <nav className={styles.tabContainer}>
         <div
           className={`${styles.tab} ${activeTab === 'verses' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('verses')}
         >
-          {language === 'ar' ? 'آيات' : language === 'en' ? 'Verses' : 'Versets'}
+          آيات
         </div>
         <div
           className={`${styles.tab} ${activeTab === 'chapters' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('chapters')}
         >
-          {language === 'ar' ? 'اصحاحات' : language === 'en' ? 'Chapters' : 'Chapitres'}
+          اصحاحات
         </div>
       </nav>
 
       {isLoading && (
         <div className={styles.loadingMessage}>
-          {language === 'ar' ? 'جاري التحميل...' : 'Loading...'}
+          جاري التحميل...
         </div>
       )}
 
@@ -133,7 +156,7 @@ export default function FavouritesPage() {
 
       {!isLoading && !error && favourites.length === 0 && (
         <div className={styles.emptyMessage}>
-          {language === 'ar' ? 'لا توجد عناصر مفضلة.' : 'No favorites found.'}
+          لا توجد عناصر مفضلة.
         </div>
       )}
 
@@ -142,15 +165,26 @@ export default function FavouritesPage() {
           {favourites.map((item) => (
             <li key={item.verseKey || item.chapterKey} className={styles.favouriteItem}>
               <div className={styles.favouriteContent}>
-                {item.text}
-                <span className={styles.favouriteReference}>
-                  {getReferenceText(item)}
-                </span>
+                <p className={styles.favouriteText}>
+                  {item.text}
+                </p>
+                <div className={styles.favouriteMeta}>
+                  <span className={styles.favouriteReference}>
+                    {getReferenceText(item)}
+                  </span>
+                  {item.dateAdded && (
+                    <span className={styles.dateAdded}>
+                      (
+                      أُضيف في: {new Date(item.dateAdded).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      )
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => handleRemove(item)}
                 className={styles.removeButton}
-                aria-label={language === 'ar' ? 'حذف من المفضلة' : 'Remove from favorites'}
+                aria-label="حذف من المفضلة"
               >
                 ✖
               </button>
