@@ -198,6 +198,14 @@
   word-wrap: break-word;
 }
 
+.completionInfo {
+  text-align: center;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  color: var(--color-text-secondary);
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+}
+
 .verseContainer {
   padding: clamp(1rem, 3vw, 1.5rem);
   width: 100%;
@@ -214,6 +222,7 @@
 .singleVerse {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: clamp(0.3rem, 1vw, 0.5rem);
   padding: clamp(0.5rem, 1.5vw, 0.8rem) clamp(0.8rem, 1.5vw, 1rem);
@@ -238,6 +247,7 @@
   color: var(--color-text-light);
   text-align: justify;
   align-items: flex-start;
+  width: 100%;
 }
 
 .verseNumber {
@@ -332,7 +342,9 @@
 .favouriteSelectedButton,
 .copyChapterButton,
 .favouriteChapterButton,
-.tafsirButton {
+.tafsirButton,
+.navButton,
+.completeButton {
   background-color: var(--color-card-bg);
   color: var(--color-text-light);
   border: 2px solid var(--color-accent-gold);
@@ -356,16 +368,39 @@
 .copyChapterButton:hover,
 .favouriteChapterButton:hover,
 .tafsirButton:hover,
+.navButton:not(:disabled):hover,
+.completeButton:not(:disabled):hover,
 .copySelectedButton:focus,
 .favouriteSelectedButton:focus,
 .copyChapterButton:focus,
 .favouriteChapterButton:focus,
-.tafsirButton:focus {
+.tafsirButton:focus,
+.navButton:not(:disabled):focus,
+.completeButton:not(:disabled):focus {
   background-color: var(--color-accent-gold);
   color: var(--color-primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 6px 15px var(--color-shadow-medium);
   outline: none;
+}
+
+.navButton:disabled,
+.completeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.completeButton.isCompleted {
+  background-color: var(--color-green);
+  border-color: var(--color-green);
+  color: white;
+}
+
+.completeButton.isCompleted:hover {
+  background-color: var(--color-green-dark);
+  border-color: var(--color-green-dark);
+  transform: none;
+  box-shadow: none;
 }
 
 .selectedVerse {
@@ -387,6 +422,18 @@
   border-right: 3px solid var(--color-accent-gold);
   padding-left: clamp(0.8rem, 1.5vw, 1rem);
   padding-right: clamp(0.5rem, 1vw, 0.7rem);
+}
+
+.favouriteDate {
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  color: var(--color-text-secondary);
+  text-align: right;
+  margin-top: -0.5rem;
+  width: 100%;
+}
+
+[dir="rtl"] .favouriteDate {
+  text-align: left;
 }
 
 [dir="ltr"] .favouriteVerse {
@@ -429,6 +476,10 @@
   color: #212529;
 }
 
+.completedMessage {
+  background-color: #28a745;
+}
+
 [dir="rtl"] .messageBox {
   right: auto;
   left: 20px;
@@ -456,7 +507,9 @@
   .favouriteSelectedButton,
   .copyChapterButton,
   .favouriteChapterButton,
-  .tafsirButton {
+  .tafsirButton,
+  .navButton,
+  .completeButton {
     min-width: unset;
   }
   
@@ -471,6 +524,11 @@
   
   .dropdownMenu {
     max-height: 40vh;
+  }
+  
+  .singleVerse {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
 
@@ -488,7 +546,9 @@
   .favouriteSelectedButton,
   .copyChapterButton,
   .favouriteChapterButton,
-  .tafsirButton {
+  .tafsirButton,
+  .navButton,
+  .completeButton {
     min-width: 180px;
   }
 }
@@ -496,11 +556,6 @@
 @media (min-width: 1025px) {
   .container {
     padding: 2.5rem 2rem;
-  }
-  
-  .controls {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 700px;
   }
   
   .verseContainer {

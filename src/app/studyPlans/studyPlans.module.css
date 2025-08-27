@@ -1,253 +1,118 @@
 .container {
-  padding: clamp(20px, 5vw, 40px);
-  max-width: min(1200px, 95vw);
-  margin: 20px auto;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  color: var(--color-text-light);
-  text-align: center;
-  transition: all 0.7s var(--transition-smooth);
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 3rem 1.5rem;
+  background-color: #f0f4f8;
   min-height: 100vh;
-  gap: clamp(30px, 8vw, 60px);
-  border-radius: var(--border-radius);
-  box-shadow: 0 20px 60px var(--color-shadow-medium);
-  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+  color: #2d3748;
 }
 
-.rtl {
-  direction: rtl;
+.heroSection {
+  text-align: center;
+  margin-bottom: 4rem;
+  padding: 3rem;
+  background: linear-gradient(135deg, #2c5282, #1a365d);
+  color: #e2e8f0;
+  border-radius: 24px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  max-width: 1000px;
+  width: 100%;
 }
 
-.heading {
-  color: var(--color-accent-gold);
-  margin: 0;
-  font-size: clamp(2.5rem, 8vw, 5rem);
+.title {
+  font-size: 3.5rem;
   font-weight: 900;
-  text-shadow: 0 4px 8px var(--color-shadow-medium);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--color-accent-gold), #fff176);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes floating {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+.description {
+  font-size: 1.2rem;
+  color: #cbd5e0;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
-.floating {
-  animation: floating 4s ease-in-out infinite;
-}
-
-.languageContainer {
+.filterSection {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gap-small);
-  padding: var(--gap-small) var(--gap-medium);
-  background: var(--color-card-bg);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.filterButton {
+  padding: 0.8rem 2rem;
   border-radius: 50px;
-  box-shadow: 0 8px 32px var(--color-shadow-medium);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--color-border-light);
-  transition: transform 0.3s var(--transition-smooth);
-}
-
-.languageContainer:hover {
-  transform: translateY(-4px);
-}
-
-.languageLabel {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-light);
+  border: 2px solid #a0aec0;
+  background-color: #fff;
+  color: #4a5568;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   white-space: nowrap;
 }
 
-.languageSelect {
-  appearance: none;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-primary);
-  padding: 12px var(--gap-medium);
-  border-radius: 25px;
-  border: 2px solid var(--color-accent-gold);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.3s var(--transition-smooth);
-  min-width: 140px;
-  box-shadow: 0 4px 12px var(--color-shadow-medium);
+.filterButton:hover {
+  background-color: #48bb78;
+  color: #fff;
+  border-color: #48bb78;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
-.languageSelect:hover {
-  background: rgba(255, 255, 255, 1);
+.activeFilter {
+  background-color: #2c5282;
+  color: #fff;
+  border-color: #2c5282;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px var(--color-shadow-medium);
-}
-
-.languageSelect:focus {
-  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.4);
-  background: rgba(255, 255, 255, 1);
-}
-
-.languageSelect option {
-  background: white;
-  color: var(--color-primary);
-  padding: 8px 12px;
-  font-weight: 600;
-}
-
-.dailyVerseBox {
-  background: var(--color-card-bg);
-  border-radius: var(--border-radius);
-  padding: clamp(24px, 6vw, 48px);
-  box-shadow: 0 16px 40px var(--color-shadow-medium);
-  max-width: 800px;
-  width: 100%;
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--color-border-light);
-  transition: transform 0.3s var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
-
-.dailyVerseBox::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-.dailyVerseBox:hover {
-  transform: translateY(-5px) scale(1.02);
-}
-
-.dailyVerseTitle {
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
-  font-weight: 700;
-  color: var(--color-accent-gold);
-  margin: 0 0 var(--gap-medium) 0;
-  text-shadow: 0 2px 4px var(--color-shadow-light);
-}
-
-.dailyVerseText {
-  font-size: clamp(1.2rem, 4vw, 1.8rem);
-  line-height: 1.7;
-  margin: 0 0 var(--gap-medium) 0;
-  color: var(--color-text-light);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-shadow: 0 1px 2px var(--color-shadow-light);
-  white-space: pre-wrap;
-}
-
-.dailyVerseReference {
-  font-size: clamp(1rem, 3vw, 1.2rem);
-  color: rgba(248, 249, 250, 0.8);
-  font-style: italic;
-  font-weight: 500;
-  margin: 0 0 var(--gap-medium) 0;
-}
-
-.dailyVerseActions {
-  display: flex;
-  gap: var(--gap-small);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.actionButton {
-  background: transparent;
-  border: 2px solid var(--color-accent-gold);
-  color: var(--color-accent-gold);
-  padding: 12px var(--gap-medium);
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.3s var(--transition-smooth);
-  min-width: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.actionButton:hover {
-  background: var(--color-accent-gold);
-  color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
-}
-
-.actionButton.isFavourite {
-  background: var(--color-accent-gold);
-  color: var(--color-primary);
-}
-
-.plansSection {
-  width: 100%;
-  max-width: 1200px;
-  margin-top: 4rem;
-}
-
-.plansSectionTitle {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 800;
-  color: var(--color-text-light);
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.plansSectionTitle::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 5px;
-  background-color: var(--color-accent-gold);
-  border-radius: 2px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .plansGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2.5rem;
   width: 100%;
-  justify-content: center;
+  max-width: 1200px;
 }
 
 .card {
   position: relative;
-  background-color: var(--color-card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: 0 10px 30px var(--color-shadow-medium);
-  transition: all 0.4s var(--transition-smooth);
+  background-color: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 40px var(--color-shadow-medium);
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
+.card:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(44, 82, 130, 0.1));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.card:hover:before {
+  opacity: 1;
 }
 
 .cardImageContainer {
@@ -255,8 +120,8 @@
   overflow: hidden;
   position: relative;
   z-index: 2;
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
 }
 
 .cardImage {
@@ -277,30 +142,32 @@
   flex-grow: 1;
   position: relative;
   z-index: 2;
-  color: var(--color-text-light);
 }
 
 .cardTitle {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  color: var(--color-accent-gold);
+  color: #2c5282;
   line-height: 1.2;
   margin-bottom: 0.75rem;
 }
 
 .cardDescription {
-  font-size: 0.95rem;
-  color: rgba(248, 249, 250, 0.8);
+  font-size: 1rem;
+  color: #718096;
   margin-bottom: 1.5rem;
-  min-height: 60px;
+  min-height: 70px;
+  line-height: 1.6;
 }
 
 .cardDetails {
   display: flex;
   justify-content: space-between;
-  font-size: 0.9rem;
-  color: rgba(248, 249, 250, 0.9);
+  font-size: 0.95rem;
+  color: #4a5568;
   margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 
 .detailItem {
@@ -310,12 +177,12 @@
 }
 
 .detailLabel {
-  font-weight: 600;
+  font-weight: 700;
+  color: #2c5282;
 }
 
 .detailValue {
-  font-weight: 400;
-  color: var(--color-accent-gold);
+  font-weight: 500;
 }
 
 .completionStatus {
@@ -328,21 +195,21 @@
 .completionSummary {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--color-accent-gold);
+  color: #48bb78;
   text-align: center;
 }
 
 .progressBar {
   width: 100%;
   height: 8px;
-  background-color: rgba(248, 249, 250, 0.3);
+  background-color: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background-color: var(--color-accent-gold);
+  background-color: #48bb78;
   transition: width 0.5s ease-in-out;
 }
 
@@ -355,86 +222,117 @@
 
 .cardButton {
   display: inline-block;
-  background: var(--color-button-primary);
-  color: white;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  font-weight: 600;
+  background: #2c5282;
+  color: #fff;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 700;
   text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px var(--color-shadow-medium);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
 }
 
 .cardButton:hover {
-  background-color: var(--color-button-secondary);
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px var(--color-shadow-medium);
+  background-color: #48bb78;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.cardHoverEffect {
+  content: '';
+  position: absolute;
+  bottom: -200px;
+  right: -200px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(72, 187, 120, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: scale(0);
+  z-index: 1;
+}
+
+.card:hover .cardHoverEffect {
+  transform: scale(1);
 }
 
 @media (max-width: 768px) {
-  .container {
-    gap: clamp(20px, 6vw, 40px);
-    padding: clamp(16px, 4vw, 32px);
+  .heroSection {
+    padding: 2rem 1.5rem;
+    margin-bottom: 2rem;
   }
-
-  .languageContainer {
-    flex-direction: column;
-    gap: var(--gap-small);
-    padding: var(--gap-small) var(--gap-medium);
+  .title {
+    font-size: 2.5rem;
   }
-
-  .dailyVerseActions {
-    flex-direction: column;
+  .description {
+    font-size: 1rem;
   }
-
-  .actionButton {
-    width: 100%;
+  .filterSection {
+    gap: 0.75rem;
+    margin-bottom: 2rem;
   }
-
+  .filterButton {
+    padding: 0.7rem 1.5rem;
+  }
   .plansGrid {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
-
   .card {
-    max-width: 400px;
+    max-width: 450px;
     margin: 0 auto;
+  }
+  .cardContent {
+    padding: 1.5rem;
+  }
+  .cardTitle {
+    font-size: 1.5rem;
+  }
+  .cardDescription {
+    font-size: 0.9rem;
+    min-height: auto;
+  }
+  .cardButton {
+    padding: 0.8rem 2rem;
+    width: 100%;
+  }
+  .detailItem {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    margin: 10px;
-    border-radius: 12px;
+    padding: 1rem;
   }
-
-  .dailyVerseBox {
-    width: calc(100% - 20px);
+  .heroSection {
+    padding: 1.5rem;
+    border-radius: 16px;
   }
-
-  .messageBox {
-    left: 10px;
-    right: 10px;
-    transform: none;
-    width: calc(100% - 20px);
+  .title {
+    font-size: 2rem;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .floating,
-  .button::before {
-    animation: none;
+  .description {
+    font-size: 0.9rem;
   }
-
-  .actionButton:hover,
-  .button:hover,
-  .languageContainer:hover,
-  .dailyVerseBox:hover {
-    transform: none;
+  .filterButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
   }
-}
-
-@media (min-width: 1400px) {
-  .container {
-    max-width: 1400px;
+  .cardTitle {
+    font-size: 1.2rem;
+  }
+  .cardDetails {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .detailItem {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .cardImageContainer {
+    height: 150px;
   }
 }

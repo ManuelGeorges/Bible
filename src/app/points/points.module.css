@@ -1,0 +1,220 @@
+.container {
+    padding: var(--gap-large);
+    max-width: 900px;
+    margin: 0 auto;
+    direction: rtl;
+    text-align: right;
+    min-height: 100vh;
+}
+
+.header {
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    font-weight: 700;
+    color: var(--color-text-light);
+    margin-bottom: var(--gap-large);
+    text-align: center;
+}
+
+.pointsSummary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--gap-medium);
+    background: var(--color-card-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--gap-large);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--color-border-light);
+    box-shadow: var(--color-shadow-medium) 0px 4px 12px;
+}
+
+.pointsTotal {
+    text-align: center;
+}
+
+.pointsNumber {
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
+    font-weight: 900;
+    color: var(--color-accent-gold);
+    line-height: 1;
+}
+
+.pointsLabel {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 500;
+    color: var(--color-text-light);
+}
+
+.timeframeButtons {
+    display: flex;
+    justify-content: center;
+    gap: var(--gap-small);
+    margin-bottom: var(--gap-medium);
+    flex-wrap: wrap;
+}
+
+.timeframeButton {
+    background: var(--glass-bg);
+    color: var(--color-text-light);
+    border: 1px solid var(--glass-border);
+    padding: 10px clamp(15px, 4vw, 20px);
+    border-radius: 50px;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    cursor: pointer;
+    transition: all 0.3s var(--transition-smooth);
+    font-family: 'Cairo', sans-serif;
+    font-weight: 500;
+}
+
+.timeframeButton:hover {
+    background: var(--color-border-light);
+}
+
+.timeframeButton.active {
+    background: var(--color-button-primary);
+    border-color: transparent;
+    font-weight: 700;
+}
+
+.activitiesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-medium);
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: var(--gap-small);
+}
+
+.summaryCard {
+    background: var(--color-card-bg);
+    border-radius: var(--border-radius);
+    padding: var(--gap-medium);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid var(--color-border-light);
+    transition: transform 0.3s var(--transition-smooth), box-shadow 0.3s var(--transition-smooth);
+    box-shadow: var(--color-shadow-light) 0px 2px 8px;
+}
+
+.summaryCard:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--color-shadow-medium) 0px 8px 24px;
+}
+
+.icon {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    color: var(--color-accent-gold);
+    margin-bottom: 10px;
+}
+
+.cardTitle {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-weight: 600;
+    color: var(--color-text-light);
+    margin-bottom: 5px;
+}
+
+.cardCount {
+    font-size: clamp(1.5rem, 4vw, 1.8rem);
+    font-weight: 700;
+    color: var(--color-text-light);
+}
+
+.detailedHistory {
+    background: var(--color-card-bg);
+    border-radius: var(--border-radius);
+    padding: var(--gap-medium);
+    border: 1px solid var(--color-border-light);
+    box-shadow: var(--color-shadow-medium) 0px 4px 12px;
+}
+
+.detailedHeader {
+    font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+    font-weight: 700;
+    color: var(--color-accent-gold);
+    margin-bottom: var(--gap-medium);
+    text-align: center;
+}
+
+.activitySection {
+    margin-bottom: var(--gap-large);
+}
+
+.sectionHeader {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 600;
+    color: var(--color-text-light);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-border-light);
+    margin-bottom: var(--gap-small);
+}
+
+.activityList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activityItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--color-border-light);
+}
+
+.activityItem:last-child {
+    border-bottom: none;
+}
+
+.activityDescription {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: var(--color-text-light);
+    margin: 0;
+}
+
+.activityPoints {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-weight: 600;
+    color: var(--color-correct);
+    white-space: nowrap;
+}
+
+.loading,
+.noData,
+.noDataSection,
+.loginMessage {
+    text-align: center;
+    font-size: clamp(1rem, 3vw, 1.1rem);
+    color: var(--color-text-medium);
+    padding: 20px;
+}
+
+.noDataSection p {
+    margin: 0;
+}
+
+.loginMessage {
+    background: var(--color-warning);
+    color: #fff;
+    padding: var(--gap-small);
+    border-radius: var(--border-radius);
+    text-align: center;
+    margin-bottom: var(--gap-medium);
+    font-weight: 500;
+}
+
+.loginMessage p {
+    margin: 0;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: var(--gap-small);
+    }
+}

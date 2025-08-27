@@ -2,16 +2,19 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
+import { db } from '/lib/firebase';
+import { doc, onSnapshot, getDoc, updateDoc, setDoc } from 'firebase/firestore'; // تم إضافة setDoc
 import styles from './search.module.css';
 
+// دالة لتحويل الأرقام الإنجليزية إلى عربية
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   return num.toString().split('').map(d => arabicNums[+d]).join('');
 }
 
+// مكون CustomSelect
 function CustomSelect({ label, options, value, onChange, dir }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
@@ -63,6 +66,7 @@ function CustomSelect({ label, options, value, onChange, dir }) {
   );
 }
 
+// دالة لتطبيع النص العربي (إزالة التشكيل وتحويل الحروف المتشابهة)
 function normalizeArabicText(text) {
   return text
     .replace(/[ًٌٍَُِْ]/g, '')
@@ -73,46 +77,28 @@ function normalizeArabicText(text) {
     .trim();
 }
 
+// دالة لاستخراج الجذر العربي من كلمة
 function extractArabicRoot(word) {
   try {
     let cleanWord = normalizeArabicText(word);
     
-    // Step 1: Handle specific cases with known roots for accuracy
     const specificRoots = {
-      'خاف': 'خوف',
-      'خوف': 'خوف',
-      'مخيف': 'خوف',
-      'خائف': 'خوف',
-      'يخاف': 'خوف',
-      'قال': 'قول',
-      'قول': 'قول',
-      'يقول': 'قول',
-      'سار': 'سير',
-      'سير': 'سير',
-      'باع': 'بيع',
-      'بيع': 'بيع',
-      'زاد': 'زيد',
-      'جاء': 'جيء',
-      'حب': 'حبب',
-      'محبه': 'حبب',
-      'أحب': 'حبب',
-      'حبيب': 'حبب'
+      'خاف': 'خوف', 'خوف': 'خوف', 'مخيف': 'خوف', 'خائف': 'خوف', 'يخاف': 'خوف',
+      'قال': 'قول', 'قول': 'قول', 'يقول': 'قول',
+      'سار': 'سير', 'سير': 'سير', 'باع': 'بيع', 'بيع': 'بيع', 'زاد': 'زيد',
+      'جاء': 'جيء', 'حب': 'حبب', 'محبه': 'حبب', 'أحب': 'حبب', 'حبيب': 'حبب'
     };
     if (specificRoots[cleanWord]) {
       return specificRoots[cleanWord];
     }
 
-    // Step 2: A more robust algorithm for hollow verbs (أجوف)
     if (cleanWord.length === 3 && (cleanWord[1] === 'ا')) {
       const firstChar = cleanWord[0];
       const lastChar = cleanWord[2];
-      // Heuristic to guess the original middle letter
-      // This is a simple guess and can be improved with a dictionary
       const potentialRoot = firstChar + 'و' + lastChar;
       return potentialRoot;
     }
 
-    // Step 3: Simple stemming for common prefixes and suffixes
     const prefixes = ['ال', 'و', 'ف', 'ب', 'ل', 'ت', 'ي', 'أ', 'ن', 'م', 'ست', 'است'];
     for (const prefix of prefixes) {
       if (cleanWord.startsWith(prefix) && cleanWord.length > prefix.length + 1) {
@@ -133,7 +119,6 @@ function extractArabicRoot(word) {
       return word;
     }
     
-    // Final check for common root patterns
     if (cleanWord.length === 3) {
       return cleanWord;
     }
@@ -145,33 +130,17 @@ function extractArabicRoot(word) {
   }
 }
 
+// دالة لتوليد المشتقات من الجذر
 function generateDerivatives(root) {
   const derivatives = new Set([root, normalizeArabicText(root)]);
   
   const patterns = [
-    (r) => r,
-    (r) => r + 'ه',
-    (r) => r + 'اً',
-    (r) => r.charAt(0) + 'ا' + r.slice(1),
-    (r) => r.charAt(0) + 'ا' + r.charAt(2), // for roots like خوف -> خاف
-    (r) => 'م' + r,
-    (r) => 'م' + r + 'ه',
-    (r) => 'ي' + r,
-    (r) => 'ت' + r,
-    (r) => 'أ' + r,
-    (r) => 'ن' + r,
-    (r) => r + 'ان',
-    (r) => 'إ' + r,
-    (r) => r + 'ي',
-    (r) => r + 'يه',
-    (r) => r + 'ين',
-    (r) => r + 'ون',
-    (r) => r + 'ات',
-    (r) => 'است' + r,
-    (r) => 'مست' + r,
-    (r) => 'ت' + r.charAt(0) + 'ا' + r.slice(1),
-    (r) => 'ان' + r,
-    (r) => 'من' + r,
+    (r) => r, (r) => r + 'ه', (r) => r + 'اً', (r) => r.charAt(0) + 'ا' + r.slice(1),
+    (r) => r.charAt(0) + 'ا' + r.charAt(2), (r) => 'م' + r, (r) => 'م' + r + 'ه',
+    (r) => 'ي' + r, (r) => 'ت' + r, (r) => 'أ' + r, (r) => 'ن' + r, (r) => r + 'ان',
+    (r) => 'إ' + r, (r) => r + 'ي', (r) => r + 'يه', (r) => r + 'ين', (r) => r + 'ون',
+    (r) => r + 'ات', (r) => 'است' + r, (r) => 'مست' + r,
+    (r) => 'ت' + r.charAt(0) + 'ا' + r.slice(1), (r) => 'ان' + r, (r) => 'من' + r,
   ];
   
   patterns.forEach(pattern => {
@@ -188,6 +157,7 @@ function generateDerivatives(root) {
   return Array.from(derivatives).filter(word => word && word.length > 1);
 }
 
+// دالة البحث بالمشتقات
 function searchWithDerivatives(searchTerm, verses) {
   if (!searchTerm || searchTerm.length < 2) return { results: [], searchInfo: null };
   
@@ -219,6 +189,7 @@ function searchWithDerivatives(searchTerm, verses) {
   }
 }
 
+// دالة البحث الحرفي
 function searchLiteral(searchTerm, verses) {
   const normalizedTerm = normalizeArabicText(searchTerm);
   return verses.filter(verse => 
@@ -226,7 +197,8 @@ function searchLiteral(searchTerm, verses) {
   );
 }
 
-export default function BibleSearchPage() {
+// المكون الرئيسي لصفحة البحث
+export default function BibleSearchPage({ user }) {
   const [inputTerm, setInputTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('literal');
@@ -243,8 +215,7 @@ export default function BibleSearchPage() {
   const language = 'ar';
   const dir = 'rtl';
   const [favouriteVerses, setFavouriteVerses] = useState({});
-  const [favouriteMessage, setFavouriteMessage] = useState('');
-  const [copiedMessage, setCopiedMessage] = useState('');
+  const [message, setMessage] = useState({ type: '', text: '' });
   const [selectedVerses, setSelectedVerses] = useState(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const [pressTimer, setPressTimer] = useState(null);
@@ -253,22 +224,12 @@ export default function BibleSearchPage() {
 
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
-  const fetchFavourites = useCallback(() => {
-    try {
-      const verses = JSON.parse(localStorage.getItem('favourite_verses')) || {};
-      setFavouriteVerses(verses);
-    } catch (error) {
-      console.error('Failed to load favorites from localStorage:', error);
-    }
-  }, []);
-
-  const saveFavourites = useCallback((verses) => {
-    try {
-      localStorage.setItem('favourite_verses', JSON.stringify(verses));
-    } catch (error) {
-      console.error('Failed to save favorites to localStorage:', error);
-    }
-  }, []);
+  const showNotification = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => {
+      setMessage({ type: '', text: '' });
+    }, 3000);
+  };
 
   const getBookName = useCallback((index) => {
     return bookNamesData?.[language]?.[index]?.name || 'Unknown Book';
@@ -286,12 +247,10 @@ export default function BibleSearchPage() {
         document.execCommand('copy');
         document.body.removeChild(el);
       }
-      setCopiedMessage(language === 'ar' ? 'تم النسخ!' : 'Copied!');
-      setTimeout(() => setCopiedMessage(''), 2000);
+      showNotification('copied', 'تم النسخ بنجاح!');
     } catch (err) {
       console.error('Failed to copy text: ', err);
-      setCopiedMessage(language === 'ar' ? 'فشل النسخ!' : 'Failed to copy!');
-      setTimeout(() => setCopiedMessage(''), 2000);
+      showNotification('error', 'فشل النسخ!');
     }
   };
 
@@ -301,28 +260,43 @@ export default function BibleSearchPage() {
     copyTextToClipboard(textToCopy);
   };
 
-  const handleFavouriteSingleVerse = (verse) => {
-    const verseKey = `${verse.book_index}-${verse.chapter}-${verse.verse}`;
-    const isFavourite = favouriteVerses[verseKey] !== undefined;
-    let newFavouriteVerses = { ...favouriteVerses };
-    if (isFavourite) {
-      delete newFavouriteVerses[verseKey];
-      setFavouriteMessage(language === 'ar' ? 'تم الحذف من المفضلة!' : 'Removed from favorites!');
-    } else {
-      newFavouriteVerses[verseKey] = {
-        type: 'verse',
-        verseKey,
-        text: verse.text,
-        bookName: verse.book,
-        chapter: verse.chapter,
-        verseIndex: verse.verse,
-        language: language,
-      };
-      setFavouriteMessage(language === 'ar' ? 'تم الإضافة إلى المفضلة!' : 'Added to favorites!');
+  //  **تم تعديل هذه الدالة لتتوافق مع بنية بيانات الكتاب المقدس.**
+  const handleToggleFavourite = async (verse) => {
+    if (!user) {
+      showNotification('error', 'يرجى تسجيل الدخول لحفظ الآيات المفضلة.');
+      return;
     }
-    setFavouriteVerses(newFavouriteVerses);
-    saveFavourites(newFavouriteVerses);
-    setTimeout(() => setFavouriteMessage(''), 2000);
+    const verseKey = `${verse.book_index}-${verse.chapter}-${verse.verse}`;
+    const userDocRef = doc(db, 'users', user.uid);
+    try {
+      const docSnap = await getDoc(userDocRef);
+      const currentFavourites = docSnap.exists() ? docSnap.data().favorites?.verses || {} : {};
+      
+      let newFavourites = { ...currentFavourites };
+      
+      if (newFavourites[verseKey]) {
+        delete newFavourites[verseKey];
+        showNotification('favourite', 'تمت الإزالة من المفضلة.');
+      } else {
+        const today = new Date().toLocaleDateString('en-CA');
+        newFavourites[verseKey] = {
+          type: 'verse',
+          verseKey,
+          text: verse.text,
+          bookName: verse.book,
+          chapter: verse.chapter,
+          verseIndex: verse.verse,
+          dateAdded: today,
+          language: language,
+        };
+        showNotification('favourite', 'تمت الإضافة للمفضلة!');
+      }
+
+      await setDoc(userDocRef, { favorites: { verses: newFavourites } }, { merge: true });
+    } catch (error) {
+      console.error("Error toggling favourite status:", error);
+      showNotification('error', 'فشل في تحديث المفضلة.');
+    }
   };
 
   const handleVerseSelection = (verseKey) => {
@@ -333,7 +307,7 @@ export default function BibleSearchPage() {
       } else {
         newSelection.add(verseKey);
       }
-      if (newSelection.size === 0) {
+      if (newSelection.size === 0 && isMobileSelectionMode) {
         setIsMobileSelectionMode(false);
       }
       return newSelection;
@@ -360,8 +334,8 @@ export default function BibleSearchPage() {
       setPressTimer(null);
     }
     if (didHoldRef.current) {
-        didHoldRef.current = false;
-        return;
+      didHoldRef.current = false;
+      return;
     }
     if (isMobileSelectionMode) {
       handleVerseSelection(verseKey);
@@ -370,39 +344,65 @@ export default function BibleSearchPage() {
 
   const handleCopySelectedVerses = () => {
     if (selectedVerses.size === 0) return;
-    const compiledText = searchResults
-      .filter(verse => selectedVerses.has(`${verse.book_index}-${verse.chapter}-${verse.verse}`))
-      .map(verse => {
+    const compiledText = Array.from(selectedVerses)
+      .map(verseKey => {
+        const verse = searchResults.find(v => `${v.book_index}-${v.chapter}-${v.verse}` === verseKey);
+        if (!verse) return '';
         const reference = `(${verse.book} ${language === 'ar' ? convertToArabicNumber(verse.chapter + 1) : verse.chapter + 1}:${language === 'ar' ? convertToArabicNumber(verse.verse + 1) : verse.verse + 1})`;
         return `${verse.text} ${reference}`;
-      }).join('\n\n');
+      })
+      .filter(text => text.length > 0)
+      .join('\n\n');
     copyTextToClipboard(compiledText);
     setSelectedVerses(new Set());
     setIsMobileSelectionMode(false);
   };
 
-  const handleFavouriteSelectedVerses = () => {
-    if (selectedVerses.size === 0) return;
-    let newFavouriteVerses = { ...favouriteVerses };
-    const selectedResults = searchResults.filter(verse => selectedVerses.has(`${verse.book_index}-${verse.chapter}-${verse.verse}`));
-    selectedResults.forEach(verse => {
-      const verseKey = `${verse.book_index}-${verse.chapter}-${verse.verse}`;
-      newFavouriteVerses[verseKey] = {
-        type: 'verse',
-        verseKey,
-        text: verse.text,
-        bookName: verse.book,
-        chapter: verse.chapter,
-        verseIndex: verse.verse,
-        language: language,
-      };
-    });
-    setFavouriteVerses(newFavouriteVerses);
-    saveFavourites(newFavouriteVerses);
-    setFavouriteMessage(language === 'ar' ? `تم إضافة ${selectedResults.length} آية إلى المفضلة!` : `Added ${selectedResults.length} verses to favorites!`);
-    setTimeout(() => setFavouriteMessage(''), 2000);
-    setSelectedVerses(new Set());
-    setIsMobileSelectionMode(false);
+  //  **تم تعديل هذه الدالة لتتوافق مع بنية بيانات الكتاب المقدس.**
+  const handleFavouriteSelectedVerses = async () => {
+    if (selectedVerses.size === 0 || !user) {
+      showNotification('error', 'يرجى تسجيل الدخول أو تحديد آيات لإضافتها.');
+      return;
+    }
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      const currentFavourites = docSnap.exists() ? docSnap.data().favorites?.verses || {} : {};
+      const today = new Date().toLocaleDateString('en-CA');
+      let newFavourites = { ...currentFavourites };
+      
+      let versesToAdd = [];
+      let versesToRemove = [];
+
+      selectedVerses.forEach(verseKey => {
+        const verse = searchResults.find(v => `${v.book_index}-${v.chapter}-${v.verse}` === verseKey);
+        if (verse) {
+          if (newFavourites[verseKey]) {
+            delete newFavourites[verseKey];
+            versesToRemove.push(verseKey);
+          } else {
+            newFavourites[verseKey] = {
+              type: 'verse',
+              verseKey,
+              text: verse.text,
+              bookName: verse.book,
+              chapter: verse.chapter,
+              verseIndex: verse.verse,
+              dateAdded: today,
+              language: language,
+            };
+            versesToAdd.push(verseKey);
+          }
+        }
+      });
+      await setDoc(userDocRef, { favorites: { verses: newFavourites } }, { merge: true });
+      showNotification('favourite', `تم تحديث المفضلة. أُضيفت ${versesToAdd.length} وأُزيلت ${versesToRemove.length}.`);
+      setSelectedVerses(new Set());
+      setIsMobileSelectionMode(false);
+    } catch (error) {
+      console.error("Error adding verses to favourites:", error);
+      showNotification('error', 'فشل في إضافة الآيات للمفضلة.');
+    }
   };
 
   const handleCopyAllResults = () => {
@@ -415,25 +415,40 @@ export default function BibleSearchPage() {
     copyTextToClipboard(compiledText);
   };
 
-  const handleFavouriteAllResults = () => {
-    if (searchResults.length === 0) return;
-    let newFavouriteVerses = { ...favouriteVerses };
-    searchResults.forEach(verse => {
-      const verseKey = `${verse.book_index}-${verse.chapter}-${verse.verse}`;
-      newFavouriteVerses[verseKey] = {
-        type: 'verse',
-        verseKey,
-        text: verse.text,
-        bookName: verse.book,
-        chapter: verse.chapter,
-        verseIndex: verse.verse,
-        language: language,
-      };
-    });
-    setFavouriteVerses(newFavouriteVerses);
-    saveFavourites(newFavouriteVerses);
-    setFavouriteMessage(language === 'ar' ? `تم إضافة ${searchResults.length} آية إلى المفضلة!` : `Added ${searchResults.length} verses to favorites!`);
-    setTimeout(() => setFavouriteMessage(''), 2000);
+  //  **تم تعديل هذه الدالة لتتوافق مع بنية بيانات الكتاب المقدس.**
+  const handleFavouriteAllResults = async () => {
+    if (searchResults.length === 0 || !user) {
+      showNotification('error', 'يرجى تسجيل الدخول أو البحث عن آيات لإضافتها.');
+      return;
+    }
+    
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      const currentFavourites = docSnap.exists() ? docSnap.data().favorites?.verses || {} : {};
+      const today = new Date().toLocaleDateString('en-CA');
+      let newFavourites = { ...currentFavourites };
+      
+      searchResults.forEach(verse => {
+        const verseKey = `${verse.book_index}-${verse.chapter}-${verse.verse}`;
+        newFavourites[verseKey] = {
+          type: 'verse',
+          verseKey,
+          text: verse.text,
+          bookName: verse.book,
+          chapter: verse.chapter,
+          verseIndex: verse.verse,
+          dateAdded: today,
+          language: language,
+        };
+      });
+
+      await setDoc(userDocRef, { favorites: { verses: newFavourites } }, { merge: true });
+      showNotification('favourite', `تم إضافة ${searchResults.length} آية إلى المفضلة!`);
+    } catch (error) {
+      console.error("Error adding all results to favourites:", error);
+      showNotification('error', 'فشل في إضافة كل النتائج للمفضلة.');
+    }
   };
 
   useEffect(() => {
@@ -478,9 +493,28 @@ export default function BibleSearchPage() {
         console.error(err);
       }
     };
-    fetchFavourites();
     fetchData();
-  }, [fetchFavourites, language]);
+  }, []);
+
+  //  **تم تعديل هذا الـ useEffect ليستخدم بنية بيانات الكتاب المقدس.**
+  useEffect(() => {
+    if (!user) {
+      setFavouriteVerses({});
+      return;
+    }
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().favorites) {
+        setFavouriteVerses(docSnap.data().favorites.verses || {});
+      } else {
+        setFavouriteVerses({});
+      }
+    }, (err) => {
+      console.error("Firebase listener failed:", err);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -544,7 +578,9 @@ export default function BibleSearchPage() {
         const derivatives = searchInfo.derivatives;
         let highlightedText = text;
         
-        derivatives.forEach(derivative => {
+        const sortedDerivatives = _.sortBy(derivatives, 'length').reverse();
+
+        sortedDerivatives.forEach(derivative => {
           const normalizedDerivative = normalizeArabicText(derivative);
           const regex = new RegExp(`(${derivative}|${normalizedDerivative})`, 'gi');
           highlightedText = highlightedText.replace(regex, `<span class="${styles.highlight}">$1</span>`);
@@ -577,8 +613,11 @@ export default function BibleSearchPage() {
 
   return (
     <div className={styles.container} dir={dir}>
-      {copiedMessage && <div className={`${styles.messageBox} ${styles.copiedMessage}`}>{copiedMessage}</div>}
-      {favouriteMessage && <div className={`${styles.messageBox} ${styles.favouriteMessage}`}>{favouriteMessage}</div>}
+      {message.type && (
+        <div className={`${styles.messageBox} ${styles[message.type]}`}>
+          {message.text}
+        </div>
+      )}
       <div className={styles.card}>
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
         <p className={styles.description}>
@@ -673,20 +712,20 @@ export default function BibleSearchPage() {
             {searchResults.length > 0 && (
               <>
                 <div className={styles.batchActions}>
-                    <button onClick={handleCopyAllResults}>
-                      نسخ كل النتائج ({convertToArabicNumber(searchResults.length)})
-                    </button>
-                    <button onClick={handleFavouriteAllResults}>
-                      إضافة كل النتائج للمفضلة ({convertToArabicNumber(searchResults.length)})
-                    </button>
-                  </div>
+                  <button onClick={handleCopyAllResults}>
+                    نسخ كل النتائج ({convertToArabicNumber(searchResults.length)})
+                  </button>
+                  <button onClick={handleFavouriteAllResults}>
+                    إضافة كل النتائج للمفضلة ({convertToArabicNumber(searchResults.length)})
+                  </button>
+                </div>
                 {selectedVerses.size > 0 && (
                   <div className={styles.batchActions}>
                     <button onClick={handleCopySelectedVerses}>
                       نسخ الآيات المحددة ({convertToArabicNumber(selectedVerses.size)})
                     </button>
                     <button onClick={handleFavouriteSelectedVerses}>
-                      إضافة للمفضلة ({convertToArabicNumber(selectedVerses.size)})
+                      تحديث المفضلة ({convertToArabicNumber(selectedVerses.size)})
                     </button>
                   </div>
                 )}
@@ -731,7 +770,7 @@ export default function BibleSearchPage() {
                               </svg>
                             </button>
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleFavouriteSingleVerse(verse); }}
+                              onClick={(e) => { e.stopPropagation(); handleToggleFavourite(verse); }}
                               className={isFavourite ? styles.favourited : ''}
                               aria-label={isFavourite ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
                             >

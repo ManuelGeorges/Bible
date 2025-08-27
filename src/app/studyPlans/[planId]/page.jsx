@@ -2,11 +2,17 @@
 
 'use client'; 
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './PlanDetails.module.css';
 import studyPlansData from '../studyPlansData.json';
+import { getAuth } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { app, db } from '/lib/firebase';
+
+const auth = typeof window !== 'undefined' ? getAuth(app) : null;
+const firestore = db;
 
 const allPlans = studyPlansData.plans;
 
@@ -14,6 +20,7 @@ export default function PlanDetailsPage() {
   const params = useParams();
   const { planId } = params;
   const readingsListRef = useRef(null);
+  const [user, setUser] = useState(null);
 
   const plan = allPlans.find((p) => p.id === parseInt(planId));
 
@@ -24,36 +31,91 @@ export default function PlanDetailsPage() {
   const [completedDays, setCompletedDays] = useState({});
   const [goToDay, setGoToDay] = useState('');
 
+  const saveProgressToFirestore = useCallback(async (loggedInUser, currentPlanId, updatedCompletedDays) => {
+    if (!loggedInUser || !firestore) return;
+    try {
+      const daysCompletedCount = Object.keys(updatedCompletedDays).filter(day => updatedCompletedDays[day].isCompleted).length;
+      const totalDays = plan.readings.length;
+      const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
+      
+      const userRef = doc(firestore, 'users', loggedInUser.uid);
+      await setDoc(userRef, {
+        completedPlans: {
+          [currentPlanId]: {
+            completedDays: updatedCompletedDays,
+            completionPercentage: completionPercentage
+          }
+        }
+      }, { merge: true });
+      console.log("Progress saved to Firestore successfully!");
+    } catch (error) {
+      console.error("Error saving progress to Firestore:", error);
+    }
+  }, [plan]);
+
+  const fetchCompletedDaysFromFirestore = useCallback(async (loggedInUser) => {
+    if (!loggedInUser || !firestore) return;
+
+    try {
+      const userRef = doc(firestore, 'users', loggedInUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists() && userSnap.data().completedPlans?.[planId]) {
+        const firestoreData = userSnap.data().completedPlans[planId].completedDays;
+        setCompletedDays(firestoreData || {});
+      } else {
+        setCompletedDays({});
+      }
+    } catch (error) {
+      console.error("Error fetching completed days from Firestore:", error);
+    }
+  }, [planId]);
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (auth) {
+      const unsubscribe = auth.onAuthStateChanged((loggedInUser) => {
+        setUser(loggedInUser);
+        if (loggedInUser) {
+          fetchCompletedDaysFromFirestore(loggedInUser);
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, [fetchCompletedDaysFromFirestore]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !user) {
       const storedCompletedDays = localStorage.getItem(`completedDays_${planId}`);
       if (storedCompletedDays) {
         setCompletedDays(JSON.parse(storedCompletedDays));
       }
     }
-  }, [planId]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && Object.keys(completedDays).length > 0) {
-      localStorage.setItem(`completedDays_${planId}`, JSON.stringify(completedDays));
-    }
-  }, [completedDays, planId]);
+  }, [planId, user]);
 
   const handleCheck = (day) => {
-    if (day > 1 && !completedDays[day - 1] && !completedDays[day]) {
+    const isCompleted = completedDays[day]?.isCompleted;
+    if (day > 1 && !completedDays[day - 1]?.isCompleted && !isCompleted) {
       return;
     }
 
     setCompletedDays((prevCompletedDays) => {
       const newCompletedDays = {
         ...prevCompletedDays,
-        [day]: !prevCompletedDays[day],
+        [day]: isCompleted 
+          ? { isCompleted: false, dateCompleted: null }
+          : { isCompleted: true, dateCompleted: new Date().toLocaleDateString('en-CA') }, // 'en-CA' for YYYY-MM-DD
       };
       
-      if (!newCompletedDays[day]) {
+      if (isCompleted) { // If unchecking
         for (let i = day + 1; i <= plan.readings.length; i++) {
-          newCompletedDays[i] = false;
+          newCompletedDays[i] = { isCompleted: false, dateCompleted: null };
         }
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`completedDays_${planId}`, JSON.stringify(newCompletedDays));
+      }
+      if (user) {
+        saveProgressToFirestore(user, planId, newCompletedDays);
       }
       return newCompletedDays;
     });
@@ -79,7 +141,7 @@ export default function PlanDetailsPage() {
   };
 
   const totalDays = plan.readings.length;
-  const daysCompletedCount = Object.values(completedDays).filter(Boolean).length;
+  const daysCompletedCount = Object.keys(completedDays).filter(day => completedDays[day]?.isCompleted).length;
   const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
 
   return (
@@ -132,8 +194,9 @@ export default function PlanDetailsPage() {
         <h2 className={styles.readingsTitle}>قراءات الخطة</h2>
         <ul className={styles.readingsList} ref={readingsListRef}>
           {plan.readings.map((reading) => {
-            const isCompleted = completedDays[reading.day];
-            const canCheck = reading.day === 1 || completedDays[reading.day - 1];
+            const isCompleted = completedDays[reading.day]?.isCompleted;
+            const dateCompleted = completedDays[reading.day]?.dateCompleted;
+            const canCheck = reading.day === 1 || completedDays[reading.day - 1]?.isCompleted;
 
             return (
               <li 
@@ -142,7 +205,9 @@ export default function PlanDetailsPage() {
                 className={`${styles.readingItem} ${isCompleted ? styles.completedDay : ''} ${!canCheck && !isCompleted ? styles.disabledDay : ''}`}
               >
                 <div className={styles.readingHeader}>
-                  <div className={styles.dayNumber}>يوم {reading.day}</div>
+                  <div className={styles.dayNumber}>
+                    يوم {reading.day} {dateCompleted && <span> - {dateCompleted}</span>}
+                  </div>
                   <input
                     type="checkbox"
                     checked={isCompleted || false}

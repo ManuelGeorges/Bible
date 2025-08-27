@@ -197,6 +197,131 @@
   color: var(--color-primary);
 }
 
+/* New CSS for Daily Question Section */
+.dailyQuestionBox {
+  background: var(--color-card-bg);
+  border-radius: var(--border-radius);
+  padding: clamp(24px, 6vw, 48px);
+  box-shadow: 0 16px 40px var(--color-shadow-medium);
+  max-width: 800px;
+  width: 100%;
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-light);
+  transition: transform 0.3s var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.dailyQuestionBox:hover {
+  transform: translateY(-5px) scale(1.02);
+}
+
+.dailyQuestionTitle {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  margin: 0 0 var(--gap-medium) 0;
+  text-shadow: 0 2px 4px var(--color-shadow-light);
+}
+
+.dailyQuestionText {
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  line-height: 1.7;
+  margin-bottom: var(--gap-large);
+  color: var(--color-text-light);
+}
+
+/* New styles for Options */
+.optionsContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.optionButton {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid var(--color-border-light);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: all 0.3s var(--transition-smooth);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.optionButton:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.optionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.correctAnswer {
+  background-color: #4CAF50; /* Green */
+  color: white;
+  border-color: #4CAF50;
+  animation: pulseCorrect 1s infinite;
+}
+
+.wrongAnswer {
+  background-color: #f44336; /* Red */
+  color: white;
+  border-color: #f44336;
+}
+
+@keyframes pulseCorrect {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+/* Existing message box styles */
+.messageBox {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  min-width: 250px;
+  text-align: center;
+  animation: fadeOut 3s forwards;
+}
+
+.copiedMessage {
+  background-color: #4CAF50; /* Green */
+  color: white;
+}
+
+.favouriteMessage {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+.questionMessage {
+  background-color: #2196F3; /* Blue */
+  color: white;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; transform: translateX(-50%); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+}
+
+/* Existing styles for plans section */
 .plansSection {
   width: 100%;
   max-width: 1200px;
@@ -396,6 +521,10 @@
   .card {
     max-width: 400px;
     margin: 0 auto;
+  }
+
+  .optionsContainer {
+    grid-template-columns: 1fr;
   }
 }
 
