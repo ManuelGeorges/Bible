@@ -1,22 +1,45 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; // استيراد Firebase Auth
+import { app } from '/lib/firebase'; // تأكد من أن 'app' مُصدَّر من هذا الملف
 import styles from './intro.module.css';
+
+const auth = typeof window !== 'undefined' ? getAuth(app) : null;
 
 const IntroPage = () => {
   const router = useRouter();
-  const { user, loading } = useUser();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If user is logged in and loading is complete, redirect to profile page
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      setUser(authUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     if (user && !loading) {
       router.push('/profile');
     }
   }, [user, loading, router]);
 
-  if (loading || user) {
+  if (loading) {
     return <div className={styles.loading}>جاري التحميل...</div>;
+  }
+
+  // إذا كان المستخدم مسجلاً، لا تعرض أي شيء وانتظر الـ redirect
+  if (user) {
+    return null;
   }
 
   const features = [
