@@ -154,21 +154,6 @@ const ProfilePage = () => {
             ))}
           </div>
         </section>
-
-        <section className={styles.actionsSection}>
-          <h2 className={styles.sectionTitle}>إجراءات سريعة</h2>
-          <div className={styles.actionsGrid}>
-            <button className={styles.actionButton}>
-              تعديل الملف الشخصي
-            </button>
-            <button className={styles.actionButton}>
-              إدارة الآيات المحفوظة
-            </button>
-            <button className={styles.actionButton}>
-              مراجعة الخطط الدراسية
-            </button>
-          </div>
-        </section>
       </div>
     </div>
   );
