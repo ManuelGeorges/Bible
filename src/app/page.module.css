@@ -1,32 +1,4 @@
-:root {
-  /* Define your color variables here if not already in another file */
-  --color-primary: #121212;
-  --color-secondary: #2c3e50;
-  --color-text-light: #f8f9fa;
-  --color-accent-gold: #ffc107;
-  --color-shadow-medium: rgba(0, 0, 0, 0.4);
-  --color-shadow-light: rgba(0, 0, 0, 0.2);
-  --color-card-bg: rgba(255, 255, 255, 0.1);
-  --color-border-light: rgba(255, 255, 255, 0.2);
-  --color-button-primary: #3498db;
-  --color-button-secondary: #2980b9;
-  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --border-radius: 20px;
-  --gap-small: 1rem;
-  --gap-medium: 1.5rem;
-  --gap-large: 2rem;
-}
 
-* {
-  box-sizing: border-box; /* Ensures padding and border don't affect element's size */
-}
-
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: var(--color-primary);
-}
 
 .container {
   padding: clamp(20px, 5vw, 40px);
