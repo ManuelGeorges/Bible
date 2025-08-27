@@ -6,9 +6,9 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { app, db } from '/lib/firebase';
+import { db } from '/lib/firebase';
 
-const auth = typeof window !== 'undefined' ? getAuth(app) : null;
+const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
 function convertToArabicNumber(num) {
