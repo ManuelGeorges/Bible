@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Import Firebase Auth
-import { app } from '/lib/firebase'; // Ensure 'app' is exported from your firebase file
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '/lib/firebase'; // استيراد الـ auth المجهز من ملف Firebase
 import styles from './layout.module.css';
-
-const auth = typeof window !== 'undefined' ? getAuth(app) : null;
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // التحقق من وجود auth قبل استخدامه
         if (!auth) {
             setLoading(false);
             return;
@@ -23,18 +22,17 @@ export default function BibleNavbar() {
             setLoading(false);
         });
 
-        // Cleanup subscription on unmount
+        // تنظيف الاشتراك عند إزالة المكون
         return () => unsubscribe();
     }, []);
 
-    // While loading, you could show a simplified version or nothing at all
+    // أثناء التحميل، يمكنك عرض نسخة مبسطة أو فارغة
     if (loading) {
         return (
             <div className={styles.navbarWrapper}>
                 <nav className={`${styles.navbar} ${styles.navbarTop}`}>
                     <Link href="/studyPlans" className={styles.navLink} aria-label="Study Plans">...</Link>
                     <Link href="/search" className={styles.navLink} aria-label="Search">...</Link>
-                    {/* The rest of your links can go here as well */}
                 </nav>
             </div>
         );
@@ -54,7 +52,7 @@ export default function BibleNavbar() {
                     </svg>
                 </Link>
 
-                {user && ( // Only render this link if the user is logged in
+                {user && (
                     <Link href="/points" className={styles.navLink} aria-label="Points">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.navIcon}>
                             <path d="M12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12C15 13.6569 13.6569 15 12 15ZM12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17ZM18 20V22H6V20C6 17.7909 8.23858 16 12 16C15.7614 16 18 17.7909 18 20Z"></path>

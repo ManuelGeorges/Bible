@@ -5,16 +5,17 @@ import { useDebounce } from 'use-debounce';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
 import { db } from '/lib/firebase';
-import { doc, onSnapshot, getDoc, updateDoc, setDoc } from 'firebase/firestore'; // تم إضافة setDoc
+import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 import styles from './search.module.css';
 
-// دالة لتحويل الأرقام الإنجليزية إلى عربية
+// A simple in-memory cache for Gemini search results
+const geminiCache = {};
+
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   return num.toString().split('').map(d => arabicNums[+d]).join('');
 }
 
-// مكون CustomSelect
 function CustomSelect({ label, options, value, onChange, dir }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
@@ -36,6 +37,7 @@ function CustomSelect({ label, options, value, onChange, dir }) {
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
+      // Corrected the typo here
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [handleClickOutside]);
@@ -66,7 +68,6 @@ function CustomSelect({ label, options, value, onChange, dir }) {
   );
 }
 
-// دالة لتطبيع النص العربي (إزالة التشكيل وتحويل الحروف المتشابهة)
 function normalizeArabicText(text) {
   return text
     .replace(/[ًٌٍَُِْ]/g, '')
@@ -77,127 +78,13 @@ function normalizeArabicText(text) {
     .trim();
 }
 
-// دالة لاستخراج الجذر العربي من كلمة
-function extractArabicRoot(word) {
-  try {
-    let cleanWord = normalizeArabicText(word);
-    
-    const specificRoots = {
-      'خاف': 'خوف', 'خوف': 'خوف', 'مخيف': 'خوف', 'خائف': 'خوف', 'يخاف': 'خوف',
-      'قال': 'قول', 'قول': 'قول', 'يقول': 'قول',
-      'سار': 'سير', 'سير': 'سير', 'باع': 'بيع', 'بيع': 'بيع', 'زاد': 'زيد',
-      'جاء': 'جيء', 'حب': 'حبب', 'محبه': 'حبب', 'أحب': 'حبب', 'حبيب': 'حبب'
-    };
-    if (specificRoots[cleanWord]) {
-      return specificRoots[cleanWord];
-    }
-
-    if (cleanWord.length === 3 && (cleanWord[1] === 'ا')) {
-      const firstChar = cleanWord[0];
-      const lastChar = cleanWord[2];
-      const potentialRoot = firstChar + 'و' + lastChar;
-      return potentialRoot;
-    }
-
-    const prefixes = ['ال', 'و', 'ف', 'ب', 'ل', 'ت', 'ي', 'أ', 'ن', 'م', 'ست', 'است'];
-    for (const prefix of prefixes) {
-      if (cleanWord.startsWith(prefix) && cleanWord.length > prefix.length + 1) {
-        cleanWord = cleanWord.substring(prefix.length);
-        break;
-      }
-    }
-    
-    const suffixes = ['ه', 'ها', 'هم', 'هن', 'ني', 'تي', 'تك', 'تكم', 'ين', 'ون', 'ات', 'ان', 'وا', 'تم', 'تن'];
-    for (const suffix of suffixes) {
-      if (cleanWord.endsWith(suffix) && cleanWord.length > suffix.length + 1) {
-        cleanWord = cleanWord.substring(0, cleanWord.length - suffix.length);
-        break;
-      }
-    }
-    
-    if (cleanWord.length < 2) {
-      return word;
-    }
-    
-    if (cleanWord.length === 3) {
-      return cleanWord;
-    }
-
-    return word;
-  } catch (error) {
-    console.error('Error extracting root:', error);
-    return word;
-  }
-}
-
-// دالة لتوليد المشتقات من الجذر
-function generateDerivatives(root) {
-  const derivatives = new Set([root, normalizeArabicText(root)]);
-  
-  const patterns = [
-    (r) => r, (r) => r + 'ه', (r) => r + 'اً', (r) => r.charAt(0) + 'ا' + r.slice(1),
-    (r) => r.charAt(0) + 'ا' + r.charAt(2), (r) => 'م' + r, (r) => 'م' + r + 'ه',
-    (r) => 'ي' + r, (r) => 'ت' + r, (r) => 'أ' + r, (r) => 'ن' + r, (r) => r + 'ان',
-    (r) => 'إ' + r, (r) => r + 'ي', (r) => r + 'يه', (r) => r + 'ين', (r) => r + 'ون',
-    (r) => r + 'ات', (r) => 'است' + r, (r) => 'مست' + r,
-    (r) => 'ت' + r.charAt(0) + 'ا' + r.slice(1), (r) => 'ان' + r, (r) => 'من' + r,
-  ];
-  
-  patterns.forEach(pattern => {
-    try {
-      const derivative = pattern(root);
-      if (derivative && derivative.length >= 2 && derivative.length <= 10) {
-        derivatives.add(derivative);
-        derivatives.add(normalizeArabicText(derivative));
-      }
-    } catch (error) {
-    }
-  });
-  
-  return Array.from(derivatives).filter(word => word && word.length > 1);
-}
-
-// دالة البحث بالمشتقات
-function searchWithDerivatives(searchTerm, verses) {
-  if (!searchTerm || searchTerm.length < 2) return { results: [], searchInfo: null };
-  
-  try {
-    const root = extractArabicRoot(searchTerm);
-    const derivatives = generateDerivatives(root);
-    
-    const searchInfo = {
-      originalTerm: searchTerm,
-      extractedRoot: root,
-      derivatives: derivatives.slice(0, 20)
-    };
-    
-    const normalizedDerivatives = derivatives.map(d => normalizeArabicText(d)).join('|');
-    const derivativePattern = new RegExp(`(?:\\b${normalizedDerivatives})`, 'i');
-
-    const results = verses.filter(verse => {
-      const normalizedVerseText = normalizeArabicText(verse.text);
-      return derivativePattern.test(normalizedVerseText);
-    });
-    
-    return { results, searchInfo };
-  } catch (error) {
-    console.error('Error in derivative search:', error);
-    const fallbackResults = verses.filter(verse => 
-      normalizeArabicText(verse.text).includes(normalizeArabicText(searchTerm))
-    );
-    return { results: fallbackResults, searchInfo: null };
-  }
-}
-
-// دالة البحث الحرفي
 function searchLiteral(searchTerm, verses) {
   const normalizedTerm = normalizeArabicText(searchTerm);
-  return verses.filter(verse => 
+  return verses.filter(verse =>
     normalizeArabicText(verse.text).includes(normalizedTerm)
   );
 }
 
-// المكون الرئيسي لصفحة البحث
 export default function BibleSearchPage({ user }) {
   const [inputTerm, setInputTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -221,6 +108,7 @@ export default function BibleSearchPage({ user }) {
   const [pressTimer, setPressTimer] = useState(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const didHoldRef = useRef(false);
+  const resultsRef = useRef(null);
 
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -260,7 +148,6 @@ export default function BibleSearchPage({ user }) {
     copyTextToClipboard(textToCopy);
   };
 
-  //  **تم تعديل هذه الدالة لتتوافق مع بنية بيانات الكتاب المقدس.**
   const handleToggleFavourite = async (verse) => {
     if (!user) {
       showNotification('error', 'يرجى تسجيل الدخول لحفظ الآيات المفضلة.');
@@ -358,7 +245,6 @@ export default function BibleSearchPage({ user }) {
     setIsMobileSelectionMode(false);
   };
 
-  //  **تم تعديل هذه الدالة لتتوافق مع بنية بيانات الكتاب المقدس.**
   const handleFavouriteSelectedVerses = async () => {
     if (selectedVerses.size === 0 || !user) {
       showNotification('error', 'يرجى تسجيل الدخول أو تحديد آيات لإضافتها.');
@@ -415,7 +301,6 @@ export default function BibleSearchPage({ user }) {
     copyTextToClipboard(compiledText);
   };
 
-  //  **تم تعديل هذه الدالة لتتوافق مع بنية بيانات الكتاب المقدس.**
   const handleFavouriteAllResults = async () => {
     if (searchResults.length === 0 || !user) {
       showNotification('error', 'يرجى تسجيل الدخول أو البحث عن آيات لإضافتها.');
@@ -496,7 +381,6 @@ export default function BibleSearchPage({ user }) {
     fetchData();
   }, []);
 
-  //  **تم تعديل هذا الـ useEffect ليستخدم بنية بيانات الكتاب المقدس.**
   useEffect(() => {
     if (!user) {
       setFavouriteVerses({});
@@ -531,8 +415,83 @@ export default function BibleSearchPage({ user }) {
     setSearchQuery(inputTerm.trim());
   };
 
+  const searchWithGeminiDerivatives = async (searchTerm) => {
+    // Check if the result is already in the cache
+    if (geminiCache[searchTerm]) {
+      console.log('Returning cached result for Gemini search.');
+      return geminiCache[searchTerm];
+    }
+  
+    if (!searchTerm || searchTerm.length < 2) return { results: [], searchInfo: null };
+  
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `استخرج الجذر اللغوي للكلمة العربية "${searchTerm}" ثم أعد لي قائمة شاملة بكل المشتقات وتصريفات الأفعال الممكنة لهذا الجذر. أرجع لي الإجابة بتنسيق JSON فقط، لا تضف أي نص توضيحي آخر. يجب أن يحتوي الرد على حقلين: "root" (للجذر المستخرج) و "derivatives" (لقائمة المشتقات والتصريفات).`
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('فشل في الحصول على المشتقات من الخادم. يرجى المحاولة لاحقًا.');
+      }
+  
+      const data = await response.json();
+      let geminiResponseString = data.response.trim();
+
+      const firstBrace = geminiResponseString.indexOf('{');
+      const lastBrace = geminiResponseString.lastIndexOf('}');
+      
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        geminiResponseString = geminiResponseString.substring(firstBrace, lastBrace + 1);
+      } else {
+        throw new Error('لم يتم العثور على كائن JSON صالح في الاستجابة.');
+      }
+  
+      const geminiResponse = JSON.parse(geminiResponseString);
+      const derivatives = geminiResponse.derivatives;
+      const root = geminiResponse.root;
+  
+      const searchInfo = {
+        originalTerm: searchTerm,
+        extractedRoot: root,
+        derivatives: derivatives,
+      };
+      
+      const normalizedDerivatives = derivatives.map(d => normalizeArabicText(d)).join('|');
+      const derivativePattern = new RegExp(`(?:\\b)${normalizedDerivatives}(?:\\b)`, 'i');
+  
+      const results = allVerses.filter(verse => {
+        const normalizedVerseText = normalizeArabicText(verse.text);
+        return derivativePattern.test(normalizedVerseText);
+      });
+      
+      const result = { results, searchInfo };
+      geminiCache[searchTerm] = result; // Store result in cache
+      return result;
+
+    } catch (error) {
+      console.error('Error in Gemini derivative search:', error);
+      showNotification('error', `فشل البحث بالمشتقات. قد تكون الخدمة غير متاحة. سيتم استخدام البحث الحرفي بدلاً من ذلك.`);
+      const fallbackResults = allVerses.filter(verse => 
+        normalizeArabicText(verse.text).includes(normalizeArabicText(searchTerm))
+      );
+      return { results: fallbackResults, searchInfo: null };
+    }
+  };
+
   useEffect(() => {
-    if (allVerses.length > 0) {
+    const performSearch = async () => {
+      if (allVerses.length === 0) return;
+      
+      // Clear results and info if search query is empty
+      if (!debouncedSearchQuery && !selectedBookIndex && !selectedChapter) {
+        setSearchResults([]);
+        setSearchInfo(null);
+        return;
+      }
+      
       let filteredVerses = allVerses;
       
       if (selectedTestament) {
@@ -552,23 +511,28 @@ export default function BibleSearchPage({ user }) {
       
       if (debouncedSearchQuery.length > 0) {
         if (searchType === 'derivatives') {
-          const searchResult = searchWithDerivatives(debouncedSearchQuery, filteredVerses);
+          setIsLoading(true);
+          const searchResult = await searchWithGeminiDerivatives(debouncedSearchQuery);
           results = searchResult.results;
           searchInfoData = searchResult.searchInfo;
+          setIsLoading(false);
         } else {
           results = searchLiteral(debouncedSearchQuery, filteredVerses);
         }
-      } else if (selectedBookIndex !== '' || selectedChapter !== '') {
+      } else {
         results = filteredVerses;
       }
       
       setSearchResults(results);
       setSearchInfo(searchInfoData);
-    } else {
-      setSearchResults([]);
-      setSearchInfo(null);
-    }
-  }, [debouncedSearchQuery, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
+      
+      if (results.length > 0 && resultsRef.current) {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    performSearch();
+  }, [debouncedSearchQuery, searchType, allVerses, selectedTestament, selectedBookIndex, selectedChapter]);
 
   const renderHighlightedText = (text, highlight) => {
     if (!highlight) return text;
@@ -582,7 +546,7 @@ export default function BibleSearchPage({ user }) {
 
         sortedDerivatives.forEach(derivative => {
           const normalizedDerivative = normalizeArabicText(derivative);
-          const regex = new RegExp(`(${derivative}|${normalizedDerivative})`, 'gi');
+          const regex = new RegExp(`(?:\\b)(${derivative}|${normalizedDerivative})(?:\\b)`, 'gi');
           highlightedText = highlightedText.replace(regex, `<span class="${styles.highlight}">$1</span>`);
         });
         
@@ -590,13 +554,13 @@ export default function BibleSearchPage({ user }) {
       } catch (error) {
         console.error('Error highlighting derivatives:', error);
         const normalizedHighlight = normalizeArabicText(highlight);
-        const regex = new RegExp(`(${highlight}|${normalizedHighlight})`, 'gi');
+        const regex = new RegExp(`(?:\\b)(${highlight}|${normalizedHighlight})(?:\\b)`, 'gi');
         const highlightedText = text.replace(regex, `<span class="${styles.highlight}">$1</span>`);
         return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
       }
     } else {
       const normalizedHighlight = normalizeArabicText(highlight);
-      const regex = new RegExp(`(${highlight}|${normalizedHighlight})`, 'gi');
+      const regex = new RegExp(`(?:\\b)(${highlight}|${normalizedHighlight})(?:\\b)`, 'gi');
       const highlightedText = text.replace(regex, `<span class="${styles.highlight}">$1</span>`);
       return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
     }
@@ -698,7 +662,7 @@ export default function BibleSearchPage({ user }) {
         {isLoading && <p className={styles.loading}>يتم تحميل البيانات...</p>}
         {error && <p className={styles.error}>{error}</p>}
         {!isLoading && !error && (
-          <div className={styles.resultsWrapper}>
+          <div className={styles.resultsWrapper} ref={resultsRef}>
             {searchResults.length > 0 && debouncedSearchQuery && (
               <p className={styles.resultsCount}>
                 {`تم العثور على ${convertToArabicNumber(searchResults.length)} نتيجة لـ "${debouncedSearchQuery}" ${searchType === 'derivatives' ? '(بحث بالمشتقات)' : '(بحث حرفي)'}`}
@@ -766,7 +730,7 @@ export default function BibleSearchPage({ user }) {
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
-                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1h-4v-1a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1h-4v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1h-4v-1a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1z"/>
                               </svg>
                             </button>
                             <button
