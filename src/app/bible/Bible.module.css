@@ -1,10 +1,10 @@
 .container {
-  padding: clamp(1rem, 4vw, 2.5rem) clamp(1rem, 3vw, 1.5rem);
+  padding: clamp(0.5rem, 2vw, 2.5rem) clamp(0.5rem, 2vw, 1.5rem);
   background-color: var(--color-background-start);
   background-image: linear-gradient(135deg, var(--color-background-start) 0%, var(--color-background-end) 100%);
   min-height: 100vh;
   color: var(--color-text-light);
-  line-height: 1.7;
+  line-height: 1.6;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14,13 +14,13 @@
 }
 
 .title {
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
-  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  font-size: clamp(1.3rem, 3.5vw, 2.5rem);
+  margin-bottom: clamp(1rem, 3vw, 2.5rem);
   color: var(--color-accent-gold);
   text-align: center;
   font-weight: 700;
   letter-spacing: 0.02em;
-  padding-bottom: clamp(0.3rem, 1vw, 0.5rem);
+  padding-bottom: clamp(0.25rem, 0.8vw, 0.5rem);
   border-bottom: 3px solid var(--color-accent-gold);
   display: inline-block;
   max-width: 100%;
@@ -29,9 +29,9 @@
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  gap: clamp(0.8rem, 2vw, 1.5rem);
-  margin-bottom: clamp(1.5rem, 3vw, 2rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: clamp(0.5rem, 1.5vw, 1.5rem);
+  margin-bottom: clamp(1rem, 2.5vw, 2rem);
   width: 100%;
   max-width: min(800px, 100%);
   justify-content: center;
@@ -41,37 +41,37 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  box-shadow: 0 4px 10px var(--color-shadow-light);
-  border-radius: 8px;
+  box-shadow: 0 2px 6px var(--color-shadow-light);
+  border-radius: 6px;
   transition: box-shadow 0.3s ease;
 }
 
 .customSelectWrapper:hover {
-  box-shadow: 0 6px 15px var(--color-shadow-medium);
+  box-shadow: 0 4px 10px var(--color-shadow-medium);
 }
 
 .label {
   font-weight: 600;
   color: var(--color-text-light);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   display: block;
-  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-size: clamp(0.85rem, 2vw, 1.2rem);
 }
 
 .selectTrigger {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: clamp(0.7rem, 1.5vw, 0.85rem) clamp(0.8rem, 1.5vw, 1rem);
+  padding: clamp(0.6rem, 1.2vw, 0.85rem) clamp(0.7rem, 1.3vw, 1rem);
   width: 100%;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--color-border-light);
   background-color: var(--color-card-bg);
   color: var(--color-text-light);
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-size: clamp(0.85rem, 1.6vw, 1.1rem);
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 44px;
+  min-height: 40px;
   box-sizing: border-box;
 }
 
@@ -95,7 +95,7 @@
 .selectTrigger span {
   flex-grow: 1;
   text-align: right;
-  margin-right: 1rem;
+  margin-right: 0.8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -103,16 +103,16 @@
 
 [dir="rtl"] .selectTrigger span {
   text-align: left;
-  margin-left: 1rem;
+  margin-left: 0.8rem;
   margin-right: 0;
 }
 
 .selectTrigger .arrow {
   width: 0;
   height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid var(--color-accent-gold);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--color-accent-gold);
   transition: transform 0.3s ease;
   flex-shrink: 0;
 }
@@ -126,7 +126,7 @@
 }
 
 [dir="rtl"] .arrow {
-  margin-right: 10px;
+  margin-right: 8px;
   margin-left: 0;
 }
 
@@ -141,15 +141,15 @@
   background-color: var(--color-card-bg);
   border: 1px solid var(--color-border-light);
   border-top: none;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  box-shadow: 0 6px 15px var(--color-shadow-medium);
-  max-height: min(300px, 50vh);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 4px 12px var(--color-shadow-medium);
+  max-height: min(250px, 40vh);
   overflow-y: auto;
   z-index: 100;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
+  transform: translateY(-8px);
   transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
 }
 
@@ -160,14 +160,14 @@
 }
 
 .dropdownItem {
-  padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(0.8rem, 1.5vw, 1rem);
+  padding: clamp(0.5rem, 1.2vw, 0.8rem) clamp(0.7rem, 1.3vw, 1rem);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
   text-align: right;
-  min-height: 44px;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
 }
 
 [dir="rtl"] .dropdownItem {
@@ -188,33 +188,33 @@
 }
 
 .chapterTitle {
-  margin-top: clamp(1.5rem, 4vw, 2.5rem);
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin-top: clamp(1rem, 3vw, 2.5rem);
+  font-size: clamp(1.2rem, 3.5vw, 2rem);
   color: var(--color-accent-gold);
   text-align: center;
   font-weight: 600;
-  margin-bottom: clamp(1rem, 3vw, 2rem);
+  margin-bottom: clamp(0.8rem, 2.5vw, 2rem);
   max-width: 100%;
   word-wrap: break-word;
 }
 
 .completionInfo {
   text-align: center;
-  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
   color: var(--color-text-secondary);
-  margin-top: -1rem;
-  margin-bottom: 1rem;
+  margin-top: -0.8rem;
+  margin-bottom: 0.8rem;
 }
 
 .verseContainer {
-  padding: clamp(1rem, 3vw, 1.5rem);
+  padding: clamp(0.8rem, 2vw, 1.5rem);
   width: 100%;
   max-width: min(800px, 100%);
-  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
-  line-height: clamp(1.6, 0.2vw + 1.5, 1.8);
+  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+  line-height: clamp(1.5, 0.15vw + 1.4, 1.8);
   background-color: var(--color-card-bg);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px var(--color-shadow-light);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--color-shadow-light);
   text-align: justify;
   box-sizing: border-box;
 }
@@ -224,13 +224,13 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(0.3rem, 1vw, 0.5rem);
-  padding: clamp(0.5rem, 1.5vw, 0.8rem) clamp(0.8rem, 1.5vw, 1rem);
-  margin-bottom: clamp(0.8rem, 2vw, 1.2rem);
-  border-radius: 8px;
+  gap: clamp(0.25rem, 0.8vw, 0.5rem);
+  padding: clamp(0.4rem, 1.2vw, 0.8rem) clamp(0.6rem, 1.2vw, 1rem);
+  margin-bottom: clamp(0.6rem, 1.5vw, 1.2rem);
+  border-radius: 6px;
   transition: background-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .singleVerse:hover,
@@ -253,25 +253,25 @@
 .verseNumber {
   font-weight: bold;
   color: var(--color-accent-gold);
-  margin-right: clamp(0.5rem, 1vw, 0.7rem);
-  min-width: clamp(1.5em, 2vw, 1.8em);
+  margin-right: clamp(0.4rem, 0.8vw, 0.7rem);
+  min-width: clamp(1.3em, 1.6vw, 1.8em);
   text-align: right;
   flex-shrink: 0;
-  font-size: clamp(0.9rem, 1.8vw, 1rem);
-  padding-top: 0.2rem;
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  padding-top: 0.1rem;
 }
 
 [dir="rtl"] .verseNumber {
   text-align: left;
-  margin-left: clamp(0.5rem, 1vw, 0.7rem);
+  margin-left: clamp(0.4rem, 0.8vw, 0.7rem);
   margin-right: 0;
 }
 
 .verseActions {
   display: flex;
   align-items: center;
-  gap: clamp(0.3rem, 1vw, 0.5rem);
-  margin-top: 0.2rem;
+  gap: clamp(0.25rem, 0.8vw, 0.5rem);
+  margin-top: 0.15rem;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -286,14 +286,14 @@
   background-color: transparent;
   color: var(--color-text-light);
   border: 1px solid var(--color-border-light);
-  border-radius: 5px;
-  padding: clamp(0.3rem, 1vw, 0.4rem) clamp(0.4rem, 1vw, 0.6rem);
+  border-radius: 4px;
+  padding: clamp(0.25rem, 0.8vw, 0.4rem) clamp(0.35rem, 0.8vw, 0.6rem);
   cursor: pointer;
-  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  font-size: clamp(0.75rem, 1.4vw, 1rem);
   transition: all 0.3s ease;
   white-space: nowrap;
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 28px;
+  min-width: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,9 +318,9 @@
 .actionButtons {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(0.8rem, 2vw, 1rem);
+  gap: clamp(0.6rem, 1.5vw, 1rem);
   justify-content: center;
-  margin-bottom: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: clamp(1rem, 2.5vw, 2rem);
   width: 100%;
   max-width: min(800px, 100%);
   opacity: 1;
@@ -348,16 +348,16 @@
   background-color: var(--color-card-bg);
   color: var(--color-text-light);
   border: 2px solid var(--color-accent-gold);
-  border-radius: 8px;
-  padding: clamp(0.8rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
+  border-radius: 6px;
+  padding: clamp(0.6rem, 1.5vw, 1rem) clamp(0.8rem, 2vw, 1.5rem);
   cursor: pointer;
-  font-size: clamp(1.1rem, 2.2vw, 1.2rem);
+  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
   font-weight: bold;
   transition: all 0.3s ease;
   flex: 1;
-  min-width: min(200px, 100%);
+  min-width: min(160px, 100%);
   text-align: center;
-  min-height: 48px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -379,8 +379,8 @@
 .completeButton:not(:disabled):focus {
   background-color: var(--color-accent-gold);
   color: var(--color-primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px var(--color-shadow-medium);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--color-shadow-medium);
   outline: none;
 }
 
@@ -406,29 +406,29 @@
 .selectedVerse {
   background-color: rgba(255, 215, 0, 0.1);
   border-right: 3px solid var(--color-accent-gold);
-  padding-left: clamp(0.8rem, 1.5vw, 1rem);
-  padding-right: clamp(0.5rem, 1vw, 0.7rem);
+  padding-left: clamp(0.6rem, 1.2vw, 1rem);
+  padding-right: clamp(0.4rem, 0.8vw, 0.7rem);
 }
 
 [dir="ltr"] .selectedVerse {
   border-left: 3px solid var(--color-accent-gold);
   border-right: none;
-  padding-left: clamp(0.5rem, 1vw, 0.7rem);
-  padding-right: clamp(0.8rem, 1.5vw, 1rem);
+  padding-left: clamp(0.4rem, 0.8vw, 0.7rem);
+  padding-right: clamp(0.6rem, 1.2vw, 1rem);
 }
 
 .favouriteVerse {
   background-color: rgba(255, 215, 0, 0.2);
   border-right: 3px solid var(--color-accent-gold);
-  padding-left: clamp(0.8rem, 1.5vw, 1rem);
-  padding-right: clamp(0.5rem, 1vw, 0.7rem);
+  padding-left: clamp(0.6rem, 1.2vw, 1rem);
+  padding-right: clamp(0.4rem, 0.8vw, 0.7rem);
 }
 
 .favouriteDate {
-  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  font-size: clamp(0.65rem, 1.2vw, 0.85rem);
   color: var(--color-text-secondary);
   text-align: right;
-  margin-top: -0.5rem;
+  margin-top: -0.4rem;
   width: 100%;
 }
 
@@ -439,31 +439,31 @@
 [dir="ltr"] .favouriteVerse {
   border-left: 3px solid var(--color-accent-gold);
   border-right: none;
-  padding-left: clamp(0.5rem, 1vw, 0.7rem);
-  padding-right: clamp(0.8rem, 1.5vw, 1rem);
+  padding-left: clamp(0.4rem, 0.8vw, 0.7rem);
+  padding-right: clamp(0.6rem, 1.2vw, 1rem);
 }
 
 .loadingMessage,
 .errorMessage,
 .noVersesMessage {
   text-align: center;
-  padding: clamp(1rem, 3vw, 2rem);
+  padding: clamp(0.8rem, 2.5vw, 2rem);
   color: var(--color-text-light);
-  font-size: clamp(1rem, 2.2vw, 1.2rem);
-  line-height: 1.6;
+  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+  line-height: 1.5;
 }
 
 .messageBox {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: clamp(0.8rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
-  border-radius: 8px;
+  top: 15px;
+  right: 15px;
+  padding: clamp(0.6rem, 1.5vw, 1rem) clamp(0.8rem, 2vw, 1.5rem);
+  border-radius: 6px;
   color: white;
   font-weight: bold;
   z-index: 1000;
-  font-size: clamp(0.9rem, 2vw, 1rem);
-  max-width: calc(100vw - 40px);
+  font-size: clamp(0.75rem, 1.6vw, 1rem);
+  max-width: calc(100vw - 30px);
   word-wrap: break-word;
 }
 
@@ -482,25 +482,55 @@
 
 [dir="rtl"] .messageBox {
   right: auto;
-  left: 20px;
+  left: 15px;
+}
+
+@media (max-width: 320px) {
+  .container {
+    padding: 0.4rem 0.3rem;
+  }
+  
+  .title {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .controls {
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .verseContainer {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .chapterTitle {
+    font-size: 1rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.6rem;
+  }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 1rem 0.8rem;
+    padding: 0.5rem 0.4rem;
   }
   
   .controls {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.6rem;
   }
   
   .verseActions {
-    display: none;
+    opacity: 1;
+    margin-top: 0.3rem;
+    justify-content: flex-end;
   }
   
   .actionButtons {
     flex-direction: column;
+    gap: 0.6rem;
   }
   
   .copySelectedButton,
@@ -511,6 +541,7 @@
   .navButton,
   .completeButton {
     min-width: unset;
+    padding: 0.7rem 1rem;
   }
   
   .messageBox {
@@ -518,17 +549,57 @@
     top: auto;
     right: auto;
     left: auto;
-    margin: 1rem 0;
+    margin: 0.8rem 0;
     text-align: center;
+    font-size: 0.8rem;
   }
   
   .dropdownMenu {
-    max-height: 40vh;
+    max-height: 35vh;
   }
   
   .singleVerse {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .verseNumber {
+    font-size: 0.75rem;
+    margin-right: 0.3rem;
+  }
+  
+  [dir="rtl"] .verseNumber {
+    margin-left: 0.3rem;
+    margin-right: 0;
+  }
+  
+  .copyButton,
+  .favouriteButton {
+    min-height: 32px;
+    min-width: 32px;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .container {
+    padding: 0.8rem 0.6rem;
+  }
+  
+  .actionButtons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .copySelectedButton,
+  .favouriteSelectedButton,
+  .copyChapterButton,
+  .favouriteChapterButton,
+  .tafsirButton,
+  .navButton,
+  .completeButton {
+    min-width: calc(50% - 0.5rem);
   }
 }
 
@@ -549,27 +620,27 @@
   .tafsirButton,
   .navButton,
   .completeButton {
-    min-width: 180px;
+    min-width: 140px;
   }
 }
 
 @media (min-width: 1025px) {
   .container {
-    padding: 2.5rem 2rem;
+    padding: 2rem 1.5rem;
   }
   
   .verseContainer {
-    padding: 2rem;
+    padding: 1.8rem;
   }
   
   .dropdownMenu {
-    max-height: 400px;
+    max-height: 350px;
   }
 }
 
 @media (min-width: 1440px) {
   .container {
-    padding: 3rem 2.5rem;
+    padding: 2.5rem 2rem;
   }
   
   .verseContainer {
@@ -585,14 +656,27 @@
   .singleVerse .verseActions {
     opacity: 1;
     position: static;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     justify-content: flex-end;
   }
   
   .copyButton,
   .favouriteButton {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0.6rem;
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .selectTrigger:hover,
+  .dropdownItem:hover,
+  .copySelectedButton:hover,
+  .favouriteSelectedButton:hover,
+  .copyChapterButton:hover,
+  .favouriteChapterButton:hover,
+  .tafsirButton:hover,
+  .navButton:not(:disabled):hover,
+  .completeButton:not(:disabled):hover {
+    transform: none;
   }
 }
