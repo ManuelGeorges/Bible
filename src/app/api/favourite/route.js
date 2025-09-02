@@ -3,17 +3,14 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
-// تحديد مسارات الملفات والمجلد
 const favouritesDir = path.join(process.cwd(), 'db', 'favourites');
 const versesFilePath = path.join(favouritesDir, 'verses.json');
 const chaptersFilePath = path.join(favouritesDir, 'chapters.json');
 
-// دالة مساعدة للتأكد من وجود المجلد والملفات
 async function ensureFilesExist() {
   try {
     await fs.mkdir(favouritesDir, { recursive: true });
 
-    // التأكد من وجود ملف verses.json
     try {
       await fs.access(versesFilePath);
     } catch (error) {

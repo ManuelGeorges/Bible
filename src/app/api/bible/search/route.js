@@ -9,7 +9,7 @@ export async function GET(request) {
     const useStemming = stemParam.toLowerCase() === 'true';
 
     if (!query) {
-      return NextResponse.json([], { status: 200 }); // ✅ Array فاضي
+      return NextResponse.json([], { status: 200 }); 
     }
 
     const pythonBackendUrl = `http://localhost:5000/api/search?q=${encodeURIComponent(query)}&lang=${lang}&stem=${useStemming}`;

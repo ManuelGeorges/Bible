@@ -688,9 +688,6 @@ export default function BibleSearchPage({ user }) {
                     <button onClick={handleCopySelectedVerses}>
                       نسخ الآيات المحددة ({convertToArabicNumber(selectedVerses.size)})
                     </button>
-                    <button onClick={handleFavouriteSelectedVerses}>
-                      تحديث المفضلة ({convertToArabicNumber(selectedVerses.size)})
-                    </button>
                   </div>
                 )}
                 <div className={styles.resultsContainer}>
@@ -731,19 +728,6 @@ export default function BibleSearchPage({ user }) {
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
                                 <path d="M9.5 1a.5.5 0 0 1 .5.5v1h-4v-1a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1z"/>
-                              </svg>
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleToggleFavourite(verse); }}
-                              className={isFavourite ? styles.favourited : ''}
-                              aria-label={isFavourite ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                {isFavourite ? (
-                                  <path fillRule="evenodd" d="M2 13.5V14a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5H9.5L9.245.879A.5.5 0 0 0 8.754.5L8 .5A.5.5 0 0 0 7.246.879L6.755 1.5H2.5A1.5 1.5 0 0 0 1 3v11a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V3a1.5 1.5 0 0 0-1.5-1.5H9.5z"/>
-                                ) : (
-                                  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5V2zm2 13.5V2h8v13.5L8 12.3l-4 2.2z"/>
-                                )}
                               </svg>
                             </button>
                           </div>

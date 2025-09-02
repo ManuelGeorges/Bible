@@ -353,7 +353,7 @@ export const allQuestions = [
     id: 36,
     type: 'multiple_choice',
     questionText: 'ماذا كان اسم يوسف عندما أصبح حاكمًا في مصر؟',
-    options: ['زفنات فعنيح', 'فرعون', 'أبيمالك', 'شيث'],
+    options: [' صفنات فعنيح', 'فرعون', 'أبيمالك', 'شيث'],
     correctAnswer: 'زفنات فعنيح',
     verseReference: 'تكوين 41: 45',
     difficulty: 'hard',
@@ -383,8 +383,8 @@ export const allQuestions = [
     id: 39,
     type: 'multiple_choice',
     questionText: 'ما هو اسم أول مدينة بناها قابيل؟',
-    options: ['أورشليم', 'حزنوخ', 'بابل', 'أريحا'],
-    correctAnswer: 'حزنوخ',
+    options: ['أورشليم', 'السامرة', 'بابل', 'أريحا'],
+    correctAnswer: 'السامرة',
     verseReference: 'تكوين 4: 17',
     difficulty: 'hard',
     hint: 'سميت على اسم ابنه.'
@@ -1340,8 +1340,8 @@ export const allQuestions = [
   {
     id: 144,
     type: 'who_is_it',
-    questionText: 'هي التي أُخذت إلى السماء دون أن تموت...',
-    correctAnswer: 'حنوك',
+    questionText: 'هو الذي أُخذ إلى السماء دون أن يموت...',
+    correctAnswer: 'أخنوخ',
     verseReference: 'تكوين 5: 24',
     difficulty: 'hard',
     hint: 'مشي مع الله فأخذه الله.'
@@ -1350,7 +1350,7 @@ export const allQuestions = [
     id: 145,
     type: 'who_is_it',
     questionText: 'هو الذي أُطلق عليه لقب "الصديق"...',
-    correctAnswer: 'إبراهيم',
+    correctAnswer: 'ابراهيم',
     verseReference: 'يعقوب 2: 23',
     difficulty: 'easy',
     hint: 'لقبه الله بهذا الاسم.'

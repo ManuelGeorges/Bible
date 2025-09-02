@@ -10,6 +10,8 @@
     "postbuild": "next-sitemap"
   },
   "dependencies": {
+    "@deck.gl/layers": "^9.1.14",
+    "@deck.gl/react": "^9.1.14",
     "@google/generative-ai": "^0.24.1",
     "@tanstack/react-query": "^5.85.5",
     "@vercel/kv": "^3.0.0",
@@ -22,6 +24,7 @@
     "harfbuzzjs": "^0.4.8",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
+    "mapbox-gl": "^3.14.0",
     "maplibre-gl": "^5.6.1",
     "natural": "^8.1.0",
     "next": "15.3.4",
