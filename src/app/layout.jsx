@@ -32,15 +32,6 @@ export default function RootLayout({ children }) {
        <meta name="charset" content="UTF-8"/>
         <meta name="google-site-verification" content="JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY" />
        <link rel="canonical" href="https://agios-bible.vercel.app/"/>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-        
-          gtag('config', 'G-J90H6JXHNG');
-        </script>
-
       </head>
       <body>
         <LanguageProvider>
@@ -51,6 +42,14 @@ export default function RootLayout({ children }) {
             </div>
           </main>
         </LanguageProvider>
+                <script async src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+        
+          gtag('config', 'G-J90H6JXHNG');
+        </script>
       </body>
     </html>
   );
