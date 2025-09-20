@@ -1,6 +1,6 @@
 // app/layout.jsx
 import './globals.css';
-import styles from './layout.module.css'; // تأكد من المسار الصحيح
+import styles from './layout.module.css';
 import { LanguageProvider } from '../context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
 
