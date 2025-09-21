@@ -45,9 +45,6 @@
   }
 }
 
-.floating {
-  animation: floating 4s ease-in-out infinite;
-}
 
 .languageContainer {
   display: flex;
@@ -267,10 +264,9 @@
 }
 
 .correctAnswer {
-  background-color: #4CAF50; /* Green */
+  background-color: #4CAF50; 
   color: white;
   border-color: #4CAF50;
-  animation: none; /* Removed the pulse animation */
 }
 
 .wrongAnswer {
@@ -279,10 +275,6 @@
   border-color: #f44336;
 }
 
-/* Moved pulseCorrect to be more contained */
-.pulseCorrect {
-  animation: pulseCorrect 1s infinite;
-}
 
 @keyframes pulseCorrect {
   0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
@@ -304,7 +296,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   min-width: 250px;
   text-align: center;
-  animation: fadeOut 3s forwards;
 }
 
 .copiedMessage {
@@ -554,10 +545,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .floating,
-  .button::before {
-    animation: none;
-  }
+
 
   .actionButton:hover,
   .button:hover,
