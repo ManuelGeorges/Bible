@@ -1,6 +1,5 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://agios-bible.vercel.app/',
+  siteUrl: 'https://agios-bible.vercel.app',
   generateRobotsTxt: true,
-
 };
