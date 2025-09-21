@@ -8,22 +8,7 @@ import { db } from '/lib/firebase';
 import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 import styles from './search.module.css';
 
-export const metadata = {
-  title: ' البحث الكتابي| Agios Bible',
-  description:"ابحث في نصوص الكتاب المقدس بسهولة بباحث حرفي سهل الاستخدام وبحث متقدم يستخدم المشتقات والجذور العربية",
-  keywords: ['Agios Bible, Agios ,Bible,البحث الكتابي, البحث الإنجيلي, ابحث عن آية , Bible search, ابحث في الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
-  openGraph: {
-  title: ' البحث الكتابي| Agios Bible',
-          description:"ابحث في نصوص الكتاب المقدس بسهولة بباحث حرفي سهل الاستخدام وبحث متقدم يستخدم المشتقات والجذور العربية",
 
-
-
-    type: 'website',
-    url: 'https://agios-bible.vercel.app/search',
-    siteName: 'Agios Bible',
-    locale: 'ar_AR',
-  },
-};
 const geminiCache = {};
 
 function convertToArabicNumber(num) {

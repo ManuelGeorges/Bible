@@ -10,21 +10,6 @@ import { WebMercatorViewport } from '@deck.gl/core';
 import getBidiText from 'bidi-js';
 
 const MAP_STYLE = 'https://api.maptiler.com/maps/basic-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7';
-export const metadata = {
-  title: 'الخرائط الكتابية | Agios Bible',
-  description:"استكشف الأماكن الكتابية بأسلوب جديد متطور عن طريق خرائط ثلاثية الأبعاد",
-  keywords: ['Agios Bible, Agios ,Bible,خرائط الكتاب المقدس, Bible maps, الخرائط الكتابية, خرائط الإنجيل, الخرائط الإنجيلية, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
-  openGraph: {
-    title: ' الخرائط الكتابية| Agios Bible',
-        description:"استكشف الأماكن الكتابية بأسلوب جديد متطور عن طريق خرائط ثلاثية الأبعاد",
-
-
-    type: 'website',
-    url: 'https://agios-bible.vercel.app/maps',
-    siteName: 'Agios Bible',
-    locale: 'ar_AR',
-  },
-};
 const INITIAL_VIEW_STATE = {
   longitude: 35.0, 
   latitude: 31.0, 

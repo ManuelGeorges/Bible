@@ -3,19 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { allQuestions } from './questionsData';
 import styles from './competitions.module.css';
-export const metadata = {
-  title: ' المسابقات | Agios Bible',
-  description:"اختبر معرفتك في الكتاب المقدس وقم بحل أسئلة كتابية متدرجة الصعوبة عن إكمال الآيات والأشخاص وغيرها",
-  keywords: ['Agios Bible, Agios , مسابقات الكتاب المقدس, أسئلة كتابية , أسئلة الإنجيل , مسابقات كتاب مقدس,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
-  openGraph: {
-    title: 'المسابقات | Agios Bible',
-    description: "اختبر معرفتك في الكتاب المقدس وقم بحل أسئلة كتابية متدرجة الصعوبة عن إكمال الآيات والأشخاص وغيرها",
-    type: 'website',
-    url: 'https://agios-bible.vercel.app/competitions',
-    siteName: 'Agios Bible',
-    locale: 'ar_AR',
-  },
-};
+
 const getStem = (word) => {
   if (!word) return '';
   const normalized = word.trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/[يى]/g, 'ي').replace(/[ة]/g, 'ه');

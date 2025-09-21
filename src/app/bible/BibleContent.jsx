@@ -9,19 +9,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from '/lib/firebase';
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
-export const metadata = {
-  title: 'الكتاب المقدس| Agios Bible',
-  description: 'اقرأ الكتاب المقدس من واجهة سلسة مريحة للعين في القراءة مع خصائص عدة مثل نسخ الآيات ووضعها في المفضلة',
-  keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
-  openGraph: {
-    title: 'Agios Bible',
-    description: 'اقرأ الكتاب المقدس من واجهة سلسة مريحة للعين في القراءة مع خصائص عدة مثل نسخ الآيات ووضعها في المفضلة',
-    type: 'website',
-    url: 'https://agios-bible.vercel.app/bible',
-    siteName: 'Agios Bible',
-    locale: 'ar_AR',
-  },
-};
+
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   return num.toString().split('').map(d => arabicNums[+d]).join('');

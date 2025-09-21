@@ -10,20 +10,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../../../lib/firebase';
 import styles from './login.module.css';
-export const metadata = {
-  title: '    تسجيل الدخول| Agios Bible',
-  description:"سجل الدخول او انشئ حساباً جديداً لتحصل على مزايا لا حصر لها ويصل لك كل جديد",
-  keywords: ['Agios Bible, Agios ,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
-  openGraph: {
-    title: 'تسجيل الدخول| Agios Bible',
-       description:"سجل الدخول او انشئ حساباً جديداً لتحصل على مزايا لا حصر لها ويصل لك كل جديد",
 
-    type: 'website',
-    url: 'https://agios-bible.vercel.app/login',
-    siteName: 'Agios Bible',
-    locale: 'ar_AR',
-  },
-};
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
