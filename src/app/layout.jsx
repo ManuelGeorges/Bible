@@ -68,7 +68,9 @@ export default function RootLayout({ children }) {
           gtag('config', 'G-J90H6JXHNG');
         `}
       </Script>
-            <Script type="application/ld+json">
+      
+      {/* Schema.org Script - Correct placement */}
+      <Script type="application/ld+json">
         {`
           {
             "@context": "https://schema.org",
