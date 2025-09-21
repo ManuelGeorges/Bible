@@ -1,48 +1,83 @@
 // app/layout.jsx
 import './globals.css';
-import styles from './layout.module.css'; // تأكد من المسار الصحيح
+import styles from './layout.module.css';
 import { LanguageProvider } from '../context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
+import Script from 'next/script';
+
+// Correct Viewport export
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
+};
 
 export const metadata = {
+  publisher: 'Agios Bible',
   title: 'Agios Bible',
-  description: 'Your Bible Study Application',
+  description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات',
+  authors: [{ name: 'Manuel Georges' }],
+  robots: 'index, follow',
+  openGraph: {
+    title: 'Agios Bible',
+    description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات',
+    type: 'website',
+    url: 'https://agios-bible.vercel.app/',
+    siteName: 'Agios Bible',
+    locale: 'ar_AR',
+    images: [
+      {
+        url: 'https://agios-bible.vercel.app/icon.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+      },
+    ],
+  },
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
+  verification: {
+    google: 'JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY',
+  },
 };
 
 export default function RootLayout({ children }) {
-  return(
+  return (
     <html lang="ar" dir="rtl">
-      <head>
-        <link rel="icon" href="/images/logo.png" />
-        <meta property="og:title" content="Agios Bible"/>
-        <meta property="og:description" content=" موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات"/>
-        <meta property="og:type" content="website"/>
-        <meta property="og:url" content="https://agios-bible.vercel.app/"/>
-        <meta property="og:site_name" content="Agios Bible"/>
-        <meta property="og:locale" content="ar_AR"/>
-        <meta property="og:image" content="https://agios-bible.vercel.app/images/logo.png"/>
-        <meta property="og:image:width" content="1200"/>
-        <meta property="og:image:height" content="630"/>
-        <meta property="og:image:type" content="image/png"/>
-        <meta name ="author" content="Manuel Georges"/>
-        <meta name="title" content="Agios Bible"/>
-        <meta name="description" content=" موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات"/>
-       <meta name="robots" content="index, follow"/>
-       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-       <meta name="charset" content="UTF-8"/>
-       <link rel="canonical" href="https://agios-bible.vercel.app/"/>
-
-      </head>
       <body>
         <LanguageProvider>
           <BibleNavbar />
           <main className={styles.mainContent}>
-            <div className={styles.container}>
-              {children}
-            </div>
+            <div className={styles.container}>{children}</div>
           </main>
         </LanguageProvider>
       </body>
+
+      {/* Google Analytics - Correct placement for lazy load */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-J90H6JXHNG');
+        `}
+      </Script>
+            <Script type="application/ld+json">
+        {`
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Agios Bible",
+            "url": "https://agios-bible.vercel.app/"
+          }
+        `}
+      </Script>
     </html>
   );
 }
