@@ -24,7 +24,7 @@ const Footer = () => {
         <footer className={styles.footer}>
             <a href="https://agios-bible.vercel.app/">
             <img 
-                src="/images/agios.png" 
+                src="/images/Agios.png" 
                 alt="Agios Bible official logo" 
                 className={styles.footerLogo} 
             />
