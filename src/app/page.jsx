@@ -326,8 +326,9 @@ const LandingPage = () => {
     return (
         <main className={`${styles.container} ${styles.rtl}`}>
             <h1 className={`${styles.heading} ${styles.floating}`}>
-                مرحباً بك في تطبيق Agios
+                Agios Bible
             </h1>
+            <h2>مرحباً بك في تطبيقك لدراسة الكتاب المقدس</h2>
 
             {isLoadingVerse ? (
                 <div className={`${styles.dailyVerseBox} ${styles.floating}`}>

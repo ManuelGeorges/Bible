@@ -8,7 +8,20 @@ import { db } from '/lib/firebase';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
+export const metadata = {
+  title: ' الآيات المفضلة | Agios Bible',
+  description:"احفظ جميع آياتك المفضلة في مكان واحد للوصول السريع في أي وقت من أي جهاز",
+  keywords: ['Agios Bible, Agios ,الآيات المفضلة , آياتي المفضلةBible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  openGraph: {
+    title: 'الآيات المفضلة | Agios Bible',
+     description:"احفظ جميع آياتك المفضلة في مكان واحد للوصول السريع في أي وقت من أي جهاز",
 
+    type: 'website',
+    url: 'https://agios-bible.vercel.app/favourites',
+    siteName: 'Agios Bible',
+    locale: 'ar_AR',
+  },
+};
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   return num.toString().split('').map(d => arabicNums[+d]).join('');

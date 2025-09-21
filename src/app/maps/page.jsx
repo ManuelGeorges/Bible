@@ -5,34 +5,44 @@ import { DeckGL } from '@deck.gl/react';
 import { ScatterplotLayer, PathLayer, TextLayer } from '@deck.gl/layers';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-// استيراد ملف الـ CSS الجديد الذي تم تحسينه
 import styles from './maps.module.css';
 import { WebMercatorViewport } from '@deck.gl/core';
 import getBidiText from 'bidi-js';
 
-// --- الثوابت ---
 const MAP_STYLE = 'https://api.maptiler.com/maps/basic-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7';
+export const metadata = {
+  title: 'الخرائط الكتابية | Agios Bible',
+  description:"استكشف الأماكن الكتابية بأسلوب جديد متطور عن طريق خرائط ثلاثية الأبعاد",
+  keywords: ['Agios Bible, Agios ,Bible,خرائط الكتاب المقدس, Bible maps, الخرائط الكتابية, خرائط الإنجيل, الخرائط الإنجيلية, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  openGraph: {
+    title: ' الخرائط الكتابية| Agios Bible',
+        description:"استكشف الأماكن الكتابية بأسلوب جديد متطور عن طريق خرائط ثلاثية الأبعاد",
 
+
+    type: 'website',
+    url: 'https://agios-bible.vercel.app/maps',
+    siteName: 'Agios Bible',
+    locale: 'ar_AR',
+  },
+};
 const INITIAL_VIEW_STATE = {
-  longitude: 35.0, // خط الطول لمنطقة الشرق الأوسط
-  latitude: 31.0,  // خط العرض لمنطقة الشرق الأوسط
-  zoom: 5,         // مستوى الزوم الأولي
-  pitch: 60,       // زاوية ميل الكاميرا (لإظهار المنظر ثلاثي الأبعاد)
-  bearing: 0,      // اتجاه الكاميرا (0 يعني الشمال لأعلى)
+  longitude: 35.0, 
+  latitude: 31.0, 
+  zoom: 5, 
+  pitch: 60,
+  bearing: 0,      
   transitionDuration: 'auto',
 };
 
-const FLY_TO_ZOOM = 12; // زووم أعلى للانتقال إلى نقطة محددة
+const FLY_TO_ZOOM = 12; 
 const FLY_TO_PITCH = 45;
-const FLY_TO_DURATION = 1500; // بالمللي ثانية
+const FLY_TO_DURATION = 1500; 
 
-// --- دوال مساعدة ---
+
 
 /**
- * تحسب الحدود الجغرافية لمجموعة من النقاط.
- * تتوقع النقاط بتنسيق [longitude, latitude].
- * @param {Array<Array<number>>} points - مصفوفة من أزواج إحداثيات [خط الطول، خط العرض].
- * @returns {Array<Array<number>>} - [[minLng, minLat], [maxLng, maxLat]]
+ * @param {Array<Array<number>>} points 
+ * @returns {Array<Array<number>>} 
  */
 const getGeoJsonBounds = (points) => {
     let minLng = Infinity;
@@ -84,7 +94,6 @@ export default function MapsPage() {
     "الكنيسة المبكرة ورحلات الرسل"
   ];
 
-  // جلب البيانات من ملف JSON عند تحميل المكون
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);

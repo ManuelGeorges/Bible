@@ -1,7 +1,7 @@
 // app/layout.jsx
 import './globals.css';
 import styles from './layout.module.css';
-import { LanguageProvider } from '../context/LanguageContext';
+import { LanguageProvider } from './context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
 import Script from 'next/script';
 
@@ -53,7 +53,7 @@ export default function RootLayout({ children }) {
           <main className={styles.mainContent}>
             <div className={styles.container}>{children}</div>
           </main>
-        </LanguageProvider>
+          </LanguageProvider> 
       </body>
 
       {/* Google Analytics - Correct placement for lazy load */}
@@ -81,6 +81,7 @@ export default function RootLayout({ children }) {
           }
         `}
       </Script>
-    </html>
+      
+      </html>
   );
 }
