@@ -18,8 +18,8 @@ export const metadata = {
 export default function MapsLayout({ children }) {
   return (
     <LanguageProvider>
-      <main className={styles.mainContent}>
-        <div className={styles.container}>{children}</div>
+      <main>
+        <div>{children}</div>
       </main>
     </LanguageProvider>
   );
