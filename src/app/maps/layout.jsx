@@ -1,5 +1,4 @@
-import { LanguageProvider } from '../../context/LanguageContext';
-import styles from './layout.module.css';
+import { LanguageProvider } from './../context/LanguageContext';
 
 export const metadata = {
   title: 'الخرائط الكتابية | Agios Bible',

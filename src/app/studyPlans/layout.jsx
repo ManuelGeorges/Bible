@@ -1,5 +1,4 @@
-import { LanguageProvider } from '../../context/LanguageContext';
-import styles from './layout.module.css';
+import { LanguageProvider } from './../context/LanguageContext';
 export const metadata = {
   title: ' خطط دراسة الكتاب | Agios Bible',
   description:"ادرس الكتاب في خطط موضوعية وسنوية تساعدك على فهمه والنمو في ايمانك",
