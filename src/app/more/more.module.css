@@ -1,0 +1,47 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.title {
+  color: var(--color-text-light);
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.linkButton {
+  padding: 1rem 1.5rem;
+  background: var(--button-bg-1);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: var(--border-radius);
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s var(--transition-smooth);
+  box-shadow: 0 4px 15px var(--color-shadow-medium);
+  text-align: center;
+}
+
+.linkButton:hover {
+  background: var(--button-hover-1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--color-shadow-medium);
+}

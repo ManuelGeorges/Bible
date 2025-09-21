@@ -324,12 +324,23 @@ const LandingPage = () => {
     };
 
     return (
+        
         <main className={`${styles.container} ${styles.rtl}`}>
-            <h1 className={`${styles.heading} ${styles.floating}`}>
-                Agios Bible
-            </h1>
-            <h2>مرحباً بك في تطبيقك لدراسة الكتاب المقدس</h2>
+<header className={styles.header}>
+                    <img 
+            src="/images/Agios.png" 
+            alt="Agios bible official logo" 
+            className={styles.logoImg}
+        />
+        <h1 className={styles.siteTitle}>
+            Agios Bible
+        </h1>
 
+    <h2 className={styles.subtitle}>
+        مرحباً بك في تطبيقك لدراسة الكتاب المقدس
+    </h2>
+
+</header>
             {isLoadingVerse ? (
                 <div className={`${styles.dailyVerseBox} ${styles.floating}`}>
                     <p>جارٍ تحميل آية اليوم...</p>
@@ -449,7 +460,13 @@ const LandingPage = () => {
                         })}
                     </div>
                 </section>
+
             )}
+                <footer>
+                    <p dir="ltr" className={styles.footerText}>
+                    © CopyRight Agios Bible 2025, All Rights Reserved.
+                    </p>
+                </footer>
         </main>
     );
 };

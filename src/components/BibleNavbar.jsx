@@ -28,6 +28,7 @@ export default function BibleNavbar() {
         return (
             <div className={styles.navbarWrapper}>
                 <nav className={`${styles.navbar} ${styles.navbarTop}`}>
+                    <Link href="/more" className={styles.navLink} aria-label="More">...</Link>
                     <Link href="/studyPlans" className={styles.navLink} aria-label="Study Plans">...</Link>
                     <Link href="/search" className={styles.navLink} aria-label="Search">...</Link>
                 </nav>
@@ -38,7 +39,11 @@ export default function BibleNavbar() {
     return (
         <div className={styles.navbarWrapper}>
             <nav className={`${styles.navbar} ${styles.navbarTop}`}>
-
+                <Link href="/more" className={styles.navLink} aria-label="More">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.navIcon}>
+                        <path d="M4 6H20V8H4V6ZM4 11H20V13H4V11ZM4 16H20V18H4V16Z"></path>
+                    </svg>
+                </Link>
                 <Link href="/studyPlans" className={styles.navLink} aria-label="Study Plans">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={styles.navIcon}>
                         <path d="M19 12H17V10H19V12ZM19 14H17V16H19V14ZM21 4H3C1.89543 4 1 4.89543 1 6V18C1 19.1046 1.89543 20 3 20H21C22.1046 20 23 19.1046 23 18V6C23 4.89543 22.1046 4 21 4ZM21 6V8H3V6H21ZM3 18V10H21V18H3Z"></path>

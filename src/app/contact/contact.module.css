@@ -1,0 +1,99 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem clamp(1rem, 5vw, 4rem);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.title {
+  color: var(--color-text-light);
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  margin-bottom: 2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.section {
+  background-color: var(--color-card-bg);
+  border-radius: var(--border-radius);
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px var(--color-shadow-medium);
+  width: 100%;
+}
+
+.introParagraph {
+  color: var(--color-text-medium);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  line-height: 1.8;
+  text-align: justify;
+  margin-bottom: 1.5rem;
+}
+
+.subtitle {
+  color: var(--color-accent-gold);
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin-bottom: 1rem;
+  text-align: right;
+  font-weight: 600;
+}
+
+.reasonList {
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.reasonList li {
+  color: var(--color-text-medium);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  position: relative;
+  padding-right: 1.5rem;
+}
+
+.reasonList li::before {
+  content: "•";
+  color: var(--color-accent-gold);
+  font-size: 1.5rem;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.contactMethods {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.contactLink {
+  padding: 1rem 1.5rem;
+  background: var(--button-bg-1);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: var(--border-radius);
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s var(--transition-smooth);
+  box-shadow: 0 4px 15px var(--color-shadow-medium);
+  text-align: center;
+}
+
+.contactLink:hover {
+  background: var(--button-hover-1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--color-shadow-medium);
+}

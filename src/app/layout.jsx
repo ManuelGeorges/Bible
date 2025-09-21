@@ -3,9 +3,9 @@ import './globals.css';
 import styles from './layout.module.css';
 import { LanguageProvider } from './context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
+import Footer from '../components/Footer';
 import Script from 'next/script';
 
-// Correct Viewport export
 export const viewport = {
   width: 'device-width',
   initialScale: 1.0,
@@ -53,10 +53,9 @@ export default function RootLayout({ children }) {
           <main className={styles.mainContent}>
             <div className={styles.container}>{children}</div>
           </main>
-          </LanguageProvider> 
+          <Footer />
+        </LanguageProvider> 
       </body>
-
-      {/* Google Analytics - Correct placement for lazy load */}
       <Script
         src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
         strategy="afterInteractive"
@@ -69,8 +68,6 @@ export default function RootLayout({ children }) {
           gtag('config', 'G-J90H6JXHNG');
         `}
       </Script>
-      
-      {/* Schema.org Script - Correct placement */}
       <Script type="application/ld+json">
         {`
           {
@@ -81,7 +78,6 @@ export default function RootLayout({ children }) {
           }
         `}
       </Script>
-      
-      </html>
+    </html>
   );
 }
