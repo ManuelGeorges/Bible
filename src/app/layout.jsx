@@ -13,7 +13,7 @@ export const viewport = {
 
 export const metadata = {
   publisher: 'Agios Bible',
-  title: 'Agios Bible',
+  title: 'الموقع الرسمي | Agios Bible ',
   description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات',
   authors: [{ name: 'Manuel Georges' }],
   robots: 'index, follow',

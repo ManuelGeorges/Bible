@@ -462,11 +462,6 @@ const LandingPage = () => {
                 </section>
 
             )}
-                <footer>
-                    <p dir="ltr" className={styles.footerText}>
-                    © CopyRight Agios Bible 2025, All Rights Reserved.
-                    </p>
-                </footer>
         </main>
     );
 };
