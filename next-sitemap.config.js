@@ -1,6 +1,6 @@
-/ ** @type {import('next-sitemap').IConfig} */
+/** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: "https://example.com",
+  siteUrl: "https://agios-bible.vercel.app/",
   generateRobotsTxt: true,
   sitemapSize: 5000,
   changefreq: "daily",
