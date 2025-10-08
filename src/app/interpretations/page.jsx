@@ -1,7 +1,7 @@
 
 import tafsirData from './interpretations.json'; 
 import styles from './interpretations.module.css';
-import ChapterCard from './ChapterCard';
+import ChapterCard from './chapterCard';
 
 const firstBook = tafsirData && Array.isArray(tafsirData) && tafsirData.length > 0 ? tafsirData[0] : null;
 
