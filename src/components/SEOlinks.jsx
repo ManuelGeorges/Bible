@@ -1,6 +1,7 @@
 export default function SEOlinks() {
   return (
     <nav className="sr-only">
+    <a href="/">Home</a>
       <a href="/maps">Maps</a>
       <a href="/bible">Bible</a>
       <a href="/search">Search</a>
