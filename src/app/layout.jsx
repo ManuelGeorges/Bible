@@ -5,6 +5,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
+import SEOlinks from '../components/SEOlinks';
 
 export const viewport = {
   width: 'device-width',
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl">
       <body>
         <LanguageProvider>
+          <SEOlinks />
           <BibleNavbar />
           <main className={styles.mainContent}>
             <div className={styles.container}>{children}</div>
