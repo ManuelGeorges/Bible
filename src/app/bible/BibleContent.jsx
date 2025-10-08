@@ -37,14 +37,18 @@ export default function BibleContent() {
   const [isChapterDropdownOpen, setIsChapterDropdownOpen] = useState(false);
   const chapterDropdownRef = useRef(null);
 
-  const [selectedVerses, setSelectedVerses] = useState(new Set());
-
+  // ✅ تم تصحيح هذا السطر لاستخدام useState بشكل صحيح
+  const [selectedVerses, setSelectedVerses] = useState(new Set()); 
+  
   const [copiedMessage, setCopiedMessage] = useState('');
   const [favouriteMessage, setFavouriteMessage] = useState('');
   const [completedMessage, setCompletedMessage] = useState('');
 
   const touchTimeout = useRef(null);
   const isLongPress = useRef(false);
+
+  const clickTimer = useRef(null);
+  const clickCount = useRef(0);
 
   const [tafseerIndex, setTafseerIndex] = useState(null);
 
@@ -62,22 +66,21 @@ export default function BibleContent() {
     return bookNamesData?.abbreviations?.[index] || '';
   }, [bookNamesData]);
 
-const saveToFirestore = useCallback(async (loggedInUser, verses, chapters, completed) => {
+  const saveToFirestore = useCallback(async (loggedInUser, verses, chapters, completed) => {
     if (!loggedInUser || !firestore) return;
     try {
-        const userRef = doc(firestore, 'users', loggedInUser.uid);
-        await setDoc(userRef, {
-            favorites: {
-                verses: verses,
-                chapters: chapters
-            },
-            completedChapters: completed // هنا يتم استخدام البيانات الممررة
-        }, { merge: true });
-        console.log("Progress saved to Firestore successfully!");
+      const userRef = doc(firestore, 'users', loggedInUser.uid);
+      await setDoc(userRef, {
+        favorites: {
+          verses: verses,
+          chapters: chapters
+        },
+        completedChapters: completed
+      }, { merge: true });
     } catch (error) {
-        console.error("Error saving progress to Firestore:", error);
+      console.error("Error saving progress to Firestore:", error);
     }
-}, []);
+  }, []);
 
   const fetchUserDataFromFirestore = useCallback(async (loggedInUser) => {
     if (!loggedInUser || !firestore) return;
@@ -99,7 +102,7 @@ const saveToFirestore = useCallback(async (loggedInUser, verses, chapters, compl
       console.error("Error fetching data from Firestore:", error);
     }
   }, []);
-  
+
   const saveFavourites = useCallback((verses, chapters) => {
     try {
       localStorage.setItem('favourite_verses', JSON.stringify(verses));
@@ -112,16 +115,16 @@ const saveToFirestore = useCallback(async (loggedInUser, verses, chapters, compl
     }
   }, [user, saveToFirestore, completedChapters]);
 
-const saveCompletedChapters = useCallback((completed) => {
+  const saveCompletedChapters = useCallback((completed) => {
     try {
-        localStorage.setItem('completed_chapters', JSON.stringify(completed));
+      localStorage.setItem('completed_chapters', JSON.stringify(completed));
     } catch (error) {
-        console.error('Error saving completed chapters:', error);
+      console.error('Error saving completed chapters:', error);
     }
     if (user) {
-        saveToFirestore(user, favouriteVerses, favouriteChapters, completed);
+      saveToFirestore(user, favouriteVerses, favouriteChapters, completed);
     }
-}, [user, saveToFirestore, favouriteVerses, favouriteChapters]);
+  }, [user, saveToFirestore, favouriteVerses, favouriteChapters]);
 
   useEffect(() => {
     if (auth) {
@@ -182,7 +185,7 @@ const saveCompletedChapters = useCallback((completed) => {
 
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscapeKey);
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscapeKey);
@@ -307,34 +310,34 @@ const saveCompletedChapters = useCallback((completed) => {
     }
   }, [selectedBookIndex, selectedChapterIndex, bibleData]);
 
-const handleCompleteChapter = useCallback(() => {
+  const handleCompleteChapter = useCallback(() => {
     const chapterKey = `${selectedBookIndex}-${selectedChapterIndex}`;
-    const bookName = getBookName(selectedBookIndex); // جلب اسم السفر
-    const chapterNumber = selectedChapterIndex + 1; // جلب رقم الإصحاح
+    const bookName = getBookName(selectedBookIndex);
+    const chapterNumber = selectedChapterIndex + 1;
 
     setCompletedChapters(prevCompleted => {
-        const isCurrentlyCompleted = prevCompleted[chapterKey]?.isCompleted;
-        const newCompleted = {
-            ...prevCompleted,
-            [chapterKey]: isCurrentlyCompleted
-                ? null
-                : {
-                      isCompleted: true,
-                      dateCompleted: new Date().toISOString(),
-                      bookName: bookName,          // هنا نضيف اسم السفر
-                      chapter: chapterNumber,      // وهنا نضيف رقم الإصحاح
-                  }
-        };
+      const isCurrentlyCompleted = prevCompleted[chapterKey]?.isCompleted;
+      const newCompleted = {
+        ...prevCompleted,
+        [chapterKey]: isCurrentlyCompleted
+          ? null
+          : {
+            isCompleted: true,
+            dateCompleted: new Date().toISOString(),
+            bookName: bookName,
+            chapter: chapterNumber,
+          }
+      };
 
-        const message = isCurrentlyCompleted
-            ? (language === 'ar' ? 'تم حذف الإصحاح من الإنجازات.' : 'Chapter completion removed.')
-            : (language === 'ar' ? 'تم تسجيل إنجاز الإصحاح!' : 'Chapter marked as completed!');
-        setCompletedMessage(message);
+      const message = isCurrentlyCompleted
+        ? (language === 'ar' ? 'تم حذف الإصحاح من الإنجازات.' : 'Chapter completion removed.')
+        : (language === 'ar' ? 'تم تسجيل إنجاز الإصحاح!' : 'Chapter marked as completed!');
+      setCompletedMessage(message);
 
-        saveCompletedChapters(newCompleted);
-        return newCompleted;
+      saveCompletedChapters(newCompleted);
+      return newCompleted;
     });
-}, [selectedBookIndex, selectedChapterIndex, getBookName, saveCompletedChapters, language]);
+  }, [selectedBookIndex, selectedChapterIndex, getBookName, saveCompletedChapters, language]);
 
   const selectedBook = bibleData?.[selectedBookIndex] || null;
   const chapters = selectedBook?.chapters || [];
@@ -355,9 +358,19 @@ const handleCompleteChapter = useCallback(() => {
     const chapterNumber = chapterIdx + 1;
     const verseNumber = verseIdx + 1;
     let reference;
+
     if (language === 'ar') {
-      reference = `(${bookName} ${convertToArabicNumber(chapterNumber)}:${convertToArabicNumber(verseNumber)})`;
+      // الحل القاطع: نقوم بوضع الأرقام في الكود بترتيب معكوس (آية:إصحاح)
+      // وإضافة علامات LTR حولها لإجبار المتصفح على قراءتها ككتلة LTR،
+      // مما يؤدي إلى ظهور الترتيب الصحيح (إصحاح:آية) عند اللصق في سياق RTL.
+      const chapterNumAr = convertToArabicNumber(chapterNumber);
+      const verseNumAr = convertToArabicNumber(verseNumber);
+      
+      // الترتيب المعكوس في الكود: (اسم السفر الآية:الإصحاح)
+      // \u200e هي LRM (Left-to-Right Mark)
+      reference = `(\u200e${bookName} ${verseNumAr}:${chapterNumAr}\u200e)`;
     } else {
+      // اللغات الأجنبية: لا توجد مشكلة في الترتيب
       reference = `(${bookName} ${chapterNumber}:${verseNumber})`;
     }
     return `${verseText} ${reference}`;
@@ -404,7 +417,7 @@ const handleCompleteChapter = useCallback(() => {
     const chapterKey = `${selectedBookIndex}-${selectedChapterIndex}`;
     const isFavourite = favouriteChapters[chapterKey] !== undefined;
     let newFavouriteChapters = { ...favouriteChapters };
-    
+
     if (isFavourite) {
       delete newFavouriteChapters[chapterKey];
       setFavouriteMessage(language === 'ar' ? 'تم حذف الإصحاح من المفضلة!' : 'Chapter removed from favorites!');
@@ -433,7 +446,7 @@ const handleCompleteChapter = useCallback(() => {
     const verseKey = `${selectedBookIndex}-${selectedChapterIndex}-${verseIndex}`;
     const isFavourite = favouriteVerses[verseKey] !== undefined;
     let newFavouriteVerses = { ...favouriteVerses };
-    
+
     if (isFavourite) {
       delete newFavouriteVerses[verseKey];
       setFavouriteMessage(language === 'ar' ? 'تم الحذف من المفضلة!' : 'Removed from favorites!');
@@ -476,14 +489,14 @@ const handleCompleteChapter = useCallback(() => {
       const [, , verseIdxB] = b.split('-').map(Number);
       return verseIdxA - verseIdxB;
     });
-    
+
     sortedSelectedVerseKeys.forEach(key => {
       const [bookIdx, chapterIdx, verseIdx] = key.split('-').map(Number);
       if (bookIdx === selectedBookIndex && chapterIdx === selectedChapterIndex && verses[verseIdx]) {
         compiledText.push(getFullVerseText(bookIdx, chapterIdx, verseIdx, verses[verseIdx]));
       }
     });
-    
+
     const textToCopy = compiledText.join('\n\n');
     copyTextToClipboard(textToCopy);
     setSelectedVerses(new Set());
@@ -492,11 +505,11 @@ const handleCompleteChapter = useCallback(() => {
   const handleFavouriteSelectedVerses = useCallback(() => {
     if (selectedVerses.size === 0) return;
     let newFavouriteVerses = { ...favouriteVerses };
-    
+
     for (const key of Array.from(selectedVerses)) {
       const isFavourite = newFavouriteVerses[key] !== undefined;
       const [bookIdx, chapterIdx, verseIdx] = key.split('-').map(Number);
-      
+
       if (isFavourite) {
         delete newFavouriteVerses[key];
       } else {
@@ -514,12 +527,12 @@ const handleCompleteChapter = useCallback(() => {
         newFavouriteVerses[key] = verseData;
       }
     }
-    
+
     setFavouriteVerses(newFavouriteVerses);
     saveFavourites(newFavouriteVerses, favouriteChapters);
     setFavouriteMessage(
-      language === 'ar' 
-        ? `تم تحديث المفضلة (${convertToArabicNumber(selectedVerses.size)} آية)!` 
+      language === 'ar'
+        ? `تم تحديث المفضلة (${convertToArabicNumber(selectedVerses.size)} آية)!`
         : `Favorites updated (${selectedVerses.size} Verses)!`
     );
     setSelectedVerses(new Set());
@@ -528,6 +541,38 @@ const handleCompleteChapter = useCallback(() => {
   const isCurrentChapterFavourite = favouriteChapters[`${selectedBookIndex}-${selectedChapterIndex}`] !== undefined;
   const isCurrentChapterCompleted = completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`]?.isCompleted;
   const currentChapterCompletedDate = completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`]?.dateCompleted;
+
+  const isTouchDevice = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  }, []);
+
+  const handleSingleVerseAction = useCallback((verse, index, verseKey) => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+    }
+
+    clickCount.current += 1;
+
+    clickTimer.current = setTimeout(() => {
+      const currentCount = clickCount.current;
+      clickCount.current = 0;
+
+      if (selectedVerses.size > 0) {
+        handleVerseSelection(verseKey);
+      }
+      else if (currentCount === 2) {
+        handleCopySingleVerse(verse, index);
+      } else if (currentCount === 3) {
+        handleFavouriteSingleVerse(verse, index);
+      } else if (currentCount === 1) {
+        if (!isTouchDevice()) {
+          handleVerseSelection(verseKey);
+        }
+      }
+    }, 300);
+  }, [handleCopySingleVerse, handleFavouriteSingleVerse, handleVerseSelection, selectedVerses.size, isTouchDevice]);
+
 
   const handleVerseTouchStart = useCallback((e, verseKey) => {
     e.stopPropagation();
@@ -538,27 +583,20 @@ const handleCompleteChapter = useCallback(() => {
     }, 500);
   }, [handleVerseSelection]);
 
-  const handleVerseTouchEnd = useCallback((e, verseKey) => {
+  const handleVerseTouchEnd = useCallback((e, verse, index, verseKey) => {
     clearTimeout(touchTimeout.current);
     if (!isLongPress.current) {
-      if (selectedVerses.size > 0) {
-        handleVerseSelection(verseKey);
-      }
+      handleSingleVerseAction(verse, index, verseKey);
     }
     isLongPress.current = false;
-  }, [selectedVerses.size, handleVerseSelection]);
+  }, [handleSingleVerseAction]);
 
-  const handleVerseClick = useCallback((e, verseKey) => {
+  const handleVerseClick = useCallback((e, verse, index, verseKey) => {
     e.stopPropagation();
     if (!isTouchDevice()) {
-      handleVerseSelection(verseKey);
+      handleSingleVerseAction(verse, index, verseKey);
     }
-  }, [handleVerseSelection]);
-
-  const isTouchDevice = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  }, []);
+  }, [handleSingleVerseAction, isTouchDevice]);
 
   const getTafsirUrl = useCallback(() => {
     const entry = tafseerIndex?.[selectedBookIndex];
@@ -649,7 +687,7 @@ const handleCompleteChapter = useCallback(() => {
             ))}
           </ul>
         </div>
-        
+
         <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
           <label className={styles.label}>
             🔢 {
@@ -689,7 +727,7 @@ const handleCompleteChapter = useCallback(() => {
           </ul>
         </div>
       </div>
-
+            <div>اضغط مرتين لنسخ آية واحدة <br /> اضغط ثلاثة مرات لوضع أو إزالة آية من المفضلة</div>
       {copiedMessage && (
         <div className={`${styles.messageBox} ${styles.copiedMessage}`} role="alert">
           {copiedMessage}
@@ -770,14 +808,14 @@ const handleCompleteChapter = useCallback(() => {
             const isSelected = selectedVerses.has(verseKey);
             const isFavourite = favouriteVerses[verseKey] !== undefined;
             const favouriteVerseDate = favouriteVerses[verseKey]?.dateAdded;
-
+            
             return (
               <div
                 key={index}
                 className={`${styles.singleVerse} ${isSelected ? styles.selectedVerse : ''} ${isFavourite ? styles.favouriteVerse : ''}`}
                 onTouchStart={(e) => isTouchDevice() && handleVerseTouchStart(e, verseKey)}
-                onTouchEnd={(e) => isTouchDevice() && handleVerseTouchEnd(e, verseKey)}
-                onClick={(e) => handleVerseClick(e, verseKey)}
+                onTouchEnd={(e) => isTouchDevice() && handleVerseTouchEnd(e, verse, index, verseKey)}
+                onClick={(e) => handleVerseClick(e, verse, index, verseKey)}
                 onKeyDown={(e) => handleKeyDown(e, handleVerseSelection, verseKey)}
                 tabIndex={0}
                 role="button"
@@ -795,61 +833,15 @@ const handleCompleteChapter = useCallback(() => {
                     {language === 'ar' ? `أُضيفت للمفضلة: ${favouriteVerseDate}` : `Added to favorites: ${favouriteVerseDate}`}
                   </div>
                 )}
-                <div className={styles.verseActions}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFavouriteSingleVerse(verse, index);
-                    }}
-                    className={`${styles.favouriteButton} ${isFavourite ? styles.isFavourite : ''}`}
-                    title={language === 'ar' ? (isFavourite ? 'إزالة من المفضلة' : 'أضف للمفضلة') : (isFavourite ? 'Remove from Favorites' : 'Add to Favorites')}
-                    aria-label={language === 'ar' ? (isFavourite ? 'إزالة من المفضلة' : 'أضف للمفضلة') : (isFavourite ? 'Remove from Favorites' : 'Add to Favorites')}
-                  >
-                    ⭐
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopySingleVerse(verse, index);
-                    }}
-                    className={styles.copyButton}
-                    title={language === 'ar' ? 'نسخ الآية' : language === 'en' ? 'Copy Verse' : 'Copier le verset'}
-                    aria-label={language === 'ar' ? 'نسخ الآية' : language === 'en' ? 'Copy Verse' : 'Copier le verset'}
-                  >
-                    📋
-                  </button>
-                </div>
               </div>
             );
+            
           }) || <div className={styles.noVersesMessage}>
             {language === 'ar' ? 'لا توجد آيات متاحة لهذا الإصحاح أو السفر.' : 'No verses available for this chapter or book.'}
           </div>}
+          
         </div>
-        <div className={styles.actionButtons}>
-          <button
-            onClick={handlePreviousChapter}
-            className={styles.navButton}
-            disabled={selectedBookIndex === 0 && selectedChapterIndex === 0}
-            aria-label={language === 'ar' ? 'الإصحاح السابق' : 'Previous Chapter'}
-          >
-            {language === 'ar' ? '« السابق' : '« Previous'}
-          </button>
-          <button
-            onClick={handleCompleteChapter}
-            className={`${styles.completeButton} ${isCurrentChapterCompleted ? styles.isCompleted : ''}`}
-            aria-label={language === 'ar' ? (isCurrentChapterCompleted ? 'إلغاء إكمال الإصحاح' : 'أنهيت الإصحاح') : (isCurrentChapterCompleted ? 'Un-complete Chapter' : 'Complete Chapter')}
-          >
-            ✅ {language === 'ar' ? (isCurrentChapterCompleted ? 'إلغاء الإنجاز' : 'أنهيت الإصحاح') : (isCurrentChapterCompleted ? 'Un-complete' : 'Complete Chapter')}
-          </button>
-          <button
-            onClick={handleNextChapter}
-            className={styles.navButton}
-            disabled={selectedBookIndex === bibleData.length - 1 && selectedChapterIndex === chapters.length - 1}
-            aria-label={language === 'ar' ? 'الإصحاح القادم' : 'Next Chapter'}
-          >
-            {language === 'ar' ? 'التالي »' : 'Next »'}
-          </button>
-        </div>
+        
       </div>
     </div>
   );

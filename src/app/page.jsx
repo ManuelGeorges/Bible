@@ -79,6 +79,7 @@ const LandingPage = () => {
     const { getFavorites, saveFavorites } = useFavorites();
     const [startedPlans, setStartedPlans] = useState([]);
     const [user, setUser] = useState(null);
+    const [error, setError] = useState('');
 
     const getTodayDateKey = useCallback(() => {
         const now = new Date();
@@ -184,23 +185,56 @@ const LandingPage = () => {
     }, []);
 
     const copyDailyVerse = useCallback(async () => {
-        if (!dailyVerse) return;
-        const textToCopy = `"${dailyVerse.verse}" - ${dailyVerse.reference}`;
-        try {
-            if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(textToCopy);
-            } else {
-                const el = document.createElement('textarea');
-                el.value = textToCopy;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-            }
-            showCopiedMessage('تم النسخ!');
-        } catch {
-            showCopiedMessage('فشل النسخ!');
+        if (!dailyVerse) {
+            showCopiedMessage('لا توجد آية للنسخ!');
+            return;
         }
+
+        const lre = '\u202A';
+        const pdf = '\u202C';
+
+        const formattedReference = `(${lre}${dailyVerse.reference}${pdf})`;
+        
+        const textToCopyFixed = `"${dailyVerse.verse}" - ${formattedReference}`; 
+        
+        if (navigator.clipboard?.writeText) {
+            try {
+                await navigator.clipboard.writeText(textToCopyFixed); 
+                showCopiedMessage('تم النسخ بنجاح!');
+                return;
+            } catch (err) {
+                console.warn('Failed to copy using clipboard API:', err);
+            }
+        }
+
+        try {
+            const el = document.createElement('textarea');
+            el.value = textToCopyFixed;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            
+            if (el.select) {
+                el.select();
+            } else if (el.setSelectionRange) {
+                el.setSelectionRange(0, el.value.length);
+            }
+            
+            if (document.execCommand('copy')) {
+                showCopiedMessage('تم النسخ بنجاح (طريقة احتياطية)!');
+                document.body.removeChild(el);
+                return;
+            }
+
+            document.body.removeChild(el);
+            showCopiedMessage('فشل النسخ! يرجى المحاولة يدوياً.');
+
+        } catch (err) {
+            console.error('Final copy fallback failed:', err);
+            showCopiedMessage('فشل النسخ! يرجى المحاولة يدوياً.');
+        }
+
     }, [dailyVerse, showCopiedMessage]);
 
     const toggleFavoriteDailyVerse = useCallback(async () => {
@@ -277,7 +311,7 @@ const LandingPage = () => {
             localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
             localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
             setHasAnswered(true);
-            showQuestionMessage(isCorrect ? 'إجابة صحيحة!' : 'إجابة خاطئة.');
+            showQuestionMessage(isCorrect ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
 
             const currentNotes = parseInt(localStorage.getItem('notes') || '0', 10) + pointsToAdd;
             localStorage.setItem('notes', currentNotes.toString());
@@ -327,7 +361,7 @@ const LandingPage = () => {
         
         <main className={`${styles.container} ${styles.rtl}`}>
 <header className={styles.header}>
-                    <img 
+            <img 
             src="/images/Agios.png" 
             alt="Agios bible official logo" 
             className={styles.logoImg}
@@ -353,7 +387,10 @@ const LandingPage = () => {
                     <p className={styles.dailyVerseText}>
                         "{dailyVerse.verse}"
                     </p>
-                    <p className={styles.dailyVerseReference}>
+                    <p 
+                        className={styles.dailyVerseReference}
+                        style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'right' }}
+                    >
                         {dailyVerse.reference}
                     </p>
                     <div className={styles.dailyVerseActions}>
@@ -411,6 +448,11 @@ const LandingPage = () => {
             {questionMessage && (
                 <div className={`${styles.messageBox} ${styles.questionMessage}`}>
                     {questionMessage}
+                </div>
+            )}
+            {error && (
+                <div className={`${styles.messageBox} ${styles.errorMessage}`}>
+                    {error}
                 </div>
             )}
             

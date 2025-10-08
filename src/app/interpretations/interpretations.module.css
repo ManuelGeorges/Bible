@@ -1,0 +1,111 @@
+.container {
+  min-height: 100vh;
+  padding: 0 var(--gap-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: right;
+}
+
+.header {
+  width: 100%;
+  max-width: 900px;
+  padding: var(--gap-large) 0 var(--gap-medium);
+  text-align: center;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--gap-large);
+}
+
+.bookTitle {
+  font-family: 'Cairo', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--gap-small);
+}
+
+.bookSubtitle {
+  font-size: 1.1rem;
+  color: var(--color-text-medium);
+}
+
+.main {
+  width: 100%;
+  max-width: 900px;
+  padding-bottom: var(--gap-large);
+}
+
+.chapterCard {
+  background-color: var(--color-card-bg);
+  backdrop-filter: blur(5px);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--gap-medium);
+  overflow: hidden;
+  box-shadow: 0 4px 10px var(--color-shadow-medium);
+  transition: box-shadow 0.3s var(--transition-smooth);
+  border: 1px solid var(--color-border-light);
+}
+
+.chapterCard:hover {
+  box-shadow: 0 6px 15px var(--color-shadow-light);
+}
+
+.chapterHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--gap-small);
+  background: var(--color-button-primary); 
+  border: none;
+  cursor: pointer;
+  color: var(--button-text-color);
+  transition: background 0.3s var(--transition-smooth);
+}
+
+.chapterHeader:hover {
+  background: var(--button-hover-1);
+}
+
+.chapterTitle {
+  font-family: 'Cairo', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.toggleIcon {
+  font-size: 1.2rem;
+  transition: transform 0.3s var(--transition-smooth);
+}
+
+.chapterContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.7s var(--transition-smooth), padding 0.3s var(--transition-smooth);
+  padding: 0 var(--gap-small);
+  color: var(--color-text-light);
+  text-align: justify;
+}
+
+.open {
+  max-height: 5000px; 
+  padding: var(--gap-small) var(--gap-small);
+}
+
+.chapterContent p {
+  margin-bottom: 1em;
+  font-size: 1rem;
+}
+
+.chapterContent p:last-child {
+  margin-bottom: 0;
+}
+
+.chapterContent h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-accent-cyan);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
