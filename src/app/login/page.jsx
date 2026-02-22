@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth } from '../../lib/firebase';
 import styles from './login.module.css';
 
 const LoginPage = () => {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { app } from '../lib/firebase';
+import { app } from '../../lib/firebase';
 import styles from './intro.module.css';
 
 const auth = typeof window !== 'undefined' ? getAuth(app) : null;
