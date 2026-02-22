@@ -1,23 +1,56 @@
+'use client';
 import Link from 'next/link';
+import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X } from 'lucide-react';
 import styles from './more.module.css';
 
+export default function MoreSidebar({ isOpen, onClose, user }) {
+  const menuItems = [
+    { name: 'الآيات المفضلة', icon: <Heart size={20} />, href: '/favourites' },
+    { name: 'المسابقات', icon: <Trophy size={20} />, href: '/competitions' },
+    { name: 'خطط القراءة', icon: <BookOpen size={20} />, href: '/studyPlans' },
+    { name: 'الملف الشخصي', icon: <User size={20} />, href: '/profile' },
+  ];
 
-
-export default function MorePage() {
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>المزيد</h1>
-      <div className={styles.buttonContainer}>
-        <Link href="/about" className={styles.linkButton}>
-          من نحن
-        </Link>
-        <Link href="/contact" className={styles.linkButton}>
-          تواصل معنا
-        </Link>
-        <Link href="/versions" className={styles.linkButton}>
-          معلومات التحديثات
-        </Link>
+    <>
+      <div className={`${styles.overlay} ${isOpen ? styles.showOverlay : ''}`} onClick={onClose} />
+      
+      <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+        <div className={styles.header}>
+          <button className={styles.closeBtn} onClick={onClose}><X size={24} /></button>
+          <h1 className={styles.title}>المزيد</h1>
+        </div>
+
+        <div className={styles.gridContainer}>
+          {menuItems.map((item, index) => (
+            <Link key={index} href={item.href} className={styles.gridItem} onClick={onClose}>
+              <div className={styles.iconWrapper}>{item.icon}</div>
+              <span className={styles.itemText}>{item.name}</span>
+            </Link>
+          ))}
+          
+          {user && (
+            <Link href="/points" className={styles.gridItem} onClick={onClose}>
+              <div className={styles.iconWrapper}><Coins size={20} /></div>
+              <span className={styles.itemText}>النقاط</span>
+            </Link>
+          )}
+        </div>
+
+        <div className={styles.bottomDivider} />
+
+        <div className={styles.footerLinks}>
+          <Link href="/about" className={styles.footerItem} onClick={onClose}>
+            <Info size={18} /> <span>من نحن</span>
+          </Link>
+          <Link href="/contact" className={styles.footerItem} onClick={onClose}>
+            <Mail size={18} /> <span>تواصل معنا</span>
+          </Link>
+          <Link href="/versions" className={styles.footerItem} onClick={onClose}>
+            <History size={18} /> <span>التحديثات</span>
+          </Link>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

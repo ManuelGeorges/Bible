@@ -683,3 +683,489 @@
     transform: none;
   }
 }
+/* تأثير الهاي لايت للآية المفضلة */
+.favouriteHighlight {
+  background-color: rgba(255, 215, 0, 0.15) !important; /* لون ذهبي خفيف */
+  border-right: 4px solid #ffd700; /* خط جانبي ذهبي */
+  transition: all 0.3s ease;
+}
+
+.favouriteHighlight .verseText {
+  color: #856404; /* لون نص بني ذهبي مريح للعين */
+  font-weight: 500;
+}
+
+.favStar {
+  font-size: 0.8rem;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* تعديل كلاس الاختيار ليكون فوق الهاي لايت */
+.selectedVerse {
+  background-color: rgba(0, 123, 255, 0.2) !important;
+  border-right: 4px solid #007bff;
+}
+
+/* رسالة المفضلة بلون مختلف */
+.favMsg {
+  background-color: #ffd700 !important;
+  color: #000 !important;
+}
+/* Bible.module.css */
+
+.container {
+  padding: clamp(1rem, 3vw, 2rem);
+  background: radial-gradient(circle at center, var(--color-background-start) 0%, var(--color-background-end) 100%);
+  min-height: 100vh;
+  color: var(--color-text-light);
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.title {
+  font-size: clamp(1.5rem, 4vw, 2.8rem);
+  margin-bottom: 1.5rem;
+  color: var(--color-accent-gold);
+  text-align: center;
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: var(--color-accent-gold);
+  border-radius: 2px;
+}
+
+/* تحسين السليكت والقوائم */
+.customSelectWrapper {
+  position: relative;
+  width: 100%;
+  background: var(--color-card-bg);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.selectTrigger {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #fff;
+  min-height: 50px;
+}
+
+/* تحسين حاوية الآيات */
+.verseContainer {
+  width: 100%;
+  max-width: 850px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: clamp(1rem, 2vw, 2rem);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  margin-bottom: 100px;
+}
+
+.singleVerse {
+  position: relative;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: transparent;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+/* الستايل الجديد للمفضلة (Deep Azure) */
+.favouriteHighlight {
+  background: rgba(0, 150, 255, 0.12) !important;
+  border: 1px solid rgba(0, 150, 255, 0.3) !important;
+  border-right: 5px solid #00d4ff !important;
+  box-shadow: 0 4px 15px rgba(0, 150, 255, 0.1);
+}
+
+[dir="ltr"] .favouriteHighlight {
+  border-right: none !important;
+  border-left: 5px solid #00d4ff !important;
+}
+
+.favouriteHighlight .verseText {
+  color: #a0eaff !important; /* لون سماوي مضيء خفيف */
+  text-shadow: 0 0 1px rgba(0, 212, 255, 0.5);
+}
+
+.favStar {
+  color: #00d4ff;
+  margin: 0 8px;
+  filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
+  font-size: 0.9rem;
+}
+
+/* ستايل الاختيار (Selection) */
+.selectedVerse {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.01);
+  z-index: 2;
+}
+
+.verseNumber {
+  color: var(--color-accent-gold);
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  margin: 0 10px;
+  opacity: 0.8;
+}
+
+/* أزرار التنقل السفلية العائمة */
+.navigation {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(15px);
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.navigation button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.navigation button:active {
+  transform: scale(0.8);
+}
+
+/* رسائل التنبيه العائمة */
+.messageBox {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  z-index: 2000;
+  animation: slideDown 0.4s ease-out;
+}
+
+.favMsg {
+  background: #0077ff !important; /* لون الرسالة متناسق مع لون المفضلة الجديد */
+  border: 1px solid #00d4ff;
+}
+
+@keyframes slideDown {
+  from { top: -50px; opacity: 0; }
+  to { top: 20px; opacity: 1; }
+}
+
+/* الأزرار العائمة للمحدد */
+.actionButtons {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 900;
+}
+
+.floatingBtn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--color-accent-gold);
+  color: #000;
+  border: none;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* تحسينات الجوال */
+@media (max-width: 480px) {
+  .verseContainer {
+    padding: 10px;
+    border-radius: 0;
+  }
+  
+  .singleVerse {
+    padding: 15px 10px;
+  }
+
+  .navigation {
+    width: 90%;
+    justify-content: space-around;
+  }
+}
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.verseContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.singleVerse {
+  position: relative;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.verseContent {
+  display: flex;
+  align-items: flex-start; /* الرقم محاذي لأول سطر في الكلام */
+  gap: 8px;
+  width: 100%;
+}
+
+.verseNumber {
+  color: var(--color-accent-gold, #ffcc00);
+  font-weight: bold;
+  font-size: 0.8rem;
+  min-width: 25px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.verseText {
+  font-size: 0.95rem; /* خط أصغر لرؤية آيات أكثر */
+  line-height: 1.5;
+  color: #eee;
+  text-align: justify;
+}
+
+/* لون المفضلة - أزرق سماوي هادئ */
+.favouriteHighlight {
+  background-color: rgba(0, 150, 255, 0.15) !important;
+  border-left: 3px solid #00d4ff;
+}
+[dir="rtl"] .favouriteHighlight {
+  border-left: none;
+  border-right: 3px solid #00d4ff;
+}
+
+.selected {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* قائمة خيارات الكمبيوتر */
+.desktopMenu {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 20px;
+  display: flex;
+  gap: 10px;
+  padding: 5px 12px;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.desktopMenu button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 2px;
+  transition: transform 0.2s;
+}
+
+.desktopMenu button:hover {
+  transform: scale(1.2);
+}
+
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00d4ff;
+  color: #000;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  z-index: 1000;
+}
+
+@media (max-width: 600px) {
+  .verseText {
+    font-size: 0.88rem; /* خط أصغر للموبايل */
+  }
+  .desktopMenu { display: none; } /* لا تظهر منيو الكمبيوتر على الموبايل */
+}
+/* شريط التحديد العلوي */
+.selectionBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #2c3e50;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+.selectionInfo {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.selectionActions {
+  display: flex;
+  gap: 15px;
+}
+
+.actionBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* شكل الآية عند التحديد */
+.selectedVerse {
+  background-color: rgba(52, 152, 219, 0.15) !important;
+  border-inline-start: 5px solid #3498db !important;
+  transition: all 0.2s ease;
+}
+
+/* القائمة المنبثقة للكمبيوتر */
+.singleVerse {
+  position: relative; /* مهم عشان المنيو تظهر صح */
+}
+
+.desktopMenu {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 5px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  z-index: 10;
+  animation: fadeIn 0.2s ease;
+}
+
+/* ضبط مكان المنيو حسب اللغة */
+[dir='rtl'] .desktopMenu {
+  left: 10px;
+}
+
+[dir='ltr'] .desktopMenu {
+  right: 10px;
+}
+
+.desktopMenu button {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: transform 0.1s;
+}
+
+.desktopMenu button:hover {
+  transform: scale(1.1);
+  background: #e9ecef;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-50%) scale(0.9); }
+  to { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
+/* هايلايت المفضلة (لو حابب تميزه عن التحديد) */
+.favouriteHighlight {
+  background-color: rgba(241, 196, 15, 0.1);
+}
+
+/* توست النسخ (Toast) */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  z-index: 3000;
+  pointer-events: none;
+}

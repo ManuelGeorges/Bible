@@ -151,3 +151,59 @@
     height: 20px;
   }
 }
+/* هذا هو الكلاس الذي يغلف كل شيء (main) */
+.mainContent {
+  width: 100%;
+  min-height: 100vh;
+  /* المارجن العلوي ضروري هنا ليدفع المحتوى تحت الـ Navbar الثابت */
+  padding-top: 80px; 
+  display: flex;
+  justify-content: center;
+}
+
+/* الكلاس الذي يغلف المحتوى الداخلي {children} */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  /* أزل الـ padding-top القديم إذا كان موجوداً لتجنب المسافات المزدوجة */
+}
+
+/* تعديل الـ Navbar لضمان أنه في أعلى نقطة */
+.navbarWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 9999; /* رقم عالي جداً ليغطي أي شيء تحته */
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: rgba(30, 58, 138, 0.95); /* لون واضح وعتامة عالية */
+  height: 65px; /* ثبت طول الناف بار لتسهيل حساب المارجن */
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+@media (max-width: 480px) {
+  .navbar {
+    gap: 5px; /* مسافة صغيرة جداً بين الأيقونات */
+    padding: 0 5px;
+  }
+  
+  .navLink {
+    width: 38px; /* تصغير حجم الدائرة قليلاً للموبايل */
+    height: 38px;
+  }
+
+  .navIcon {
+    width: 20px; /* تصغير الأيقونة نفسها */
+    height: 20px;
+  }
+}

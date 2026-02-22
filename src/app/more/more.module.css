@@ -1,47 +1,125 @@
-.container {
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 320px;
+  height: 100vh;
+  background: #1a237e; /* أزرق داكن فخم مشابه لصورتك */
+  z-index: 10000;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 25px;
   display: flex;
   flex-direction: column;
+}
+
+.sidebar.open { right: 0; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  padding: 2rem 1rem;
-  text-align: center;
+  margin-bottom: 35px;
+  flex-direction: row-reverse; /* لجعل العنوان يمين والزر يسار */
 }
 
 .title {
-  color: var(--color-text-light);
-  font-family: 'Cairo', sans-serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  margin-bottom: 2rem;
-  font-weight: 700;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
 }
 
-.buttonContainer {
+.closeBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.gridItem {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 15px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 400px;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: 0.3s;
 }
 
-.linkButton {
-  padding: 1rem 1.5rem;
-  background: var(--button-bg-1);
-  color: var(--button-text-color);
-  border: none;
-  border-radius: var(--border-radius);
-  font-family: 'Cairo', sans-serif;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s var(--transition-smooth);
-  box-shadow: 0 4px 15px var(--color-shadow-medium);
+.gridItem:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+/* تصميم الدائرة حول الأيقونة */
+.iconWrapper {
+  background: rgba(255, 255, 255, 0.1);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.itemText {
+  color: white;
+  font-size: 0.85rem;
   text-align: center;
 }
 
-.linkButton:hover {
-  background: var(--button-hover-1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--color-shadow-medium);
+.bottomDivider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  margin: 30px 0;
 }
+
+.footerLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 8px;
+  flex-direction: row-reverse; /* للعربية */
+}
+
+.footerItem:hover { color: white; }
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+}
+
+.showOverlay { opacity: 1; visibility: visible; }

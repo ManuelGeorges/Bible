@@ -524,3 +524,230 @@
     gap: 0.5rem; 
   } 
 }
+
+/* search.module.css */
+
+.container { 
+  max-width: 900px; 
+  margin: 0 auto; 
+  padding: clamp(1rem, 5vw, 2.5rem) clamp(1rem, 5vw, 1.5rem); 
+  direction: rtl; 
+  text-align: right; 
+  color: #263238; 
+} 
+
+.card { 
+  background: linear-gradient(135deg, #ffffff, #f7f9fc); 
+  border-radius: clamp(12px, 4vw, 20px); 
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); 
+  padding: clamp(1.5rem, 8vw, 3rem); 
+  overflow: visible; /* تم التعديل من hidden لـ visible عشان القوائم تظهر */
+  position: relative; 
+} 
+
+.heading { 
+  font-family: 'Cairo', sans-serif; 
+  font-size: clamp(1.5rem, 6vw, 2.5rem); 
+  color: #004d40; 
+  margin-bottom: 0.5rem; 
+  border-bottom: clamp(2px, 0.5vw, 3px) solid #e0f2f1; 
+  padding-bottom: clamp(0.5rem, 2vw, 0.75rem); 
+  text-align: center; 
+  font-weight: 700; 
+} 
+
+.description { 
+  font-size: clamp(0.9rem, 3.5vw, 1.1rem); 
+  color: #546e7a; 
+  line-height: 1.8; 
+  margin-bottom: clamp(1.5rem, 5vw, 2.5rem); 
+  text-align: center; 
+} 
+
+/* تحسين الجريد للفلاتر */
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.inputGroup { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 1rem; 
+  margin-bottom: 1.5rem; 
+} 
+
+.input { 
+  flex: 1;
+  min-width: 200px;
+  padding: 0.8rem 1.25rem; 
+  border: 2px solid #e0e0e0; 
+  border-radius: 12px; 
+  font-size: 1rem; 
+  transition: all 0.3s; 
+  background-color: #fafafa; 
+} 
+
+.input:focus { 
+  outline: none; 
+  border-color: #00796B; 
+  box-shadow: 0 0 10px rgba(0, 121, 107, 0.1); 
+} 
+
+.searchButton { 
+  padding: 0.8rem 2rem; 
+  background-color: #00796B; 
+  color: #fff; 
+  border: none; 
+  border-radius: 12px; 
+  cursor: pointer; 
+  font-weight: bold;
+  transition: 0.3s; 
+} 
+
+.searchButton:hover { 
+  background-color: #004d40; 
+  transform: translateY(-2px); 
+} 
+
+.searchTypeSelector { 
+  display: flex; 
+  justify-content: center; 
+  gap: 2rem; 
+  margin: 1.5rem 0; 
+} 
+
+.radioLabel { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.5rem;
+  cursor: pointer; 
+  color: #546e7a; 
+} 
+
+/* المنيو المنسدلة */
+.customSelectWrapper { 
+  position: relative; 
+  flex: 1; 
+} 
+
+.selectTrigger { 
+  background-color: #e0f2f1; 
+  border: 2px solid #b2dfdb; 
+  border-radius: 12px; 
+  padding: 0.8rem 1rem; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  color: #004d40; 
+} 
+
+.dropdownMenu { 
+  position: absolute; 
+  top: 100%; 
+  right: 0; 
+  left: 0;
+  z-index: 999; 
+  background-color: #fff; 
+  border: 1px solid #e0e0e0; 
+  border-radius: 12px; 
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); 
+  max-height: 250px; 
+  overflow-y: auto; 
+  list-style: none; 
+  padding: 0.5rem 0;
+} 
+
+.dropdownItem { 
+  padding: 0.75rem 1rem; 
+  cursor: pointer; 
+} 
+
+.dropdownItem:hover { 
+  background-color: #e0f2f1; 
+}
+
+/* تمييز الكلمات المبحوث عنها */
+.highlight { 
+  background-color: #fff176; 
+  padding: 0 2px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #000;
+} 
+
+.resultsContainer { 
+  margin-top: 2rem;
+  display: flex; 
+  flex-direction: column; 
+  gap: 1.5rem; 
+} 
+
+.verseCard { 
+  background-color: #fff; 
+  border: 1px solid #e0f2f1; 
+  border-radius: 16px; 
+  padding: 1.5rem; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  transition: 0.3s; 
+} 
+
+.verseCard:hover { 
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.verseText { 
+  font-size: 1.15rem; 
+  line-height: 2; 
+  color: #37474f; 
+} 
+
+.verseNumber { 
+  color: #00796B; 
+  font-weight: bold; 
+  margin-left: 0.75rem; 
+} 
+
+.verseReference { 
+  margin-top: 1rem; 
+  padding-top: 1rem; 
+  border-top: 1px dashed #cfd8dc; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  color: #004d40;
+  font-weight: bold;
+}
+
+.actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 5px;
+}
+
+/* التنبيهات */
+.messageBox { 
+  position: fixed; 
+  bottom: 20px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  padding: 1rem 2rem; 
+  border-radius: 50px; 
+  background: #333; 
+  color: #fff; 
+  z-index: 10000; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #00796B;
+  font-weight: bold;
+}

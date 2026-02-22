@@ -1,4 +1,4 @@
-import { LanguageProvider } from './../context/LanguageContext';
+import { LanguageProvider } from '../context/LanguageContext';
 
 export const metadata = {
   title: ' المزيد | Agios Bible',

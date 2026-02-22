@@ -151,3 +151,69 @@
     height: 20px;
   }
 }
+
+/* الحاوية الخارجية للـ Navbar */
+.navbarWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    /* لضمان عدم وجود مسافات فارغة فوقه */
+    padding: 0;
+    margin: 0;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-evenly; /* توزيع متساوي تماماً للأيقونات */
+    align-items: center;
+    background-color: rgba(30, 58, 138, 0.95); /* لون مشبع أكثر ليفصل عن المحتوى */
+    padding: 10px 5px;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* حل مشكلة اختفاء المحتوى خلف الـ Navbar */
+/* طبق هذا الكلاس على الحاوية التي تلي الـ Navbar في ملف الـ Layout */
+.mainContent {
+    margin-top: 70px !important; /* دفع المحتوى لأسفل بقيمة أكبر من طول الـ Navbar */
+    padding: 20px;
+    width: 100%;
+}
+
+.navLink {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    color: white;
+    transition: background 0.2s;
+}
+
+.navLink:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navIcon {
+    width: 24px;
+    height: 24px;
+}
+
+/* تحسين الموبايل الصغير جداً */
+@media (max-width: 380px) {
+    .navbar {
+        gap: 2px;
+    }
+    .navLink {
+        width: 35px;
+        height: 35px;
+    }
+    .navIcon {
+        width: 20px;
+        height: 20px;
+    }
+}

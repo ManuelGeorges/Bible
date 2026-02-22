@@ -7,25 +7,31 @@ export async function POST(req) {
   try {
     const { prompt } = await req.json();
 
-    if (!prompt || typeof prompt !== 'string') {
-      return NextResponse.json({ message: 'Prompt is required and must be a string.' }, { status: 400 });
-    }
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash',
+      generationConfig: { response_mime_type: "application/json" }
+    });
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const result = await model.generateContent(prompt);
-    const response = result.response;
-    let text = response.text();
+    const text = result.response.text();
 
-    text = text.replace(/^`+json\s*|`+$/g, '');
-
-    return NextResponse.json({ response: text }, { status: 200 });
-  } catch (error) {
-    if (error.response && error.response.status) {
-      console.error('Gemini API Error:', error.response.status, error.response.statusText);
-      return NextResponse.json({ message: `Gemini API Error: ${error.response.statusText}` }, { status: error.response.status });
-    } else {
-      console.error('General Error:', error);
-      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    // Verification: Try to parse it here to catch errors early
+    try {
+      JSON.parse(text); 
+      return NextResponse.json({ response: text }, { status: 200 });
+    } catch (parseError) {
+      console.error("AI returned invalid JSON:", text);
+      return NextResponse.json({ message: 'AI Response format error' }, { status: 500 });
     }
+
+  } catch (error) {
+    console.error('--- TERMINAL ERROR LOG ---');
+    console.error('Error Message:', error.message);
+    
+    const status = error.status || 500;
+    return NextResponse.json({ 
+      message: 'Gemini Error', 
+      details: error.message 
+    }, { status: status });
   }
 }
