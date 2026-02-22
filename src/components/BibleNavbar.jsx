@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '/lib/firebase';
+import { auth } from '@lib/firebase';
 import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
 
