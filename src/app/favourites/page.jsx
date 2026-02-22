@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import styles from './favourites.module.css';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from '@lib/firebase';
+import { db } from '../lib/firebase';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;

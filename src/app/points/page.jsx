@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './points.module.css';
-import { db } from '@lib/firebase';
+import { db } from '../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { FaBookOpen, FaFeatherAlt, FaHeart, FaCalendarCheck } from 'react-icons/fa';
