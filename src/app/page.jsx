@@ -7,7 +7,7 @@ import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from './lib/firebase';
+import { db } from '../lib/firebase';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
