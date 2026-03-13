@@ -13,6 +13,7 @@ export const viewport = {
 };
 
 export const metadata = {
+  manifest: "/manifest.json",
   publisher: 'Agios Bible',
   title: 'الموقع الرسمي | Agios Bible ',
   description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات',
