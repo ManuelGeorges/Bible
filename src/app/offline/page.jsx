@@ -1,4 +1,5 @@
-// src/app/offline/page.tsx
+// src/app/offline/page.jsx
+'use client';
 export default function OfflinePage() {
   return (
     <div style={{ 
