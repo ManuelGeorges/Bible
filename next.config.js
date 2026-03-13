@@ -36,8 +36,14 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig = {
+  experimental: {
+    turbo: {
+      enabled: false
+    }
+  },
   webpack: (config) => {
-    return config;}
+    return config;
+  },
 };
 
 module.exports = withPWA(nextConfig);
