@@ -59,6 +59,19 @@ export default function BibleContent() {
   }, [user]);
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (bookDropdownRef.current && !bookDropdownRef.current.contains(event.target)) {
+        setIsBookDropdownOpen(false);
+      }
+      if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(event.target)) {
+        setIsChapterDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     const loadData = async () => {
       try {
         const [namesRes, bibleRes] = await Promise.all([
@@ -107,6 +120,31 @@ export default function BibleContent() {
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
+  const copyChapter = () => {
+    const chapters = bibleData[selectedBookIndex]?.chapters || [];
+    const verses = chapters[selectedChapterIndex] || [];
+    const fullContent = verses.map((v, i) => `${i + 1}. ${v}`).join('\n') + `\n\n(${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1})`;
+    navigator.clipboard.writeText(fullContent);
+    setCopiedMessage(language === 'ar' ? 'تم نسخ الإصحاح كاملاً' : 'Chapter Copied');
+    setTimeout(() => setCopiedMessage(''), 2000);
+  };
+
+  const favoriteChapter = () => {
+    const chapters = bibleData[selectedBookIndex]?.chapters || [];
+    const verses = chapters[selectedChapterIndex] || [];
+    setFavouriteVerses(prev => {
+      const next = { ...prev };
+      verses.forEach((v, i) => {
+        const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
+        next[key] = { text: v, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: i };
+      });
+      saveToFirestore(next, completedChapters);
+      return next;
+    });
+    setCopiedMessage(language === 'ar' ? 'تمت إضافة الإصحاح للمفضلة' : 'Chapter Added to Favorites');
+    setTimeout(() => setCopiedMessage(''), 2000);
+  };
+
   const toggleFav = (text, index) => {
     const key = `${selectedBookIndex}-${selectedChapterIndex}-${index}`;
     setFavouriteVerses(prev => {
@@ -126,7 +164,7 @@ export default function BibleContent() {
       .map(sv => `${sv.text} (${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1}:${sv.index + 1})`)
       .join('\n');
     navigator.clipboard.writeText(text);
-    setCopiedMessage(language === 'ar' ? 'تم نسخ المختار' : 'Copied Selected');
+    setCopiedMessage(language === 'ar' ? 'تم نسخ الآيات المختارة' : 'Copied Selected');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -141,7 +179,9 @@ export default function BibleContent() {
       saveToFirestore(next, completedChapters);
       return next;
     });
+    setCopiedMessage(language === 'ar' ? 'تمت الإضافة للمفضلة' : 'Added to Favorites');
     setSelectedVerses([]);
+    setTimeout(() => setCopiedMessage(''), 2000);
   };
 
   const toggleVerseSelection = (v, i) => {
@@ -156,7 +196,6 @@ export default function BibleContent() {
     isMoving.current = false;
     isLongPressActive.current = false;
     touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    
     longPressTimer.current = setTimeout(() => {
       if (!isMoving.current) {
         isLongPressActive.current = true;
@@ -177,21 +216,15 @@ export default function BibleContent() {
 
   const handleTouchEnd = (e, v, i) => {
     clearTimeout(longPressTimer.current);
-    
-    if (isLongPressActive.current || isMoving.current) {
-      return;
-    }
-
+    if (isLongPressActive.current || isMoving.current) return;
     const now = Date.now();
     const timespan = now - lastTap.current;
-
     if (timespan < 350 && timespan > 0) {
       tapCount.current++;
     } else {
       tapCount.current = 1;
     }
     lastTap.current = now;
-
     if (tapCount.current === 2) {
       setTimeout(() => {
         if (tapCount.current === 2) copyVerse(v, i);
@@ -220,7 +253,7 @@ export default function BibleContent() {
       {selectedVerses.length > 0 && (
         <div className={styles.selectionBar}>
           <div className={styles.selectionInfo}>
-            <span>{language === 'ar' ? `تم تحديد ${convertToArabicNumber(selectedVerses.length)}` : `Selected ${selectedVerses.length}`}</span>
+            <span>{language === 'ar' ? `تحديد ${convertToArabicNumber(selectedVerses.length)}` : `Selected ${selectedVerses.length}`}</span>
           </div>
           <div className={styles.selectionActions}>
             <button onClick={copySelected} className={styles.actionBtn}>📋</button>
@@ -234,7 +267,10 @@ export default function BibleContent() {
 
       <div className={styles.controls}>
         <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
-          <div className={styles.selectTrigger} onClick={() => setIsBookDropdownOpen(!isBookDropdownOpen)}>
+          <div className={styles.selectTrigger} onClick={() => {
+              setIsBookDropdownOpen(!isBookDropdownOpen);
+              setIsChapterDropdownOpen(false);
+          }}>
             {getBookName(selectedBookIndex)}
           </div>
           {isBookDropdownOpen && (
@@ -249,7 +285,10 @@ export default function BibleContent() {
         </div>
 
         <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
-          <div className={styles.selectTrigger} onClick={() => setIsChapterDropdownOpen(!isChapterDropdownOpen)}>
+          <div className={styles.selectTrigger} onClick={() => {
+              setIsChapterDropdownOpen(!isChapterDropdownOpen);
+              setIsBookDropdownOpen(false);
+          }}>
             {language === 'ar' ? `إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}` : `Chapter ${selectedChapterIndex + 1}`}
           </div>
           {isChapterDropdownOpen && (
@@ -267,7 +306,12 @@ export default function BibleContent() {
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
 
       <div className={styles.verseContainer}>
-        <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+          <button onClick={copyChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>📋</button>
+          <h2 className={styles.chapterTitle} style={{ margin: 0 }}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
+          <button onClick={favoriteChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>❤️</button>
+        </div>
+        
         {verses.map((v, i) => {
           const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
           const isFav = favouriteVerses[key];

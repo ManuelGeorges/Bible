@@ -6,6 +6,8 @@ import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import RegisterSW from './RegisterSW';
+import ConnectivityListener from '../components/ConnectivityListener';
+import { Toaster } from 'react-hot-toast';
 
 export const viewport = {
   width: 'device-width',
@@ -51,6 +53,7 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl">
       <body>
         <LanguageProvider>
+          <ConnectivityListener />
           <RegisterSW />
           <SEOlinks />
           <BibleNavbar />
@@ -58,7 +61,7 @@ export default function RootLayout({ children }) {
             <div className={styles.container}>{children}</div>
           </main>
           <Footer />
-        </LanguageProvider> 
+        </LanguageProvider>
       </body>
       <Script
         src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"

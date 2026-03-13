@@ -1,9 +1,8 @@
-
-
 .container {
+  width: 100%;
+  max-width: 100% !important;
+  margin: 0 !important;
   padding: clamp(20px, 5vw, 40px);
-  max-width: min(1200px, 95vw);
-  margin: 20px auto;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: var(--color-text-light);
@@ -14,8 +13,8 @@
   align-items: center;
   min-height: 100vh;
   gap: clamp(30px, 8vw, 60px);
-  border-radius: var(--border-radius);
-  box-shadow: 0 20px 60px var(--color-shadow-medium);
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .rtl {
@@ -51,13 +50,15 @@
   height: auto;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
   margin-bottom: 0.5rem;
-  box-shadow: 10px 10px 10px black ;
+  box-shadow: 10px 10px 10px black;
   border-radius: 10px;
   transition: transform .7s ease;
 }
-.logoImg:hover{
+
+.logoImg:hover {
   transform: scale(1.1);
 }
+
 .siteTitle {
   color: var(--color-accent-gold);
   margin: 0;
@@ -83,31 +84,6 @@
   margin: 0;
 }
 
-@keyframes floating {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .logoImg {
-    animation: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .header {
-    gap: 1rem;
-  }
-
-  .siteTitle {
-    font-size: clamp(2rem, 7vw, 4rem);
-  }
-  
-  .subtitle {
-    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-  }
-}
-
 .heading {
   color: var(--color-accent-gold);
   margin: 0;
@@ -123,14 +99,9 @@
 }
 
 @keyframes floating {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
-
 
 .languageContainer {
   display: flex;
@@ -178,18 +149,6 @@
   box-shadow: 0 6px 16px var(--color-shadow-medium);
 }
 
-.languageSelect:focus {
-  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.4);
-  background: rgba(255, 255, 255, 1);
-}
-
-.languageSelect option {
-  background: white;
-  color: var(--color-primary);
-  padding: 8px 12px;
-  font-weight: 600;
-}
-
 .dailyVerseBox {
   background: var(--color-card-bg);
   border-radius: var(--border-radius);
@@ -204,18 +163,6 @@
   overflow: hidden;
 }
 
-.dailyVerseBox::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  opacity: 0.8;
-  pointer-events: none;
-}
-
 .dailyVerseBox:hover {
   transform: translateY(-5px) scale(1.02);
 }
@@ -225,7 +172,6 @@
   font-weight: 700;
   color: var(--color-accent-gold);
   margin: 0 0 var(--gap-medium) 0;
-  text-shadow: 0 2px 4px var(--color-shadow-light);
 }
 
 .dailyVerseText {
@@ -233,8 +179,6 @@
   line-height: 1.7;
   margin: 0 0 var(--gap-medium) 0;
   color: var(--color-text-light);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  text-shadow: 0 1px 2px var(--color-shadow-light);
   white-space: pre-wrap;
 }
 
@@ -243,7 +187,6 @@
   color: rgba(248, 249, 250, 0.8);
   font-style: italic;
   font-weight: 500;
-  margin: 0 0 var(--gap-medium) 0;
 }
 
 .dailyVerseActions {
@@ -274,15 +217,8 @@
   background: var(--color-accent-gold);
   color: var(--color-primary);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
 }
 
-.actionButton.isFavourite {
-  background: var(--color-accent-gold);
-  color: var(--color-primary);
-}
-
-/* New CSS for Daily Question Section */
 .dailyQuestionBox {
   background: var(--color-card-bg);
   border-radius: var(--border-radius);
@@ -297,26 +233,6 @@
   overflow: hidden;
 }
 
-.dailyQuestionBox:hover {
-  transform: translateY(-5px) scale(1.02);
-}
-
-.dailyQuestionTitle {
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
-  font-weight: 700;
-  color: var(--color-accent-gold);
-  margin: 0 0 var(--gap-medium) 0;
-  text-shadow: 0 2px 4px var(--color-shadow-light);
-}
-
-.dailyQuestionText {
-  font-size: clamp(1.2rem, 4vw, 1.5rem);
-  line-height: 1.7;
-  margin-bottom: var(--gap-large);
-  color: var(--color-text-light);
-}
-
-/* New styles for Options */
 .optionsContainer {
   display: grid;
   grid-template-columns: 1fr;
@@ -336,101 +252,12 @@
   color: var(--color-text-light);
   cursor: pointer;
   transition: all 0.3s var(--transition-smooth);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.optionButton:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.optionButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.correctAnswer {
-  background-color: #4CAF50; 
-  color: white;
-  border-color: #4CAF50;
-}
-
-.wrongAnswer {
-  background-color: #f44336; /* Red */
-  color: white;
-  border-color: #f44336;
-}
-
-
-@keyframes pulseCorrect {
-  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
-}
-
-/* Existing message box styles */
-.messageBox {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  min-width: 250px;
-  text-align: center;
-}
-
-.copiedMessage {
-  background-color: #4CAF50; /* Green */
-  color: white;
-}
-
-.favouriteMessage {
-  background-color: #f44336; /* Red */
-  color: white;
-}
-
-.questionMessage {
-  background-color: #2196F3; /* Blue */
-  color: white;
-}
-
-@keyframes fadeOut {
-  0% { opacity: 1; transform: translateX(-50%); }
-  80% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-}
-
-/* Existing styles for plans section */
 .plansSection {
   width: 100%;
   max-width: 1200px;
   margin-top: 4rem;
-}
-
-.plansSectionTitle {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 800;
-  color: var(--color-text-light);
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.plansSectionTitle::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 5px;
-  background-color: var(--color-accent-gold);
-  border-radius: 2px;
 }
 
 .plansGrid {
@@ -438,211 +265,35 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 2rem;
   width: 100%;
-  justify-content: center;
 }
 
 .card {
-  position: relative;
   background-color: var(--color-card-bg);
   border-radius: var(--border-radius);
   box-shadow: 0 10px 30px var(--color-shadow-medium);
   transition: all 0.4s var(--transition-smooth);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 40px var(--color-shadow-medium);
-}
-
-.cardImageContainer {
-  height: 200px;
-  overflow: hidden;
-  position: relative;
-  z-index: 2;
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
-}
-
-.cardImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.card:hover .cardImage {
-  transform: scale(1.1);
-}
-
-.cardContent {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  position: relative;
-  z-index: 2;
-  color: var(--color-text-light);
-}
-
-.cardTitle {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-accent-gold);
-  line-height: 1.2;
-  margin-bottom: 0.75rem;
-}
-
-.cardDescription {
-  font-size: 0.95rem;
-  color: rgba(248, 249, 250, 0.8);
-  margin-bottom: 1.5rem;
-  min-height: 60px;
-}
-
-.cardDetails {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  color: rgba(248, 249, 250, 0.9);
-  margin-top: auto;
-}
-
-.detailItem {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.detailLabel {
-  font-weight: 600;
-}
-
-.detailValue {
-  font-weight: 400;
-  color: var(--color-accent-gold);
-}
-
-.completionStatus {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.completionSummary {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-accent-gold);
-  text-align: center;
-}
-
-.progressBar {
-  width: 100%;
-  height: 8px;
-  background-color: rgba(248, 249, 250, 0.3);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background-color: var(--color-accent-gold);
-  transition: width 0.5s ease-in-out;
-}
-
-.cardActions {
-  padding-top: 1.5rem;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-
-.cardButton {
-  display: inline-block;
-  background: var(--color-button-primary);
-  color: white;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px var(--color-shadow-medium);
-}
-
-.cardButton:hover {
-  background-color: var(--color-button-secondary);
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px var(--color-shadow-medium);
 }
 
 @media (max-width: 768px) {
   .container {
-    gap: clamp(20px, 6vw, 40px);
     padding: clamp(16px, 4vw, 32px);
   }
-
-  .languageContainer {
-    flex-direction: column;
-    gap: var(--gap-small);
-    padding: var(--gap-small) var(--gap-medium);
-  }
-
-  .dailyVerseActions {
-    flex-direction: column;
-  }
-
-  .actionButton {
-    width: 100%;
-  }
-
   .plansGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .card {
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .optionsContainer {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    margin: 10px;
-    border-radius: 12px;
-  }
-
-  .dailyVerseBox {
-    width: calc(100% - 20px);
-  }
-
-  .messageBox {
-    left: 10px;
-    right: 10px;
-    transform: none;
-    width: calc(100% - 20px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-
-  .actionButton:hover,
-  .button:hover,
-  .languageContainer:hover,
-  .dailyVerseBox:hover {
-    transform: none;
+    margin: 0 !important;
+    border-radius: 0 !important;
   }
 }
 
 @media (min-width: 1400px) {
   .container {
-    max-width: 1400px;
+    max-width: 100% !important;
   }
 }

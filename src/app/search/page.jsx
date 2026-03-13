@@ -212,7 +212,7 @@ export default function BibleSearchPage({ user }) {
 
           <div className={styles.searchTypeSelector}>
             <label><input type="radio" checked={searchType === 'literal'} onChange={() => setSearchType('literal')} /> بحث حرفي</label>
-            <label><input type="radio" checked={searchType === 'derivatives'} onChange={() => setSearchType('derivatives')} /> بحث بالمشتقات</label>
+            <label className="requires-online btn-primary"><input type="radio" checked={searchType === 'derivatives'} onChange={() => setSearchType('derivatives')} /> بحث بالمشتقات</label>
           </div>
 
           <div className={styles.filterGrid}>
