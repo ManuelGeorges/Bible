@@ -2,6 +2,7 @@
 const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
   cacheOnFrontEndNav: true, 
+  sw: "sw.js",
   aggressiveFrontEndNavCaching: true, 
   reloadOnOnline: true,
   swMinify: true,

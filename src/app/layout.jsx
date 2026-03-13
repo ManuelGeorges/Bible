@@ -1,4 +1,3 @@
-// app/layout.jsx
 import './globals.css';
 import styles from './layout.module.css';
 import { LanguageProvider } from './context/LanguageContext';
@@ -6,6 +5,7 @@ import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
+import RegisterSW from './RegisterSW';
 
 export const viewport = {
   width: 'device-width',
@@ -51,6 +51,7 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl">
       <body>
         <LanguageProvider>
+          <RegisterSW />
           <SEOlinks />
           <BibleNavbar />
           <main className={styles.mainContent}>
@@ -71,7 +72,7 @@ export default function RootLayout({ children }) {
           gtag('config', 'G-J90H6JXHNG');
         `}
       </Script>
-      <Script type="application/ld+json">
+      <Script type="application/ld+json" strategy="afterInteractive">
         {`
           {
             "@context": "https://schema.org",
