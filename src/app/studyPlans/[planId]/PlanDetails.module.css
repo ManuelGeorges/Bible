@@ -1,327 +1,103 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2.5rem);
-  background-color: #f0f4f8;
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
-  color: #2d3748;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: clamp(2rem, 6vw, 3rem);
-  padding: clamp(1.5rem, 5vw, 2rem);
-  background: linear-gradient(to right, #4a5568, #2d3748);
-  color: #fff;
-  border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  width: 100%;
   max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  direction: rtl;
 }
 
 .title {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 800;
-  margin-bottom: 0.75rem;
-  letter-spacing: 1px;
-}
-
-.description {
-  font-size: clamp(1rem, 3vw, 1.1rem);
-  opacity: 0.9;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.details {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(1rem, 4vw, 3rem);
-  margin-bottom: clamp(1.5rem, 4vw, 2rem);
-  background-color: #fff;
-  padding: clamp(1rem, 4vw, 1.5rem) clamp(1.5rem, 6vw, 3rem);
-  border-radius: 16px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  width: 100%;
-  max-width: 900px;
-}
-
-.detailItem {
-  display: flex;
-  align-items: center;
-  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-}
-
-.detailLabel {
-  font-weight: 700;
-  color: #48bb78;
-  margin-left: 0.75rem;
-}
-
-.detailValue {
-  font-weight: 500;
-  color: #4a5568;
-}
-
-.goToDayContainer {
-  width: 100%;
-  max-width: 800px;
-  margin-bottom: clamp(1.5rem, 4vw, 2rem);
-  display: flex;
-  justify-content: center;
-}
-
-.goToDayContainer form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 400px;
-  background-color: #fff;
-  padding: 0.5rem;
-  border-radius: 50px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.goToDayInput {
-  flex-grow: 1;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 50px;
-  font-size: 1rem;
-  outline: none;
-  background-color: transparent;
-  text-align: right;
-  color: #2d3748;
-  min-width: 120px;
-}
-
-.goToDayInput::placeholder {
-  color: #a0aec0;
-}
-
-.goToDayButton {
-  background-color: #48bb78;
-  color: #fff;
-  border: none;
-  padding: 0.75rem 2rem;
-  border-radius: 50px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.goToDayButton:hover {
-  background-color: #38a169;
-  transform: translateY(-2px);
-}
-
-.completionSummary {
-  width: 100%;
-  max-width: 800px;
-  background-color: #fff;
-  border-radius: 16px;
-  padding: clamp(1.5rem, 4vw, 2rem);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  margin-bottom: clamp(1.5rem, 4vw, 2rem);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  font-size: 2.5rem;
+  color: #1a365d;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-}
-
-.completionText {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  font-weight: 700;
-  color: #2c5282;
   margin-bottom: 1rem;
-  z-index: 1;
-}
-
-.completedCount {
-  font-size: clamp(2rem, 6vw, 2.5rem);
-  font-weight: 800;
-  color: #48bb78;
-  display: block;
 }
 
 .progressBar {
   width: 100%;
-  height: 12px;
-  background-color: #e2e8f0;
-  border-radius: 6px;
+  height: 15px;
+  background: #edf2f7;
+  border-radius: 20px;
   overflow: hidden;
-  margin-bottom: 0.75rem;
+  margin: 2rem 0;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(to right, #48bb78, #38a169);
-  transition: width 0.5s ease-in-out;
-  border-radius: 6px;
-}
-
-.percentageText {
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  font-weight: 600;
-  color: #4a5568;
-}
-
-.mainContent {
-  width: 100%;
-  max-width: 800px;
-}
-
-.readingsTitle {
-  font-size: clamp(1.8rem, 5vw, 2.25rem);
-  font-weight: 700;
-  color: #4a5568;
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.readingsTitle::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 4px;
-  background-color: #48bb78;
-  border-radius: 2px;
+  background: linear-gradient(to left, #48bb78, #38a169);
+  transition: width 0.5s ease;
 }
 
 .readingsList {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
-  margin: 0;
 }
 
 .readingItem {
-  background-color: #ffffff;
-  border-radius: 16px;
-  margin-bottom: 1.5rem;
-  padding: clamp(1.5rem, 4vw, 2rem);
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-  border-left: 6px solid #e2e8f0;
-  opacity: 1;
-}
-
-.readingItem:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-  border-left-color: #48bb78;
-}
-
-.readingHeader {
+  background: #fff;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px dashed #e2e8f0;
-}
-
-.dayNumber {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
-  font-weight: 800;
-  color: #2c5282;
-}
-
-.completionCheckbox {
-  appearance: none;
-  width: 28px;
-  height: 28px;
-  border: 3px solid #cbd5e0;
-  border-radius: 8px;
-  cursor: pointer;
-  position: relative;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
-  flex-shrink: 0;
 }
 
-.completionCheckbox:checked {
-  background-color: #48bb78;
-  border-color: #48bb78;
-  animation: bounce-in 0.5s ease;
-}
-
-.completionCheckbox:checked::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: 8px;
-  width: 6px;
-  height: 12px;
-  border: solid #fff;
-  border-width: 0 3px 3px 0;
-  transform: rotate(45deg);
-}
-
-.completedDay {
+.readingItem.completed {
   background-color: #f0fff4;
-  border-left-color: #38a169;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  border-color: #c6f6d5;
 }
 
-.disabledDay {
-  opacity: 0.6;
-  pointer-events: none;
+.readingItem span {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #2d3748;
 }
 
 .books {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
-.book {
-  text-decoration: none;
-  background-color: #e2e8f0;
+.books a {
+  background: #edf2f7;
   color: #2c5282;
-  padding: 0.6rem 1.25rem;
+  padding: 0.5rem 1rem;
   border-radius: 50px;
+  text-decoration: none;
+  font-size: 0.9rem;
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  font-size: clamp(0.8rem, 2vw, 1rem);
 }
 
-.book:hover {
-  background-color: #48bb78;
+.books a:hover {
+  background: #2c5282;
   color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.readingItem.highlight {
-  border: 3px solid #fbd38d;
-  background-color: #fffbeb;
-  animation: highlight-pulse 2s ease-out;
+/* ستايل التشيك بوكس */
+.readingItem input[type="checkbox"] {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  accent-color: #48bb78;
 }
 
-@keyframes highlight-pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(251, 211, 141, 0.7);
-  }
-  70% {
-    transform: scale(1.01);
-    box-shadow: 0 0 0 10px rgba(251, 211, 141, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(251, 211, 141, 0);
-  }
+/* الأيام المغلقة */
+.readingItem:has(input:disabled) {
+  opacity: 0.5;
+  background: #f7fafc;
+  cursor: not-allowed;
+}
+
+.highlight {
+  animation: highlightAnimation 2s;
+}
+
+@keyframes highlightAnimation {
+  0% { background-color: #fff3cd; transform: scale(1); }
+  50% { background-color: #ffeeba; transform: scale(1.02); }
+  100% { background-color: #fff; transform: scale(1); }
 }

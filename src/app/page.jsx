@@ -172,9 +172,30 @@ const LandingPage = () => {
         if (hasAnswered || !dailyQuestion) return;
         setSelectedAnswer(index);
         setHasAnswered(true);
-        localStorage.setItem(`questionAnswered_${getTodayDateKey()}`, 'true');
-        showQuestionMessage(index === dailyQuestion.answerIndex ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
-    }, [hasAnswered, dailyQuestion, showQuestionMessage, getTodayDateKey]);
+        const isCorrect = index === dailyQuestion.answerIndex;
+        const dateKey = getTodayDateKey();
+        localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
+
+        if (user) {
+            try {
+                const userRef = doc(firestore, 'users', user.uid);
+                await setDoc(userRef, {
+                    answeredQuestions: {
+                        [dateKey]: {
+                            answered: true,
+                            correct: isCorrect,
+                            timestamp: new Date().toISOString()
+                        }
+                    }
+                }, { merge: true });
+                showQuestionMessage(isCorrect ? 'إجابة صحيحة! 🎉 تم إضافة نقاط لرصيدك' : 'إجابة خاطئة. 😔');
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            showQuestionMessage(isCorrect ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
+        }
+    }, [hasAnswered, dailyQuestion, user, getTodayDateKey, showQuestionMessage]);
 
     const getOptionClassName = (index) => {
         if (!hasAnswered) return styles.optionButton;
@@ -202,6 +223,17 @@ const LandingPage = () => {
                             <path d="M12 15L12 3M12 15L8 11M12 15L16 11M2 17L2 18C2 19.6569 3.34315 21 5 21L19 21C20.6569 21 22 19.6569 22 18L22 17" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                     </button>
+                </div>
+            )}
+
+            {!user && (
+                <div className={styles.guestAlert}>
+                    <div className={styles.guestAlertIcon}>✨</div>
+                    <div className={styles.guestAlertContent}>
+                        <h3 className={styles.guestAlertTitle}>سجل دخولك الآن!</h3>
+                        <p className={styles.guestAlertDesc}>انضم إلينا لحفظ تقدمك، جمع النقاط، ومزامنة آياتك المفضلة على جميع أجهزتك.</p>
+                    </div>
+                    <Link href="/login" className={styles.guestLoginBtn}>تسجيل الدخول</Link>
                 </div>
             )}
 

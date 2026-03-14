@@ -9,7 +9,7 @@ import { FaBookOpen, FaFeatherAlt, FaHeart, FaCalendarCheck } from 'react-icons/
 
 const convertToArabicNumber = (num) => {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num.toString().split('').map(d => arabicNums[+d]).join('');
+  return num.toString().split('').map(d => arabicNums[+d] || d).join('');
 };
 
 const calculatePointsFromData = (data) => {
@@ -22,14 +22,14 @@ const calculatePointsFromData = (data) => {
   const POINTS_PER_STUDY_PLAN_DAY = 30;
 
   if (data.answeredQuestions) {
-    Object.values(data.answeredQuestions).forEach(q => {
-      if (q && q.isCorrect) {
+    Object.entries(data.answeredQuestions).forEach(([dateKey, q]) => {
+      if (q && (q.correct === true || q.isCorrect === true)) {
         totalPoints += POINTS_PER_DAILY_QUESTION;
         history.push({
           activity: 'dailyQuestion',
           points: POINTS_PER_DAILY_QUESTION,
-          description: `إجابة صحيحة على سؤال: "${q.question}"`,
-          timestamp: q.date,
+          description: `إجابة صحيحة على سؤال يوم ${dateKey}`,
+          timestamp: q.timestamp || dateKey,
         });
       }
     });
@@ -42,22 +42,23 @@ const calculatePointsFromData = (data) => {
         history.push({
           activity: 'favouriteVerse',
           points: POINTS_PER_FAVOURITE_VERSE,
-          description: `إضافة آية مفضلة من "${v.bookName}"`,
-          timestamp: v.dateAdded,
+          description: `إضافة آية من "${v.bookName || 'الكتاب المقدس'}" للمفضلة`,
+          timestamp: v.dateAdded || Date.now(),
         });
       }
     });
   }
 
   if (data.completedChapters) {
-    Object.values(data.completedChapters).forEach(ch => {
-      if (ch && ch.isCompleted) {
+    Object.entries(data.completedChapters).forEach(([key, value]) => {
+      const isDone = typeof value === 'boolean' ? value : value.isCompleted;
+      if (isDone) {
         totalPoints += POINTS_PER_COMPLETED_CHAPTER;
         history.push({
           activity: 'completedChapter',
           points: POINTS_PER_COMPLETED_CHAPTER,
-          description: `إكمال إصحاح "${ch.bookName} - ${ch.chapter}"`,
-          timestamp: ch.dateCompleted,
+          description: `إكمال إصحاح في الكتاب المقدس`,
+          timestamp: value.dateCompleted || Date.now(),
         });
       }
     });
@@ -66,14 +67,14 @@ const calculatePointsFromData = (data) => {
   if (data.completedPlans) {
     Object.values(data.completedPlans).forEach(plan => {
       if (plan && plan.completedDays) {
-        Object.values(plan.completedDays).forEach(day => {
-          if (day && day.isCompleted) {
+        Object.entries(plan.completedDays).forEach(([dayNum, dayInfo]) => {
+          if (dayInfo && dayInfo.isCompleted) {
             totalPoints += POINTS_PER_STUDY_PLAN_DAY;
             history.push({
               activity: 'studyPlanDay',
               points: POINTS_PER_STUDY_PLAN_DAY,
-              description: `إكمال يوم في الخطة الدراسية`,
-              timestamp: day.dateCompleted,
+              description: `إكمال اليوم ${dayNum} في الخطة الدراسية`,
+              timestamp: dayInfo.dateCompleted || Date.now(),
             });
           }
         });
@@ -81,57 +82,41 @@ const calculatePointsFromData = (data) => {
     });
   }
 
-  return { totalPoints, history };
+  return { totalPoints, history: history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) };
 };
 
 const categorizeActivities = (history, timeframe) => {
   const now = new Date();
-  let startDate;
+  let startDate = new Date();
 
-  if (timeframe === 'day') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  } else if (timeframe === 'week') {
-    const dayOfWeek = now.getDay();
-    const diff = now.getDate() - dayOfWeek;
-    startDate = new Date(now.setDate(diff));
-    startDate.setHours(0, 0, 0, 0);
-  } else if (timeframe === 'month') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  } else {
-    startDate = new Date(now.getFullYear(), 0, 1);
-  }
-
-  const filteredActivities = history.filter(item => {
-    const itemDate = new Date(item.timestamp);
-    return itemDate >= startDate;
-  });
+  if (timeframe === 'day') startDate.setHours(0, 0, 0, 0);
+  else if (timeframe === 'week') startDate.setDate(now.getDate() - 7);
+  else if (timeframe === 'month') startDate.setMonth(now.getMonth() - 1);
+  else startDate.setFullYear(now.getFullYear() - 1);
 
   const summary = {
     totalPoints: 0,
-    dailyQuestions: { count: 0, points: 0, items: [] },
-    completedChapters: { count: 0, points: 0, items: [] },
-    favouriteVerses: { count: 0, points: 0, items: [] },
-    studyPlanDays: { count: 0, points: 0, items: [] },
+    dailyQuestions: { count: 0, points: 0 },
+    completedChapters: { count: 0, points: 0 },
+    favouriteVerses: { count: 0, points: 0 },
+    studyPlanDays: { count: 0, points: 0 },
   };
 
-  filteredActivities.forEach(item => {
-    summary.totalPoints += item.points;
-    if (item.activity === 'dailyQuestion') {
-      summary.dailyQuestions.count++;
-      summary.dailyQuestions.points += item.points;
-      summary.dailyQuestions.items.push(item);
-    } else if (item.activity === 'completedChapter') {
-      summary.completedChapters.count++;
-      summary.completedChapters.points += item.points;
-      summary.completedChapters.items.push(item);
-    } else if (item.activity === 'favouriteVerse') {
-      summary.favouriteVerses.count++;
-      summary.favouriteVerses.points += item.points;
-      summary.favouriteVerses.items.push(item);
-    } else if (item.activity === 'studyPlanDay') {
-      summary.studyPlanDays.count++;
-      summary.studyPlanDays.points += item.points;
-      summary.studyPlanDays.items.push(item);
+  history.forEach(item => {
+    const itemDate = new Date(item.timestamp);
+    if (itemDate >= startDate) {
+      summary.totalPoints += item.points;
+      const keyMap = {
+        dailyQuestion: 'dailyQuestions',
+        completedChapter: 'completedChapters',
+        favouriteVerse: 'favouriteVerses',
+        studyPlanDay: 'studyPlanDays'
+      };
+      const category = keyMap[item.activity];
+      if (category) {
+        summary[category].count++;
+        summary[category].points += item.points;
+      }
     }
   });
 
@@ -144,122 +129,53 @@ export default function Points() {
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('day');
 
-  const handleTimeframeChange = (newTimeframe) => {
-    setTimeframe(newTimeframe);
-  };
-
-  const activitiesSummary = pointsData ? categorizeActivities(pointsData.history, timeframe) : null;
-  const formattedPoints = activitiesSummary ? convertToArabicNumber(activitiesSummary.totalPoints) : '٠';
-
-  const renderActivityList = (activity) => {
-    if (activity.items.length === 0) {
-      return <p className={styles.noData}>لا يوجد بيانات في هذه الفترة.</p>;
-    }
-    return (
-      <ul className={styles.activityList}>
-        {activity.items.map((item, index) => (
-          <li key={index} className={styles.activityItem}>
-            <p className={styles.activityDescription}>{item.description}</p>
-            <span className={styles.activityPoints}>+ {convertToArabicNumber(item.points)} نقطة</span>
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
-        const unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+        const unsubFirestore = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
-            const data = docSnap.data();
-            const { totalPoints, history } = calculatePointsFromData(data);
-            setPointsData({ totalPoints, history });
+            setPointsData(calculatePointsFromData(docSnap.data()));
           } else {
             setPointsData({ history: [], totalPoints: 0 });
           }
           setLoading(false);
-        }, (error) => {
-          console.error("Error fetching Firestore data: ", error);
-          setLoading(false);
-          setPointsData(null);
         });
-        return () => unsubscribeFirestore();
+        return () => unsubFirestore();
       } else {
-        const localData = localStorage.getItem('guestPointsData');
-        if (localData) {
-          const data = JSON.parse(localData);
-          const { totalPoints, history } = calculatePointsFromData(data);
-          setPointsData({ totalPoints, history });
-        } else {
-          setPointsData({ history: [], totalPoints: 0 });
-        }
+        setPointsData({ history: [], totalPoints: 0 });
         setLoading(false);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!user && pointsData) {
-      localStorage.setItem('guestPointsData', JSON.stringify(pointsData));
-    }
-  }, [user, pointsData]);
+  const activitiesSummary = pointsData ? categorizeActivities(pointsData.history, timeframe) : null;
 
-  if (loading) {
-    return <div className={styles.loading}>جاري تحميل البيانات...</div>;
-  }
-
-  const showDailyQuestions = activitiesSummary?.dailyQuestions.count > 0;
-  const showCompletedChapters = activitiesSummary?.completedChapters.count > 0;
-  const showFavouriteVerses = activitiesSummary?.favouriteVerses.count > 0;
-  const showStudyPlanDays = activitiesSummary?.studyPlanDays.count > 0;
+  if (loading) return <div className={styles.loading}>جاري تحميل البيانات...</div>;
 
   return (
     <div className={styles.container} dir="rtl">
       <h1 className={styles.header}>النقاط والإنجازات</h1>
       <div className={styles.pointsSummary}>
         <div className={styles.pointsTotal}>
-          <span className={styles.pointsNumber}>{formattedPoints}</span>
+          <span className={styles.pointsNumber}>{convertToArabicNumber(activitiesSummary?.totalPoints || 0)}</span>
           <span className={styles.pointsLabel}>نقطة إجمالاً</span>
         </div>
       </div>
 
-      {!user && (
-        <div className={styles.loginMessage}>
-          <p>أنت تتصفح كنقطة زائر. <br/> سجل الدخول لمزامنة نقاطك وحفظها على كل أجهزتك.</p>
-        </div>
-      )}
-
       <div className={styles.timeframeButtons}>
-        <button
-          onClick={() => handleTimeframeChange('day')}
-          className={`${styles.timeframeButton} ${timeframe === 'day' ? styles.active : ''}`}
-        >
-          اليوم
-        </button>
-        <button
-          onClick={() => handleTimeframeChange('week')}
-          className={`${styles.timeframeButton} ${timeframe === 'week' ? styles.active : ''}`}
-        >
-          الأسبوع
-        </button>
-        <button
-          onClick={() => handleTimeframeChange('month')}
-          className={`${styles.timeframeButton} ${timeframe === 'month' ? styles.active : ''}`}
-        >
-          الشهر
-        </button>
-        <button
-          onClick={() => handleTimeframeChange('year')}
-          className={`${styles.timeframeButton} ${timeframe === 'year' ? styles.active : ''}`}
-        >
-          السنة
-        </button>
+        {['day', 'week', 'month', 'year'].map(t => (
+          <button 
+            key={t}
+            onClick={() => setTimeframe(t)} 
+            className={`${styles.timeframeButton} ${timeframe === t ? styles.active : ''}`}
+          >
+            {t === 'day' ? 'اليوم' : t === 'week' ? 'الأسبوع' : t === 'month' ? 'الشهر' : 'السنة'}
+          </button>
+        ))}
       </div>
 
       {activitiesSummary && (
@@ -304,38 +220,38 @@ export default function Points() {
           </div>
 
           <div className={styles.detailedHistory}>
-            <h2 className={styles.detailedHeader}>سجل الأنشطة في هذه الفترة</h2>
-            {(showDailyQuestions || showCompletedChapters || showFavouriteVerses || showStudyPlanDays) ? (
-              <>
-                {showDailyQuestions && (
-                  <div className={styles.activitySection}>
-                    <h3 className={styles.sectionHeader}>أسئلة يومية</h3>
-                    {renderActivityList(activitiesSummary.dailyQuestions)}
-                  </div>
-                )}
-                {showCompletedChapters && (
-                  <div className={styles.activitySection}>
-                    <h3 className={styles.sectionHeader}>إصحاحات مكتملة</h3>
-                    {renderActivityList(activitiesSummary.completedChapters)}
-                  </div>
-                )}
-                {showFavouriteVerses && (
-                  <div className={styles.activitySection}>
-                    <h3 className={styles.sectionHeader}>آيات مفضلة</h3>
-                    {renderActivityList(activitiesSummary.favouriteVerses)}
-                  </div>
-                )}
-                {showStudyPlanDays && (
-                  <div className={styles.activitySection}>
-                    <h3 className={styles.sectionHeader}>أيام خطط دراسية</h3>
-                    {renderActivityList(activitiesSummary.studyPlanDays)}
-                  </div>
-                )}
-              </>
+            <h2 className={styles.detailedHeader}>سجل الأنشطة</h2>
+            {activitiesSummary.totalPoints > 0 ? (
+              <ul className={styles.activityList}>
+                {pointsData.history
+                  .filter(item => {
+                    const itemDate = new Date(item.timestamp);
+                    const now = new Date();
+                    let checkDate = new Date();
+                    if (timeframe === 'day') checkDate.setHours(0,0,0,0);
+                    else if (timeframe === 'week') checkDate.setDate(now.getDate() - 7);
+                    else if (timeframe === 'month') checkDate.setMonth(now.getMonth() - 1);
+                    else checkDate.setFullYear(now.getFullYear() - 1);
+                    return itemDate >= checkDate;
+                  })
+                  .map((item, i) => (
+                    <li key={i} className={styles.activityItem}>
+                      <div className={styles.activityInfo}>
+                        <p className={styles.activityDescription}>{item.description}</p>
+                        <span className={styles.activityDate}>
+                          {new Date(item.timestamp).toLocaleDateString('ar-EG', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </span>
+                      </div>
+                      <span className={styles.activityPoints}>+ {convertToArabicNumber(item.points)} نقطة</span>
+                    </li>
+                  ))}
+              </ul>
             ) : (
-              <div className={styles.noDataSection}>
-                <p>لا توجد أنشطة مسجلة في هذه الفترة الزمنية.</p>
-              </div>
+              <p className={styles.noDataSection}>لا توجد أنشطة مسجلة في هذه الفترة.</p>
             )}
           </div>
         </div>

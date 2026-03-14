@@ -1,121 +1,56 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './studyPlans.module.css';
 import studyPlansData from './studyPlansData.json';
-import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from '../../lib/firebase';
-
-const auth = typeof window !== 'undefined' ? getAuth() : null;
-const firestore = db;
+import { useRouter } from 'next/navigation';
 
 const allPlans = studyPlansData.plans;
 
 export default function StudyPlans() {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('الكل');
   const [completionData, setCompletionData] = useState({});
   const [user, setUser] = useState(null);
-
-  const calculateCompletion = useCallback((completedDays, totalDays) => {
-    const daysCompletedCount = completedDays ? Object.values(completedDays).filter(day => day?.isCompleted).length : 0;
-    const completionPercentage = totalDays > 0 ? Math.round((daysCompletedCount / totalDays) * 100) : 0;
-    return { daysCompletedCount, completionPercentage };
-  }, []);
-
-  const syncAllPlansProgress = useCallback(async (loggedInUser) => {
-    if (!loggedInUser || !firestore) return;
-
-    try {
-      const userRef = doc(firestore, 'users', loggedInUser.uid);
-      const userSnap = await getDoc(userRef);
-      const firestoreData = userSnap.exists() && userSnap.data().completedPlans ? userSnap.data().completedPlans : {};
-      const localStorageData = {};
-      
-      allPlans.forEach(plan => {
-        const storedData = typeof window !== 'undefined' ? localStorage.getItem(`completedDays_${plan.id}`) : null;
-        if (storedData) {
-          localStorageData[plan.id] = { completedDays: JSON.parse(storedData) };
-        }
-      });
-      
-      const mergedPlansData = { ...firestoreData };
-
-      for (const planId in localStorageData) {
-        if (!mergedPlansData[planId]) {
-          mergedPlansData[planId] = localStorageData[planId];
-        } else {
-          mergedPlansData[planId].completedDays = {
-            ...localStorageData[planId].completedDays,
-            ...mergedPlansData[planId].completedDays
-          };
-        }
-      }
-
-      const updatedCompletionData = {};
-      for (const planId in mergedPlansData) {
-        const plan = allPlans.find(p => p.id === parseInt(planId));
-        if (plan) {
-          const { daysCompletedCount, completionPercentage } = calculateCompletion(mergedPlansData[planId].completedDays, plan.readings.length);
-          mergedPlansData[planId].completionPercentage = completionPercentage;
-          updatedCompletionData[planId] = {
-            daysCompletedCount,
-            totalDays: plan.readings.length,
-            completionPercentage
-          };
-        }
-      }
-      
-      await setDoc(userRef, { completedPlans: mergedPlansData }, { merge: true });
-      setCompletionData(updatedCompletionData);
-      
-    } catch (error) {
-      console.error("Error syncing plans:", error);
-    }
-  }, [calculateCompletion]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = auth.onAuthStateChanged((loggedInUser) => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
+      if (!loggedInUser) {
+        router.push('/intro');
+      } else {
         setUser(loggedInUser);
-        if (loggedInUser) {
-          syncAllPlansProgress(loggedInUser);
-        } else {
-          const data = {};
-          allPlans.forEach(plan => {
-            const storedCompletedDays = localStorage.getItem(`completedDays_${plan.id}`);
-            if (storedCompletedDays) {
-              const completedDays = JSON.parse(storedCompletedDays);
-              const { daysCompletedCount, completionPercentage } = calculateCompletion(completedDays, plan.readings.length);
-              data[plan.id] = { daysCompletedCount, totalDays: plan.readings.length, completionPercentage };
-            }
-          });
-          setCompletionData(data);
-        }
-      });
-      return () => unsubscribe();
-    }
-  }, [syncAllPlansProgress, calculateCompletion]);
+        const userRef = doc(db, 'users', loggedInUser.uid);
+        const unsubFirestore = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setCompletionData(docSnap.data().completedPlans || {});
+          }
+          setLoading(false);
+        });
+        return () => unsubFirestore();
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
-  const filteredPlans = allPlans.filter(plan => {
-    if (activeFilter === 'الكل') {
-      return true;
-    }
-    return plan.type === activeFilter;
-  });
+  const filteredPlans = allPlans.filter(plan => 
+    activeFilter === 'الكل' ? true : plan.type === activeFilter
+  );
 
   const filters = ['الكل', ...new Set(allPlans.map(plan => plan.type))];
+
+  if (loading) return <div style={{textAlign: 'center', padding: '50px'}}>جاري التحميل...</div>;
 
   return (
     <div className={styles.container}>
       <div className={styles.heroSection}>
         <h1 className={styles.title}>خطط قراءة الكتاب المقدس</h1>
-        <p className={styles.description}>
-          اختر خطة القراءة التي تناسبك و ابدأ رحلتك في كلمة الله اليوم. سواء كنت تفضل خطة سنوية شاملة أو خطة قصيرة للمزامير والأناجيل، ستجد ما يعينك على النمو الروحي.
-        </p>
       </div>
-      
       <div className={styles.filterSection}>
         {filters.map(filter => (
           <button
@@ -127,48 +62,26 @@ export default function StudyPlans() {
           </button>
         ))}
       </div>
-
       <div className={styles.plansGrid}>
         {filteredPlans.map(plan => {
-          const planCompletionData = completionData[plan.id] || { daysCompletedCount: 0, totalDays: plan.readings.length, completionPercentage: 0 };
-          const hasStarted = planCompletionData.daysCompletedCount > 0;
-
+          const planData = completionData[plan.id] || { completionPercentage: 0, completedDays: {} };
+          const daysDone = Object.values(planData.completedDays || {}).filter(d => d.isCompleted).length;
+          const hasStarted = daysDone > 0;
           return (
             <div key={plan.id} className={styles.card}>
-              <div className={styles.cardImageContainer}>
-                <img src={plan.image} alt={plan.title} className={styles.cardImage} />
-              </div>
               <div className={styles.cardContent}>
                 <h3 className={styles.cardTitle}>{plan.title}</h3>
-                <p className={styles.cardDescription}>{plan.description}</p>
-                <div className={styles.cardDetails}>
-                  <div className={styles.detailItem}>
-                    <span className={styles.detailLabel}>المدة:</span>
-                    <span className={styles.detailValue}>{plan.duration}</span>
-                  </div>
-                  <div className={styles.detailItem}>
-                    <span className={styles.detailLabel}>النوع:</span>
-                    <span className={styles.detailValue}>{plan.type}</span>
-                  </div>
-                </div>
                 {hasStarted && (
                   <div className={styles.completionStatus}>
-                    <div className={styles.completionSummary}>
-                      {planCompletionData.daysCompletedCount} / {planCompletionData.totalDays} يوم
-                    </div>
                     <div className={styles.progressBar}>
-                      <div 
-                        className={styles.progressFill} 
-                        style={{ width: `${planCompletionData.completionPercentage}%` }}
-                      ></div>
+                      <div className={styles.progressFill} style={{ width: `${planData.completionPercentage}%` }}></div>
                     </div>
+                    <span>{planData.completionPercentage}%</span>
                   </div>
                 )}
-                <div className={styles.cardActions}>
-                  <Link href={`/studyPlans/${plan.id}`} className={styles.cardButton}>
-                    {hasStarted ? `متابعة الخطة (${planCompletionData.completionPercentage}%)` : 'ابدأ الآن'}
-                  </Link>
-                </div>
+                <Link href={`/studyPlans/${plan.id}`} className={styles.cardButton}>
+                  {hasStarted ? 'متابعة' : 'ابدأ الآن'}
+                </Link>
               </div>
             </div>
           );

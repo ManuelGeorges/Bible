@@ -3,12 +3,36 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import styles from './profile.module.css';
-import studyPlansData from '../studyPlans/studyPlansData.json';
 
-const allPlans = studyPlansData.plans;
+const calculatePoints = (data) => {
+  let totalPoints = 0;
+  const POINTS_PER_DAILY_QUESTION = 10;
+  const POINTS_PER_FAVOURITE_VERSE = 10;
+  const POINTS_PER_COMPLETED_CHAPTER = 20;
+  const POINTS_PER_STUDY_PLAN_DAY = 30;
+
+  if (data.answeredQuestions) {
+    Object.values(data.answeredQuestions).forEach(q => { if (q?.isCorrect) totalPoints += POINTS_PER_DAILY_QUESTION; });
+  }
+  if (data.favorites?.verses) {
+    totalPoints += Object.keys(data.favorites.verses).length * POINTS_PER_FAVOURITE_VERSE;
+  }
+  if (data.completedChapters) {
+    Object.values(data.completedChapters).forEach(done => { if (done === true) totalPoints += POINTS_PER_COMPLETED_CHAPTER; });
+  }
+  if (data.completedPlans) {
+    Object.values(data.completedPlans).forEach(plan => {
+      if (plan?.completedDays) {
+        const days = Object.values(plan.completedDays).filter(d => d.isCompleted).length;
+        totalPoints += days * POINTS_PER_STUDY_PLAN_DAY;
+      }
+    });
+  }
+  return totalPoints;
+};
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -17,7 +41,7 @@ const ProfilePage = () => {
   const [userStats, setUserStats] = useState({
     verses: 0,
     chapters: 0,
-    notes: 0,
+    points: 0,
     plans: 0,
   });
   const router = useRouter();
@@ -26,91 +50,37 @@ const ProfilePage = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
 
-        let statsToUse = null;
+          if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            setUserData(data);
 
-        if (userDocSnap.exists()) {
-          setUserData(userDocSnap.data());
-          if (userDocSnap.data().stats) {
-            // First priority: get data from Firestore
-            statsToUse = userDocSnap.data().stats;
-          }
-        }
+            const versesCount = data.favorites?.verses ? Object.keys(data.favorites.verses).length : 0;
+            const completedChaptersCount = data.completedChapters ? Object.keys(data.completedChapters).filter(k => data.completedChapters[k] === true).length : 0;
+            const activePlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
+            const totalPoints = calculatePoints(data);
 
-        if (!statsToUse) {
-          // Second priority: If no stats in Firestore, use localStorage as a fallback
-          try {
-            const favouriteVerses = JSON.parse(localStorage.getItem('favourite_verses')) || {};
-            const favouriteChapters = JSON.parse(localStorage.getItem('favourite_chapters')) || {};
-            const userNotes = JSON.parse(localStorage.getItem('user_notes')) || {};
-            const startedPlans = allPlans.filter(plan => {
-              const storedCompletedDays = localStorage.getItem(`completedDays_${plan.id}`);
-              if (storedCompletedDays) {
-                const completedDays = JSON.parse(storedCompletedDays);
-                return Object.values(completedDays).filter(Boolean).length > 0;
-              }
-              return false;
+            setUserStats({
+              verses: versesCount,
+              chapters: completedChaptersCount,
+              points: totalPoints,
+              plans: activePlansCount,
             });
-
-            statsToUse = {
-              verses: Object.keys(favouriteVerses).length,
-              chapters: Object.keys(favouriteChapters).length,
-              notes: Object.keys(userNotes).length,
-              plans: startedPlans.length,
-            };
-
-            // Update Firestore with the data from localStorage
-            setDoc(userDocRef, { stats: statsToUse }, { merge: true }).catch(e => {
-              console.error('Failed to update user stats in Firestore:', e);
-            });
-          } catch (e) {
-            console.error('Failed to load local stats:', e);
           }
+        } catch (e) {
+          console.error("Error fetching profile data:", e);
         }
-        setUserStats(statsToUse);
       } else {
         router.push('/intro');
       }
       setLoading(false);
     });
 
-    const handleStorageChange = () => {
-      // Re-fetch stats from localStorage on storage change and sync to Firestore
-      try {
-        const favouriteVerses = JSON.parse(localStorage.getItem('favourite_verses')) || {};
-        const favouriteChapters = JSON.parse(localStorage.getItem('favourite_chapters')) || {};
-        const userNotes = JSON.parse(localStorage.getItem('user_notes')) || {};
-        const startedPlans = allPlans.filter(plan => {
-          const storedCompletedDays = localStorage.getItem(`completedDays_${plan.id}`);
-          return storedCompletedDays && Object.values(JSON.parse(storedCompletedDays)).filter(Boolean).length > 0;
-        });
-
-        const statsToSync = {
-          verses: Object.keys(favouriteVerses).length,
-          chapters: Object.keys(favouriteChapters).length,
-          notes: Object.keys(userNotes).length,
-          plans: startedPlans.length,
-        };
-        setUserStats(statsToSync);
-
-        if (user) {
-          const userDocRef = doc(db, 'users', user.uid);
-          setDoc(userDocRef, { stats: statsToSync }, { merge: true });
-        }
-      } catch (e) {
-        console.error('Failed to update stats on storage change:', e);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [router, user]);
+    return () => unsubscribe();
+  }, [router]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -123,13 +93,13 @@ const ProfilePage = () => {
 
   const userFeatures = [
     { title: 'الآيات المفضلة', count: userStats.verses, description: 'عدد الآيات التي قمت بحفظها.' },
-    { title: 'الاصحاحات المفضلة', count: userStats.chapters, description: 'عدد الاصحاحات التي قمت بحفظها.' },
-    { title: 'نقاطي', count: userStats.notes, description: 'عدد نقاطك من القراءة والخطط وغيرها' },
-    { title: 'الخطط الدراسية', count: userStats.plans, description: 'عدد الخطط التي تشارك فيها.' },
+    { title: 'إصحاحات مقروءة', count: userStats.chapters, description: 'عدد الإصحاحات التي انتهيت منها.' },
+    { title: 'نقاطي', count: userStats.points, description: 'إجمالي النقاط التي جمعتها من نشاطك.' },
+    { title: 'الخطط الدراسية', count: userStats.plans, description: 'عدد الخطط التي بدأت بمتابعتها.' },
   ];
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} dir="rtl">
       <div className={styles.profileCard}>
         <div className={styles.profileHeader}>
           <img src={user.photoURL || '/images/default-avatar.png'} alt="User Avatar" className={styles.avatar} />
@@ -148,7 +118,7 @@ const ProfilePage = () => {
             {userFeatures.map((item, index) => (
               <div key={index} className={styles.statCard}>
                 <h3 className={styles.statTitle}>{item.title}</h3>
-                <p className={styles.statCount}>{item.count}</p>
+                <p className={styles.statCount}>{item.count.toLocaleString('ar-EG')}</p>
                 <p className={styles.statDescription}>{item.description}</p>
               </div>
             ))}

@@ -593,3 +593,89 @@
 .premiumInstallBtn:hover svg {
   transform: translateY(3px);
 }
+/* --- Guest Alert Section --- */
+.guestAlert {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border: 1px solid #3d3d3d;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    animation: slideUpFade 0.6s ease-out;
+}
+
+.guestAlertIcon {
+    font-size: 2.2rem;
+    filter: drop-shadow(0 0 5px #00c8ff);
+}
+
+.guestAlertContent {
+    flex: 1;
+}
+
+.guestAlertTitle {
+    color: #00c8ff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+}
+
+.guestAlertDesc {
+    color: #b0b0b0;
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.guestLoginBtn {
+    background: #00c8ff;
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(0, 200, 255, 0.2);
+}
+
+.guestLoginBtn:hover {
+    background-color: #00ffff;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 255, 255, 0.3);
+}
+
+/* Animations */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design for the Alert */
+@media (max-width: 768px) {
+    .guestAlert {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 15px;
+        gap: 20px;
+    }
+
+    .guestLoginBtn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .guestAlertIcon {
+        font-size: 2.5rem;
+    }
+}

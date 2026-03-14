@@ -1,4 +1,5 @@
-const CACHE_NAME = 'agios-v3';
+
+const CACHE_NAME = 'alpha-v1';
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [

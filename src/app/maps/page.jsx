@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef, useMemo } from 'react';
+import { useRouter } from 'next/navigation'; // أضفنا هذا
 import { Map, Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -24,6 +25,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 export default function MapsPage() {
+  const router = useRouter(); // تعريف الراوتر
   const [allPlaces, setAllPlaces] = useState([]);
   const [selectedEra, setSelectedEra] = useState("الأناجيل");
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
@@ -43,6 +45,21 @@ export default function MapsPage() {
 
   useEffect(() => {
     setMounted(true);
+
+    // دالة التحقق من الاتصال
+    const checkConnectivity = () => {
+      if (!navigator.onLine) {
+        router.push('/offline');
+      }
+    };
+
+    // التحقق الفوري عند التحميل
+    checkConnectivity();
+
+    // إضافة المستمعين لتغير حالة الشبكة
+    window.addEventListener('offline', checkConnectivity);
+    window.addEventListener('online', checkConnectivity);
+
     const fetchData = async () => {
       try {
         const response = await fetch('/data/places/places.json');
@@ -55,8 +72,15 @@ export default function MapsPage() {
         setIsLoading(false);
       }
     };
+
     fetchData();
-  }, []);
+
+    // تنظيف المستمعين عند مغادرة الصفحة
+    return () => {
+      window.removeEventListener('offline', checkConnectivity);
+      window.removeEventListener('online', checkConnectivity);
+    };
+  }, [router]);
 
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',

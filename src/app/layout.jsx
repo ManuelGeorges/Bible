@@ -8,6 +8,7 @@ import RegisterSW from './RegisterSW';
 import ConnectivityListener from '../components/ConnectivityListener';
 import BibleCacheHandler from '../components/BibleCacheHandler';
 import DataPrefetcher from '../components/DataPrefetcher';
+import SecurityGuard from '../components/SecurityGuard'; // المكون الجديد
 
 export const viewport = {
   width: 'device-width',
@@ -61,6 +62,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
       <body>
+          <SecurityGuard /> {/* حماية الموقع من الكليك يمين والاختصارات */}
           <DataPrefetcher />
           <BibleCacheHandler />
           <ConnectivityListener />

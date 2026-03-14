@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './Bible.module.css';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
@@ -21,7 +21,7 @@ export default function BibleContent() {
   const [user, setUser] = useState(null);
   const [bibleData, setBibleData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [bookNamesData, setBookNamesData] = useState(null);
+  const [bookNamesData, setBookNamesData] = useState([]);
   
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
@@ -49,11 +49,19 @@ export default function BibleContent() {
   const saveToFirestore = useCallback(async (v, c) => {
     if (!user || !firestore) return;
     try {
-      await setDoc(doc(firestore, 'users', user.uid), {
-        favorites: { verses: v },
-        completedChapters: c
-      }, { merge: true });
-    } catch (e) {}
+      const userRef = doc(firestore, 'users', user.uid);
+      await updateDoc(userRef, {
+        "favorites.verses": v,
+        "completedChapters": c
+      });
+    } catch (e) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid), {
+          favorites: { verses: v },
+          completedChapters: c
+        }, { merge: true });
+      } catch (err) {}
+    }
   }, [user]);
 
   useEffect(() => {
@@ -76,20 +84,24 @@ export default function BibleContent() {
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch('/data/bibles/ar_svd.json').then(r => r.json())
         ]);
-        setBookNamesData(namesRes);
+
+        const arBooks = namesRes.ar || [];
+        setBookNamesData(arBooks);
         setBibleData(bibleRes);
         
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
         
-        if (bParam && namesRes) {
-          const idx = namesRes.findIndex(b => b.name === decodeURIComponent(bParam));
+        if (bParam && arBooks.length > 0) {
+          const idx = arBooks.findIndex(b => b.name === decodeURIComponent(bParam));
           if (idx !== -1) setSelectedBookIndex(idx);
         }
         if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
         
         setIsLoading(false);
-      } catch (e) { setIsLoading(false); }
+      } catch (e) { 
+        setIsLoading(false); 
+      }
     };
     loadData();
   }, [searchParams]);
@@ -130,17 +142,27 @@ export default function BibleContent() {
 
   const favoriteChapter = () => {
     const chapters = bibleData[selectedBookIndex]?.chapters || [];
-    const verses = chapters[selectedChapterIndex] || [];
+    const versesInChapter = chapters[selectedChapterIndex] || [];
+    
     setFavouriteVerses(prev => {
       const next = { ...prev };
-      verses.forEach((v, i) => {
-        const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
-        next[key] = { text: v, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: i };
-      });
+      const keys = versesInChapter.map((_, i) => `${selectedBookIndex}-${selectedChapterIndex}-${i}`);
+      const allExist = keys.every(k => next[k]);
+
+      if (allExist) {
+        keys.forEach(k => delete next[k]);
+        setCopiedMessage('تم حذف الإصحاح من المفضلة');
+      } else {
+        versesInChapter.forEach((v, i) => {
+          const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
+          next[key] = { text: v, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: i };
+        });
+        setCopiedMessage('تمت إضافة الإصحاح للمفضلة');
+      }
+      
       saveToFirestore(next, completedChapters);
       return next;
     });
-    setCopiedMessage('تمت إضافة الإصحاح للمفضلة');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -148,13 +170,16 @@ export default function BibleContent() {
     const key = `${selectedBookIndex}-${selectedChapterIndex}-${index}`;
     setFavouriteVerses(prev => {
       const next = { ...prev };
-      if (next[key]) delete next[key];
-      else next[key] = { text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: index };
+      if (next[key]) {
+        delete next[key];
+      } else {
+        next[key] = { text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: index };
+      }
       saveToFirestore(next, completedChapters);
       return next;
     });
     setActiveMenu(null);
-    if (window.navigator.vibrate) window.navigator.vibrate([50, 30, 50]);
+    if (window.navigator.vibrate) window.navigator.vibrate([50]);
   };
 
   const copySelected = () => {
@@ -242,7 +267,7 @@ export default function BibleContent() {
     }
   };
 
-  if (isLoading || !bibleData) return <div className={styles.loading}>...</div>;
+  if (isLoading || !bibleData || !bookNamesData.length) return <div className={styles.loading}>جاري التحميل...</div>;
 
   const chapters = bibleData[selectedBookIndex]?.chapters || [];
   const verses = chapters[selectedChapterIndex] || [];
