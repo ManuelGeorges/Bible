@@ -7,7 +7,7 @@ import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import RegisterSW from './RegisterSW';
 import ConnectivityListener from '../components/ConnectivityListener';
-import { Toaster } from 'react-hot-toast';
+import BibleCacheHandler from '../components/BibleCacheHandler'; // استدعاء المكون الجديد
 
 export const viewport = {
   width: 'device-width',
@@ -53,6 +53,7 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl">
       <body>
         <LanguageProvider>
+          <BibleCacheHandler /> {/* المكون الذي سيتعامل مع الكاش */}
           <ConnectivityListener />
           <RegisterSW />
           <SEOlinks />

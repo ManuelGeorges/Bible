@@ -1,32 +1,33 @@
-'use client';
+"use client"; // هذا السطر هو الحل
 
 export default function OfflinePage() {
   return (
     <div style={{ 
+      textAlign: 'center', 
+      padding: '100px 20px', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center', 
-      justifyContent: 'center', 
-      height: '100vh',
-      textAlign: 'center',
-      padding: '20px',
-      backgroundColor: '#0f172a',
-      color: '#fff',
-      direction: 'rtl'
+      justifyContent: 'center',
+      minHeight: '70vh' 
     }}>
-      <h1>أنت غير متصل بالإنترنت</h1>
-      <p>يبدو أنك تحاول الوصول لصفحة لم يتم حفظها مسبقاً.</p>
+      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>أنت حالياً غير متصل بالإنترنت</h1>
+      <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '30px' }}>
+        هذه الصفحة تتطلب اتصالاً بالشبكة لتحديث البيانات. 
+        <br />
+        يمكنك تصفح أجزاء الكتاب المقدس التي تم تحميلها مسبقاً.
+      </p>
+      
       <button 
         onClick={() => window.location.reload()} 
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          backgroundColor: '#fbbf24',
-          color: '#000',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontWeight: 'bold'
+        style={{ 
+          padding: '12px 25px', 
+          fontSize: '1rem', 
+          backgroundColor: '#0070f3', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '5px', 
+          cursor: 'pointer' 
         }}
       >
         إعادة المحاولة
