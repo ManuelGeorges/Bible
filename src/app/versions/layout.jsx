@@ -1,4 +1,3 @@
-import { LanguageProvider } from './../context/LanguageContext';
 export const metadata = {
   title: ' التحديثات| Agios Bible',
   description:"تحديثات موقع Agios Bible مع معلومات عنها لكي تطلع عليها وقتما شئت لمتابعة تاريخ الموقع",
@@ -16,10 +15,8 @@ title: ' التحديثات| Agios Bible',
 
 export default function MapsLayout({ children }) {
   return (
-    <LanguageProvider>
       <main>
         <div>{children}</div>
       </main>
-    </LanguageProvider>
   );
 }

@@ -70,18 +70,29 @@ const LandingPage = () => {
     const { getFavorites, saveFavorites } = useFavorites();
     const [startedPlans, setStartedPlans] = useState([]);
     const [user, setUser] = useState(null);
-    const [error, setError] = useState('');
-
-    // --- منطق زر التثبيت الجديد ---
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallBtn, setShowInstallBtn] = useState(false);
 
     useEffect(() => {
-        const handler = (e) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-            setShowInstallBtn(true);
+        const triggerDeepCache = async () => {
+            const CACHE_NAME = 'agios-v1';
+            const essentialFiles = ['/data/bibles/ar_svd.json', '/data/bookNames.json', '/data/dailyVerses.json', '/data/dailyQuestions.json', '/favicon.ico', '/manifest.json'];
+            if ('caches' in window) {
+                const cache = await caches.open(CACHE_NAME);
+                essentialFiles.forEach(file => {
+                    fetch(file, { priority: 'high' }).then(res => { if (res.ok) cache.put(file, res); }).catch(() => {});
+                });
+                allPlans.forEach(plan => {
+                    const planJson = `/studyPlans/${plan.id}.json`;
+                    fetch(planJson).then(res => { if (res.ok) cache.put(planJson, res); }).catch(() => {});
+                });
+            }
         };
+        if (document.readyState === 'complete') { triggerDeepCache(); } else { window.addEventListener('load', triggerDeepCache); }
+    }, []);
+
+    useEffect(() => {
+        const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallBtn(true); };
         window.addEventListener("beforeinstallprompt", handler);
         return () => window.removeEventListener("beforeinstallprompt", handler);
     }, []);
@@ -90,12 +101,8 @@ const LandingPage = () => {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === "accepted") {
-            setDeferredPrompt(null);
-            setShowInstallBtn(false);
-        }
+        if (outcome === "accepted") { setDeferredPrompt(null); setShowInstallBtn(false); }
     };
-    // ----------------------------
 
     const getTodayDateKey = useCallback(() => {
         const now = new Date();
@@ -104,44 +111,36 @@ const LandingPage = () => {
 
     const fetchDailyVerse = useCallback(async () => {
         setIsLoadingVerse(true);
-        const today = new Date();
         try {
             const response = await fetch('/data/dailyVerses.json');
-            const dailyVersesData = await response.json();
-            const verseForToday = dailyVersesData.find(v => v.month === today.getMonth() + 1 && v.day === today.getDate());
-            setDailyVerse(verseForToday || { verse: 'آية اليوم غير متوفرة', reference: '' });
-        } catch (error) {
-            setDailyVerse({ verse: 'خطأ في التحميل', reference: '' });
-        } finally { setIsLoadingVerse(false); }
+            const data = await response.json();
+            const today = new Date();
+            const verse = data.find(v => v.month === today.getMonth() + 1 && v.day === today.getDate());
+            setDailyVerse(verse || { verse: 'آية اليوم غير متوفرة', reference: '' });
+        } catch { setDailyVerse({ verse: 'خطأ في التحميل', reference: '' }); } finally { setIsLoadingVerse(false); }
     }, []);
 
     const fetchDailyQuestion = useCallback(async (loggedInUser) => {
         const dateKey = getTodayDateKey();
         try {
             const response = await fetch('/data/dailyQuestions.json');
-            const dailyQuestionsData = await response.json();
-            const questionForToday = dailyQuestionsData.find(q => q.month === new Date().getMonth() + 1 && q.day === new Date().getDate());
-            setDailyQuestion(questionForToday || null);
-
+            const data = await response.json();
+            const question = data.find(q => q.month === new Date().getMonth() + 1 && q.day === new Date().getDate());
+            setDailyQuestion(question || null);
             let answeredLocally = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
             if (loggedInUser) {
-                const userRef = doc(firestore, 'users', loggedInUser.uid);
-                const userSnap = await getDoc(userRef);
-                const firestoreData = userSnap.exists() ? userSnap.data() : {};
-                if (firestoreData.answeredQuestions?.[dateKey]?.answered) {
+                const userSnap = await getDoc(doc(firestore, 'users', loggedInUser.uid));
+                if (userSnap.exists() && userSnap.data().answeredQuestions?.[dateKey]?.answered) {
                     setHasAnswered(true);
                     localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
                 } else { setHasAnswered(answeredLocally); }
             } else { setHasAnswered(answeredLocally); }
-        } catch (error) { setDailyQuestion(null); }
+        } catch { setDailyQuestion(null); }
     }, [getTodayDateKey]);
 
     useEffect(() => {
         if (auth) {
-            const unsubscribe = auth.onAuthStateChanged((u) => {
-                setUser(u);
-                fetchDailyQuestion(u);
-            });
+            const unsubscribe = auth.onAuthStateChanged((u) => { setUser(u); fetchDailyQuestion(u); });
             return () => unsubscribe();
         }
         fetchDailyQuestion(null);
@@ -152,8 +151,7 @@ const LandingPage = () => {
 
     const copyDailyVerse = useCallback(async () => {
         if (!dailyVerse) return;
-        const textToCopy = `"${dailyVerse.verse}" - (${dailyVerse.reference})`; 
-        await navigator.clipboard.writeText(textToCopy);
+        await navigator.clipboard.writeText(`"${dailyVerse.verse}" - (${dailyVerse.reference})`);
         showCopiedMessage('تم النسخ بنجاح!');
     }, [dailyVerse, showCopiedMessage]);
 
@@ -161,33 +159,21 @@ const LandingPage = () => {
         if (!dailyVerse) return;
         const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
         const favorites = getFavorites();
-        const isCurrentlyFavorite = !!favorites[verseKey];
         let newFavorites = { ...favorites };
-
-        if (isCurrentlyFavorite) { delete newFavorites[verseKey]; showFavouriteMessage('تم الحذف!'); }
-        else {
-            newFavorites[verseKey] = { text: dailyVerse.verse, bookName: 'آية اليوم', dateAdded: new Date().toISOString() };
-            showFavouriteMessage('تمت الإضافة!');
-        }
+        if (favorites[verseKey]) { delete newFavorites[verseKey]; showFavouriteMessage('تم الحذف!'); }
+        else { newFavorites[verseKey] = { text: dailyVerse.verse, bookName: 'آية اليوم', dateAdded: new Date().toISOString() }; showFavouriteMessage('تمت الإضافة!'); }
         saveFavorites(newFavorites);
-        if (user) {
-            await setDoc(doc(firestore, 'users', user.uid), { favorites: { verses: newFavorites } }, { merge: true });
-        }
+        if (user) await setDoc(doc(firestore, 'users', user.uid), { favorites: { verses: newFavorites } }, { merge: true });
     }, [dailyVerse, getFavorites, saveFavorites, showFavouriteMessage, user]);
 
-    const isDailyVerseFavorite = useMemo(() => {
-        if (!dailyVerse) return false;
-        return !!getFavorites()[`daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`];
-    }, [dailyVerse, getFavorites]);
+    const isDailyVerseFavorite = useMemo(() => dailyVerse ? !!getFavorites()[`daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`] : false, [dailyVerse, getFavorites]);
 
     const handleOptionClick = useCallback(async (index) => {
-        const dateKey = getTodayDateKey();
         if (hasAnswered || !dailyQuestion) return;
         setSelectedAnswer(index);
-        const isCorrect = index === dailyQuestion.answerIndex;
-        localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
         setHasAnswered(true);
-        showQuestionMessage(isCorrect ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
+        localStorage.setItem(`questionAnswered_${getTodayDateKey()}`, 'true');
+        showQuestionMessage(index === dailyQuestion.answerIndex ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
     }, [hasAnswered, dailyQuestion, showQuestionMessage, getTodayDateKey]);
 
     const getOptionClassName = (index) => {
@@ -205,22 +191,24 @@ const LandingPage = () => {
                 <h2 className={styles.subtitle}>مرحباً بك في تطبيقك لدراسة الكتاب المقدس</h2>
             </header>
 
-            {/* --- قسم زر التثبيت الجديد --- */}
             {showInstallBtn && (
-                <div className={`${styles.dailyVerseBox} ${styles.floating}`} style={{ border: '2px dashed #fbbf24', marginBottom: '20px' }}>
-                    <h3 style={{ marginBottom: '10px' }}>ثبّت التطبيق الآن</h3>
-                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>للوصول السريع للكتاب المقدس في أي وقت حتى بدون إنترنت</p>
-                    <button onClick={handleInstallClick} className={styles.cardButton} style={{ width: '100%' }}>
-                        تثبيت على الجهاز 📱
+                <div className={styles.installSection}>
+                    <div className={styles.installIcon}>📲</div>
+                    <h3 className={styles.installTitle}>ثبّت تطبيق أجيوس الآن</h3>
+                    <p className={styles.installDesc}>استمتع بتجربة أسرع، ووصول كامل للكتاب المقدس <strong>بدون إنترنت</strong> في أي مكان.</p>
+                    <button onClick={handleInstallClick} className={styles.premiumInstallBtn}>
+                        <span>تثبيت على الجهاز</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15L12 3M12 15L8 11M12 15L16 11M2 17L2 18C2 19.6569 3.34315 21 5 21L19 21C20.6569 21 22 19.6569 22 18L22 17" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                     </button>
                 </div>
             )}
-            {/* ---------------------------- */}
 
             {isLoadingVerse ? (
-                <div className={`${styles.dailyVerseBox} ${styles.floating}`}><p>جارٍ التحميل...</p></div>
+                <div className={styles.dailyVerseBox}><p>جارٍ التحميل...</p></div>
             ) : dailyVerse && (
-                <div className={`${styles.dailyVerseBox} ${styles.floating}`}>
+                <div className={`${styles.dailyVerseBox}`}>
                     <h2 className={styles.dailyVerseTitle}>آية اليوم</h2>
                     <p className={styles.dailyVerseText}>"{dailyVerse.verse}"</p>
                     <p className={styles.dailyVerseReference}>{dailyVerse.reference}</p>
@@ -234,7 +222,7 @@ const LandingPage = () => {
             )}
 
             {dailyQuestion && (
-                <div className={`${styles.dailyQuestionBox} ${styles.floating}`}>
+                <div className={`${styles.dailyQuestionBox}`}>
                     <h2 className={styles.dailyQuestionTitle}>سؤال اليوم</h2>
                     <p className={styles.dailyQuestionText}>{dailyQuestion.question}</p>
                     <div className={styles.optionsContainer}>
@@ -247,7 +235,6 @@ const LandingPage = () => {
                 </div>
             )}
 
-            {/* الرسائل المنبثقة */}
             {copiedMessage && <div className={`${styles.messageBox} ${styles.copiedMessage}`}>{copiedMessage}</div>}
             {favouriteMessage && <div className={`${styles.messageBox} ${styles.favouriteMessage}`}>{favouriteMessage}</div>}
             {questionMessage && <div className={`${styles.messageBox} ${styles.questionMessage}`}>{questionMessage}</div>}

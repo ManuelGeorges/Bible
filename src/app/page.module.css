@@ -297,3 +297,299 @@
     max-width: 100% !important;
   }
 }
+.container {
+  width: 100%;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: clamp(20px, 5vw, 40px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: var(--color-text-light);
+  text-align: center;
+  transition: all 0.7s var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  gap: clamp(30px, 8vw, 60px);
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.header {
+  width: 100%;
+  max-width: min(1000px, 90vw);
+  margin-bottom: clamp(2rem, 6vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
+.logoImg {
+  width: clamp(100px, 15vw, 150px);
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  margin-bottom: 0.5rem;
+  box-shadow: 10px 10px 10px black;
+  border-radius: 10px;
+  transition: transform .7s ease;
+}
+
+.siteTitle {
+  color: var(--color-accent-gold);
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 900;
+  text-shadow: 0 4px 8px var(--color-shadow-medium);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--color-accent-gold), #fff176);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  font-weight: 500;
+  color: var(--color-text-light);
+  opacity: 0.8;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.installSection {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(217, 119, 6, 0.2) 100%);
+  border: 2px solid var(--color-accent-gold);
+  border-radius: 28px;
+  padding: 40px 20px;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); border-color: var(--color-accent-gold); }
+  50% { box-shadow: 0 25px 60px rgba(251, 191, 36, 0.25); border-color: #fff176; }
+}
+
+.installIcon {
+  font-size: 3.5rem;
+  filter: drop-shadow(0 0 15px var(--color-accent-gold));
+  animation: bounceIcon 2s infinite;
+}
+
+@keyframes bounceIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.installTitle {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.installDesc {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 500px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.premiumInstallBtn {
+  background: linear-gradient(90deg, #fbbf24, #d97706);
+  color: #000000 !important;
+  padding: 18px 50px;
+  border-radius: 18px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+}
+
+.premiumInstallBtn:hover {
+  transform: scale(1.06) translateY(-5px);
+  box-shadow: 0 15px 35px rgba(217, 119, 6, 0.6);
+}
+
+.dailyVerseBox, .dailyQuestionBox {
+  background: var(--color-card-bg);
+  border-radius: var(--border-radius);
+  padding: clamp(24px, 6vw, 48px);
+  box-shadow: 0 16px 40px var(--color-shadow-medium);
+  max-width: 800px;
+  width: 100%;
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-light);
+  transition: transform 0.3s var(--transition-smooth);
+}
+
+.dailyVerseTitle, .dailyQuestionTitle {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  margin-bottom: 1.5rem;
+}
+
+.dailyVerseText, .dailyQuestionText {
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  line-height: 1.7;
+  color: var(--color-text-light);
+}
+
+.optionsContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.optionButton {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid var(--color-border-light);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.correctAnswer { background-color: #059669 !important; border-color: #10b981 !important; }
+.wrongAnswer { background-color: #dc2626 !important; border-color: #ef4444 !important; }
+
+.plansSection { width: 100%; max-width: 1200px; }
+.plansGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
+.card { background: var(--color-card-bg); border-radius: var(--border-radius); overflow: hidden; }
+.installSection {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  padding: 40px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 32px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* حركة الضوء اللي بتلف ورا الكارت */
+.installSection::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  background: conic-gradient(from 0deg, transparent 70%, var(--color-accent-gold) 100%);
+  animation: rotateGlow 4s linear infinite;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  opacity: 0.4;
+}
+
+/* الكفر الداخلي عشان نخفي باقي الدائرة ونسيب الـ Border بس */
+.installSection::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  border-radius: 30px;
+  z-index: -1;
+}
+
+@keyframes rotateGlow {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.installIcon {
+  font-size: 4rem;
+  background: linear-gradient(135deg, #fbbf24, #fff176);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.5));
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-15px) rotate(10deg); }
+}
+
+.installTitle {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.installDesc {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  max-width: 450px;
+  margin: 0;
+}
+
+.premiumInstallBtn {
+  position: relative;
+  background: #fbbf24;
+  color: #000 !important;
+  padding: 16px 40px;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+}
+
+.premiumInstallBtn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+  background: #fff;
+}
+
+.premiumInstallBtn svg {
+  transition: transform 0.3s ease;
+}
+
+.premiumInstallBtn:hover svg {
+  transform: translateY(3px);
+}

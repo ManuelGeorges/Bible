@@ -1,17 +1,21 @@
 import './globals.css';
 import styles from './layout.module.css';
-import { LanguageProvider } from './context/LanguageContext';
 import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import RegisterSW from './RegisterSW';
 import ConnectivityListener from '../components/ConnectivityListener';
-import BibleCacheHandler from '../components/BibleCacheHandler'; // استدعاء المكون الجديد
+import BibleCacheHandler from '../components/BibleCacheHandler';
+import DataPrefetcher from '../components/DataPrefetcher';
 
 export const viewport = {
   width: 'device-width',
-  initialScale: 1.0,
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#000000',
 };
 
 export const metadata = {
@@ -22,6 +26,11 @@ export const metadata = {
   authors: [{ name: 'Manuel Georges' }],
   robots: 'index, follow',
   keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس , Bible study, دراسة الكتاب المقدس, آية اليوم, Verse of the day, خرائط الكتاب المقدس, Bible maps, خطط دراسة الكتاب المقدس, Bible study plans, مسابقات الكتاب المقدس, Bible quizzes, البحث في الكتاب المقدس, Bible search, كتب مسيحية, Christian books'],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Agios Bible',
+  },
   openGraph: {
     title: 'Agios Bible',
     description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات',
@@ -52,8 +61,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
       <body>
-        <LanguageProvider>
-          <BibleCacheHandler /> {/* المكون الذي سيتعامل مع الكاش */}
+          <DataPrefetcher />
+          <BibleCacheHandler />
           <ConnectivityListener />
           <RegisterSW />
           <SEOlinks />
@@ -62,30 +71,19 @@ export default function RootLayout({ children }) {
             <div className={styles.container}>{children}</div>
           </main>
           <Footer />
-        </LanguageProvider>
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-J90H6JXHNG');
+            `}
+          </Script>
       </body>
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-J90H6JXHNG');
-        `}
-      </Script>
-      <Script type="application/ld+json" strategy="afterInteractive">
-        {`
-          {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "Agios Bible",
-            "url": "https://agios-bible.vercel.app/"
-          }
-        `}
-      </Script>
     </html>
   );
 }

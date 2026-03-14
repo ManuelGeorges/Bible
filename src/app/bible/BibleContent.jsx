@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './Bible.module.css';
-import { useLanguage } from './../context/LanguageContext';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from '../../lib/firebase'
+import { db } from '../../lib/firebase';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -17,7 +16,6 @@ function convertToArabicNumber(num) {
 }
 
 export default function BibleContent() {
-  const { language } = useLanguage();
   const searchParams = useSearchParams();
 
   const [user, setUser] = useState(null);
@@ -46,7 +44,7 @@ export default function BibleContent() {
   const bookDropdownRef = useRef(null);
   const chapterDropdownRef = useRef(null);
 
-  const getBookName = (i) => bookNamesData?.[language]?.[i]?.name || '';
+  const getBookName = (i) => bookNamesData?.[i]?.name || '';
 
   const saveToFirestore = useCallback(async (v, c) => {
     if (!user || !firestore) return;
@@ -76,15 +74,16 @@ export default function BibleContent() {
       try {
         const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
-          fetch(`/data/bibles/${language === 'ar' ? 'ar_svd.json' : 'en_bbe.json'}`).then(r => r.json())
+          fetch('/data/bibles/ar_svd.json').then(r => r.json())
         ]);
         setBookNamesData(namesRes);
         setBibleData(bibleRes);
         
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
-        if (bParam && namesRes[language]) {
-          const idx = namesRes[language].findIndex(b => b.name === decodeURIComponent(bParam));
+        
+        if (bParam && namesRes) {
+          const idx = namesRes.findIndex(b => b.name === decodeURIComponent(bParam));
           if (idx !== -1) setSelectedBookIndex(idx);
         }
         if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
@@ -93,7 +92,7 @@ export default function BibleContent() {
       } catch (e) { setIsLoading(false); }
     };
     loadData();
-  }, [language, searchParams]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (auth) {
@@ -115,7 +114,7 @@ export default function BibleContent() {
   const copyVerse = (text, index) => {
     const fullText = `${text} (${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1}:${index + 1})`;
     navigator.clipboard.writeText(fullText);
-    setCopiedMessage(language === 'ar' ? 'تم النسخ' : 'Copied');
+    setCopiedMessage('تم النسخ');
     setActiveMenu(null);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -125,7 +124,7 @@ export default function BibleContent() {
     const verses = chapters[selectedChapterIndex] || [];
     const fullContent = verses.map((v, i) => `${i + 1}. ${v}`).join('\n') + `\n\n(${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1})`;
     navigator.clipboard.writeText(fullContent);
-    setCopiedMessage(language === 'ar' ? 'تم نسخ الإصحاح كاملاً' : 'Chapter Copied');
+    setCopiedMessage('تم نسخ الإصحاح كاملاً');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -141,7 +140,7 @@ export default function BibleContent() {
       saveToFirestore(next, completedChapters);
       return next;
     });
-    setCopiedMessage(language === 'ar' ? 'تمت إضافة الإصحاح للمفضلة' : 'Chapter Added to Favorites');
+    setCopiedMessage('تمت إضافة الإصحاح للمفضلة');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -164,7 +163,7 @@ export default function BibleContent() {
       .map(sv => `${sv.text} (${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1}:${sv.index + 1})`)
       .join('\n');
     navigator.clipboard.writeText(text);
-    setCopiedMessage(language === 'ar' ? 'تم نسخ الآيات المختارة' : 'Copied Selected');
+    setCopiedMessage('تم نسخ الآيات المختارة');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -179,7 +178,7 @@ export default function BibleContent() {
       saveToFirestore(next, completedChapters);
       return next;
     });
-    setCopiedMessage(language === 'ar' ? 'تمت الإضافة للمفضلة' : 'Added to Favorites');
+    setCopiedMessage('تمت الإضافة للمفضلة');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -249,11 +248,11 @@ export default function BibleContent() {
   const verses = chapters[selectedChapterIndex] || [];
 
   return (
-    <div dir={language === 'ar' ? 'rtl' : 'ltr'} className={styles.container}>
+    <div dir="rtl" className={styles.container}>
       {selectedVerses.length > 0 && (
         <div className={styles.selectionBar}>
           <div className={styles.selectionInfo}>
-            <span>{language === 'ar' ? `تحديد ${convertToArabicNumber(selectedVerses.length)}` : `Selected ${selectedVerses.length}`}</span>
+            <span>{`تحديد ${convertToArabicNumber(selectedVerses.length)}`}</span>
           </div>
           <div className={styles.selectionActions}>
             <button onClick={copySelected} className={styles.actionBtn}>📋</button>
@@ -263,7 +262,7 @@ export default function BibleContent() {
         </div>
       )}
 
-      <h1 className={styles.title}>{language === 'ar' ? 'الكتاب المقدس' : 'The Holy Bible'}</h1>
+      <h1 className={styles.title}>الكتاب المقدس</h1>
 
       <div className={styles.controls}>
         <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
@@ -275,7 +274,7 @@ export default function BibleContent() {
           </div>
           {isBookDropdownOpen && (
             <ul className={`${styles.dropdownMenu} ${styles.open}`}>
-              {bookNamesData[language].map((b, i) => (
+              {bookNamesData.map((b, i) => (
                 <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedBookIndex(i); setSelectedChapterIndex(0); setIsBookDropdownOpen(false); setSelectedVerses([]); }}>
                   {b.name}
                 </li>
@@ -289,13 +288,13 @@ export default function BibleContent() {
               setIsChapterDropdownOpen(!isChapterDropdownOpen);
               setIsBookDropdownOpen(false);
           }}>
-            {language === 'ar' ? `إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}` : `Chapter ${selectedChapterIndex + 1}`}
+            {`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}
           </div>
           {isChapterDropdownOpen && (
             <ul className={`${styles.dropdownMenu} ${styles.open}`}>
               {chapters.map((_, i) => (
                 <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedChapterIndex(i); setIsChapterDropdownOpen(false); setSelectedVerses([]); }}>
-                  {language === 'ar' ? `إصحاح ${convertToArabicNumber(i + 1)}` : `Chapter ${i + 1}`}
+                  {`إصحاح ${convertToArabicNumber(i + 1)}`}
                 </li>
               ))}
             </ul>
@@ -329,7 +328,7 @@ export default function BibleContent() {
               style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}
             >
               <div className={styles.verseContent}>
-                <span className={styles.verseNumber}>{language === 'ar' ? convertToArabicNumber(i + 1) : i + 1}</span>
+                <span className={styles.verseNumber}>{convertToArabicNumber(i + 1)}</span>
                 <span className={styles.verseText}>{v}</span>
               </div>
 

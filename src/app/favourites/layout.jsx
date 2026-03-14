@@ -1,4 +1,3 @@
-import { LanguageProvider } from './../context/LanguageContext';
 
 export const metadata = {
   title: ' الآيات المفضلة | Agios Bible',
@@ -17,10 +16,8 @@ export const metadata = {
 
 export default function MapsLayout({ children }) {
   return (
-    <LanguageProvider>
       <main>
         <div>{children}</div>
       </main>
-    </LanguageProvider>
   );
 }

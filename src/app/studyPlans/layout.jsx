@@ -1,4 +1,3 @@
-import { LanguageProvider } from './../context/LanguageContext';
 export const metadata = {
   title: ' خطط دراسة الكتاب | Agios Bible',
   description:"ادرس الكتاب في خطط موضوعية وسنوية تساعدك على فهمه والنمو في ايمانك",
@@ -15,10 +14,8 @@ export const metadata = {
 
 export default function MapsLayout({ children }) {
   return (
-    <LanguageProvider>
       <main>
         <div>{children}</div>
       </main>
-    </LanguageProvider>
   );
 }
