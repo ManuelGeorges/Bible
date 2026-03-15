@@ -8,7 +8,7 @@ import RegisterSW from './RegisterSW';
 import ConnectivityListener from '../components/ConnectivityListener';
 import BibleCacheHandler from '../components/BibleCacheHandler';
 import DataPrefetcher from '../components/DataPrefetcher';
-import SecurityGuard from '../components/SecurityGuard'; // المكون الجديد
+import SecurityGuard from '../components/SecurityGuard';
 
 export const viewport = {
   width: 'device-width',
@@ -61,8 +61,26 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
-      <body>
-          <SecurityGuard /> {/* حماية الموقع من الكليك يمين والاختصارات */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'dark';
+                  if (theme === 'light') {
+                    document.body.classList.add('light-theme');
+                  }
+                  const fontSize = localStorage.getItem('bibleFontSize') || '18';
+                  document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning>
+          <SecurityGuard />
           <DataPrefetcher />
           <BibleCacheHandler />
           <ConnectivityListener />

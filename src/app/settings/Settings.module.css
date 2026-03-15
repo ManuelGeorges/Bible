@@ -1,0 +1,211 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+}
+
+.section {
+  background: --;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.settingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settingRow:last-child { border-bottom: none; }
+
+/* Themes Grid */
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.themeCircle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.themeCircle.active { border-color: #0070f3; transform: scale(1.1); }
+
+/* Custom Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.switch input:checked + .slider { background-color: #0070f3; }
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 4px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider:before { transform: translateX(26px); }
+
+.fontSelect {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.dangerBtn {
+  width: 100%;
+  padding: 12px;
+  background: #fff5f5;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+  border-radius: 12px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+.fontInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sizeBadge {
+  font-size: 0.8rem;
+  color: var(--color-accent); /* الذهبى الذى حددته فى globals */
+  font-weight: bold;
+}
+
+.rangeInput {
+  width: 60%;
+  cursor: pointer;
+  accent-color: var(--color-accent); /* يغير لون الشريط نفسه */
+}
+
+.previewText {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  background: var(--color-card-bg);
+  border: 1px dashed var(--color-border);
+  text-align: center;
+  color: var(--color-text-primary);
+  transition: font-size 0.2s ease;
+}
+
+/* ستايل الـ Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 22px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.switch input:checked + .slider { background-color: #10b981; }
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px; width: 16px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider:before { transform: translateX(24px); }
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  /* بدلاً من background-color: white أو غيره، نجعله شفافاً ليرى خلفية الـ body */
+  background: transparent; 
+  min-height: 100vh;
+}
+
+.section {
+  /* نستخدم متغير الكروت الذي يتغير لونه بين الأبيض في اللايت والشفاف/الداكن في الدارك */
+  background-color: var(--color-card-bg); 
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  /* نستخدم متغير الحدود ليظهر بشكل صحيح في الوضعين */
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px var(--color-shadow-light);
+}
+
+.title {
+  text-align: center;
+  /* نستخدم متغير النص الأساسي من الجلوبال */
+  color: var(--color-text-primary); 
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  margin-top: 0;
+  font-size: 1.1rem;
+  /* نستخدم المتغير الذهبي/الأزرق حسب الثيم */
+  color: var(--color-accent); 
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.settingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  /* لون النص الفرعي */
+  color: var(--color-text-primary);
+}

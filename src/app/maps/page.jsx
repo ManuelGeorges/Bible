@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation'; // أضفنا هذا
+import { useRouter } from 'next/navigation'; 
 import { Map, Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -25,7 +25,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 export default function MapsPage() {
-  const router = useRouter(); // تعريف الراوتر
+  const router = useRouter(); 
   const [allPlaces, setAllPlaces] = useState([]);
   const [selectedEra, setSelectedEra] = useState("الأناجيل");
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
@@ -44,19 +44,29 @@ export default function MapsPage() {
   ];
 
   useEffect(() => {
+    const syncAppSettings = () => {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
+      
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+      }
+      document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
+    };
+
+    syncAppSettings();
+    window.addEventListener('storage', syncAppSettings);
     setMounted(true);
 
-    // دالة التحقق من الاتصال
     const checkConnectivity = () => {
       if (!navigator.onLine) {
         router.push('/offline');
       }
     };
 
-    // التحقق الفوري عند التحميل
     checkConnectivity();
-
-    // إضافة المستمعين لتغير حالة الشبكة
     window.addEventListener('offline', checkConnectivity);
     window.addEventListener('online', checkConnectivity);
 
@@ -75,10 +85,10 @@ export default function MapsPage() {
 
     fetchData();
 
-    // تنظيف المستمعين عند مغادرة الصفحة
     return () => {
       window.removeEventListener('offline', checkConnectivity);
       window.removeEventListener('online', checkConnectivity);
+      window.removeEventListener('storage', syncAppSettings);
     };
   }, [router]);
 
@@ -132,7 +142,7 @@ export default function MapsPage() {
   if (!mounted) return null;
 
   return (
-    <div className={styles.container}>
+    <div dir="rtl" className={styles.container}>
       <h1 className={styles.heading}>خرائط الكتاب المقدس</h1>
 
       <div className={styles.buttonsContainer}>
@@ -166,7 +176,7 @@ export default function MapsPage() {
             ))}
           </div>
 
-          <div className={styles.mapContainer} style={{ height: '600px', width: '100%', position: 'relative' }}>
+          <div className={styles.mapContainer}>
             <Map
               ref={mapRef}
               {...viewState}

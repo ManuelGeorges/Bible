@@ -19,12 +19,21 @@ const LoginPage = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push('/');
-      }
+      if (user) router.push('/');
     });
     return () => unsubscribe();
   }, [router]);
+
+  const translateError = (code) => {
+    switch (code) {
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential': return 'خطأ في البريد الإلكتروني أو كلمة المرور.';
+      case 'auth/too-many-requests': return 'تم حظر المحاولات مؤقتاً لكثرة الأخطاء. حاول لاحقاً.';
+      case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
+      default: return 'حدث خطأ أثناء تسجيل الدخول، حاول مرة أخرى.';
+    }
+  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -32,7 +41,7 @@ const LoginPage = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      setError(err.message);
+      setError(translateError(err.code));
     }
   };
 
@@ -42,44 +51,27 @@ const LoginPage = () => {
     try {
       await signInWithPopup(auth, provider);
     } catch (err) {
-      setError(err.message);
+      setError(translateError(err.code));
     }
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${styles.rtl}`}>
       <div className={styles.card}>
         <h1 className={styles.title}>تسجيل الدخول</h1>
         <form onSubmit={handleAuth} className={styles.form}>
-          <input
-            type="email"
-            placeholder="البريد الإلكتروني"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="كلمة المرور"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.input}
-          />
-          {error && <p className={styles.error}>{error}</p>}
-          <button type="submit" className={styles.button}>تسجيل الدخول</button>
+          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} />
+          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} />
+          {error && <div className={styles.errorBox}>{error}</div>}
+          <button type="submit" className={styles.button}>دخول</button>
         </form>
-        <div className={styles.divider}>
-          <span className={styles.dividerText}>أو</span>
-        </div>
+        <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
         <button onClick={handleGoogleAuth} className={styles.googleButton}>
           <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-          <span>تسجيل الدخول باستخدام جوجل</span>
+          <span>الدخول بواسطة جوجل</span>
         </button>
         <p className={styles.toggleMode}>
-          {'ليس لديك حساب؟ '}
-          <span onClick={() => router.push('/signup')} className={styles.link}>
-            إنشاء حساب
-          </span>
+          ليس لديك حساب؟ <span onClick={() => router.push('/signup')} className={styles.link}>إنشاء حساب</span>
         </p>
       </div>
     </div>

@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 
 export default function SecurityGuard() {
-  useEffect(() => {
+  return null;
+  /*useEffect(() => {
     // 1. منع القائمة المنبثقة (الكليك يمين)
     const handleContextMenu = (e) => {
       e.preventDefault();
@@ -29,5 +30,5 @@ export default function SecurityGuard() {
     };
   }, []);
 
-  return null; // مكون صامت لا يظهر في الواجهة
+  return null; // مكون صامت لا يظهر في الواجهة*/
 }

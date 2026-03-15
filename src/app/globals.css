@@ -119,3 +119,104 @@ html, body {
 * {
   -webkit-user-drag: none;
 }
+/* الألوان الافتراضية (Dark Mode هو الأساس كما في كودك) */
+:root {
+  --color-background-start: #1a1a2e;
+  --color-background-end: #16213e;
+  --color-text-light: #f8f9fa;
+  --color-card-bg: rgba(255, 255, 255, 0.1);
+  --color-border-light: rgba(255, 255, 255, 0.2);
+  /* ... بقية متغيرات الـ Dark التي وضعتها ... */
+}
+
+/* الألوان عند اختيار الـ Light Mode */
+body.light-theme {
+  --color-background-start: #f0f2f5;
+  --color-background-end: #ffffff;
+  --color-text-light: #1a1a2e; /* نص داكن للخلفية الفاتحة */
+  --color-card-bg: rgba(0, 0, 0, 0.05);
+  --color-border-light: rgba(0, 0, 0, 0.1);
+  --color-text-medium: #4a5568;
+  --color-shadow-medium: rgba(0, 0, 0, 0.1);
+  
+  /* تعديل ألوان الأزرار لتبدو أفضل في الوضع الفاتح */
+  --button-bg-1: #e2e8f0;
+  --button-hover-1: #cbd5e0;
+  --button-text-color: #1a1a2e;
+}
+
+/* لجعل التنقل بين الألوان ناعم جداً */
+body {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+:root {
+  /* --- القيم الافتراضية (Dark Mode) --- */
+  --color-bg-start: #1a1a2e;
+  --color-bg-end: #16213e;
+  --color-text-primary: #f8f9fa;   /* النص الأساسي */
+  --color-text-secondary: #b0b0b0; /* النص الفرعي */
+  --color-card-bg: rgba(255, 255, 255, 0.1);
+  --color-border: rgba(255, 255, 255, 0.2);
+  --color-accent: #ffc107;
+  
+  /* ألوان الأزرار في الدارك */
+  --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --btn-text: #ffffff;
+}
+
+/* --- القيم عند تفعيل الـ Light Mode --- */
+body.light-theme {
+  --color-bg-start: #f0f2f5;
+  --color-bg-end: #ffffff;
+  --color-text-primary: #1a1a2e;   /* النص يصبح داكن */
+  --color-text-secondary: #4a5568; /* النص الفرعي رمادي غامق */
+  --color-card-bg: #ffffff;        /* الكروت بيضاء تماماً */
+  --color-border: #e2e8f0;         /* حدود رمادية فاتحة */
+  --color-accent: #1e3a8a;         /* تغيير التمييز للون أزرق غامق ليناسب الأبيض */
+  
+  /* ألوان الأزرار في اللايت */
+  --btn-bg: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --btn-text: #ffffff;
+}
+
+body {
+  font-family: 'Inter', 'Cairo', sans-serif;
+  /* نستخدم المتغيرات هنا بدلاً من الألوان الثابتة */
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  transition: all 0.3s ease; /* لجعل الانتقال ناعم للعين */
+}
+
+/* تطبيق المتغيرات على أي كارت أو حاوية */
+.card, [class*="section"] {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* تعديل لون النصوص الفرعية تلقائياً */
+.secondary-text, [class*="subtitle"] {
+  color: var(--color-text-secondary);
+}
+:root {
+  /* حجم الخط الافتراضي */
+  --main-font-size: 18px;
+  
+  /* باقي متغيراتك كما هي */
+  --color-bg-start: #1a1a2e;
+  --color-bg-end: #16213e;
+  --color-text-primary: #f8f9fa;
+}
+
+body {
+  /* ربط حجم خط الجسم بالمتغير */
+  font-size: var(--main-font-size);
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  color: var(--color-text-primary);
+  transition: background 0.3s ease, font-size 0.2s ease;
+  /* ... بقية الستايلات ... */
+}
+
+/* تأكد أن نصوص الآيات في ملفات الـ module لا تملك حجماً ثابتاً بل ترث من الـ body */
+/* أو اجعلها تستخدم نفس المتغير */

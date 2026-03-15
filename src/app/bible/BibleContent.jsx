@@ -22,15 +22,12 @@ export default function BibleContent() {
   const [bibleData, setBibleData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [bookNamesData, setBookNamesData] = useState([]);
-  
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
-
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
   const [isBookDropdownOpen, setIsBookDropdownOpen] = useState(false);
   const [isChapterDropdownOpen, setIsChapterDropdownOpen] = useState(false);
-
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [copiedMessage, setCopiedMessage] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
@@ -43,6 +40,24 @@ export default function BibleContent() {
   const touchStartPos = useRef({ x: 0, y: 0 });
   const bookDropdownRef = useRef(null);
   const chapterDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const syncAppSettings = () => {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
+      
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+      }
+      document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
+    };
+
+    syncAppSettings();
+    window.addEventListener('storage', syncAppSettings);
+    return () => window.removeEventListener('storage', syncAppSettings);
+  }, []);
 
   const getBookName = (i) => bookNamesData?.[i]?.name || '';
 
@@ -84,20 +99,16 @@ export default function BibleContent() {
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch('/data/bibles/ar_svd.json').then(r => r.json())
         ]);
-
         const arBooks = namesRes.ar || [];
         setBookNamesData(arBooks);
         setBibleData(bibleRes);
-        
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
-        
         if (bParam && arBooks.length > 0) {
           const idx = arBooks.findIndex(b => b.name === decodeURIComponent(bParam));
           if (idx !== -1) setSelectedBookIndex(idx);
         }
         if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
-        
         setIsLoading(false);
       } catch (e) { 
         setIsLoading(false); 
@@ -143,12 +154,10 @@ export default function BibleContent() {
   const favoriteChapter = () => {
     const chapters = bibleData[selectedBookIndex]?.chapters || [];
     const versesInChapter = chapters[selectedChapterIndex] || [];
-    
     setFavouriteVerses(prev => {
       const next = { ...prev };
       const keys = versesInChapter.map((_, i) => `${selectedBookIndex}-${selectedChapterIndex}-${i}`);
       const allExist = keys.every(k => next[k]);
-
       if (allExist) {
         keys.forEach(k => delete next[k]);
         setCopiedMessage('تم حذف الإصحاح من المفضلة');
@@ -159,7 +168,6 @@ export default function BibleContent() {
         });
         setCopiedMessage('تمت إضافة الإصحاح للمفضلة');
       }
-      
       saveToFirestore(next, completedChapters);
       return next;
     });
