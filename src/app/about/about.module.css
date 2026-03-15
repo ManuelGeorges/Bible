@@ -116,3 +116,43 @@
   color: var(--color-accent-gold);
   font-weight: 700;
 }
+.honorableMention {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(251, 191, 36, 0.05); /* لمحة ذهبية خفيفة للخلفية */
+  padding: 20px;
+  border-radius: 20px;
+  margin-bottom: 25px;
+  border-right: 4px solid var(--accent-gold);
+}
+
+.priestImageWrapper {
+  flex-shrink: 0;
+}
+
+.priestImage {
+  border-radius: 50%; /* لجعل الصورة دائرية */
+  border: 3px solid var(--accent-gold);
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.priestText {
+  flex-grow: 1;
+}
+
+.dividerLine {
+  border: 0;
+  height: 1px;
+  background: var(--border-color);
+  margin: 20px 0;
+  opacity: 0.5;
+}
+
+@media (max-width: 600px) {
+  .honorableMention {
+    flex-direction: column;
+    text-align: center;
+  }
+}

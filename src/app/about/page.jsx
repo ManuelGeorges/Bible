@@ -1,5 +1,5 @@
 import styles from './about.module.css';
-
+import Image from 'next/image';
 export default function AboutPage() {
   return (
     <div className={styles.container}>
@@ -21,27 +21,46 @@ export default function AboutPage() {
 
       </section>
           <section className={styles.section}>
-        <h2 className={styles.subtitle}>فريقنا</h2>
+        <h2 className={styles.subtitle}>مطور التطبيق</h2>
         <div className={styles.teamGrid}>
           <div className={styles.teamMember}>
             <img src="/images/members/Manuel.png" alt="صورة مانويل جورج" className={styles.memberImage} />
             <h3 className={styles.memberName}>مانويل جورج</h3>
             <p className={styles.memberRole}>مؤسس ومطور</p>
-            <p className={styles.memberDescription}>
-             مؤسس الموقع من الصفر والمطور الأساسي والأول
-            </p>
           </div>
           </div>
       </section>
-      <section className={styles.section}>
+<section className={styles.section}>
         <h2 className={styles.subtitle}>شكر وتقدير</h2>
+        
+        {/* فقرة القمص أثناسيوس */}
+        <div className={styles.honorableMention}>
+          <div className={styles.priestImageWrapper}>
+            <Image 
+              src="/images/fr-athanasius.jpg" // تأكد من وضع الصورة في هذا المسار وتسميتها بنفس الاسم
+              alt="القمص أثناسيوس" 
+              width={120} 
+              height={120} 
+              className={styles.priestImage}
+            />
+          </div>
+          <div className={styles.priestText}>
+            <p className={styles.paragraph}>
+              نتقدم بجزيل الشكر والمحبة 
+              <span className={styles.important}>لقدس القمص أثناسيوس </span> 
+              لتبنيه الفكرة منذ بدايتها، ورعايته الأبوية الدائمة للتطبيق، وجهوده المخلصة في نشره ليكون بركة لكل مستخدميه.
+            </p>
+          </div>
+        </div>
+
+        <hr className={styles.dividerLine} />
+
         <p className={styles.paragraph}> 
-           نتقدم بالشكر لكل من ساعدنا في تطوير هذا الموقع سواء بالدعم المعنوي أو بالنصيحة وأتقدم بجزيل الشكر لكنيستني   
-           
-         <span className={styles.important}>   كنيسة رئيس الملائكة الجليل ميخائيل بمصطفى كامل بالإسكندرية </span>
-           لدعمهم وتشجيعهم للفكرة منذ بدايتها 
-           <span className={styles.important}> وللجنة مهرجان الكرازة المرقسية   </span> لتحفيزهم الشباب على تطوير مشاريع جديدة لإفادة المجتمع 
-           ولكل الذين قدموا اقتراحات ساهمت في تطوير الموقع أو نشروه في دائرة معارفهم
+          نتقدم بالشكر لكل من ساعدنا في تطوير هذا الموقع سواء بالدعم المعنوي أو بالنصيحة وأتقدم بجزيل الشكر لكنيستني   
+          <span className={styles.important}> كنيسة رئيس الملائكة الجليل ميخائيل بمصطفى كامل بالإسكندرية </span>
+          لدعمهم وتشجيعهم للفكرة منذ بدايتها 
+          <span className={styles.important}> وللجنة مهرجان الكرازة المرقسية </span> لتحفيزهم الشباب على تطوير مشاريع جديدة لإفادة المجتمع 
+          ولكل الذين قدموا اقتراحات ساهمت في تطوير الموقع أو نشروه في دائرة معارفهم.
         </p>
       </section>
     </div>

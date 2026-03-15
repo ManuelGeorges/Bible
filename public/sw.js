@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alpha-v1';
+const CACHE_NAME = 'agios-v3'; // غيرت الاسم عشان نضمن تحديث الكاش
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [
@@ -16,46 +16,45 @@ const ESSENTIAL_ASSETS = [
   '/signup',
   '/profile',
   '/studyPlans',
-  '/more',
   '/studyPlans/1',
   '/studyPlans/2',
   '/studyPlans/3',
+  '/more',
   '/settings',
   '/points',
   '/about',
   '/contact',
   '/versions',
   '/data/bookNames.json',
-  '/data/bibles/ar_svd.json'
+  '/data/bibles/ar_svd.json',
+  '/StudyPlansData.json',
+  '/questionsData.js',
+  '/dailyVerses.json',
+  '/dailyQuestions.json'
 ];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([OFFLINE_URL, '/favicon.ico', '/manifest.json']);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL, '/favicon.ico']))
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    }).then(() => {
+    caches.keys().then((keys) => Promise.all(
+      keys.map((key) => { if (key !== CACHE_NAME) return caches.delete(key); })
+    )).then(() => {
+      // الـ Crawler بيبدأ هنا بمجرد التنشيط
       return caches.open(CACHE_NAME).then((cache) => {
         return Promise.allSettled(
-          ESSENTIAL_ASSETS.map((url, index) => {
-            return new Promise((resolve) => setTimeout(resolve, index * 150))
-              .then(() => fetch(url, { cache: 'reload' }))
+          ESSENTIAL_ASSETS.map((url) => 
+            fetch(url, { priority: 'low' }) // أولوية منخفضة عشان م يأثرش على سرعة الصفحة الحالية
               .then((res) => {
-                if (res.ok) return cache.put(url, res);
-              }).catch(() => null);
-          })
+                if (res.ok) cache.put(url, res);
+              })
+              .catch(() => null)
+          )
         );
       });
     })
@@ -68,40 +67,33 @@ self.addEventListener('fetch', (event) => {
 
   if (
     event.request.method !== 'GET' ||
-    url.pathname.includes('webpack') ||
     url.pathname.startsWith('/api/') ||
-    url.origin.includes('firestore.googleapis.com') ||
+    url.origin.includes('googleapis') ||
     url.origin.includes('firebase')
   ) {
     return;
   }
 
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        const isStatic = url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?)$/) || 
-                         url.pathname.includes('_next/static');
+    caches.match(event.request).then((cachedResponse) => {
+      // استراتيجية: لو في الكاش هاته، لو مش فيه روح للنت، ولو النت مقطوع روح لصفحة الأوفلاين
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const cacheCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.mode === 'navigate') {
+            return (await caches.match(OFFLINE_URL)) || new Response("Offline", { status: 503 });
+          }
+          return new Response(null, { status: 404 });
+        });
 
-        if (isStatic && cachedResponse) {
-          return cachedResponse;
-        }
-
-        const fetchPromise = fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            if (cachedResponse) return cachedResponse;
-            if (event.request.mode === 'navigate') {
-              return caches.match(OFFLINE_URL);
-            }
-          });
-
-        return cachedResponse || fetchPromise;
-      });
+      return cachedResponse || fetchPromise;
     })
   );
 });
