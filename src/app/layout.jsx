@@ -16,7 +16,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#000000',
+  themeColor: '#0f172a', // خليتها نفس لون الـ background في المانيفست
 };
 
 export const metadata = {
@@ -41,7 +41,7 @@ export const metadata = {
     locale: 'ar_AR',
     images: [
       {
-        url: 'https://agios-bible.vercel.app/icon.png',
+        url: 'https://agios-bible.vercel.app/web-app-manifest-512x512-v2.png', // تحديث الصورة هنا
         width: 1200,
         height: 630,
         type: 'image/png',
@@ -49,9 +49,9 @@ export const metadata = {
     ],
   },
   icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/icon.png',
+    icon: '/web-app-manifest-192x192-v2.png', // تحديث الأيقونة
+    shortcut: '/web-app-manifest-192x192-v2.png',
+    apple: '/web-app-manifest-192x192-v2.png',
   },
   verification: {
     google: 'JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY',
@@ -60,7 +60,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning> 
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -79,7 +79,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body suppressHydrationWarning>
+      <body>
           <SecurityGuard />
           <DataPrefetcher />
           <BibleCacheHandler />
