@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agios-cache-v4';
+const CACHE_NAME = 'agios-cache-v5';
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [
@@ -67,6 +67,7 @@ self.addEventListener('fetch', (event) => {
     url.origin.includes('googleapis') ||
     url.origin.includes('firebase') ||
     url.origin.includes('googletagmanager') ||
+    url.origin.includes('google-analytics') ||
     url.pathname.includes('/_next/data/')
   ) {
     return;
@@ -83,7 +84,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         return caches.match(event.request).then((cachedResponse) => {
-          return cachedResponse || caches.match(OFFLINE_URL);
+          return cachedResponse || caches.match(OFFLINE_URL) || new Response('', { status: 408 });
         });
       })
   );

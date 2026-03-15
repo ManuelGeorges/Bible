@@ -13,10 +13,8 @@ export default function RegisterSW() {
     }
 
     if ("serviceWorker" in navigator) {
-      const swUrl = "/sw.js";
-
       navigator.serviceWorker
-        .register(swUrl)
+        .register("/sw.js")
         .then((reg) => {
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
@@ -32,7 +30,7 @@ export default function RegisterSW() {
             }
           };
         })
-        .catch((err) => console.log("Service Worker Failed", err));
+        .catch((err) => console.log("SW Registration Failed", err));
 
       navigator.serviceWorker.ready.then((reg) => {
         reg.update();
