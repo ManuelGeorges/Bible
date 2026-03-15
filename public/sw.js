@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agios-v4';
+const CACHE_NAME = 'cache-solve-problem-v1';
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [

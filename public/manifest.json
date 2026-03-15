@@ -2,7 +2,7 @@
   "name": "Agios Bible",
   "short_name": "Agios",
   "description": "تطبيق لدراسة الكتاب المقدس بأسلوب تفاعلي جديد وأكثر عمقاً",
-  "start_url": "/",
+  "start_url": "/?v=final_update",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",
