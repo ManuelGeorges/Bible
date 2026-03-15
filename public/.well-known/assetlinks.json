@@ -1,5 +1,8 @@
 [{
   "relation": ["delegate_permission/common.handle_all_urls"],
-  "target" : { "namespace": "android_app", "package_name": "com.agiosbible.twa",
-               "sha256_cert_fingerprints": ["55:F8:D7:A1:98:62:0A:9D:46:72:3A:56:71:57:07:A8:A8:35:62:86:BD:EB:F8:8A:26:76:78:DE:A2:12:75:33"] }
+  "target" : {
+    "namespace": "android_app",
+    "package_name": "com.agios.bible",
+    "sha256_cert_fingerprints": ["55:F8:D7:A1:98:62:0A:9D:46:72:3A:56:71:57:07:A8:A8:35:62:86:BD:EB:F8:8A:26:76:78:DE:A2:12:75:33"]
+  }
 }]
