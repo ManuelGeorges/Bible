@@ -16,7 +16,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0f172a', // خليتها نفس لون الـ background في المانيفست
+  themeColor: '#0f172a',
 };
 
 export const metadata = {
@@ -41,7 +41,7 @@ export const metadata = {
     locale: 'ar_AR',
     images: [
       {
-        url: 'https://agios-bible.vercel.app/web-app-manifest-512x512-v2.png', // تحديث الصورة هنا
+        url: 'https://agios-bible.vercel.app/web-app-manifest-512x512-v2.png',
         width: 1200,
         height: 630,
         type: 'image/png',
@@ -49,7 +49,7 @@ export const metadata = {
     ],
   },
   icons: {
-    icon: '/web-app-manifest-192x192-v2.png', // تحديث الأيقونة
+    icon: '/web-app-manifest-192x192-v2.png',
     shortcut: '/web-app-manifest-192x192-v2.png',
     apple: '/web-app-manifest-192x192-v2.png',
   },

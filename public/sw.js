@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agios-v3'; // غيرت الاسم عشان نضمن تحديث الكاش
+const CACHE_NAME = 'agios-v4';
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [
@@ -16,9 +16,6 @@ const ESSENTIAL_ASSETS = [
   '/signup',
   '/profile',
   '/studyPlans',
-  '/studyPlans/1',
-  '/studyPlans/2',
-  '/studyPlans/3',
   '/more',
   '/settings',
   '/points',
@@ -36,64 +33,52 @@ const ESSENTIAL_ASSETS = [
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL, '/favicon.ico']))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([OFFLINE_URL, '/favicon.ico']);
+    })
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
-      keys.map((key) => { if (key !== CACHE_NAME) return caches.delete(key); })
-    )).then(() => {
-      // الـ Crawler بيبدأ هنا بمجرد التنشيط
-      return caches.open(CACHE_NAME).then((cache) => {
-        return Promise.allSettled(
-          ESSENTIAL_ASSETS.map((url) => 
-            fetch(url, { priority: 'low' }) // أولوية منخفضة عشان م يأثرش على سرعة الصفحة الحالية
-              .then((res) => {
-                if (res.ok) cache.put(url, res);
-              })
-              .catch(() => null)
-          )
-        );
-      });
-    })
+      keys.map((key) => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      })
+    ))
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
 
   if (
-    event.request.method !== 'GET' ||
     url.pathname.startsWith('/api/') ||
     url.origin.includes('googleapis') ||
-    url.origin.includes('firebase')
+    url.origin.includes('firebase') ||
+    url.origin.includes('googletagmanager')
   ) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // استراتيجية: لو في الكاش هاته، لو مش فيه روح للنت، ولو النت مقطوع روح لصفحة الأوفلاين
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const cacheCopy = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
-          }
-          return networkResponse;
-        })
-        .catch(async () => {
-          if (cachedResponse) return cachedResponse;
-          if (event.request.mode === 'navigate') {
-            return (await caches.match(OFFLINE_URL)) || new Response("Offline", { status: 503 });
-          }
-          return new Response(null, { status: 404 });
-        });
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const cacheCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+        }
+        return networkResponse;
+      }).catch(() => cachedResponse);
 
-      return cachedResponse || fetchPromise;
+      if (url.pathname.endsWith('.json') || url.pathname === '/') {
+        return fetch(event.request).catch(() => cachedResponse);
+      }
+
+      return cachedResponse || fetchPromise || caches.match(OFFLINE_URL);
     })
   );
 });
