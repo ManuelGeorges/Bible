@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cache-solve-problem-v1';
+const CACHE_NAME = 'cache-solve-problem-v2';
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [
@@ -16,6 +16,9 @@ const ESSENTIAL_ASSETS = [
   '/signup',
   '/profile',
   '/studyPlans',
+  '/StudyPlans/1',
+  '/StudyPlans/2',
+  '/StudyPlans/3',
   '/more',
   '/settings',
   '/points',
@@ -34,7 +37,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([OFFLINE_URL, '/favicon.ico']);
+      return Promise.allSettled(
+        ESSENTIAL_ASSETS.map((url) => {
+          return fetch(url).then((response) => {
+            if (response.ok) return cache.put(url, response);
+            throw new Error(`Failed to fetch ${url}`);
+          });
+        })
+      );
     })
   );
 });
