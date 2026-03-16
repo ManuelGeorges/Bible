@@ -1,4 +1,4 @@
-const CACHE_NAME = 'agios-final-v6';
+const CACHE_NAME = 'agios-next-v1';
 const OFFLINE_URL = '/offline';
 
 const ESSENTIAL_ASSETS = [
@@ -30,7 +30,8 @@ const ESSENTIAL_ASSETS = [
   '/StudyPlansData.json',
   '/questionsData.js',
   '/dailyVerses.json',
-  '/dailyQuestions.json'
+  '/dailyQuestions.json',
+  '/images/Agios.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -66,7 +67,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/api/') ||
     url.origin.includes('google') ||
     url.origin.includes('firebase') ||
-    url.pathname.includes('/_next/data/')
+    url.pathname.startsWith('/_next/static/webpack/')
   ) {
     return;
   }
@@ -81,7 +82,12 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse || caches.match(OFFLINE_URL));
+        .catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match(OFFLINE_URL);
+          }
+          return cachedResponse;
+        });
 
       return cachedResponse || fetchPromise;
     })
