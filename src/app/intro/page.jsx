@@ -6,38 +6,27 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../../lib/firebase';
 import styles from './intro.module.css';
 
-const auth = typeof window !== 'undefined' ? getAuth(app) : null;
-
-const IntroPage = () => {
+export default function IntroPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-      setUser(authUser);
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.replace('/profile');
+      } else {
+        setLoading(false);
+      }
+    }, (error) => {
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (user && !loading) {
-      router.push('/profile');
-    }
-  }, [user, loading, router]);
+  }, [router]);
 
   if (loading) {
     return <div className={styles.loading}>جاري التحميل...</div>;
-  }
-  if (user) {
-    return null;
   }
 
   const features = [
@@ -82,6 +71,4 @@ const IntroPage = () => {
       </main>
     </div>
   );
-};
-
-export default IntroPage;
+}

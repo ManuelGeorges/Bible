@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styles from './points.module.css';
 import { db } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -15,7 +15,6 @@ const convertToArabicNumber = (num) => {
 const calculatePointsFromData = (data) => {
   let totalPoints = 0;
   const history = [];
-
   const POINTS_PER_DAILY_QUESTION = 10;
   const POINTS_PER_FAVOURITE_VERSE = 10;
   const POINTS_PER_COMPLETED_CHAPTER = 20;
@@ -35,7 +34,7 @@ const calculatePointsFromData = (data) => {
     });
   }
 
-  if (data.favorites && data.favorites.verses) {
+  if (data.favorites?.verses) {
     Object.values(data.favorites.verses).forEach(v => {
       if (v) {
         totalPoints += POINTS_PER_FAVOURITE_VERSE;
@@ -66,9 +65,9 @@ const calculatePointsFromData = (data) => {
 
   if (data.completedPlans) {
     Object.values(data.completedPlans).forEach(plan => {
-      if (plan && plan.completedDays) {
+      if (plan?.completedDays) {
         Object.entries(plan.completedDays).forEach(([dayNum, dayInfo]) => {
-          if (dayInfo && dayInfo.isCompleted) {
+          if (dayInfo?.isCompleted) {
             totalPoints += POINTS_PER_STUDY_PLAN_DAY;
             history.push({
               activity: 'studyPlanDay',
@@ -88,7 +87,6 @@ const calculatePointsFromData = (data) => {
 const categorizeActivities = (history, timeframe) => {
   const now = new Date();
   let startDate = new Date();
-
   if (timeframe === 'day') startDate.setHours(0, 0, 0, 0);
   else if (timeframe === 'week') startDate.setDate(now.getDate() - 7);
   else if (timeframe === 'month') startDate.setMonth(now.getMonth() - 1);
@@ -100,12 +98,14 @@ const categorizeActivities = (history, timeframe) => {
     completedChapters: { count: 0, points: 0 },
     favouriteVerses: { count: 0, points: 0 },
     studyPlanDays: { count: 0, points: 0 },
+    filteredHistory: []
   };
 
   history.forEach(item => {
     const itemDate = new Date(item.timestamp);
     if (itemDate >= startDate) {
       summary.totalPoints += item.points;
+      summary.filteredHistory.push(item);
       const keyMap = {
         dailyQuestion: 'dailyQuestions',
         completedChapter: 'completedChapters',
@@ -124,7 +124,6 @@ const categorizeActivities = (history, timeframe) => {
 };
 
 export default function Points() {
-  const [user, setUser] = useState(null);
   const [pointsData, setPointsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('day');
@@ -132,7 +131,6 @@ export default function Points() {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const unsubFirestore = onSnapshot(userDocRef, (docSnap) => {
@@ -141,6 +139,8 @@ export default function Points() {
           } else {
             setPointsData({ history: [], totalPoints: 0 });
           }
+          setLoading(false);
+        }, (error) => {
           setLoading(false);
         });
         return () => unsubFirestore();
@@ -152,7 +152,9 @@ export default function Points() {
     return () => unsubscribe();
   }, []);
 
-  const activitiesSummary = pointsData ? categorizeActivities(pointsData.history, timeframe) : null;
+  const activitiesSummary = useMemo(() => {
+    return pointsData ? categorizeActivities(pointsData.history, timeframe) : null;
+  }, [pointsData, timeframe]);
 
   if (loading) return <div className={styles.loading}>جاري تحميل البيانات...</div>;
 
@@ -221,34 +223,23 @@ export default function Points() {
 
           <div className={styles.detailedHistory}>
             <h2 className={styles.detailedHeader}>سجل الأنشطة</h2>
-            {activitiesSummary.totalPoints > 0 ? (
+            {activitiesSummary.filteredHistory.length > 0 ? (
               <ul className={styles.activityList}>
-                {pointsData.history
-                  .filter(item => {
-                    const itemDate = new Date(item.timestamp);
-                    const now = new Date();
-                    let checkDate = new Date();
-                    if (timeframe === 'day') checkDate.setHours(0,0,0,0);
-                    else if (timeframe === 'week') checkDate.setDate(now.getDate() - 7);
-                    else if (timeframe === 'month') checkDate.setMonth(now.getMonth() - 1);
-                    else checkDate.setFullYear(now.getFullYear() - 1);
-                    return itemDate >= checkDate;
-                  })
-                  .map((item, i) => (
-                    <li key={i} className={styles.activityItem}>
-                      <div className={styles.activityInfo}>
-                        <p className={styles.activityDescription}>{item.description}</p>
-                        <span className={styles.activityDate}>
-                          {new Date(item.timestamp).toLocaleDateString('ar-EG', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
-                        </span>
-                      </div>
-                      <span className={styles.activityPoints}>+ {convertToArabicNumber(item.points)} نقطة</span>
-                    </li>
-                  ))}
+                {activitiesSummary.filteredHistory.map((item, i) => (
+                  <li key={i} className={styles.activityItem}>
+                    <div className={styles.activityInfo}>
+                      <p className={styles.activityDescription}>{item.description}</p>
+                      <span className={styles.activityDate}>
+                        {new Date(item.timestamp).toLocaleDateString('ar-EG', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                    </div>
+                    <span className={styles.activityPoints}>+ {convertToArabicNumber(item.points)} نقطة</span>
+                  </li>
+                ))}
               </ul>
             ) : (
               <p className={styles.noDataSection}>لا توجد أنشطة مسجلة في هذه الفترة.</p>

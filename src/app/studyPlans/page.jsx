@@ -15,27 +15,32 @@ export default function StudyPlans() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('الكل');
   const [completionData, setCompletionData] = useState({});
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
+    let unsubFirestore = () => {};
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
       if (!loggedInUser) {
-        router.push('/intro');
+        router.replace('/intro');
       } else {
-        setUser(loggedInUser);
         const userRef = doc(db, 'users', loggedInUser.uid);
-        const unsubFirestore = onSnapshot(userRef, (docSnap) => {
+        unsubFirestore = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             setCompletionData(docSnap.data().completedPlans || {});
           }
           setLoading(false);
+        }, (error) => {
+          setLoading(false);
         });
-        return () => unsubFirestore();
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeAuth();
+      unsubFirestore();
+    };
   }, [router]);
 
   const filteredPlans = allPlans.filter(plan => 
@@ -44,13 +49,14 @@ export default function StudyPlans() {
 
   const filters = ['الكل', ...new Set(allPlans.map(plan => plan.type))];
 
-  if (loading) return <div style={{textAlign: 'center', padding: '50px'}}>جاري التحميل...</div>;
+  if (loading) return <div className={styles.loadingContainer}>جاري التحميل...</div>;
 
   return (
     <div className={styles.container}>
       <div className={styles.heroSection}>
         <h1 className={styles.title}>خطط قراءة الكتاب المقدس</h1>
       </div>
+
       <div className={styles.filterSection}>
         {filters.map(filter => (
           <button
@@ -62,23 +68,30 @@ export default function StudyPlans() {
           </button>
         ))}
       </div>
+
       <div className={styles.plansGrid}>
         {filteredPlans.map(plan => {
           const planData = completionData[plan.id] || { completionPercentage: 0, completedDays: {} };
           const daysDone = Object.values(planData.completedDays || {}).filter(d => d.isCompleted).length;
           const hasStarted = daysDone > 0;
+
           return (
             <div key={plan.id} className={styles.card}>
               <div className={styles.cardContent}>
                 <h3 className={styles.cardTitle}>{plan.title}</h3>
+                
                 {hasStarted && (
                   <div className={styles.completionStatus}>
                     <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${planData.completionPercentage}%` }}></div>
+                      <div 
+                        className={styles.progressFill} 
+                        style={{ width: `${planData.completionPercentage}%` }}
+                      ></div>
                     </div>
-                    <span>{planData.completionPercentage}%</span>
+                    <span className={styles.percentageText}>{planData.completionPercentage}%</span>
                   </div>
                 )}
+
                 <Link href={`/studyPlans/${plan.id}`} className={styles.cardButton}>
                   {hasStarted ? 'متابعة' : 'ابدأ الآن'}
                 </Link>

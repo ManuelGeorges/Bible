@@ -1,6 +1,6 @@
 'use client'; 
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './PlanDetails.module.css';
@@ -16,26 +16,31 @@ export default function PlanDetailsPage() {
   const readingsListRef = useRef(null);
   const [user, setUser] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
-  const plan = allPlans.find((p) => p.id === parseInt(planId));
+  const plan = useMemo(() => allPlans.find((p) => p.id === parseInt(planId)), [planId]);
 
   if (!plan) notFound();
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
+    let unsubSnap = () => {};
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
       setUser(loggedInUser);
       if (loggedInUser) {
         const userRef = doc(db, 'users', loggedInUser.uid);
-        const unsubSnap = onSnapshot(userRef, (docSnap) => {
+        unsubSnap = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data().completedPlans?.[planId]?.completedDays || {};
             setCompletedDays(data);
           }
-        });
-        return () => unsubSnap();
+        }, (err) => console.error("Snapshot error:", err));
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeAuth();
+      unsubSnap();
+    };
   }, [planId]);
 
   const handleCheck = async (day) => {
@@ -45,12 +50,10 @@ export default function PlanDetailsPage() {
     const newCompletedDays = { ...completedDays };
 
     if (isCurrentlyCompleted) {
-      // إلغاء التعليم: نمسح اليوم وكل الأيام اللي بعده (منطق الخطة)
       for (let i = day; i <= plan.readings.length; i++) {
         delete newCompletedDays[i];
       }
     } else {
-      // تعليم كـ مكتمل
       newCompletedDays[day] = { 
         isCompleted: true, 
         dateCompleted: new Date().toISOString() 
@@ -61,6 +64,8 @@ export default function PlanDetailsPage() {
     const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
     const percentage = Math.round((daysDone / totalDays) * 100);
 
+    setCompletedDays(newCompletedDays);
+
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
@@ -70,15 +75,24 @@ export default function PlanDetailsPage() {
         }
       });
     } catch (e) {
-      console.error("Error updating plan:", e);
+      console.error("Update failed, syncing back...");
     }
   };
+
+  const progressPercentage = useMemo(() => {
+    const done = Object.values(completedDays).filter(d => d.isCompleted).length;
+    return Math.round((done / plan.readings.length) * 100);
+  }, [completedDays, plan.readings.length]);
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>{plan.title}</h1>
+      
       <div className={styles.progressBar}>
-        <div className={styles.progressFill} style={{ width: `${Math.round((Object.values(completedDays).filter(d => d.isCompleted).length / plan.readings.length) * 100)}%` }}></div>
+        <div 
+          className={styles.progressFill} 
+          style={{ width: `${progressPercentage}%` }}
+        ></div>
       </div>
 
       <ul className={styles.readingsList} ref={readingsListRef}>
@@ -88,15 +102,19 @@ export default function PlanDetailsPage() {
 
           return (
             <li key={reading.day} className={`${styles.readingItem} ${isCompleted ? styles.completed : ''}`}>
-              <span>يوم {reading.day}</span>
-              <input
-                type="checkbox"
-                checked={isCompleted || false}
-                disabled={!canCheck && !isCompleted}
-                onChange={() => handleCheck(reading.day)}
-              />
+              <div className={styles.dayInfo}>
+                <span>يوم {reading.day}</span>
+                <input
+                  type="checkbox"
+                  checked={isCompleted || false}
+                  disabled={!canCheck && !isCompleted}
+                  onChange={() => handleCheck(reading.day)}
+                />
+              </div>
               <div className={styles.books}>
-                {reading.books.map((b, i) => <Link key={i} href={`/bible?query=${b}`}>{b}</Link>)}
+                {reading.books.map((b, i) => (
+                  <Link key={i} href={`/bible?query=${b}`}>{b}</Link>
+                ))}
               </div>
             </li>
           );

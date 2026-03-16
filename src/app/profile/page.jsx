@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../../lib/firebase';
+import { db } from '../../lib/firebase';
 import styles from './profile.module.css';
 
 const calculatePoints = (data) => {
@@ -46,50 +46,60 @@ const ProfilePage = () => {
   });
   const router = useRouter();
 
+  const fetchProfileData = useCallback(async (currentUser) => {
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const data = userDocSnap.data();
+        setUserData(data);
+
+        const versesCount = data.favorites?.verses ? Object.keys(data.favorites.verses).length : 0;
+        const completedChaptersCount = data.completedChapters ? Object.keys(data.completedChapters).filter(k => data.completedChapters[k] === true).length : 0;
+        const activePlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
+        const totalPoints = calculatePoints(data);
+
+        setUserStats({
+          verses: versesCount,
+          chapters: completedChaptersCount,
+          points: totalPoints,
+          plans: activePlansCount,
+        });
+      }
+    } catch (e) {
+      console.error("Profile Fetch Error:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-
-          if (userDocSnap.exists()) {
-            const data = userDocSnap.data();
-            setUserData(data);
-
-            const versesCount = data.favorites?.verses ? Object.keys(data.favorites.verses).length : 0;
-            const completedChaptersCount = data.completedChapters ? Object.keys(data.completedChapters).filter(k => data.completedChapters[k] === true).length : 0;
-            const activePlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
-            const totalPoints = calculatePoints(data);
-
-            setUserStats({
-              verses: versesCount,
-              chapters: completedChaptersCount,
-              points: totalPoints,
-              plans: activePlansCount,
-            });
-          }
-        } catch (e) {
-          console.error("Error fetching profile data:", e);
-        }
+        fetchProfileData(currentUser);
       } else {
         router.push('/intro');
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [router, fetchProfileData]);
 
   const handleLogout = async () => {
+    const auth = getAuth();
     await signOut(auth);
     router.push('/intro');
   };
 
-  if (loading || !user) {
+  if (loading) {
     return <div className={styles.loading}>جاري التحميل...</div>;
   }
+
+  if (!user) return null;
 
   const userFeatures = [
     { title: 'الآيات المفضلة', count: userStats.verses, description: 'عدد الآيات التي قمت بحفظها.' },
@@ -102,7 +112,12 @@ const ProfilePage = () => {
     <div className={styles.container} dir="rtl">
       <div className={styles.profileCard}>
         <div className={styles.profileHeader}>
-          <img src={user.photoURL || '/images/default-avatar.png'} alt="User Avatar" className={styles.avatar} />
+          <img 
+            src={user.photoURL || '/images/default-avatar.png'} 
+            alt="User Avatar" 
+            className={styles.avatar} 
+            onError={(e) => { e.target.src = '/images/default-avatar.png'; }}
+          />
           <div className={styles.userInfo}>
             <h1 className={styles.userName}>{userData?.firstName || user.displayName || 'يا صديق'}</h1>
             <p className={styles.userEmail}>{user.email}</p>

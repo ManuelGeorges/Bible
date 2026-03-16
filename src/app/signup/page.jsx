@@ -12,36 +12,43 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import styles from './signup.module.css';
 
-const SignUpPage = () => {
+export default function SignUpPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.push('/');
+      if (user) router.replace('/');
     });
     return () => unsubscribe();
   }, [router]);
 
   const translateError = (code) => {
+    if (typeof window !== 'undefined' && !navigator.onLine) {
+      return 'لا يوجد اتصال بالإنترنت. يرجى المحاولة لاحقاً.';
+    }
     switch (code) {
       case 'auth/email-already-in-use': return 'هذا البريد الإلكتروني مسجل بالفعل.';
       case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
-      case 'auth/weak-password': return 'كلمة المرور ضعيفة جداً (يجب أن تكون 6 أحرف على الأقل).';
-      case 'auth/network-request-failed': return 'خطأ في الاتصال بالإنترنت.';
-      default: return 'حدث خطأ غير متوقع، حاول مرة أخرى.';
+      case 'auth/weak-password': return 'كلمة المرور ضعيفة (6 أحرف على الأقل).';
+      case 'auth/network-request-failed': return 'خطأ في الاتصال بالشبكة.';
+      default: return 'حدث خطأ، حاول مرة أخرى.';
     }
   };
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    setError(null);
+    if (isSubmitting) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملاً'); return; }
-    
+
+    setError(null);
+    setIsSubmitting(true);
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -49,16 +56,23 @@ const SignUpPage = () => {
         firstName,
         lastName,
         email: user.email,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        favorites: { verses: {} },
+        completedChapters: {},
+        completedPlans: {}
       });
     } catch (err) {
       setError(translateError(err.code));
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleAuth = async () => {
+    if (isSubmitting) return;
     const provider = new GoogleAuthProvider();
     setError(null);
+    setIsSubmitting(true);
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
@@ -71,11 +85,15 @@ const SignUpPage = () => {
           firstName: fName,
           lastName: lName.join(' ') || '',
           email: user.email,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          favorites: { verses: {} },
+          completedChapters: {},
+          completedPlans: {}
         });
       }
     } catch (err) {
       setError(translateError(err.code));
+      setIsSubmitting(false);
     }
   };
 
@@ -85,18 +103,20 @@ const SignUpPage = () => {
         <h1 className={styles.title}>إنشاء حساب جديد</h1>
         <form onSubmit={handleAuth} className={styles.form}>
           <div className={styles.nameRow}>
-            <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} />
-            <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} />
+            <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} />
+            <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} />
           </div>
-          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} />
-          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} />
+          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} />
+          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} />
           {error && <div className={styles.errorBox}>{error}</div>}
-          <button type="submit" className={styles.button}>إنشاء حساب</button>
+          <button type="submit" className={styles.button} disabled={isSubmitting}>
+            {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
+          </button>
         </form>
         <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
-        <button onClick={handleGoogleAuth} className={styles.googleButton}>
+        <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
           <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-          <span>التسجيل بواسطة جوجل</span>
+          <span>{isSubmitting ? 'جاري التحميل...' : 'التسجيل بواسطة جوجل'}</span>
         </button>
         <p className={styles.toggleMode}>
           لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
@@ -104,6 +124,4 @@ const SignUpPage = () => {
       </div>
     </div>
   );
-};
-
-export default SignUpPage;
+}

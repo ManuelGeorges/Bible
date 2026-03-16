@@ -3,17 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import styles from './favourites.module.css';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
-
-const auth = typeof window !== 'undefined' ? getAuth() : null;
-const firestore = db;
-
-function convertToArabicNumber(num) {
-  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num.toString().split('').map(d => arabicNums[+d] || d).join('');
-}
 
 export default function FavouritesPage() {
   const router = useRouter();
@@ -23,11 +15,15 @@ export default function FavouritesPage() {
   const [error, setError] = useState('');
   const [user, setUser] = useState(null);
 
-  const fetchFavourites = useCallback(async (loggedInUser) => {
-    if (!loggedInUser) return;
+  const convertToArabicNumber = (num) => {
+    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return num.toString().split('').map(d => arabicNums[+d] || d).join('');
+  };
+
+  const fetchFavourites = useCallback(async (userId) => {
     setIsLoading(true);
     try {
-      const userRef = doc(firestore, 'users', loggedInUser.uid);
+      const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
         const data = userSnap.data();
@@ -37,65 +33,76 @@ export default function FavouritesPage() {
           ...val
         }));
         setFavourites(formattedVerses);
+        setError('');
       }
     } catch (e) {
-      setError('فشل تحميل المفضلة.');
+      if (typeof window !== 'undefined' && !navigator.onLine) {
+        setError('تعذر الاتصال بالخادم. يتم العرض من الذاكرة المحلية.');
+      } else {
+        setError('فشل تحميل المفضلة.');
+      }
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
-        if (!loggedInUser) {
-          router.push('/intro');
-        } else {
-          setUser(loggedInUser);
-          fetchFavourites(loggedInUser);
-        }
-      });
-      return () => unsubscribe();
-    }
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
+      if (!loggedInUser) {
+        router.push('/intro');
+      } else {
+        setUser(loggedInUser);
+        fetchFavourites(loggedInUser.uid);
+      }
+    });
+    return () => unsubscribe();
   }, [router, fetchFavourites]);
 
-  const handleRemove = useCallback(async (itemToRemove) => {
+  const handleRemove = async (itemToRemove) => {
     if (!user) return;
+
+    const previousFavourites = [...favourites];
+    setFavourites(prev => prev.filter(item => item.id !== itemToRemove.id));
+
     try {
-      const userRef = doc(firestore, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const currentVerses = userSnap.data().favorites?.verses || {};
-        delete currentVerses[itemToRemove.id];
-        await updateDoc(userRef, { "favorites.verses": currentVerses });
-        setFavourites(Object.entries(currentVerses).map(([key, val]) => ({
-          id: key,
-          ...val
-        })));
-      }
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        [`favorites.verses.${itemToRemove.id}`]: deleteField()
+      });
     } catch (e) {
-      setError('فشل حذف العنصر.');
+      setFavourites(previousFavourites);
+      alert('فشل الحذف. تأكد من اتصالك بالإنترنت.');
     }
-  }, [user]);
+  };
 
   const getReferenceText = (item) => {
     return `${item.bookName || item.book} ${convertToArabicNumber(item.ch + 1)}:${convertToArabicNumber(item.v + 1)}`;
   };
 
-  if (!user && isLoading) return <div className={styles.loadingMessage}>جاري التحقق...</div>;
+  if (isLoading) return <div className={styles.loadingMessage}>جاري التحميل...</div>;
 
   return (
     <main className={`${styles.container} ${styles.ar}`}>
       <h1 className={styles.title}>⭐ المفضلة</h1>
       <nav className={styles.tabContainer}>
-        <div className={`${styles.tab} ${activeTab === 'verses' ? styles.activeTab : ''}`} onClick={() => setActiveTab('verses')}>آيات</div>
-        <div className={`${styles.tab} ${activeTab === 'chapters' ? styles.activeTab : ''}`} style={{ opacity: 0.5, cursor: 'not-allowed' }}>اصحاحات (قريباً)</div>
+        <div 
+          className={`${styles.tab} ${activeTab === 'verses' ? styles.activeTab : ''}`} 
+          onClick={() => setActiveTab('verses')}
+        >
+          آيات
+        </div>
+        <div 
+          className={styles.tab} 
+          style={{ opacity: 0.5, cursor: 'not-allowed' }}
+        >
+          اصحاحات (قريباً)
+        </div>
       </nav>
-      {isLoading ? (
-        <div className={styles.loadingMessage}>جاري التحميل...</div>
-      ) : error ? (
-        <div className={styles.errorMessage}>{error}</div>
-      ) : favourites.length === 0 ? (
+
+      {error && <div className={styles.errorMessage}>{error}</div>}
+
+      {favourites.length === 0 && !error ? (
         <div className={styles.emptyMessage}>لا توجد عناصر مفضلة.</div>
       ) : (
         <ul className={styles.favouritesList}>
@@ -107,7 +114,13 @@ export default function FavouritesPage() {
                   <span className={styles.favouriteReference}>{getReferenceText(item)}</span>
                 </div>
               </div>
-              <button onClick={() => handleRemove(item)} className={styles.removeButton} aria-label="حذف">✖</button>
+              <button 
+                onClick={() => handleRemove(item)} 
+                className={styles.removeButton} 
+                aria-label="حذف"
+              >
+                ✖
+              </button>
             </li>
           ))}
         </ul>
