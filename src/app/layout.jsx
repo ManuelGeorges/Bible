@@ -9,6 +9,7 @@ import ConnectivityListener from '../components/ConnectivityListener';
 import BibleCacheHandler from '../components/BibleCacheHandler';
 import DataPrefetcher from '../components/DataPrefetcher';
 import SecurityGuard from '../components/SecurityGuard';
+import ChunkErrorListener from '../components/ChunkErrorListener';
 
 export const viewport = {
   width: 'device-width',
@@ -80,6 +81,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+          <ChunkErrorListener />
           <SecurityGuard />
           <DataPrefetcher />
           <BibleCacheHandler />
