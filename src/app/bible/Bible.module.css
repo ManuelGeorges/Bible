@@ -272,3 +272,21 @@
   .chapterHeader { gap: 10px !important; }
   .navigation { width: 90% !important; justify-content: space-around !important; }
 }
+.container {
+  background: #0f172a !important;
+  padding-top: 20px !important;
+  min-height: 100vh !important;
+}
+
+/* تعديل شريط الاختيار ليكون تحت الناف بار مباشرة */
+.selectionBar {
+  top: 65px !important; /* نفس ارتفاع الناف بار */
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* لضمان عدم وجود مساحة بيضاء في الأسفل عند القراءة الطويلة */
+.verseContainer {
+  background: rgba(30, 41, 59, 0.4) !important;
+  margin-bottom: 50px !important;
+}

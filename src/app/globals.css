@@ -220,3 +220,60 @@ body {
 
 /* تأكد أن نصوص الآيات في ملفات الـ module لا تملك حجماً ثابتاً بل ترث من الـ body */
 /* أو اجعلها تستخدم نفس المتغير */
+/* 1. إجبار الخلفية الكحلية على كل شيء ومنع البياض */
+html, body {
+  background-color: #0f172a !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important;
+  /* منع السكرول الوهمي في الموبايل */
+  overscroll-behavior-y: none;
+}
+
+/* 2. توحيد الحاوية الرئيسية لكل الصفحات */
+main {
+  background-color: #0f172a !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 3. حل مشكلة الـ Container المكرر في كل الملفات */
+/* أي ديف واخد كلاس فيه كلمة container هيتطبق عليه ده */
+[class*="container"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  box-shadow: none !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* 4. التأكد أن المحتوى لا يختفي تحت الناف بار */
+/* استهدف أول ديف جوه الـ main */
+main > div:first-child {
+  padding-top: 70px !important;
+}
+
+/* 5. دعم شاشات الموبايل الحديثة (Safe Areas) */
+@supports (padding: env(safe-area-inset-top)) {
+  main {
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
+}
+
+/* 6. تحسين مظهر الـ Scrollbar عشان ميبقاش لونه أبيض */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
