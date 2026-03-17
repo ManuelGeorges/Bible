@@ -6,7 +6,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
-import { toast } from 'react-hot-toast';
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
@@ -29,7 +28,7 @@ export default function BibleNavbar() {
 
     if (loading) {
         return (
-            <div className={styles.navbarWrapper} style={{ backgroundColor: '#0f172a' }}>
+            <div className={styles.navbarWrapper}>
                 <nav className={styles.navbar}>
                     <div className={styles.navLink}>...</div>
                     <div className={styles.navLink}>...</div>
@@ -41,8 +40,8 @@ export default function BibleNavbar() {
 
     return (
         <>
-            <div className={styles.navbarWrapper} style={{ backgroundColor: '#0f172a', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-                <nav className={styles.navbar} style={{ height: '65px', display: 'flex', alignItems: 'center' }}>
+            <div className={styles.navbarWrapper}>
+                <nav className={styles.navbar}>
                     <div
                         className={styles.navLink}
                         onClick={() => setIsSidebarOpen(true)}
@@ -73,7 +72,7 @@ export default function BibleNavbar() {
                     </Link>
 
                     <Link href="/maps" className={styles.navLink} aria-label="Maps" onClick={(e) => {
-                        if (typeof window !== 'undefined' && !navigator.onLine) {
+                        if (!navigator.onLine) {
                             e.preventDefault();
                             toast.error("هذه الصفحة تتطلب إنترنت");
                         }
