@@ -54,7 +54,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning> 
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -73,10 +73,10 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>
+      <body style={{ backgroundColor: '#0f172a', margin: 0, padding: 0 }}>
           <SEOlinks />
           <BibleNavbar />
-          <main className={styles.mainContent}>
+          <main className={styles.mainContent} style={{ minHeight: '100vh', paddingTop: 'env(safe-area-inset-top)' }}>
             <div className={styles.container}>{children}</div>
           </main>
           <Footer />

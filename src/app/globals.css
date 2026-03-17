@@ -218,5 +218,13 @@ body {
   /* ... بقية الستايلات ... */
 }
 
-/* تأكد أن نصوص الآيات في ملفات الـ module لا تملك حجماً ثابتاً بل ترث من الـ body */
-/* أو اجعلها تستخدم نفس المتغير */
+body {
+  margin: 0;
+  padding: 0;
+  /* اللون الكحلي الخاص بك لمنع المساحات البيضاء */
+  background-color: #0f172a !important; 
+  /* دعم المساحات الآمنة للموبايل */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  min-height: 100vh;
+}

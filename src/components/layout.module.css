@@ -207,3 +207,29 @@
     height: 20px;
   }
 }
+.navbarWrapper {
+  position: fixed;
+  bottom: 0; /* تأكد أنها في الأسفل */
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  background-color: #0f172a; /* نفس لون الخلفية الكحلي */
+  /* إضافة مساحة أمان لأزرار الأندرويد السفلية */
+  padding-bottom: env(safe-area-inset-bottom, 15px); 
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px; /* طول ثابت ومناسب للموبايل */
+  max-width: 600px; /* لمنع تمددها بشكل قبيح على التابلت */
+  margin: 0 auto;
+}
+
+.navIcon {
+  width: 24px;
+  height: 24px;
+  color: #e2e8f0; /* لون فاتح يظهر على الخلفية الكحلية */
+}
