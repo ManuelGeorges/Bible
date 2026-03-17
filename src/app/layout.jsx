@@ -4,12 +4,6 @@ import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
-import RegisterSW from './RegisterSW';
-import ConnectivityListener from '../components/ConnectivityListener';
-import BibleCacheHandler from '../components/BibleCacheHandler';
-import DataPrefetcher from '../components/DataPrefetcher';
-import SecurityGuard from '../components/SecurityGuard';
-import ChunkErrorListener from '../components/ChunkErrorListener';
 
 export const viewport = {
   width: 'device-width',
@@ -21,7 +15,6 @@ export const viewport = {
 };
 
 export const metadata = {
-  manifest: "/manifest.json",
   publisher: 'Agios Bible',
   title: 'الموقع الرسمي | Agios Bible ',
   description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث المتطور وخرائط تفاعلية وخطط دراسة ومسابقات',
@@ -81,12 +74,6 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-          <ChunkErrorListener />
-          <SecurityGuard />
-          <DataPrefetcher />
-          <BibleCacheHandler />
-          <ConnectivityListener />
-          <RegisterSW />
           <SEOlinks />
           <BibleNavbar />
           <main className={styles.mainContent}>

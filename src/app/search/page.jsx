@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 import _ from 'lodash';
 import { db } from '../../lib/firebase';
-import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import styles from './search.module.css';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 const geminiCache = {}; 
 
 function convertToArabicNumber(num) {
@@ -77,7 +79,6 @@ export default function BibleSearchPage({ user }) {
   const [selectedChapter, setSelectedChapter] = useState('');
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
-  const resultsRef = useRef(null);
 
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -104,7 +105,6 @@ export default function BibleSearchPage({ user }) {
         setIsLoading(false);
       } catch (e) { 
         setIsLoading(false); 
-        console.error("Data fetch error", e);
       }
     };
     fetchData();
@@ -118,34 +118,32 @@ export default function BibleSearchPage({ user }) {
   const searchWithGeminiDerivatives = async (term) => {
     if (geminiCache[term]) return geminiCache[term];
     try {
-      const res = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: `أعطني الجذر اللغوي للكلمة "${term}" وكل مشتقاتها في مصفوفة JSON باسم "derivatives" وحقل "root".` }),
-      });
-      const data = await res.json();
-      const cleanJson = data.response.substring(data.response.indexOf('{'), data.response.lastIndexOf('}') + 1);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const prompt = `أعطني الجذر اللغوي للكلمة "${term}" وكل مشتقاتها في مصفوفة JSON باسم "derivatives" وحقل "root". النتيجة JSON فقط.`;
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const responseText = response.text();
+      const cleanJson = responseText.substring(responseText.indexOf('{'), responseText.lastIndexOf('}') + 1);
       const parsed = JSON.parse(cleanJson);
       const derivatives = (parsed.derivatives || []).map(d => typeof d === 'string' ? d : d.word).filter(d => d && d.length > 1);
-      const result = { derivatives, extractedRoot: parsed.root };
-      geminiCache[term] = result;
-      return result;
-    } catch (e) { return { derivatives: [term], extractedRoot: '' }; }
+      const finalResult = { derivatives, extractedRoot: parsed.root };
+      geminiCache[term] = finalResult;
+      return finalResult;
+    } catch (e) { 
+      return { derivatives: [term], extractedRoot: '' }; 
+    }
   };
 
   useEffect(() => {
     const performSearch = async () => {
       if (allVerses.length === 0) return;
-      
       setIsLoading(true);
       let filtered = [...allVerses];
 
-      // 1. تطبيق فلاتر العهد والسفر والأصحاح أولاً
       if (selectedTestament) filtered = filtered.filter(v => v.testament === selectedTestament);
       if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index.toString() === selectedBookIndex);
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter.toString() === selectedChapter);
 
-      // 2. تطبيق البحث النصي إذا وجد
       if (debouncedSearchQuery) {
         if (searchType === 'derivatives') {
           const info = await searchWithGeminiDerivatives(debouncedSearchQuery);
@@ -161,7 +159,6 @@ export default function BibleSearchPage({ user }) {
         setSearchInfo(null);
       }
 
-      // إذا لم يكن هناك بحث نصي ولا فلاتر مختارة، لا تعرض شيئاً
       const isFilterActive = selectedTestament || selectedBookIndex !== '' || selectedChapter !== '';
       setSearchResults((debouncedSearchQuery || isFilterActive) ? filtered : []);
       setIsLoading(false);
@@ -217,9 +214,7 @@ export default function BibleSearchPage({ user }) {
 
           <div className={styles.filterGrid}>
             <CustomSelect label="العهد" options={[{value:'', label:'كل العهدين'}, {value:'OT', label:'العهد القديم'}, {value:'NT', label:'العهد الجديد'}]} value={selectedTestament} onChange={e => {setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter('');}} />
-            
             <CustomSelect label="السفر" options={[{value:'', label:'كل الأسفار'}, ...filteredBooks.map(b => ({value: booksList.indexOf(b), label: b.name}))]} value={selectedBookIndex} onChange={e => {setSelectedBookIndex(e.target.value); setSelectedChapter('');}} />
-            
             <CustomSelect label="الأصحاح" options={[{value:'', label:'الكل'}, ...Array.from({length: chaptersCount}, (_, i) => ({value: i, label: convertToArabicNumber(i+1)}))]} value={selectedChapter} onChange={e => setSelectedChapter(e.target.value)} />
           </div>
         </form>

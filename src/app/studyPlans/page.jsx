@@ -92,7 +92,7 @@ export default function StudyPlans() {
                   </div>
                 )}
 
-                <Link href={`/studyPlans/${plan.id}`} className={styles.cardButton}>
+                 <Link href={`/studyPlans/details?id=${plan.id}`} className={styles.cardButton}>
                   {hasStarted ? 'متابعة' : 'ابدأ الآن'}
                 </Link>
               </div>

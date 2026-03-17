@@ -1,7 +1,7 @@
-'use client'; 
+'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useSearchParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import styles from './PlanDetails.module.css';
 import studyPlansData from '../studyPlansData.json';
@@ -11,16 +11,22 @@ import { db } from '../../../lib/firebase';
 
 const allPlans = studyPlansData.plans;
 
-export default function PlanDetailsPage() {
-  const { planId } = useParams();
+function PlanDetailsContent() {
+  const searchParams = useSearchParams();
+  const planId = searchParams.get('id');
+  
   const readingsListRef = useRef(null);
   const [user, setUser] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
-  const plan = useMemo(() => allPlans.find((p) => p.id === parseInt(planId)), [planId]);
 
-  if (!plan) notFound();
+  const plan = useMemo(() => {
+    if (!planId) return null;
+    return allPlans.find((p) => p.id === parseInt(planId));
+  }, [planId]);
 
   useEffect(() => {
+    if (!planId) return;
+
     const auth = getAuth();
     let unsubSnap = () => {};
 
@@ -33,7 +39,7 @@ export default function PlanDetailsPage() {
             const data = docSnap.data().completedPlans?.[planId]?.completedDays || {};
             setCompletedDays(data);
           }
-        }, (err) => console.error("Snapshot error:", err));
+        }, (err) => console.error(err));
       }
     });
 
@@ -43,9 +49,10 @@ export default function PlanDetailsPage() {
     };
   }, [planId]);
 
+  if (!planId || !plan) return notFound();
+
   const handleCheck = async (day) => {
     if (!user) return;
-
     const isCurrentlyCompleted = completedDays[day]?.isCompleted;
     const newCompletedDays = { ...completedDays };
 
@@ -75,31 +82,24 @@ export default function PlanDetailsPage() {
         }
       });
     } catch (e) {
-      console.error("Update failed, syncing back...");
+      console.error(e);
     }
   };
 
-  const progressPercentage = useMemo(() => {
-    const done = Object.values(completedDays).filter(d => d.isCompleted).length;
-    return Math.round((done / plan.readings.length) * 100);
-  }, [completedDays, plan.readings.length]);
+  const progressPercentage = Math.round(
+    (Object.values(completedDays).filter(d => d.isCompleted).length / plan.readings.length) * 100
+  );
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>{plan.title}</h1>
-      
       <div className={styles.progressBar}>
-        <div 
-          className={styles.progressFill} 
-          style={{ width: `${progressPercentage}%` }}
-        ></div>
+        <div className={styles.progressFill} style={{ width: `${progressPercentage}%` }}></div>
       </div>
-
       <ul className={styles.readingsList} ref={readingsListRef}>
         {plan.readings.map((reading) => {
           const isCompleted = completedDays[reading.day]?.isCompleted;
           const canCheck = reading.day === 1 || completedDays[reading.day - 1]?.isCompleted;
-
           return (
             <li key={reading.day} className={`${styles.readingItem} ${isCompleted ? styles.completed : ''}`}>
               <div className={styles.dayInfo}>
@@ -121,5 +121,13 @@ export default function PlanDetailsPage() {
         })}
       </ul>
     </div>
+  );
+}
+
+export default function PlanDetailsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PlanDetailsContent />
+    </Suspense>
   );
 }
