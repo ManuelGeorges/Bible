@@ -277,3 +277,10 @@ main > div:first-child {
   background: #1e293b;
   border-radius: 10px;
 }
+:root {
+  --sat: env(safe-area-inset-top);
+}
+body {
+  /* بيخلي التطبيق يحترم حدود النوتش والساعة */
+  padding-top: var(--sat, 0px);
+}

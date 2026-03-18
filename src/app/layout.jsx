@@ -4,7 +4,7 @@ import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
-  
+import NativeWrapper from '../components/NativeWrapper'; 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -56,7 +56,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning> 
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></meta>
         <script
+        
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -74,6 +76,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+          <NativeWrapper>
           <SEOlinks />
           <BibleNavbar />
           <main className={styles.mainContent}>
@@ -92,6 +95,7 @@ export default function RootLayout({ children }) {
               gtag('config', 'G-J90H6JXHNG');
             `}
           </Script>
+          </NativeWrapper>
       </body>
     </html>
   );
