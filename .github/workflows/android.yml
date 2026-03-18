@@ -40,7 +40,9 @@ jobs:
 
       # الخطوة السحرية اللي كانت ناقصة
       - name: Capacitor Sync
-        run: npx cap sync android
+        run: |
+          npx cap add android || true
+          npx cap sync android
 
       - name: Build APK and AAB
         run: |
