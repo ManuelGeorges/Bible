@@ -57,23 +57,24 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl" suppressHydrationWarning> 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></meta>
-        <script
-        
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const theme = localStorage.getItem('theme') || 'dark';
-                  if (theme === 'light') {
-                    document.body.classList.add('light-theme');
-                  }
-                  const fontSize = localStorage.getItem('bibleFontSize') || '18';
-                  document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function() {
+        try {
+          const theme = localStorage.getItem('theme') || 'dark';
+          document.body.classList.add(theme === 'light' ? 'light-theme' : 'dark-theme');
+          const fontSize = localStorage.getItem('bibleFontSize') || '18';
+          document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
+        } catch (e) { console.log('Theme script error'); }
+      })();
+    `,
+  }}
+/>
+<script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+<script>
+  var vConsole = new window.VConsole();
+</script>
       </head>
       <body>
           <NativeWrapper>
