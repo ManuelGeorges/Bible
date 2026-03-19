@@ -5,6 +5,8 @@ const nextConfig = {
     unoptimized: true,
   },
   reactStrictMode: true,
+  trailingSlash: true,
+  assetPrefix: './',
 };
 
 module.exports = nextConfig;
