@@ -112,24 +112,21 @@ function PlanDetailsContent() {
                 />
               </div>
               <div className={styles.books}>
-                {reading.books.map((b, i) => (
-                  <div className={styles.books}>
-  {reading.books.map((b, i) => {
-    const parts = b.split(' ');
-    const bookName = parts[0];
-    const chapterNum = parts[1] || 1;
-    
-    return (
-      <Link 
-        key={i} 
-        href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum}`}
-      >
-        {b}
-      </Link>
-    );
-  })}
-</div>
-                ))}
+                {reading.books.map((b, i) => {
+                  const parts = b.trim().split(' ');
+                  const chapterNum = parts[parts.length - 1];
+                  const bookName = parts.slice(0, parts.length - 1).join(' ');
+                  
+                  return (
+                    <Link 
+                      key={i} 
+                      href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum}`}
+                      className={styles.bookLink}
+                    >
+                      {b}
+                    </Link>
+                  );
+                })}
               </div>
             </li>
           );
