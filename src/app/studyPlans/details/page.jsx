@@ -113,7 +113,22 @@ function PlanDetailsContent() {
               </div>
               <div className={styles.books}>
                 {reading.books.map((b, i) => (
-                  <Link key={i} href={`/bible?query=${b}`}>{b}</Link>
+                  <div className={styles.books}>
+  {reading.books.map((b, i) => {
+    const parts = b.split(' ');
+    const bookName = parts[0];
+    const chapterNum = parts[1] || 1;
+    
+    return (
+      <Link 
+        key={i} 
+        href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum}`}
+      >
+        {b}
+      </Link>
+    );
+  })}
+</div>
                 ))}
               </div>
             </li>

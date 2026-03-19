@@ -142,3 +142,48 @@
     transform: scale(1);
   }
 }
+.input {
+  width: 100%; /* عشان ياخد عرض الكارد كله */
+  padding: 14px 16px; /* زيادة المسافة جوه الـ input عشان يكبر */
+  font-size: 16px; /* مهم جداً عشان الموبايل ميعملش Zoom لما تلمسه */
+  border: 1px solid #ddd;
+  border-radius: 8px; /* تخلي الحواف ناعمة واحترافية */
+  margin-bottom: 15px; /* مسافة بين كل input والتاني */
+  box-sizing: border-box; /* عشان الـ padding ميخرجش الـ input بره الشاشة */
+  outline: none;
+  background-color: #f9f9f9;
+}
+
+.input:focus {
+  border-color: #0070f3; /* لون لما المستخدم يضغط عليه */
+  background-color: #fff;
+}
+.card {
+  width: 100%;
+  max-width: 400px; /* العرض الأقصى على الكمبيوتر */
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* في الموبايل خلي الكارد ياخد مساحة أكبر */
+@media (max-width: 480px) {
+  .card {
+    padding: 20px;
+    width: 90%; /* يسيب مسافة بسيطة من الجوانب */
+  }
+}
+.nameRow {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .nameRow {
+    flex-direction: column; /* يخليهم فوق بعض بدل جنب بعض */
+    gap: 0;
+  }
+}

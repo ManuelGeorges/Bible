@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   signInWithEmailAndPassword,
-  signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithCredential,
+  signInWithPopup
 } from 'firebase/auth';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { Capacitor } from '@capacitor/core';
 import { auth } from '../../lib/firebase';
 import styles from './login.module.css';
 
@@ -43,7 +46,6 @@ const LoginPage = () => {
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
-    
     setError(null);
     setIsSubmitting(true);
     try {
@@ -56,14 +58,27 @@ const LoginPage = () => {
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
-    
-    const provider = new GoogleAuthProvider();
     setError(null);
     setIsSubmitting(true);
+
     try {
-      await signInWithPopup(auth, provider);
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const idToken = result.credential?.idToken;
+
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          await signInWithCredential(auth, credential);
+        } else {
+          throw new Error("No ID Token");
+        }
+      } else {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      }
     } catch (err) {
-      setError(translateError(err.code));
+      console.error(err);
+      setError('فشل تسجيل الدخول بواسطة جوجل. تأكد من إعدادات الـ SHA-1');
       setIsSubmitting(false);
     }
   };
@@ -80,6 +95,7 @@ const LoginPage = () => {
             onChange={(e) => setEmail(e.target.value)} 
             className={styles.input}
             disabled={isSubmitting}
+            required
           />
           <input 
             type="password" 
@@ -88,6 +104,7 @@ const LoginPage = () => {
             onChange={(e) => setPassword(e.target.value)} 
             className={styles.input}
             disabled={isSubmitting}
+            required
           />
           {error && <div className={styles.errorBox}>{error}</div>}
           <button type="submit" className={styles.button} disabled={isSubmitting}>

@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithCredential
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { Capacitor } from '@capacitor/core';
 import { auth, db } from '../../lib/firebase';
 import styles from './signup.module.css';
 
@@ -22,11 +26,42 @@ export default function SignUpPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          await handleUserData(result.user);
+          router.replace('/');
+        }
+      } catch (err) {
+        setError(translateError(err.code));
+      }
+    };
+    checkRedirect();
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
     });
     return () => unsubscribe();
   }, [router]);
+
+  const handleUserData = async (user) => {
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      const [fName, ...lName] = (user.displayName || "مستخدم جديد").split(' ');
+      await setDoc(userRef, {
+        firstName: fName,
+        lastName: lName.join(' ') || '',
+        email: user.email,
+        createdAt: new Date().toISOString(),
+        favorites: { verses: {} },
+        completedChapters: {},
+        completedPlans: {}
+      });
+    }
+  };
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
@@ -44,7 +79,7 @@ export default function SignUpPage() {
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملاً'); return; }
+    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
 
     setError(null);
     setIsSubmitting(true);
@@ -69,31 +104,27 @@ export default function SignUpPage() {
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
-    const provider = new GoogleAuthProvider();
     setError(null);
     setIsSubmitting(true);
 
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        const [fName, ...lName] = (user.displayName || "مستخدم جديد").split(' ');
-        await setDoc(userRef, {
-          firstName: fName,
-          lastName: lName.join(' ') || '',
-          email: user.email,
-          createdAt: new Date().toISOString(),
-          favorites: { verses: {} },
-          completedChapters: {},
-          completedPlans: {}
-        });
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const credential = GoogleAuthProvider.credential(result.idToken);
+        const userCredential = await signInWithCredential(auth, credential);
+        await handleUserData(userCredential.user);
+      } catch (err) {
+        setError('فشل التسجيل بواسطة جوجل');
+        setIsSubmitting(false);
       }
-    } catch (err) {
-      setError(translateError(err.code));
-      setIsSubmitting(false);
+    } else {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (err) {
+        setError(translateError(err.code));
+        setIsSubmitting(false);
+      }
     }
   };
 

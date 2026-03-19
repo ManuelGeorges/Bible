@@ -44,6 +44,15 @@ export default function MapsPage() {
   ];
 
   useEffect(() => {
+    const checkConnectivity = () => {
+      if (typeof window !== 'undefined' && !navigator.onLine) {
+        router.push('/offline');
+      }
+    };
+
+    checkConnectivity();
+    window.addEventListener('offline', checkConnectivity);
+
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
@@ -60,17 +69,11 @@ export default function MapsPage() {
     window.addEventListener('storage', syncAppSettings);
     setMounted(true);
 
-    const checkConnectivity = () => {
+    const fetchData = async () => {
       if (!navigator.onLine) {
         router.push('/offline');
+        return;
       }
-    };
-
-    checkConnectivity();
-    window.addEventListener('offline', checkConnectivity);
-    window.addEventListener('online', checkConnectivity);
-
-    const fetchData = async () => {
       try {
         const response = await fetch('/data/places/places.json');
         if (!response.ok) throw new Error();
@@ -87,7 +90,6 @@ export default function MapsPage() {
 
     return () => {
       window.removeEventListener('offline', checkConnectivity);
-      window.removeEventListener('online', checkConnectivity);
       window.removeEventListener('storage', syncAppSettings);
     };
   }, [router]);

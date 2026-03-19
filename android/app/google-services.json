@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "900022943169",
+    "project_id": "profiles-system",
+    "storage_bucket": "profiles-system.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900022943169:android:f7320ba7cd4e0e5f92c340",
+        "android_client_info": {
+          "package_name": "com.agios.bible"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtAV3Pgejuv76uiKY-t80VfVT9DzHbqcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

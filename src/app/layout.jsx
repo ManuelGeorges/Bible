@@ -4,7 +4,7 @@ import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
-import CapacitorFeatures from '../components/CapacitorFeatures'; // استيراد المكون الجديد
+import CapacitorFeatures from '../components/CapacitorFeatures';
 
 export const viewport = {
   width: 'device-width',
@@ -75,7 +75,7 @@ document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
         />
       </head>
       <body>
-        <CapacitorFeatures /> {/* تشغيل كود الـ StatusBar هنا */}
+        <CapacitorFeatures /> 
         <SEOlinks />
         <BibleNavbar />
         <main className={styles.mainContent}>

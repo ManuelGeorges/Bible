@@ -1,7 +1,8 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Agios Bible</string>
     <string name="title_activity_main">Agios Bible</string>
-    <string name="package_name">com.agios.bible</string>
-    <string name="custom_url_scheme">com.agios.bible</string>
+    <string name="package_name">com.agios.bible</string> <string name="custom_url_scheme">com.agios.bible</string>
+    
+    <string name="default_web_client_id">900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com.apps.googleusercontent.com</string>
 </resources>
