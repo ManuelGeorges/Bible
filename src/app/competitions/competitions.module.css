@@ -864,22 +864,3 @@
     font-size: 1.2rem;
   }
 }
-.mainContainer {
-  width: 100% !important;
-  max-width: 100vw !important;
-  min-height: 100vh !important;
-  background: #0f172a !important;
-  margin: 0 !important;
-  padding-top: 30px !important;
-}
-
-/* تحسين شكل الهيدر ليتناسب مع الخلفية الموحدة */
-.header {
-  background: rgba(30, 41, 59, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* التأكد أن أزرار التنقل السفلية لا تغطي المحتوى */
-.quizContentWrapper {
-  margin-bottom: 100px !important;
-}

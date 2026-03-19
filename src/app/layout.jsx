@@ -4,7 +4,7 @@ import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
-import NativeWrapper from '../components/NativeWrapper'; 
+
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -56,28 +56,24 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning> 
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></meta>
-<script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function() {
-        try {
-          const theme = localStorage.getItem('theme') || 'dark';
-          document.body.classList.add(theme === 'light' ? 'light-theme' : 'dark-theme');
-          const fontSize = localStorage.getItem('bibleFontSize') || '18';
-          document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
-        } catch (e) { console.log('Theme script error'); }
-      })();
-    `,
-  }}
-/>
-<script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
-<script>
-  var vConsole = new window.VConsole();
-</script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'dark';
+                  if (theme === 'light') {
+                    document.body.classList.add('light-theme');
+                  }
+                  const fontSize = localStorage.getItem('bibleFontSize') || '18';
+                  document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
-          <NativeWrapper>
           <SEOlinks />
           <BibleNavbar />
           <main className={styles.mainContent}>
@@ -96,7 +92,6 @@ export default function RootLayout({ children }) {
               gtag('config', 'G-J90H6JXHNG');
             `}
           </Script>
-          </NativeWrapper>
       </body>
     </html>
   );

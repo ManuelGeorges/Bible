@@ -10,11 +10,8 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
-    "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
-    "@capacitor/keyboard": "^8.0.1",
-    "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.1",
+    "@capacitor/ios": "^8.2.0",
     "@deck.gl/layers": "^9.1.14",
     "@deck.gl/react": "^9.1.14",
     "@google/generative-ai": "^0.24.1",
@@ -46,7 +43,7 @@
     "use-debounce": "^10.0.5"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.2.0",
     "@eslint/eslintrc": "^3",
     "autoprefixer": "^10.4.21",
     "css-loader": "^7.1.2",

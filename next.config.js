@@ -4,13 +4,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    turbo: {
-      enabled: false,
-    },
-  },
   reactStrictMode: true,
-  assetPrefix: './',
 };
 
 module.exports = nextConfig;
