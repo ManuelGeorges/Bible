@@ -19,6 +19,10 @@
   padding: 0 !important;
   background: transparent !important;
 }
+.mainContent {
+  /* تأكد إن مفيش padding-top هنا بيصفر القيمة اللي حطيناها في الـ globals */
+  position: relative;
+}
 
 .navbarWrapper {
   position: fixed !important;

@@ -4,6 +4,7 @@ import BibleNavbar from '../components/BibleNavbar';
 import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
+import CapacitorFeatures from '../components/CapacitorFeatures'; // استيراد المكون الجديد
 
 export const viewport = {
   width: 'device-width',
@@ -54,44 +55,45 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning> 
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function() {
-                try {
-                  const theme = localStorage.getItem('theme') || 'dark';
-                  if (theme === 'light') {
-                    document.body.classList.add('light-theme');
-                  }
-                  const fontSize = localStorage.getItem('bibleFontSize') || '18';
-                  document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
-                } catch (e) {}
-              })();
-            `,
+(function() {
+try {
+const theme = localStorage.getItem('theme') || 'dark';
+if (theme === 'light') {
+document.body.classList.add('light-theme');
+}
+const fontSize = localStorage.getItem('bibleFontSize') || '18';
+document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
+} catch (e) {}
+})();
+`,
           }}
         />
       </head>
       <body>
-          <SEOlinks />
-          <BibleNavbar />
-          <main className={styles.mainContent}>
-            <div className={styles.container}>{children}</div>
-          </main>
-          <Footer />
-          <Script
-            src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-J90H6JXHNG');
-            `}
-          </Script>
+        <CapacitorFeatures /> {/* تشغيل كود الـ StatusBar هنا */}
+        <SEOlinks />
+        <BibleNavbar />
+        <main className={styles.mainContent}>
+          <div className={styles.container}>{children}</div>
+        </main>
+        <Footer />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-J90H6JXHNG');
+`}
+        </Script>
       </body>
     </html>
   );

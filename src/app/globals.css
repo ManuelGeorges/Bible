@@ -220,3 +220,31 @@ body {
 
 /* تأكد أن نصوص الآيات في ملفات الـ module لا تملك حجماً ثابتاً بل ترث من الـ body */
 /* أو اجعلها تستخدم نفس المتغير */
+/* ده أهم جزء: بيجبر الصفحة تبدأ بعد منطقة الساعة */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+html, body {
+  padding-top: var(--safe-top) !important;
+  background-color: #0f172a; /* حط نفس لون الـ Navbar بتاعك عشان الساعة متبانش بلون مختلف */
+}
+
+/* لو الـ Navbar عندك position: fixed أو sticky لازم تديله الـ padding ده كمان */
+nav, .BibleNavbar_wrapper__xxxx {
+  padding-top: var(--safe-top) !important;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+  /* إضافة من عندي عشان نضمن إنه ميخدش مساحة فوق */
+  top: -100px; 
+  opacity: 0;
+}
