@@ -16,6 +16,17 @@ function convertToArabicNumber(num) {
   return num.toString().split('').map(d => arabicNums[+d]).join('');
 }
 
+function normalizeArabicText(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .replace(/[ًٌٍَُِْ]/g, '')
+    .replace(/[أآإ]/g, 'ا')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[ة]/g, 'ه')
+    .replace(/[ءئؤ]/g, '')
+    .trim();
+}
+
 function CustomSelect({ label, options, value, onChange, dir }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
@@ -51,17 +62,6 @@ function CustomSelect({ label, options, value, onChange, dir }) {
       </ul>
     </div>
   );
-}
-
-function normalizeArabicText(text) {
-  if (!text || typeof text !== 'string') return '';
-  return text
-    .replace(/[ًٌٍَُِْ]/g, '')
-    .replace(/[أآإ]/g, 'ا')
-    .replace(/[ىي]/g, 'ي')
-    .replace(/[ة]/g, 'ه')
-    .replace(/[ءئؤ]/g, '')
-    .trim();
 }
 
 export default function BibleSearchPage({ user }) {
@@ -118,19 +118,25 @@ export default function BibleSearchPage({ user }) {
   const searchWithGeminiDerivatives = async (term) => {
     if (geminiCache[term]) return geminiCache[term];
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `أعطني الجذر اللغوي للكلمة "${term}" وكل مشتقاتها في مصفوفة JSON باسم "derivatives" وحقل "root". النتيجة JSON فقط.`;
+      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview", });
+      const prompt = `أنت خبير لغوي في اللغة العربية. الكلمة هي: "${term}".
+قم باستخراج:
+1. الجذر اللغوي (Root).
+2. قائمة ضخمة وشاملة لكل المشتقات الممكنة (أفعال بأزمنتها، أسماء فاعل ومفعول، صيغ مبالغة، أسماء مكان وزمان، المصادر، والجمع والمثنى).
+أريد أكبر عدد ممكن من الكلمات التي قد تظهر في نصوص قديمة.
+الرد يجب أن يكون JSON فقط:
+{"root": "...", "derivatives": ["كلمة1", "كلمة2", "كلمة3", "..."]}`;
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const responseText = response.text();
-      const cleanJson = responseText.substring(responseText.indexOf('{'), responseText.lastIndexOf('}') + 1);
-      const parsed = JSON.parse(cleanJson);
-      const derivatives = (parsed.derivatives || []).map(d => typeof d === 'string' ? d : d.word).filter(d => d && d.length > 1);
+      const responseText = result.response.text();
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error();
+      const parsed = JSON.parse(jsonMatch[0]);
+      const derivatives = (parsed.derivatives || []).map(d => normalizeArabicText(typeof d === 'string' ? d : d.word)).filter(d => d.length > 1);
       const finalResult = { derivatives, extractedRoot: parsed.root };
       geminiCache[term] = finalResult;
       return finalResult;
     } catch (e) { 
-      return { derivatives: [term], extractedRoot: '' }; 
+      return { derivatives: [normalizeArabicText(term)], extractedRoot: 'غير معروف' }; 
     }
   };
 
@@ -147,8 +153,10 @@ export default function BibleSearchPage({ user }) {
       if (debouncedSearchQuery) {
         if (searchType === 'derivatives') {
           const info = await searchWithGeminiDerivatives(debouncedSearchQuery);
-          const pattern = new RegExp(`(${info.derivatives.map(d => _.escapeRegExp(normalizeArabicText(d))).join('|')})`, 'i');
-          filtered = filtered.filter(v => pattern.test(normalizeArabicText(v.text)));
+          if (info.derivatives.length > 0) {
+            const pattern = new RegExp(`(${info.derivatives.map(d => _.escapeRegExp(d)).join('|')})`, 'i');
+            filtered = filtered.filter(v => pattern.test(normalizeArabicText(v.text)));
+          }
           setSearchInfo(info);
         } else {
           const normQuery = normalizeArabicText(debouncedSearchQuery);
@@ -172,7 +180,7 @@ export default function BibleSearchPage({ user }) {
     let pattern;
     if (searchType === 'derivatives' && searchInfo?.derivatives) {
       const sorted = [...searchInfo.derivatives].sort((a,b) => b.length - a.length);
-      pattern = `(${sorted.map(d => _.escapeRegExp(normalizeArabicText(d))).join('|')})`;
+      pattern = `(${sorted.map(d => _.escapeRegExp(d)).join('|')})`;
     } else {
       pattern = `(${_.escapeRegExp(normalizeArabicText(highlight))})`;
     }
@@ -197,33 +205,27 @@ export default function BibleSearchPage({ user }) {
   return (
     <div className={styles.container} dir="rtl">
       {message.text && <div className={`${styles.messageBox} ${styles[message.type]}`}>{message.text}</div>}
-      
       <div className={styles.card}>
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
-        
         <form onSubmit={e => { e.preventDefault(); setSearchQuery(inputTerm); }} className={styles.controls}>
           <div className={styles.inputGroup}>
-            <input type="text" value={inputTerm} onChange={e => setInputTerm(e.target.value)} className={styles.input} placeholder="كلمة البحث (اختياري)..." />
+            <input type="text" value={inputTerm} onChange={e => setInputTerm(e.target.value)} className={styles.input} placeholder="كلمة البحث..." />
             <button type="submit" className={styles.searchButton}>بحث</button>
           </div>
-
           <div className={styles.searchTypeSelector}>
             <label><input type="radio" checked={searchType === 'literal'} onChange={() => setSearchType('literal')} /> بحث حرفي</label>
-            <label className="requires-online btn-primary"><input type="radio" checked={searchType === 'derivatives'} onChange={() => setSearchType('derivatives')} /> بحث بالمشتقات</label>
+            <label><input type="radio" checked={searchType === 'derivatives'} onChange={() => setSearchType('derivatives')} /> بحث بالمشتقات</label>
           </div>
-
           <div className={styles.filterGrid}>
             <CustomSelect label="العهد" options={[{value:'', label:'كل العهدين'}, {value:'OT', label:'العهد القديم'}, {value:'NT', label:'العهد الجديد'}]} value={selectedTestament} onChange={e => {setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter('');}} />
             <CustomSelect label="السفر" options={[{value:'', label:'كل الأسفار'}, ...filteredBooks.map(b => ({value: booksList.indexOf(b), label: b.name}))]} value={selectedBookIndex} onChange={e => {setSelectedBookIndex(e.target.value); setSelectedChapter('');}} />
             <CustomSelect label="الأصحاح" options={[{value:'', label:'الكل'}, ...Array.from({length: chaptersCount}, (_, i) => ({value: i, label: convertToArabicNumber(i+1)}))]} value={selectedChapter} onChange={e => setSelectedChapter(e.target.value)} />
           </div>
         </form>
-
         {searchInfo && <div className={styles.searchInfoBox}>
           <p><strong>الجذر:</strong> {searchInfo.extractedRoot}</p>
           <div className={styles.derivativesList}>{searchInfo.derivatives.map((d, i) => <span key={i} className={styles.derivativeItem}>{d}</span>)}</div>
         </div>}
-
         {isLoading ? <p className={styles.loading}>جاري المعالجة...</p> : (
           <div className={styles.resultsWrapper}>
             {searchResults.length > 0 && <p className={styles.resultsCount}>تم العثور على {convertToArabicNumber(searchResults.length)} آية</p>}
