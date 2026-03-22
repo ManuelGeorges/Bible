@@ -5,6 +5,8 @@ import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import CapacitorFeatures from '../components/CapacitorFeatures';
+import SwipeNavigation from '../components/SwipeNavigation';
+import SplashHandler from '../components/SplashHandler';
 
 export const viewport = {
   width: 'device-width',
@@ -12,7 +14,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0f172a',
+  themeColor: '#191d34',
 };
 
 export const metadata = {
@@ -57,6 +59,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body { 
+            background-color: #191d34 !important; 
+            margin: 0; 
+            padding: 0;
+          }
+          .light-theme {
+            background-color: #ffffff !important;
+          }
+        `}} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -64,6 +76,7 @@ export default function RootLayout({ children }) {
 try {
 const theme = localStorage.getItem('theme') || 'dark';
 if (theme === 'light') {
+document.documentElement.classList.add('light-theme');
 document.body.classList.add('light-theme');
 }
 const fontSize = localStorage.getItem('bibleFontSize') || '18';
@@ -75,25 +88,29 @@ document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
         />
       </head>
       <body>
-        <CapacitorFeatures /> 
-        <SEOlinks />
-        <BibleNavbar />
-        <main className={styles.mainContent}>
-          <div className={styles.container}>{children}</div>
-        </main>
-        <Footer />
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
+        <SplashHandler>
+          <CapacitorFeatures />
+          <SEOlinks />
+          <BibleNavbar />
+          <SwipeNavigation>
+            <main className={styles.mainContent}>
+              <div className={styles.container}>{children}</div>
+            </main>
+          </SwipeNavigation>
+          <Footer />
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-J90H6JXHNG');
 `}
-        </Script>
+          </Script>
+        </SplashHandler>
       </body>
     </html>
   );

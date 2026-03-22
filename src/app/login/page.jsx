@@ -63,7 +63,10 @@ const LoginPage = () => {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle();
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
+        });
+        
         const idToken = result.credential?.idToken;
 
         if (idToken) {
@@ -78,7 +81,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('فشل تسجيل الدخول بواسطة جوجل. تأكد من إعدادات الـ SHA-1');
+      setError('فشل تسجيل الدخول بواسطة جوجل');
       setIsSubmitting(false);
     }
   };

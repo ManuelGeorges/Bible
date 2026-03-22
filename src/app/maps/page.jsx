@@ -44,14 +44,15 @@ export default function MapsPage() {
   ];
 
   useEffect(() => {
-    const checkConnectivity = () => {
+    const handleConnectivity = () => {
       if (typeof window !== 'undefined' && !navigator.onLine) {
-        router.push('/offline');
+        router.replace('/offline');
       }
     };
 
-    checkConnectivity();
-    window.addEventListener('offline', checkConnectivity);
+    handleConnectivity();
+    window.addEventListener('offline', handleConnectivity);
+    window.addEventListener('online', handleConnectivity);
 
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -71,7 +72,7 @@ export default function MapsPage() {
 
     const fetchData = async () => {
       if (!navigator.onLine) {
-        router.push('/offline');
+        router.replace('/offline');
         return;
       }
       try {
@@ -89,7 +90,8 @@ export default function MapsPage() {
     fetchData();
 
     return () => {
-      window.removeEventListener('offline', checkConnectivity);
+      window.removeEventListener('offline', handleConnectivity);
+      window.removeEventListener('online', handleConnectivity);
       window.removeEventListener('storage', syncAppSettings);
     };
   }, [router]);
@@ -186,8 +188,11 @@ export default function MapsPage() {
               mapLib={maplibregl}
               mapStyle={MAP_STYLE}
               onLoad={onMapLoad}
+              dragPan={true}
+              touchZoomRotate={true}
+              scrollZoom={true}
               dragRotate={false}
-              touchZoomRotate={false}
+              touchPitch={false}
               style={{ width: '100%', height: '100%' }}
             >
               <NavigationControl position="top-right" showCompass={false} />
@@ -204,10 +209,42 @@ export default function MapsPage() {
                 />
               </Source>
 
-              <Source id="points-data" type="geojson" data={geojsonPoints}>
+              <Source 
+                id="points-data" 
+                type="geojson" 
+                data={geojsonPoints}
+                cluster={true}
+                clusterMaxZoom={14}
+                clusterRadius={50}
+              >
                 <Layer
-                  id="circle-layer"
+                  id="clusters"
                   type="circle"
+                  filter={['has', 'point_count']}
+                  paint={{
+                    'circle-color': '#191d34',
+                    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#00c8ff'
+                  }}
+                />
+                <Layer
+                  id="cluster-count"
+                  type="symbol"
+                  filter={['has', 'point_count']}
+                  layout={{
+                    'text-field': '{point_count}',
+                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                  }}
+                  paint={{
+                    'text-color': '#ffffff'
+                  }}
+                />
+                <Layer
+                  id="unclustered-point"
+                  type="circle"
+                  filter={['!', ['has', 'point_count']]}
                   paint={{
                     'circle-radius': 7,
                     'circle-color': '#00ffff',
@@ -218,6 +255,7 @@ export default function MapsPage() {
                 <Layer
                   id="label-layer"
                   type="symbol"
+                  filter={['!', ['has', 'point_count']]}
                   layout={{
                     'text-field': ['get', 'name'],
                     'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],

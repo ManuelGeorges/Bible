@@ -1,54 +1,49 @@
 import styles from './about.module.css';
 import Image from 'next/image';
+
 export default function AboutPage() {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>عن موقع Agios</h1>
+      <header className={styles.header}>
+        <h1 className={styles.title}>عن تطبيق Agios</h1>
+        <p className={styles.tagline}>"كلمتك هي سراج لرجلي ونور لسبيلي" (مز 119: 105)</p>
+      </header>
+
       <section className={styles.section}>
-        <h2 className={styles.subtitle}>المقدمة</h2>
+        <h2 className={styles.subtitle}>القصة والهدف</h2>
         <p className={styles.paragraph}>
-          Agios هو مشروع بدأ بفكرة بسيطة وهي المشاركة في مهرجان الكرازة المرقسية بالإسكندرية, كان في البدء هدفه هو تقديم خصائص رغم اهميتها لكنها غير متوفرة مثل البحث بالمشتقات, الخرائط التفاعلية, الواجهة المريحة للعين والمحفزة لدراسة الكتاب وغيرها
+          انطلق مشروع <strong>Agios</strong> برؤية تهدف إلى تقديم تجربة رقمية متطورة لدراسة الكتاب المقدس. كانت البداية من خلال المشاركة في مهرجان الكرازة المرقسية بالإسكندرية، حيث سعى المشروع لتقديم حلول تقنية مبتكرة، مثل البحث اللغوي المتقدم، الخرائط التفاعلية للأماكن المقدسة، وواجهة مستخدم عصرية تساعد على التركيز والنمو الروحي.
         </p>
         <p className={styles.paragraph}>
-          بعد فوزه بالمسابقة, قررنا نشره لكي يستفيد به كل الناس وتطويره لكي يكون منصة كاملة لدراسة الكتاب المقدس تشمل الخصائث الموجودة التي نستخدمها يومياً والغير موجودة التي كانت هدفاً اساسياً لانشائه
+          بعد النجاح في مراحله الأولى، استمر العمل على تطوير المنصة لتصبح مرجعاً شاملاً يجمع بين أدوات الدراسة اليومية والخصائص التقنية الحديثة، بما يخدم احتياجات الشباب والدارسين في العصر الرقمي.
         </p>
       </section>
+
       <section className={styles.section}>
         <h2 className={styles.subtitle}>رؤيتنا</h2>
         <p className={styles.paragraph}>
-           تتمثل رؤيتنا أن يستخدمه الله حتى يقرأ المزيد من الناس الكتاب المقدس بطرق جديدة ومبتكرة تواكب الشباب والعصر الحديث ولا تتنافى يف نفس الوقت مع أسس الإيمان المستقيم
+          تتمثل رؤية <strong>Agios</strong> في أن يكون جسراً تقنياً يربط الأجيال بكلمة الله، مستخدماً أدوات العصر الحديث في تقديم المحتوى الكتابي بصورة جذابة ومبسطة، مع الالتزام الكامل بأسس العقيدة الأرثوذكسية القويمة وتسليمات الكنيسة الجامعة.
         </p>
+      </section>
 
-      </section>
-          <section className={styles.section}>
-        <h2 className={styles.subtitle}>مطور التطبيق</h2>
-        <div className={styles.teamGrid}>
-          <div className={styles.teamMember}>
-            <img src="/images/members/Manuel.png" alt="صورة مانويل جورج" className={styles.memberImage} />
-            <h3 className={styles.memberName}>مانويل جورج</h3>
-            <p className={styles.memberRole}>مؤسس ومطور</p>
-          </div>
-          </div>
-      </section>
-<section className={styles.section}>
+      <section className={styles.section}>
         <h2 className={styles.subtitle}>شكر وتقدير</h2>
         
-        {/* فقرة القمص أثناسيوس */}
         <div className={styles.honorableMention}>
           <div className={styles.priestImageWrapper}>
             <Image 
-              src="/images/fr-athanasius.jpg" // تأكد من وضع الصورة في هذا المسار وتسميتها بنفس الاسم
-              alt="القمص أثناسيوس" 
-              width={120} 
-              height={120} 
+              src="/images/fr-athanasius.jpg" 
+              alt="قدس القمص أثناسيوس" 
+              width={140} 
+              height={140} 
               className={styles.priestImage}
             />
           </div>
           <div className={styles.priestText}>
             <p className={styles.paragraph}>
-              نتقدم بجزيل الشكر والمحبة 
-              <span className={styles.important}>لقدس القمص أثناسيوس </span> 
-              لتبنيه الفكرة منذ بدايتها، ورعايته الأبوية الدائمة للتطبيق، وجهوده المخلصة في نشره ليكون بركة لكل مستخدميه.
+              نتقدم بوافر الشكر والمحبة 
+              <span className={styles.important}> لقدس القمص أثناسيوس </span> 
+              لرعايته الأبوية الدائمة لهذا العمل منذ لحظاته الأولى، وتبنيه للفكرة ودعمها لتخرج بصورة تليق بكلمة الله وتكون بركة ومنفعة لكل مستخدميها.
             </p>
           </div>
         </div>
@@ -56,13 +51,19 @@ export default function AboutPage() {
         <hr className={styles.dividerLine} />
 
         <p className={styles.paragraph}> 
-          نتقدم بالشكر لكل من ساعدنا في تطوير هذا الموقع سواء بالدعم المعنوي أو بالنصيحة وأتقدم بجزيل الشكر لكنيستني   
-          <span className={styles.important}> كنيسة رئيس الملائكة الجليل ميخائيل بمصطفى كامل بالإسكندرية </span>
-          لدعمهم وتشجيعهم للفكرة منذ بدايتها 
-          <span className={styles.important}> وللجنة مهرجان الكرازة المرقسية </span> لتحفيزهم الشباب على تطوير مشاريع جديدة لإفادة المجتمع 
-          ولكل الذين قدموا اقتراحات ساهمت في تطوير الموقع أو نشروه في دائرة معارفهم.
+          نتوجه بالشكر والتقدير لبيتنا العامر 
+          <span className={styles.important}> كنيسة رئيس الملائكة الجليل ميخائيل بمصطفى كامل - الإسكندرية </span>
+          على الدعم والتشجيع المستمر، وإلى <span className={styles.important}>لجنة مهرجان الكرازة المرقسية</span> التي تتيح الفرص للإبداع والابتكار في خدمة الكنيسة والمجتمع.
+        </p>
+
+        <p className={styles.paragraph}>
+          شكر خاص لكل من ساهم بتقديم نصيحة تقنية أو روحية، ولكل من شارك في نشر هذا العمل لتعم البركة. نطلب من الله أن يجعل هذا التطبيق سبباً في قراءة وفهم أعمق لكلمته المحيية.
         </p>
       </section>
+
+      <footer className={styles.footer}>
+        <p>© 2026 Agios System - جميع الحقوق محفوظة</p>
+      </footer>
     </div>
   );
 }

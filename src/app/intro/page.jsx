@@ -61,7 +61,7 @@ export default function IntroPage() {
         </section>
         <section className={styles.callToAction}>
           <p className={styles.ctaText}>ابدأ رحلتك الروحية اليوم وانضم إلينا.</p>
-          <button onClick={() => router.push('/login')} className={styles.button}>
+          <button onClick={() => router.push('/signup')} className={styles.button}>
             ليس لديك حساب؟ أنشئ حساباً جديداً
           </button>
           <button onClick={() => router.push('/login')} className={styles.button}>

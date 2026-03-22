@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithCredential
@@ -26,19 +25,6 @@ export default function SignUpPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          await handleUserData(result.user);
-          router.replace('/');
-        }
-      } catch (err) {
-        setError(translateError(err.code));
-      }
-    };
-    checkRedirect();
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
     });
@@ -107,24 +93,30 @@ export default function SignUpPage() {
     setError(null);
     setIsSubmitting(true);
 
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const result = await FirebaseAuthentication.signInWithGoogle();
-        const credential = GoogleAuthProvider.credential(result.idToken);
-        const userCredential = await signInWithCredential(auth, credential);
-        await handleUserData(userCredential.user);
-      } catch (err) {
-        setError('فشل التسجيل بواسطة جوجل');
-        setIsSubmitting(false);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
+        });
+        
+        const idToken = result.credential?.idToken;
+
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          const userCredential = await signInWithCredential(auth, credential);
+          await handleUserData(userCredential.user);
+        } else {
+          throw new Error("No ID Token");
+        }
+      } else {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        await handleUserData(result.user);
       }
-    } else {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithRedirect(auth, provider);
-      } catch (err) {
-        setError(translateError(err.code));
-        setIsSubmitting(false);
-      }
+    } catch (err) {
+      console.error(err);
+      setError('فشل التسجيل بواسطة جوجل');
+      setIsSubmitting(false);
     }
   };
 

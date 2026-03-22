@@ -7,12 +7,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:900022943169:android:f7320ba7cd4e0e5f92c340",
+        "mobilesdk_app_id": "1:900022943169:android:5683893d782494c692c340",
         "android_client_info": {
           "package_name": "com.agios.bible"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "900022943169-3e6f7f2f8qnqnpjbocj0r6d7tadepn1b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.agios.bible",
+            "certificate_hash": "e32b396118b1739dc563912cd321debe91337382"
+          }
+        },
         {
           "client_id": "900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com",
           "client_type": 3

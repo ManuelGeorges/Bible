@@ -49,6 +49,9 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
           <Link href="/versions" className={styles.footerItem} onClick={onClose}>
             <History size={18} /> <span>التحديثات</span>
           </Link>
+                    <Link href="/privacy-policy" className={styles.footerItem} onClick={onClose}>
+            <History size={18} /> <span>سياسة الخصوصية</span>
+          </Link>
         </div>
       </div>
     </>
