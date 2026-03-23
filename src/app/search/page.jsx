@@ -5,6 +5,7 @@ import { useDebounce } from 'use-debounce';
 import _ from 'lodash';
 import { db } from '../../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import styles from './search.module.css';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -64,7 +65,8 @@ function CustomSelect({ label, options, value, onChange, dir }) {
   );
 }
 
-export default function BibleSearchPage({ user }) {
+export default function BibleSearchPage() {
+  const [user, setUser] = useState(null);
   const [inputTerm, setInputTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('literal');
@@ -87,6 +89,14 @@ export default function BibleSearchPage({ user }) {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: '', text: '' }), 3000);
   };
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +122,10 @@ export default function BibleSearchPage({ user }) {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setFavouriteVerses({});
+      return;
+    }
     return onSnapshot(doc(db, 'users', user.uid), s => setFavouriteVerses(s.data()?.favorites?.verses || {}));
   }, [user]);
 
@@ -174,6 +187,13 @@ export default function BibleSearchPage({ user }) {
   useEffect(() => {
     const performSearch = async () => {
       if (allVerses.length === 0) return;
+      
+      if (searchType === 'derivatives' && !user && debouncedSearchQuery) {
+        setShowLoginPrompt(true);
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       let filtered = [...allVerses];
 
@@ -204,7 +224,7 @@ export default function BibleSearchPage({ user }) {
     };
 
     performSearch();
-  }, [debouncedSearchQuery, searchType, selectedTestament, selectedBookIndex, selectedChapter, allVerses]);
+  }, [debouncedSearchQuery, searchType, selectedTestament, selectedBookIndex, selectedChapter, allVerses, user]);
 
   const renderHighlightedText = (text, highlight) => {
     if (!highlight || !text) return text;
@@ -241,8 +261,8 @@ export default function BibleSearchPage({ user }) {
         <div className={styles.friendlyNotification}>
           <p>ميزة <strong>البحث بالمشتقات</strong> متاحة لأصدقاء "أجيوس" المسجلين فقط. انضم إلينا لتجربة بحث أعمق! ✨</p>
           <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-            <button onClick={() => window.location.href = '/intro'} style={{ background: 'var(--streak-gradient)', color: 'white' }}>إنضم لنا</button>
-            <button onClick={() => setShowLoginPrompt(false)} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-text-light)' }}>ليس الآن</button>
+            <button onClick={() => window.location.href = '/intro'} style={{ background: 'var(--streak-gradient)', color: 'white', padding: '8px 15px', borderRadius: '5px' }}>إنضم لنا</button>
+            <button onClick={() => setShowLoginPrompt(false)} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-text-light)', padding: '8px 15px', borderRadius: '5px' }}>ليس الآن</button>
           </div>
         </div>
       )}
