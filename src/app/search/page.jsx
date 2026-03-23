@@ -79,6 +79,7 @@ export default function BibleSearchPage({ user }) {
   const [selectedChapter, setSelectedChapter] = useState('');
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -116,18 +117,48 @@ export default function BibleSearchPage({ user }) {
   }, [user]);
 
   const searchWithGeminiDerivatives = async (term) => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return { derivatives: [], extractedRoot: '' };
+    }
+
+    const COOLDOWN_TIME = 60 * 1000;
+    const lastAskKey = `last_derivatives_ask_${user.uid}`;
+    const lastAskTime = localStorage.getItem(lastAskKey);
+    const currentTime = Date.now();
+
+    if (lastAskTime) {
+      const timePassed = currentTime - parseInt(lastAskTime);
+      if (timePassed < COOLDOWN_TIME) {
+        const remainingSeconds = Math.ceil((COOLDOWN_TIME - timePassed) / 1000);
+        showNotification('error', `برجاء الانتظار ${remainingSeconds} ثانية للبحث بالمشتقات مرة أخرى`);
+        return { derivatives: [], extractedRoot: 'انتظار...' };
+      }
+    }
+
     if (geminiCache[term]) return geminiCache[term];
+
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview", });
-      const prompt = `أنت خبير لغوي في اللغة العربية. الكلمة هي: "${term}".
-قم باستخراج:
-1. الجذر اللغوي (Root).
-2. قائمة ضخمة وشاملة لكل المشتقات الممكنة (أفعال بأزمنتها، أسماء فاعل ومفعول، صيغ مبالغة، أسماء مكان وزمان، المصادر، والجمع والمثنى).
-أريد أكبر عدد ممكن من الكلمات التي قد تظهر في نصوص قديمة.
-الرد يجب أن يكون JSON فقط:
-{"root": "...", "derivatives": ["كلمة1", "كلمة2", "كلمة3", "..."]}`;
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+      let responseText;
+      const isWeb = typeof window !== 'undefined' && !window.Capacitor?.isNativePlatform;
+
+      if (isWeb) {
+        const res = await fetch('/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ term }),
+        });
+        const data = await res.json();
+        responseText = data.text;
+      } else {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `أنت خبير لغوي في اللغة العربية. الكلمة هي: "${term}". قم باستخراج الجذر اللغوي والمشتقات الشاملة في صيغة JSON فقط: {"root": "...", "derivatives": ["...", "..."]}`;
+        const result = await model.generateContent(prompt);
+        responseText = result.response.text();
+      }
+
+      localStorage.setItem(lastAskKey, Date.now().toString());
+
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error();
       const parsed = JSON.parse(jsonMatch[0]);
@@ -205,6 +236,17 @@ export default function BibleSearchPage({ user }) {
   return (
     <div className={styles.container} dir="rtl">
       {message.text && <div className={`${styles.messageBox} ${styles[message.type]}`}>{message.text}</div>}
+      
+      {showLoginPrompt && (
+        <div className={styles.friendlyNotification}>
+          <p>ميزة <strong>البحث بالمشتقات</strong> متاحة لأصدقاء "أجيوس" المسجلين فقط. انضم إلينا لتجربة بحث أعمق! ✨</p>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <button onClick={() => window.location.href = '/intro'} style={{ background: 'var(--streak-gradient)', color: 'white' }}>إنضم لنا</button>
+            <button onClick={() => setShowLoginPrompt(false)} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--color-text-light)' }}>ليس الآن</button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.card}>
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
         <form onSubmit={e => { e.preventDefault(); setSearchQuery(inputTerm); }} className={styles.controls}>
@@ -213,8 +255,24 @@ export default function BibleSearchPage({ user }) {
             <button type="submit" className={styles.searchButton}>بحث</button>
           </div>
           <div className={styles.searchTypeSelector}>
-            <label><input type="radio" checked={searchType === 'literal'} onChange={() => setSearchType('literal')} /> بحث حرفي</label>
-            <label><input type="radio" checked={searchType === 'derivatives'} onChange={() => setSearchType('derivatives')} /> بحث بالمشتقات</label>
+            <label>
+              <input type="radio" checked={searchType === 'literal'} onChange={() => setSearchType('literal')} /> 
+              بحث حرفي
+            </label>
+            <label style={{ opacity: user ? 1 : 0.6 }}>
+              <input 
+                type="radio" 
+                checked={searchType === 'derivatives'} 
+                onChange={() => {
+                  if (!user) {
+                    setShowLoginPrompt(true);
+                  } else {
+                    setSearchType('derivatives');
+                  }
+                }} 
+              /> 
+              بحث بالمشتقات ✨
+            </label>
           </div>
           <div className={styles.filterGrid}>
             <CustomSelect label="العهد" options={[{value:'', label:'كل العهدين'}, {value:'OT', label:'العهد القديم'}, {value:'NT', label:'العهد الجديد'}]} value={selectedTestament} onChange={e => {setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter('');}} />

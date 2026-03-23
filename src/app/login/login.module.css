@@ -176,3 +176,30 @@
     width: 90%; /* يسيب مسافة بسيطة من الجوانب */
   }
 }
+/* أضف هذا في login.module.css و signup.module.css */
+
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  
+  /* الحل الجوهري للمشكلة */
+  background-color: #ffffff; /* خلفية بيضاء */
+  color: #1a1a2e;            /* نص داكن جداً ليظهر بوضوح */
+  
+  font-family: 'Cairo', sans-serif;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #94a3b8; /* لون رمادي هادئ للـ placeholder */
+}
+
+.input:focus {
+  border-color: #667eea; /* لون يتماشى مع أزرار أجيوس عند التفاعل */
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
