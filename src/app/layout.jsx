@@ -5,7 +5,6 @@ import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import CapacitorFeatures from '../components/CapacitorFeatures';
-import SwipeNavigation from '../components/SwipeNavigation';
 import SplashHandler from '../components/SplashHandler';
 
 export const viewport = {
@@ -92,11 +91,9 @@ document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
           <CapacitorFeatures />
           <SEOlinks />
           <BibleNavbar />
-          <SwipeNavigation>
             <main className={styles.mainContent}>
               <div className={styles.container}>{children}</div>
             </main>
-          </SwipeNavigation>
           <Footer />
           <Script
             src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"

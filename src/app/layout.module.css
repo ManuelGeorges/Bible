@@ -10,7 +10,6 @@
 }
 
 .mainContent {
-  margin-top: 70px !important;
   width: 100% !important;
   min-height: calc(100vh - 70px) !important;
   display: flex !important;
@@ -84,7 +83,6 @@
   }
 
   .mainContent {
-    margin-top: 60px !important;
     min-height: calc(100vh - 60px) !important;
   }
 
@@ -99,9 +97,7 @@
 }
 
 @media (max-width: 480px) {
-  .mainContent {
-    margin-top: 55px !important;
-  }
+
 
   .navbar {
     gap: 5px !important;

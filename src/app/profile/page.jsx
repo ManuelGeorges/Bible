@@ -112,12 +112,7 @@ const ProfilePage = () => {
     <div className={styles.container} dir="rtl">
       <div className={styles.profileCard}>
         <div className={styles.profileHeader}>
-          <img 
-            src={user.photoURL || '/images/default-avatar.png'} 
-            alt="User Avatar" 
-            className={styles.avatar} 
-            onError={(e) => { e.target.src = '/images/default-avatar.png'; }}
-          />
+
           <div className={styles.userInfo}>
             <h1 className={styles.userName}>{userData?.firstName || user.displayName || 'يا صديق'}</h1>
             <p className={styles.userEmail}>{user.email}</p>

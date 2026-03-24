@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from '../lib/firebase';
+import { Capacitor } from '@capacitor/core';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -73,6 +74,23 @@ const LandingPage = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallBtn, setShowInstallBtn] = useState(false);
     const [fontSize, setFontSize] = useState(18);
+
+    useEffect(() => {
+        if (Capacitor.getPlatform() === 'android') {
+            const handleUpdate = async () => {
+                try {
+                    const { AppUpdate } = await import('@capawesome-team/app-update');
+                    const result = await AppUpdate.getAppUpdateInfo();
+                    if (result.updateAvailability === 2) {
+                        await AppUpdate.performImmediateUpdate();
+                    }
+                } catch (e) {
+                    console.log("Update check skipped or failed");
+                }
+            };
+            handleUpdate();
+        }
+    }, []);
 
     useEffect(() => {
         const savedFontSize = localStorage.getItem('bibleFontSize');
@@ -211,7 +229,10 @@ const LandingPage = () => {
         <main className={`${styles.container} ${styles.rtl}`}>
             <header className={styles.header}>
                 <Image src="/images/Agios.png" alt="Logo" width={140} height={140} priority className={styles.logoImg} />
-                <h1 className={styles.siteTitle}>Agios Bible</h1>
+                <div className={styles.titleWrapper}>
+                    <h1 className={styles.siteTitle}>Agios Bible</h1>
+                    <span className={styles.betaBadge}>Beta version</span>
+                </div>
                 <h2 className={styles.subtitle}>مرحباً بك في رحلتك الروحية اليومية</h2>
             </header>
 

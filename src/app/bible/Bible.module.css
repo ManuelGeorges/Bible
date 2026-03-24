@@ -5,16 +5,17 @@
   background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%) !important;
   min-height: 100vh !important;
   color: var(--color-text-primary) !important;
-  line-height: 1.8 !important;
+  line-height: 1.6 !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   box-sizing: border-box !important;
+  padding-top: clamp(1rem, 3vh, 2rem) !important;
 }
 
 .title {
-  font-size: clamp(1.5rem, 4vw, 2.8rem) !important;
-  margin-bottom: 1.5rem !important;
+  font-size: clamp(1.3rem, 4vw, 2.2rem) !important;
+  margin-bottom: 1rem !important;
   color: var(--color-accent) !important;
   text-align: center !important;
   font-weight: 800 !important;
@@ -37,14 +38,20 @@
 
 .controls {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)) !important;
-  gap: clamp(0.5rem, 1.5vw, 1.5rem) !important;
-  margin-bottom: clamp(1rem, 2.5vw, 2rem) !important;
-  width: 100% !important;
-  max-width: 800px !important;
-  justify-content: center !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  margin-bottom: 1.5rem !important;
+  width: 90% !important;
+  max-width: 500px !important;
   position: relative !important;
-  z-index: 99 !important;
+}
+
+.controls > div:nth-child(1) { 
+  z-index: 1000 !important; 
+}
+
+.controls > div:nth-child(2) { 
+  z-index: 999 !important; 
 }
 
 .customSelectWrapper {
@@ -54,69 +61,86 @@
   border-radius: 12px !important;
   border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(10px) !important;
-  transition: all 0.4s ease !important;
+  transition: all 0.3s ease !important;
 }
 
 .selectTrigger {
-  padding: 12px 16px !important;
+  padding: 10px 16px !important;
+  min-height: 45px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   font-weight: 600 !important;
   color: var(--color-text-primary) !important;
-  min-height: 50px !important;
   cursor: pointer !important;
 }
 
 .dropdownMenu {
   position: absolute !important;
-  top: calc(100% + 5px) !important;
+  top: calc(100% + 4px) !important;
   left: 0 !important;
+  right: 0 !important;
   width: 100% !important;
   list-style: none !important;
   margin: 0 !important;
-  padding: 5px 0 !important;
+  padding: 8px 0 !important;
   background-color: var(--color-bg-start) !important;
   border: 1px solid var(--color-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 15px 35px var(--color-shadow-medium) !important;
-  max-height: 40vh !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+  max-height: 35vh !important;
   overflow-y: auto !important;
-  z-index: 10000 !important;
+  display: block !important;
   opacity: 0 !important;
   visibility: hidden !important;
-  transform: translateY(-10px) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  pointer-events: none !important;
+  transform-origin: top !important;
+  transform: translateY(-8px) scale(0.98) !important;
+  transition: 
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.5s !important;
 }
 
 .dropdownMenu.open {
   opacity: 1 !important;
   visibility: visible !important;
-  transform: translateY(0) !important;
+  transform: translateY(0) scale(1) !important;
+  pointer-events: auto !important;
 }
 
 .dropdownItem {
   padding: 12px 16px !important;
   cursor: pointer !important;
-  transition: all 0.2s !important;
   color: var(--color-text-primary) !important;
   text-align: center !important;
+  transition: background 0.3s ease, transform 0.2s ease !important;
 }
 
 .dropdownItem:hover {
-  background: var(--color-accent) !important;
-  color: #fff !important;
+  background: rgba(var(--color-accent-rgb), 0.1) !important;
+  color: var(--color-accent) !important;
+  transform: scale(1.02) !important;
   font-weight: bold !important;
 }
 
+.dropdownMenu::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.dropdownMenu::-webkit-scrollbar-thumb {
+  background: var(--color-accent) !important;
+  border-radius: 10px !important;
+}
+
 .verseContainer {
-  width: 100% !important;
-  max-width: 850px !important;
+  width: 95% !important;
+  max-width: 800px !important;
   background: var(--color-card-bg) !important;
   padding: clamp(1rem, 2vw, 2rem) !important;
-  border-radius: 20px !important;
+  border-radius: 15px !important;
   box-shadow: 0 10px 30px var(--color-shadow-light) !important;
-  margin-bottom: 100px !important;
+  margin-bottom: 120px !important;
   border: 1px solid var(--color-border) !important;
   position: relative !important;
   z-index: 1 !important;
@@ -127,7 +151,7 @@
   justify-content: center !important;
   align-items: center !important;
   gap: 20px !important;
-  margin-bottom: 30px !important;
+  margin-bottom: 0px !important;
   padding-bottom: 15px !important;
   border-bottom: 1px solid var(--color-border) !important;
 }
@@ -227,15 +251,17 @@
 
 .navigation {
   position: fixed !important;
-  bottom: 20px !important;
+  bottom: 15px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
+  width: 90% !important;
+  max-width: 400px !important;
+  background: rgba(30, 58, 138, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 20px !important;
   display: flex !important;
-  gap: 15px !important;
-  background: var(--color-card-bg) !important;
-  backdrop-filter: blur(15px) !important;
-  padding: 10px 20px !important;
-  border-radius: 50px !important;
+  justify-content: space-around !important;
+  padding: 8px !important;
   z-index: 15000 !important;
   border: 1px solid var(--color-border) !important;
   box-shadow: 0 10px 40px var(--color-shadow-medium) !important;
@@ -251,7 +277,9 @@
   transition: 0.2s !important;
 }
 
-.navigation button:disabled { opacity: 0.3 !important; }
+.navigation button:disabled { 
+  opacity: 0.3 !important; 
+}
 
 .toast {
   position: fixed !important;
@@ -267,8 +295,283 @@
   box-shadow: 0 5px 20px var(--color-shadow-medium) !important;
 }
 
+@media (max-width: 768px) {
+  .navigation {
+    top: 10px !important;
+    bottom: auto !important;
+    background: rgba(30, 58, 138, 0.95) !important;
+    border-radius: 15px !important;
+    width: 90% !important;
+    justify-content: space-around !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+  }
+
+  .container {
+    padding-top: 40px !important;
+  }
+
+  .title { 
+    font-size: 1.5rem !important; 
+  }
+
+  .verseContainer {
+    margin-bottom: 20px !important;
+  }
+}
+
 @media (max-width: 480px) {
-  .verseContainer { padding: 15px 10px !important; border-radius: 0 !important; border: none !important; }
-  .chapterHeader { gap: 10px !important; }
-  .navigation { width: 90% !important; justify-content: space-around !important; }
+  .verseContainer { 
+    padding: 15px 10px !important; 
+    border-radius: 0 !important; 
+    border: none !important; 
+  }
+  .chapterHeader { 
+    gap: 10px !important; 
+  }
+  .navigation { 
+    width: 95% !important; 
+    padding: 5px !important;
+    top: 5px !important; 
+  }
+}
+/* الإعدادات الافتراضية (Desktop) */
+.instructionGrid {
+  display: none !important; /* مخفي تماماً في الشاشات الكبيرة */
+}
+
+/* إعدادات الموبايل (Mobile) */
+@media (max-width: 768px) {
+  .instructionGrid {
+    display: grid !important; /* يظهر في الموبايل فقط */
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+    padding: 15px !important;
+    margin: 10px auto !important;
+    width: 90% !important;
+    background: rgba(var(--color-accent-rgb), 0.05) !important;
+    border: 1px dashed var(--color-accent) !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+  }
+
+  .instructionItem {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 5px !important;
+  }
+
+  .instructionItem p {
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+    color: var(--color-text-primary) !important;
+    line-height: 1.2 !important;
+  }
+
+  .icon {
+    font-size: 1.2rem !important;
+  }
+}
+.container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%) !important;
+  min-height: 100vh !important;
+  color: var(--color-text-primary) !important;
+  line-height: 1.6 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  /* إضافة padding علوي لضمان عدم اختفاء المحتوى تحت الـ Navigation الجديد */
+  padding-top: 20px;
+}
+
+.title {
+  font-size: clamp(1.3rem, 4vw, 2.2rem) !important;
+  margin-bottom: 1rem !important;
+  color: var(--color-accent) !important;
+  text-align: center !important;
+  font-weight: 800 !important;
+  position: relative !important;
+  padding-bottom: 10px !important;
+}
+
+.title::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 60px !important;
+  height: 4px !important;
+  background: var(--color-accent) !important;
+  border-radius: 2px !important;
+}
+
+.controls {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  margin-bottom: 1.5rem !important;
+  width: 90% !important;
+  max-width: 500px !important;
+  position: relative !important;
+}
+
+.customSelectWrapper {
+  position: relative !important;
+  width: 100% !important;
+  background: var(--color-card-bg) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--color-border) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.selectTrigger {
+  padding: 10px 16px !important;
+  min-height: 45px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-weight: 600 !important;
+  color: var(--color-text-primary) !important;
+  cursor: pointer !important;
+}
+
+.dropdownMenu {
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  background-color: var(--color-bg-start) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+  max-height: 35vh !important;
+  overflow-y: auto !important;
+  z-index: 2000 !important;
+}
+
+.verseContainer {
+  width: 95% !important;
+  max-width: 800px !important;
+  background: var(--color-card-bg) !important;
+  padding: clamp(1rem, 2vw, 2rem) !important;
+  border-radius: 15px !important;
+  margin-bottom: 40px !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.chapterHeader {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 20px !important;
+  padding-bottom: 15px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.singleVerse {
+  padding: 12px 16px !important;
+  margin-bottom: 8px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  cursor: pointer !important;
+}
+
+.verseNumber {
+  color: var(--color-accent) !important;
+  font-weight: bold !important;
+  min-width: 30px !important;
+}
+
+.verseText {
+  font-size: var(--main-font-size) !important;
+  line-height: 1.7 !important;
+  text-align: justify !important;
+}
+
+.navigation {
+  position: fixed !important;
+  /* الوضع الافتراضي للديسك توب */
+  bottom: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 90% !important;
+  max-width: 400px !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border-radius: 20px !important;
+  display: flex !important;
+  justify-content: space-around !important;
+  padding: 10px !important;
+  z-index: 15000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    /* النقل للأعلى تحت الكاميرا */
+    top: env(safe-area-inset-top, 10px) !important;
+    bottom: auto !important;
+    margin-top: 10px !important;
+    width: 92% !important;
+    border-radius: 16px !important;
+    background: rgba(30, 58, 138, 0.95) !important;
+  }
+
+  .container {
+    /* زيادة الـ padding لتعويض وجود الـ navigation فوق */
+    padding-top: 20px;
+  }
+}
+
+.actionBtn {
+  background: var(--color-card-bg) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  padding: 8px 15px !important;
+  border-radius: 12px !important;
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed !important;
+  bottom: 50px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: var(--color-accent) !important;
+  padding: 10px 25px !important;
+  border-radius: 30px !important;
+  z-index: 25000 !important;
+}
+
+.instructionGrid {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .instructionGrid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+    padding: 15px !important;
+    margin: 10px auto !important;
+    width: 90% !important;
+    background: rgba(34, 211, 238, 0.05) !important;
+    border: 1px dashed var(--color-accent) !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+  }
+  
+  .instructionItem p {
+    font-size: 0.75rem !important;
+    color: var(--color-text-primary) !important;
+  }
 }

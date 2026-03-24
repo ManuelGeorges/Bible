@@ -248,3 +248,24 @@
   .dailyVerseBox, .dailyQuestionBox { padding: 25px; }
   .dailyVerseActions { flex-direction: column; }
 }
+.titleWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.betaBadge {
+    color: #D4AF37; /* لون ذهبي كلاسيكي */
+    font-size: 0.75rem; /* حجم صغير */
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    /* تأثير لمعان خفيف اختياري */
+    text-shadow: 0px 0px 2px rgba(212, 175, 55, 0.3);
+}
+
+/* تأكد أن العنوان الأصلي ليس به margin-bottom كبير ليظهر الـ Beta تحته مباشرة */
+.siteTitle {
+    margin-bottom: 0;
+}

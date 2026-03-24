@@ -1,220 +1,243 @@
 .container {
-    padding: var(--gap-large);
-    max-width: 900px;
-    margin: 0 auto;
-    direction: rtl;
-    text-align: right;
-    min-height: 100vh;
+  padding: 100px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+  font-family: 'Cairo', sans-serif;
 }
 
 .header {
-    font-size: clamp(2rem, 5vw, 2.5rem);
-    font-weight: 700;
-    color: var(--color-text-light);
-    margin-bottom: var(--gap-large);
-    text-align: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 40px;
+  text-align: center;
+  background: linear-gradient(135deg, #fff 0%, var(--color-accent-cyan, #22d3ee) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .pointsSummary {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: var(--gap-medium);
-    background: var(--color-card-bg);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--gap-large);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--color-border-light);
-    box-shadow: var(--color-shadow-medium) 0px 4px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background: rgba(30, 41, 59, 0.4);
+  border-radius: 24px;
+  margin-bottom: 40px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
 .pointsTotal {
-    text-align: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .pointsNumber {
-    font-size: clamp(2.5rem, 8vw, 3.5rem);
-    font-weight: 900;
-    color: var(--color-accent-gold);
-    line-height: 1;
+  font-size: 4rem;
+  font-weight: 900;
+  color: var(--color-accent-cyan, #22d3ee);
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
 }
 
 .pointsLabel {
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    font-weight: 500;
-    color: var(--color-text-light);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .timeframeButtons {
-    display: flex;
-    justify-content: center;
-    gap: var(--gap-small);
-    margin-bottom: var(--gap-medium);
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
 }
 
 .timeframeButton {
-    background: var(--glass-bg);
-    color: var(--color-text-light);
-    border: 1px solid var(--glass-border);
-    padding: 10px clamp(15px, 4vw, 20px);
-    border-radius: 50px;
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    cursor: pointer;
-    transition: all 0.3s var(--transition-smooth);
-    font-family: 'Cairo', sans-serif;
-    font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
 .timeframeButton:hover {
-    background: var(--color-border-light);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .timeframeButton.active {
-    background: var(--color-button-primary);
-    border-color: transparent;
-    font-weight: 700;
+  background: var(--color-accent-cyan, #22d3ee);
+  color: #0f172a;
+  border-color: transparent;
+  box-shadow: 0 10px 20px rgba(34, 211, 238, 0.2);
 }
 
 .activitiesContainer {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
 .summaryGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: var(--gap-small);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
 }
 
 .summaryCard {
-    background: var(--color-card-bg);
-    border-radius: var(--border-radius);
-    padding: var(--gap-medium);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border: 1px solid var(--color-border-light);
-    transition: transform 0.3s var(--transition-smooth), box-shadow 0.3s var(--transition-smooth);
-    box-shadow: var(--color-shadow-light) 0px 2px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .summaryCard:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--color-shadow-medium) 0px 8px 24px;
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(34, 211, 238, 0.3);
 }
 
 .icon {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-    color: var(--color-accent-gold);
-    margin-bottom: 10px;
+  font-size: 2rem;
+  color: var(--color-accent-cyan, #22d3ee);
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.3));
 }
 
 .cardTitle {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    font-weight: 600;
-    color: var(--color-text-light);
-    margin-bottom: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 10px;
 }
 
 .cardCount {
-    font-size: clamp(1.5rem, 4vw, 1.8rem);
-    font-weight: 700;
-    color: var(--color-text-light);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.pointsSubText {
+  font-size: 0.85rem;
+  color: var(--color-accent-cyan, #22d3ee);
+  font-weight: 600;
+  margin-top: 5px;
+  display: block;
 }
 
 .detailedHistory {
-    background: var(--color-card-bg);
-    border-radius: var(--border-radius);
-    padding: var(--gap-medium);
-    border: 1px solid var(--color-border-light);
-    box-shadow: var(--color-shadow-medium) 0px 4px 12px;
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 24px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .detailedHeader {
-    font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-    font-weight: 700;
-    color: var(--color-accent-gold);
-    margin-bottom: var(--gap-medium);
-    text-align: center;
-}
-
-.activitySection {
-    margin-bottom: var(--gap-large);
-}
-
-.sectionHeader {
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    font-weight: 600;
-    color: var(--color-text-light);
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--color-border-light);
-    margin-bottom: var(--gap-small);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 25px;
+  text-align: right;
+  padding-right: 10px;
+  border-right: 4px solid var(--color-accent-cyan, #22d3ee);
 }
 
 .activityList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .activityItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px dashed var(--color-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
+}
+
+.activityItem:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .activityItem:last-child {
-    border-bottom: none;
+  border-bottom: none;
+}
+
+.activityInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .activityDescription {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    color: var(--color-text-light);
-    margin: 0;
+  font-size: 1rem;
+  color: #fff;
+  margin: 0;
+  font-weight: 500;
+}
+
+.activityDate {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .activityPoints {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    font-weight: 600;
-    color: var(--color-correct);
-    white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4ade80;
+  white-space: nowrap;
+  background: rgba(74, 222, 128, 0.1);
+  padding: 4px 12px;
+  border-radius: 8px;
 }
 
-.loading,
-.noData,
-.noDataSection,
-.loginMessage {
-    text-align: center;
-    font-size: clamp(1rem, 3vw, 1.1rem);
-    color: var(--color-text-medium);
-    padding: 20px;
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--color-accent-cyan, #22d3ee);
 }
 
-.noDataSection p {
-    margin: 0;
+.noDataSection {
+  text-align: center;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 40px;
 }
 
-.loginMessage {
-    background: var(--color-warning);
-    color: #fff;
-    padding: var(--gap-small);
-    border-radius: var(--border-radius);
-    text-align: center;
-    margin-bottom: var(--gap-medium);
-    font-weight: 500;
-}
-
-.loginMessage p {
-    margin: 0;
+@media (max-width: 768px) {
+  .container { padding: 80px 15px; }
+  .pointsSummary { padding: 30px 20px; }
+  .pointsNumber { font-size: 3rem; }
+  .summaryGrid { grid-template-columns: 1fr 1fr; }
+  .activityItem { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .activityPoints { align-self: flex-end; }
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: var(--gap-small);
-    }
+  .summaryGrid { grid-template-columns: 1fr; }
+  .timeframeButton { padding: 10px 16px; font-size: 0.85rem; }
 }

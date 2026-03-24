@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from '../../lib/firebase';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -297,84 +298,120 @@ export default function BibleContent() {
 
       <h1 className={styles.title}>الكتاب المقدس</h1>
 
-      <div className={styles.controls}>
-        <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
-          <div className={styles.selectTrigger} onClick={() => {
-              setIsBookDropdownOpen(!isBookDropdownOpen);
-              setIsChapterDropdownOpen(false);
-          }}>
-            {getBookName(selectedBookIndex)}
-          </div>
-          {isBookDropdownOpen && (
-            <ul className={`${styles.dropdownMenu} ${styles.open}`}>
-              {bookNamesData.map((b, i) => (
-                <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedBookIndex(i); setSelectedChapterIndex(0); setIsBookDropdownOpen(false); setSelectedVerses([]); }}>
-                  {b.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+<div className={styles.controls}>
+  {/* دروب داون السفر - هيكون ليه Z-index أعلى تلقائياً من الـ CSS */}
+  <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
+    <div 
+      className={styles.selectTrigger} 
+      onClick={() => {
+        setIsBookDropdownOpen(!isBookDropdownOpen);
+        setIsChapterDropdownOpen(false);
+      }}
+    >
+      {getBookName(selectedBookIndex)}
+    </div>
+    <ul className={`${styles.dropdownMenu} ${isBookDropdownOpen ? styles.open : ''}`}>
+      {bookNamesData.map((b, i) => (
+        <li key={i} className={styles.dropdownItem} onClick={() => { 
+          setSelectedBookIndex(i); 
+          setSelectedChapterIndex(0); 
+          setIsBookDropdownOpen(false); 
+          setSelectedVerses([]); 
+        }}>
+          {b.name}
+        </li>
+      ))}
+    </ul>
+  </div>
 
-        <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
-          <div className={styles.selectTrigger} onClick={() => {
-              setIsChapterDropdownOpen(!isChapterDropdownOpen);
-              setIsBookDropdownOpen(false);
-          }}>
-            {`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}
-          </div>
-          {isChapterDropdownOpen && (
-            <ul className={`${styles.dropdownMenu} ${styles.open}`}>
-              {chapters.map((_, i) => (
-                <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedChapterIndex(i); setIsChapterDropdownOpen(false); setSelectedVerses([]); }}>
-                  {`إصحاح ${convertToArabicNumber(i + 1)}`}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+  {/* دروب داون الإصحاح */}
+  <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
+    <div 
+      className={styles.selectTrigger} 
+      onClick={() => {
+        setIsChapterDropdownOpen(!isChapterDropdownOpen);
+        setIsBookDropdownOpen(false);
+      }}
+    >
+      {`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}
+    </div>
+    <ul className={`${styles.dropdownMenu} ${isChapterDropdownOpen ? styles.open : ''}`}>
+      {chapters.map((_, i) => (
+        <li key={i} className={styles.dropdownItem} onClick={() => { 
+          setSelectedChapterIndex(i); 
+          setIsChapterDropdownOpen(false); 
+          setSelectedVerses([]); 
+        }}>
+          {`إصحاح ${convertToArabicNumber(i + 1)}`}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+<div className={styles.instructionGrid}>
+  <div className={styles.instructionItem}>
+    <span className={styles.icon}>🖱️</span>
+    <p>اضغط مرتين لنسخ الآية</p>
+  </div>
+  <div className={styles.instructionItem}>
+    <span className={styles.icon}>⭐</span>
+    <p>اضغط ٣ مرات للمفضلة</p>
+  </div>
+  <div className={styles.instructionItem}>
+    <span className={styles.icon}>👆</span>
+    <p>ضغطة مطولة لاختيار آيات متعددة</p>
+  </div>
+</div>
 
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
 
-      <div className={styles.verseContainer}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-          <button onClick={copyChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>📋</button>
-          <h2 className={styles.chapterTitle} style={{ margin: 0 }}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
-          <button onClick={favoriteChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>❤️</button>
-        </div>
-        
-        {verses.map((v, i) => {
-          const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
-          const isFav = favouriteVerses[key];
-          const isSelected = selectedVerses.some(sv => sv.index === i);
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={`${selectedBookIndex}-${selectedChapterIndex}`}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className={styles.verseContainer}
+        >
+          <div className={styles.chapterHeader}>
+            <button onClick={copyChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>📋</button>
+            <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
+            <button onClick={favoriteChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>❤️</button>
+          </div>
           
-          return (
-            <div 
-              key={i} 
-              className={`${styles.singleVerse} ${isFav ? styles.favouriteHighlight : ''} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`}
-              onTouchStart={(e) => handleTouchStart(e, v, i)}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={(e) => handleTouchEnd(e, v, i)}
-              onContextMenu={(e) => e.preventDefault()}
-              onClick={() => handleVerseClick(key, v, i)}
-              style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}
-            >
-              <div className={styles.verseContent}>
-                <span className={styles.verseNumber}>{convertToArabicNumber(i + 1)}</span>
-                <span className={styles.verseText}>{v}</span>
-              </div>
-
-              {activeMenu === key && (
-                <div className={styles.desktopMenu}>
-                  <button onClick={(e) => { e.stopPropagation(); copyVerse(v, i); }}>📋</button>
-                  <button onClick={(e) => { e.stopPropagation(); toggleFav(v, i); }}>{isFav ? '❤️' : '🤍'}</button>
+          {verses.map((v, i) => {
+            const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
+            const isFav = favouriteVerses[key];
+            const isSelected = selectedVerses.some(sv => sv.index === i);
+            
+            return (
+              <div 
+                key={i} 
+                className={`${styles.singleVerse} ${isFav ? styles.favouriteHighlight : ''} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`}
+                onTouchStart={(e) => handleTouchStart(e, v, i)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={(e) => handleTouchEnd(e, v, i)}
+                onContextMenu={(e) => e.preventDefault()}
+                onClick={() => handleVerseClick(key, v, i)}
+                style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}
+              >
+                <div className={styles.verseContent}>
+                  <span className={styles.verseNumber}>{convertToArabicNumber(i + 1)}</span>
+                  <span className={styles.verseText}>{v}</span>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+
+                {activeMenu === key && (
+                  <div className={styles.desktopMenu}>
+                    <button onClick={(e) => { e.stopPropagation(); copyVerse(v, i); }}>📋</button>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFav(v, i); }}>{isFav ? '❤️' : '🤍'}</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
 
       <div className={styles.navigation}>
         <button disabled={selectedChapterIndex === 0} onClick={() => {setSelectedChapterIndex(p => p - 1); setSelectedVerses([]);}}>«</button>

@@ -3,77 +3,107 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: var(--gap-large);
-  background: linear-gradient(135deg, var(--color-background-start) 0%, var(--color-background-end) 100%);
-  color: var(--color-text-light);
+  padding: 40px 20px;
+  background: transparent;
 }
 
 .card {
-  background: var(--color-card-bg);
-  backdrop-filter: blur(10px);
-  padding: var(--gap-large);
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 30px var(--color-shadow-medium);
-  border: 1px solid var(--glass-border);
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   text-align: center;
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: var(--gap-medium);
-  color: var(--color-text-light);
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: #fff;
+  background: linear-gradient(135deg, #fff 0%, var(--color-accent-cyan, #22d3ee) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   font-family: 'Cairo', sans-serif;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-small);
+  gap: 15px;
 }
 
 .input {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--color-border-light);
-  border-radius: 8px;
-  color: var(--color-text-light);
-  transition: all 0.3s var(--transition-smooth);
+  padding: 16px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .input:focus {
-  outline: none;
-  border-color: var(--color-accent-gold);
-  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-accent-cyan, #22d3ee);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
 }
 
 .button {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  color: var(--button-text-color);
-  background: var(--color-button-primary);
-  transition: background-color 0.3s var(--transition-smooth);
+  color: #0f172a;
+  background: var(--color-accent-cyan, #22d3ee);
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
-.button:hover {
-  background: var(--button-hover-1);
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: #06b6d4;
+  box-shadow: 0 10px 20px rgba(34, 211, 238, 0.3);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorBox {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  text-align: right;
 }
 
 .divider {
   display: flex;
   align-items: center;
   text-align: center;
-  margin: var(--gap-medium) 0;
+  margin: 25px 0;
 }
 
 .divider::before,
@@ -81,125 +111,85 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--color-border-light);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .dividerText {
-  padding: 0 16px;
-  color: var(--color-text-medium);
+  padding: 0 15px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
 }
 
 .googleButton {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  color: var(--color-text-light);
-  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  transition: background-color 0.3s var(--transition-smooth);
+  transition: all 0.3s ease;
 }
 
-.googleButton:hover {
-  background: rgba(255, 255, 255, 0.2);
+.googleButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .googleIcon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 .toggleMode {
-  margin-top: var(--gap-medium);
-  font-size: 0.9rem;
+  margin-top: 25px;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .link {
-  color: var(--color-accent-gold);
+  color: var(--color-accent-cyan, #22d3ee);
   cursor: pointer;
-  text-decoration: underline;
+  font-weight: 700;
+  margin-right: 5px;
+  transition: 0.2s;
 }
 
-.error {
-  color: var(--color-incorrect);
-  font-size: 0.9rem;
-  margin-top: -10px;
+.link:hover {
+  text-decoration: underline;
+  filter: brightness(1.2);
+}
+
+.rtl {
+  direction: rtl;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: translateY(10px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-.input {
-  width: 100%; /* عشان ياخد عرض الكارد كله */
-  padding: 14px 16px; /* زيادة المسافة جوه الـ input عشان يكبر */
-  font-size: 16px; /* مهم جداً عشان الموبايل ميعملش Zoom لما تلمسه */
-  border: 1px solid #ddd;
-  border-radius: 8px; /* تخلي الحواف ناعمة واحترافية */
-  margin-bottom: 15px; /* مسافة بين كل input والتاني */
-  box-sizing: border-box; /* عشان الـ padding ميخرجش الـ input بره الشاشة */
-  outline: none;
-  background-color: #f9f9f9;
-}
-
-.input:focus {
-  border-color: #0070f3; /* لون لما المستخدم يضغط عليه */
-  background-color: #fff;
-}
-.card {
-  width: 100%;
-  max-width: 400px; /* العرض الأقصى على الكمبيوتر */
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-/* في الموبايل خلي الكارد ياخد مساحة أكبر */
 @media (max-width: 480px) {
   .card {
-    padding: 20px;
-    width: 90%; /* يسيب مسافة بسيطة من الجوانب */
+    padding: 30px 20px;
+    width: 92%;
   }
-}
-/* أضف هذا في login.module.css و signup.module.css */
-
-.input {
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: 8px;
-  
-  /* الحل الجوهري للمشكلة */
-  background-color: #ffffff; /* خلفية بيضاء */
-  color: #1a1a2e;            /* نص داكن جداً ليظهر بوضوح */
-  
-  font-family: 'Cairo', sans-serif;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  outline: none;
-}
-
-.input::placeholder {
-  color: #94a3b8; /* لون رمادي هادئ للـ placeholder */
-}
-
-.input:focus {
-  border-color: #667eea; /* لون يتماشى مع أزرار أجيوس عند التفاعل */
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  .title {
+    font-size: 1.8rem;
+  }
+  .input {
+    padding: 14px;
+  }
 }

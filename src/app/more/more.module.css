@@ -5,7 +5,7 @@
   width: 320px;
   height: 100vh;
   background: #1a237e; /* أزرق داكن فخم مشابه لصورتك */
-  z-index: 10000;
+  z-index: 100000;
   transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 25px;
   display: flex;
@@ -116,7 +116,7 @@
   height: 100%;
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(4px);
-  z-index: 9999;
+  z-index: 99999;
   opacity: 0;
   visibility: hidden;
   transition: 0.3s;

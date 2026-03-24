@@ -2,104 +2,61 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap');
 
 :root {
---color-primary-dark: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  --color-secondary-dark: #374151;
-  --color-card-bg: rgba(17, 24, 39, 0.85);
-  --color-text-light: #f9fafb;
-  --color-accent-cyan: #06b6d4;
-  --color-correct: #10b981;
-  --color-incorrect: #ef4444;
-  --color-warning: #f59e0b;
-  --color-border-light: rgba(255, 255, 255, 0.2);
-  --color-shadow-light: rgba(0, 0, 0, 0.1);
-  --color-shadow-medium: rgba(0, 0, 0, 0.25);
-  --button-bg-1: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  --button-hover-1: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-  --button-bg-2: linear-gradient(135deg, #059669 0%, #047857 100%);
-  --button-hover-2: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --streak-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --timer-warning: #dc2626;
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --color-primary: #1a1a2e;
-  --color-secondary: #16213e;
-  --color-primary-dark: #2C3E50;
-  --color-primary-light: #34495E;
-  --color-accent-gold: #ffc107;
-  --color-text-light: #f8f9fa;
-  --color-text-medium: #b0b0b0;
-  --color-text-dark: #34495E;
-  --color-background-start: #1a1a2e;
-  --color-background-end: #16213e;
-  --color-card-bg: rgba(255, 255, 255, 0.1);
-  --color-border-light: rgba(255, 255, 255, 0.2);
-  --color-shadow-light: rgba(0, 0, 0, 0.1);
-  --color-shadow-medium: rgba(0, 0, 0, 0.2);
-  --color-button-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --color-button-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --button-bg-1: #6A82FB;
-  --button-hover-1: #516CDE;
-  --button-bg-2: #8A2BE2;
-  --button-hover-2: #721CBB;
-  --button-text-color: #FFFFFF;
+  --color-bg-start: #0f172a;
+  --color-bg-end: #1e3a8a;
+  --color-card-bg: rgba(15, 23, 42, 0.8);
+  --color-text-primary: #f8f9fa;
+  --color-text-secondary: #94a3b8;
+  --color-accent: #d4af37;
+  --color-accent-gold: #ffd700;
+  --color-border: rgba(212, 175, 55, 0.3);
+  --color-shadow-medium: rgba(0, 0, 0, 0.4);
+  --btn-bg: linear-gradient(135deg, #d4af37 0%, #f1c40f 100%);
+  --btn-text: #0f172a;
+  --main-font-size: 18px;
+  --safe-top: env(safe-area-inset-top, 0px);
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --border-radius: 16px;
-  --gap-small: 16px;
-  --gap-medium: 24px;
-  --gap-large: 32px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary-dark: #1F2C3A;
-    --color-primary-light: #2C3E50;
-    --color-accent-gold: #FFD700;
-    --color-text-light: #E0E0E0;
-    --color-text-dark: #ECF0F1;
-    --color-background-start: #1A202C;
-    --color-background-end: #2C3A4F;
-    --color-card-bg: rgba(0, 0, 0, 0.3);
-    --color-border-light: rgba(255, 255, 255, 0.15);
-    --color-shadow-light: rgba(0, 0, 0, 0.3);
-    --color-shadow-medium: rgba(0, 0, 0, 0.5);
-    --button-bg-1: #4A607A;
-    --button-hover-1: #3A4B5F;
-    --button-bg-2: #6A4A7A;
-    --button-hover-2: #5A3A6A;
-  }
+body.light-theme {
+  --color-bg-start: #f0f4f8;
+  --color-bg-end: #dbeafe;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-card-bg: #ffffff;
+  --color-border: #1e3a8a;
+  --color-accent: #1e3a8a;
+  --btn-bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  --btn-text: #ffffff;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-user-drag: none;
 }
 
 html, body {
   height: 100%;
   width: 100%;
-  margin: 0;
-  padding: 0;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: var(--safe-top) !important;
 }
 
 body {
-  font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, var(--color-background-start) 0%, var(--color-background-end) 100%);
-  color: var(--color-text-light);
-  min-height: 100vh;
+  font-family: 'Inter', 'Cairo', sans-serif;
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  color: var(--color-text-primary);
+  font-size: var(--main-font-size);
   direction: rtl;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-html, body {
-  overscroll-behavior-y: contain;
-  touch-action: manipulation;
-  -webkit-touch-callout: none;
+  transition: background 0.3s var(--transition-smooth), color 0.3s var(--transition-smooth);
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  height: 100%;
-  overflow-x: hidden;
 }
 
 .bible-content, .verse-text, input, textarea {
@@ -116,124 +73,18 @@ html, body {
   display: none;
 }
 
-* {
-  -webkit-user-drag: none;
-}
-/* الألوان الافتراضية (Dark Mode هو الأساس كما في كودك) */
-:root {
-  --color-background-start: #1a1a2e;
-  --color-background-end: #16213e;
-  --color-text-light: #f8f9fa;
-  --color-card-bg: rgba(255, 255, 255, 0.1);
-  --color-border-light: rgba(255, 255, 255, 0.2);
-  /* ... بقية متغيرات الـ Dark التي وضعتها ... */
-}
-
-/* الألوان عند اختيار الـ Light Mode */
-body.light-theme {
-  --color-background-start: #f0f2f5;
-  --color-background-end: #ffffff;
-  --color-text-light: #1a1a2e; /* نص داكن للخلفية الفاتحة */
-  --color-card-bg: rgba(0, 0, 0, 0.05);
-  --color-border-light: rgba(0, 0, 0, 0.1);
-  --color-text-medium: #4a5568;
-  --color-shadow-medium: rgba(0, 0, 0, 0.1);
-  
-  /* تعديل ألوان الأزرار لتبدو أفضل في الوضع الفاتح */
-  --button-bg-1: #e2e8f0;
-  --button-hover-1: #cbd5e0;
-  --button-text-color: #1a1a2e;
-}
-
-/* لجعل التنقل بين الألوان ناعم جداً */
-body {
-  transition: background 0.3s ease, color 0.3s ease;
-}
-:root {
-  /* --- القيم الافتراضية (Dark Mode) --- */
-  --color-bg-start: #1a1a2e;
-  --color-bg-end: #16213e;
-  --color-text-primary: #f8f9fa;   /* النص الأساسي */
-  --color-text-secondary: #b0b0b0; /* النص الفرعي */
-  --color-card-bg: rgba(255, 255, 255, 0.1);
-  --color-border: rgba(255, 255, 255, 0.2);
-  --color-accent: #ffc107;
-  
-  /* ألوان الأزرار في الدارك */
-  --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --btn-text: #ffffff;
-}
-
-/* --- القيم عند تفعيل الـ Light Mode --- */
-body.light-theme {
-  --color-bg-start: #f0f2f5;
-  --color-bg-end: #ffffff;
-  --color-text-primary: #1a1a2e;   /* النص يصبح داكن */
-  --color-text-secondary: #4a5568; /* النص الفرعي رمادي غامق */
-  --color-card-bg: #ffffff;        /* الكروت بيضاء تماماً */
-  --color-border: #e2e8f0;         /* حدود رمادية فاتحة */
-  --color-accent: #1e3a8a;         /* تغيير التمييز للون أزرق غامق ليناسب الأبيض */
-  
-  /* ألوان الأزرار في اللايت */
-  --btn-bg: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  --btn-text: #ffffff;
-}
-
-body {
-  font-family: 'Inter', 'Cairo', sans-serif;
-  /* نستخدم المتغيرات هنا بدلاً من الألوان الثابتة */
-  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
-  color: var(--color-text-primary);
-  min-height: 100vh;
-  transition: all 0.3s ease; /* لجعل الانتقال ناعم للعين */
-}
-
-/* تطبيق المتغيرات على أي كارت أو حاوية */
 .card, [class*="section"] {
   background-color: var(--color-card-bg);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
 }
 
-/* تعديل لون النصوص الفرعية تلقائياً */
 .secondary-text, [class*="subtitle"] {
   color: var(--color-text-secondary);
 }
-:root {
-  /* حجم الخط الافتراضي */
-  --main-font-size: 18px;
-  
-  /* باقي متغيراتك كما هي */
-  --color-bg-start: #1a1a2e;
-  --color-bg-end: #16213e;
-  --color-text-primary: #f8f9fa;
-}
 
-body {
-  /* ربط حجم خط الجسم بالمتغير */
-  font-size: var(--main-font-size);
-  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
-  color: var(--color-text-primary);
-  transition: background 0.3s ease, font-size 0.2s ease;
-  /* ... بقية الستايلات ... */
-}
-
-/* تأكد أن نصوص الآيات في ملفات الـ module لا تملك حجماً ثابتاً بل ترث من الـ body */
-/* أو اجعلها تستخدم نفس المتغير */
-/* ده أهم جزء: بيجبر الصفحة تبدأ بعد منطقة الساعة */
-:root {
-  --safe-top: env(safe-area-inset-top, 0px);
-}
-
-html, body {
-  padding-top: var(--safe-top) !important;
-  background-color: #0f172a; /* حط نفس لون الـ Navbar بتاعك عشان الساعة متبانش بلون مختلف */
-}
-
-/* لو الـ Navbar عندك position: fixed أو sticky لازم تديله الـ padding ده كمان */
-nav, .BibleNavbar_wrapper__xxxx {
-  padding-top: var(--safe-top) !important;
-}
 .sr-only {
   position: absolute;
   width: 1px;
@@ -244,7 +95,47 @@ nav, .BibleNavbar_wrapper__xxxx {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
-  /* إضافة من عندي عشان نضمن إنه ميخدش مساحة فوق */
-  top: -100px; 
+  top: -100px;
   opacity: 0;
+}
+
+button, .action-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: transform 0.2s var(--transition-smooth), box-shadow 0.2s var(--transition-smooth);
+  cursor: pointer;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px var(--color-shadow-medium);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+nav, [class*="Navbar_wrapper"] {
+  padding-top: var(--safe-top) !important;
+  background-color: var(--color-bg-start);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.favouriteHighlight {
+  background: rgba(212, 175, 55, 0.15) !important;
+  border-inline-start: 4px solid var(--color-accent) !important;
+}
+
+.selectedVerse {
+  background-color: rgba(30, 58, 138, 0.3) !important;
+  border-inline-start: 4px solid var(--color-bg-end) !important;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --main-font-size: 17px;
+  }
 }

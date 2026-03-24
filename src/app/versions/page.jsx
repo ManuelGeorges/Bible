@@ -2,89 +2,63 @@ import styles from './versions.module.css';
 
 export const metadata = {
   title: 'سجل التحديثات - Agios Bible',
-  description: 'اطلع على آخر التحديثات والإضافات والتحسينات التي تمت على الموقع.',
+  description: 'اطلع على حالة النسخة التجريبية والتحسينات الحالية للموقع.',
 };
 
 const updates = [
-      {
-    version: '2.0.0',
-    date: '17 مارس 2026',
-    title: 'تحديث جذري في كيفية التشغيل',
-    features: ['جعل الموقع يعمل تطبيقاً على الهاتف وبرنامج على الكمبيوتر, جعل الموقع يعمل بنسبة كبيرة معتمداً على الأوفلاين مما يحعله يستهدف المئات من الشرائح الأخرى والتي تواجه صعوبة في الانترنت '],
-    fixes: ['إصلاح الكثير من المشاكل أبرزها عدم دعم الخريطة للغة العربية, عدم عمل البحث بالمشتقات بشكل سليم, تعطل اللمس وعدم فعاليته في قسم الكتاب المقدس']
-  },
-    {
-    version: '1.3.0',
-    date: '22 فبراير 2026',
-    title: 'إصلاح أخطاء أساسية',
-    features: ['جعل قسم المزيد يظهر بجانب الشاشة, تحسين الواجهة العامة للمستخدم, جعل قائمة الاختيارات أفضل'],
-    fixes: ['إصلاح الكثير من المشاكل أبرزها عدم دعم الخريطة للغة العربية, عدم عمل البحث بالمشتقات بشكل سليم, تعطل اللمس وعدم فعاليته في قسم الكتاب المقدس']
-  },
   {
-    version: '1.2.0',
-    date: '22 سبتمبر 2025',
-    title: 'إطلاق أقسام جديدة',
-    features: ['إطلاق صفحة المزيد التي تتشعب إلى ثلاثة أقسام جديدة وهم من نحن وتواصل معنا وقسم التحديثات', 'إضافة اللوجو الخاص بالموقع في الصفحة الرئيسية وفي نهاية كل صفحة'],
-    fixes: ['إصلاح بعض المشاكل في المسافات الزائدة بين النصوص']
-  },
-  {
-    version: '1.1.0',
-    date: '14 سبتمبر 2025',
-    title: 'تسهيل إيجاد الموقع على محركات البحث',
-    features: ['بدء ظهور صفحات الموقع على محركات البحث مثل جوجل وغيرها', 'إضافة وصف وعنوان لكل صفحة على حدة مع تحسين شكل البطاقة التي يتم مشاركتها '],
-    fixes: ['إصلاح مشكلة عدم عمل اللوجو']
-  },
-  {
-    version: '1.0.2',
-    date: '10 سبتمبر 2025',
-    title: 'إصلاحات للأخطاء ',
-    features: ['لا يوجد.'],
-    fixes: ['تصليح العطل الذي يحدث عند الإجابة على سؤال اليوم', 'حل مشكلة عدم إمكانية حفظ بعض الآيات في المفضلة']
-  },
-    {
-    version: '1.0.1',
-    date: '3 سبتمبر 2025',
-    title: 'الإطلاق الأولى والرسمي',
-    features: ['إطلاق الموقع لأول مرة بكافة مزاياه ونشره على شبكة الإنترنت'],
-    fixes: ['لا يوجد.']
-  },
+    version: 'Beta 1.0.0',
+    date: 'مارس 2026',
+    title: 'النسخة التجريبية الأولى (Beta Version)',
+    features: [
+      'إطلاق نظام البحث الذكي بالمشتقات والجذور اللغوية.',
+      'دعم كامل للعمل بدون إنترنت (Offline Mode).',
+      'خرائط تفاعلية للأماكن الكتابية مدعومة باللغة العربية.',
+      'واجهة مستخدم محسنة تدعم اللمس والأجهزة اللوحية.'
+    ],
+    fixes: [
+      'تحسين سرعة استجابة قاعدة البيانات عند البحث في 31,000 آية.',
+      'إصلاح أخطاء عرض التشكيل والنصوص في المتصفحات القديمة.'
+    ]
+  }
 ];
 
 export default function VersionsPage() {
   return (
-    <div className={styles.container}>
+    <div className={styles.container} dir="rtl">
       <h1 className={styles.title}>سجل التحديثات</h1>
       <p className={styles.introParagraph}>
-        هنا يمكنك متابعة أحدث الإضافات والتحسينات التي تمت على الموقع.
+        نحن حالياً في مرحلة الاختبار والتحسين المستمر للوصول لأفضل أداء.
       </p>
+      
       <div className={styles.updatesGrid}>
         {updates.map((update, index) => (
-          <div key={index} className={styles.updateCard}>
+          <div key={index} className={styles.updateCard} style={{ borderTop: '4px solid #D4AF37' }}>
             <div className={styles.updateHeader}>
-              <span className={styles.versionNumber}>الإصدار {update.version}</span>
+              <span className={styles.versionNumber} style={{ color: '#D4AF37', fontWeight: 'bold' }}>
+                {update.version}
+              </span>
               <span className={styles.updateDate}>{update.date}</span>
             </div>
             <h2 className={styles.updateTitle}>{update.title}</h2>
+            
             {update.features.length > 0 && (
               <>
-                <h3 className={styles.listTitle}>الإضافات الجديدة</h3>
+                <h3 className={styles.listTitle}>الميزات الحالية</h3>
                 <ul className={styles.featureList}>
                   {update.features.map((feature, idx) => (
-                    <li key={idx} className={styles.listItem}>
-                      {feature}
-                    </li>
+                    <li key={idx} className={styles.listItem}>{feature}</li>
                   ))}
                 </ul>
               </>
             )}
+            
             {update.fixes.length > 0 && (
               <>
-                <h3 className={styles.listTitle}>التحسينات والإصلاحات</h3>
+                <h3 className={styles.listTitle}>التحسينات المستمرة</h3>
                 <ul className={styles.fixesList}>
                   {update.fixes.map((fix, idx) => (
-                    <li key={idx} className={styles.listItem}>
-                      {fix}
-                    </li>
+                    <li key={idx} className={styles.listItem}>{fix}</li>
                   ))}
                 </ul>
               </>

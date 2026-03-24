@@ -1,140 +1,144 @@
 .container {
-  padding: 40px !important;
-  max-width: 1300px !important;
-  margin: 30px auto !important;
-  background-color: var(--color-bg-start) !important;
-  color: var(--color-text-primary) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 15px 40px var(--color-shadow-medium) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  border: 1px solid var(--color-border) !important;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: clamp(1rem, 5vw, 2rem);
+  padding-top: calc(var(--safe-top) + 20px);
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  direction: rtl;
 }
 
 .heading {
-  color: var(--color-accent) !important;
-  text-align: center !important;
-  margin-bottom: 25px !important;
-  font-size: clamp(2rem, 5vw, 3.5rem) !important;
-  font-weight: bold !important;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.2) !important;
-  border-bottom: 4px solid var(--color-border) !important;
-  padding-bottom: 15px !important;
-  width: 100% !important;
+  color: var(--color-accent);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: clamp(1.8rem, 6vw, 2.8rem);
+  font-weight: 800;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  font-family: 'Cairo', sans-serif;
 }
 
 .buttonsContainer {
-  margin-bottom: 30px !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 15px !important;
-  justify-content: center !important;
-  padding: 20px !important;
-  background-color: var(--color-card-bg) !important;
-  border-radius: 15px !important;
-  width: 100% !important;
-  direction: rtl !important;
-  border: 1px solid var(--color-border) !important;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px var(--color-shadow-medium);
 }
 
 .button {
-  padding: 12px 20px !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 12px !important;
-  background-color: var(--color-bg-end) !important;
-  color: var(--color-text-primary) !important;
-  cursor: pointer !important;
-  font-weight: bold !important;
-  transition: all 0.3s ease !important;
-  font-size: 0.95rem !important;
+  padding: 10px 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.4s var(--transition-smooth);
+  font-size: 0.95rem;
+  font-family: inherit;
 }
 
 .button:hover {
-  background-color: var(--color-accent) !important;
-  color: #ffffff !important;
-  transform: translateY(-3px) !important;
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
 }
 
 .button.active {
-  background-color: var(--color-accent) !important;
-  color: #ffffff !important;
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 15px var(--color-shadow-light) !important;
+  background: var(--color-accent);
+  color: #0f172a;
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  transform: scale(1.05);
 }
 
 .placeButtonsContainer {
-  direction: rtl !important;
-  margin-top: 10px !important;
-  margin-bottom: 25px !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 10px !important;
-  justify-content: center !important;
-  padding: 15px !important;
-  background-color: var(--color-card-bg) !important;
-  border-radius: 15px !important;
-  max-height: 200px !important;
-  overflow-y: auto !important;
-  border: 1px solid var(--color-border) !important;
-  width: 100% !important;
+  margin-top: 10px;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 18px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
 }
 
 .placeButtonsContainer::-webkit-scrollbar {
-  width: 8px !important;
+  width: 6px;
 }
 
 .placeButtonsContainer::-webkit-scrollbar-thumb {
-  background: var(--color-accent) !important;
-  border-radius: 10px !important;
+  background: var(--color-accent);
+  border-radius: 10px;
 }
 
 .placeButton {
-  padding: 8px 15px !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 8px !important;
-  background-color: var(--color-bg-start) !important;
-  color: var(--color-text-primary) !important;
-  cursor: pointer !important;
-  font-size: var(--main-font-size) !important;
-  transition: all 0.2s ease !important;
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 .placeButton:hover {
-  background-color: var(--color-accent) !important;
-  color: #fff !important;
-  border-color: var(--color-accent) !important;
+  background: var(--color-accent);
+  color: #0f172a;
+  border-color: var(--color-accent);
 }
 
 .mapContainer {
-  border: 2px solid var(--color-border) !important;
-  border-radius: 20px !important;
-  overflow: hidden !important;
-  height: 600px !important;
-  box-shadow: 0 10px 30px var(--color-shadow-medium) !important;
-  background-color: var(--color-bg-end) !important;
-  position: relative !important;
-  width: 100% !important;
+  border: 2px solid var(--color-border);
+  border-radius: 24px;
+  overflow: hidden;
+  height: 650px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  background: #1a1a1a;
+  position: relative;
+  width: 100%;
+  margin-bottom: 100px;
 }
 
 .loadingMessage {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 50px !important;
-  color: var(--color-text-primary) !important;
-  font-size: 1.2rem !important;
-  gap: 20px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  gap: 20px;
 }
 
 .spinner {
-  border: 4px solid var(--color-border) !important;
-  border-top: 4px solid var(--color-accent) !important;
-  border-radius: 50% !important;
-  width: 40px !important;
-  height: 40px !important;
-  animation: spin 1s linear infinite !important;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-accent);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -143,8 +147,9 @@
 }
 
 @media (max-width: 768px) {
-  .container { padding: 20px !important; margin: 10px auto !important; }
-  .heading { font-size: 1.8rem !important; }
-  .mapContainer { height: 400px !important; }
-  .button { width: 100% !important; }
+  .container { padding: 15px; }
+  .heading { font-size: 1.6rem; margin-top: 10px; }
+  .mapContainer { height: 450px; border-radius: 16px; }
+  .button { flex: 1 1 45%; font-size: 0.85rem; padding: 8px; }
+  .placeButtonsContainer { max-height: 150px; }
 }

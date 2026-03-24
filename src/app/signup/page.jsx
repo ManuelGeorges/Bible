@@ -12,7 +12,6 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
-import { Network } from '@capacitor/network';
 import { auth, db } from '../../lib/firebase';
 import styles from './signup.module.css';
 
@@ -29,31 +28,8 @@ export default function SignUpPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
     });
-
-    const checkInitialNetwork = async () => {
-      const status = await Network.getStatus();
-      if (!status.connected) router.push('/offline');
-    };
-    checkInitialNetwork();
-
-    const networkListener = Network.addListener('networkStatusChange', status => {
-      if (!status.connected) router.push('/offline');
-    });
-
-    return () => {
-      unsubscribe();
-      networkListener.remove();
-    };
+    return () => unsubscribe();
   }, [router]);
-
-  const checkConnection = async () => {
-    const status = await Network.getStatus();
-    if (!status.connected) {
-      router.push('/offline');
-      return false;
-    }
-    return true;
-  };
 
   const handleUserData = async (user) => {
     const userRef = doc(db, 'users', user.uid);
@@ -74,6 +50,9 @@ export default function SignUpPage() {
   };
 
   const translateError = (code) => {
+    if (typeof window !== 'undefined' && !navigator.onLine) {
+      return 'لا يوجد اتصال بالإنترنت. يرجى المحاولة لاحقاً.';
+    }
     switch (code) {
       case 'auth/email-already-in-use': return 'هذا البريد الإلكتروني مسجل بالفعل.';
       case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
@@ -86,10 +65,6 @@ export default function SignUpPage() {
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
-
-    const isOnline = await checkConnection();
-    if (!isOnline) return;
-
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
 
     setError(null);
@@ -115,10 +90,6 @@ export default function SignUpPage() {
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
-
-    const isOnline = await checkConnection();
-    if (!isOnline) return;
-
     setError(null);
     setIsSubmitting(true);
 
