@@ -15,11 +15,8 @@
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  padding: 0 !important;
+  padding: 75px 0 25px 0 !important;
   background: transparent !important;
-}
-.mainContent {
-  /* تأكد إن مفيش padding-top هنا بيصفر القيمة اللي حطيناها في الـ globals */
   position: relative;
 }
 
@@ -84,6 +81,8 @@
 
   .mainContent {
     min-height: calc(100vh - 60px) !important;
+    padding-top: 65px !important;
+    padding-bottom: 20px !important;
   }
 
   .navbar {
@@ -97,8 +96,6 @@
 }
 
 @media (max-width: 480px) {
-
-
   .navbar {
     gap: 5px !important;
   }
@@ -131,6 +128,6 @@
 }
 
 .mainContent > div {
-    width: 100% !important;
-    max-width: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }

@@ -7,35 +7,15 @@ import { useRouter } from 'next/navigation';
 import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { Capacitor } from '@capacitor/core';
+import { toast, Toaster } from 'react-hot-toast';
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const allPlans = studyPlansData.plans;
-
-const useMessage = (duration = 2000) => {
-    const [message, setMessage] = useState('');
-    const showMessage = useCallback((msg) => {
-        setMessage(msg);
-        const timer = setTimeout(() => setMessage(''), duration);
-        return () => clearTimeout(timer);
-    }, [duration]);
-    return [message, showMessage];
-};
-
-const useFavorites = () => {
-    const getFavorites = useCallback(() => {
-        try {
-            return JSON.parse(localStorage?.getItem('favourite_verses') || '{}');
-        } catch { return {}; }
-    }, []);
-    const saveFavorites = useCallback((favorites) => {
-        localStorage?.setItem('favourite_verses', JSON.stringify(favorites));
-    }, []);
-    return { getFavorites, saveFavorites };
-};
 
 const getPlanCompletionData = (planId) => {
     if (typeof window !== 'undefined') {
@@ -51,50 +31,49 @@ const getPlanCompletionData = (planId) => {
     return { daysCompletedCount: 0, totalDays: 0, completionPercentage: 0 };
 };
 
-const getStartedPlans = () => {
-    if (typeof window === 'undefined') return [];
-    return allPlans.filter(plan => {
-        const completionData = getPlanCompletionData(plan.id);
-        return completionData.daysCompletedCount > 0;
-    });
-};
-
 const LandingPage = () => {
     const [dailyVerse, setDailyVerse] = useState(null);
     const [dailyQuestion, setDailyQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [hasAnswered, setHasAnswered] = useState(false);
     const [isLoadingVerse, setIsLoadingVerse] = useState(true);
-    const [copiedMessage, showCopiedMessage] = useMessage();
-    const [favouriteMessage, showFavouriteMessage] = useMessage();
-    const [questionMessage, showQuestionMessage] = useMessage(3000);
-    const { getFavorites, saveFavorites } = useFavorites();
     const [startedPlans, setStartedPlans] = useState([]);
     const [user, setUser] = useState(null);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallBtn, setShowInstallBtn] = useState(false);
     const [fontSize, setFontSize] = useState(18);
+    const [favouriteVerses, setFavouriteVerses] = useState({});
 
     useEffect(() => {
-        if (Capacitor.getPlatform() === 'android') {
-            const handleUpdate = async () => {
+        if (Capacitor.isNativePlatform()) {
+            const handleCapgoUpdate = async () => {
                 try {
-                    const { AppUpdate } = await import('@capawesome-team/app-update');
-                    const result = await AppUpdate.getAppUpdateInfo();
-                    if (result.updateAvailability === 2) {
-                        await AppUpdate.performImmediateUpdate();
+                    const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
+                    await CapacitorUpdater.notifyAppReady();
+                    const update = await CapacitorUpdater.getLatest();
+                    if (update && update.url) {
+                        const result = await CapacitorUpdater.download({
+                            url: update.url,
+                            version: update.version,
+                        });
+                        if (result.version) {
+                            await CapacitorUpdater.set({ version: result.version });
+                        }
                     }
-                } catch (e) {
-                    console.log("Update check skipped or failed");
-                }
+                } catch (e) {}
             };
-            handleUpdate();
+            handleCapgoUpdate();
         }
     }, []);
-
+    useEffect(() => {
+    CapacitorUpdater.notifyAppReady();
+  }, []);
     useEffect(() => {
         const savedFontSize = localStorage.getItem('bibleFontSize');
         if (savedFontSize) setFontSize(parseInt(savedFontSize));
+
+        const localFavs = JSON.parse(localStorage.getItem('favourite_verses') || '{}');
+        setFavouriteVerses(localFavs);
 
         const handler = (e) => {
             e.preventDefault();
@@ -104,16 +83,6 @@ const LandingPage = () => {
         window.addEventListener("beforeinstallprompt", handler);
         return () => window.removeEventListener("beforeinstallprompt", handler);
     }, []);
-
-    const handleInstallClick = async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === "accepted") {
-            setDeferredPrompt(null);
-            setShowInstallBtn(false);
-        }
-    };
 
     const getTodayDateKey = useCallback(() => {
         const now = new Date();
@@ -142,6 +111,7 @@ const LandingPage = () => {
             const data = await response.json();
             const question = data.find(q => q.month === new Date().getMonth() + 1 && q.day === new Date().getDate());
             setDailyQuestion(question || null);
+            
             let answeredLocally = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
             if (loggedInUser) {
                 const userSnap = await getDoc(doc(firestore, 'users', loggedInUser.uid));
@@ -160,42 +130,60 @@ const LandingPage = () => {
     }, [getTodayDateKey]);
 
     useEffect(() => {
-        if (auth) {
-            const unsubscribe = auth.onAuthStateChanged((u) => {
-                setUser(u);
-                fetchDailyQuestion(u);
-            });
-            return () => unsubscribe();
-        }
-        fetchDailyQuestion(null);
+        if (!auth) return;
+        const unsubscribeAuth = auth.onAuthStateChanged((u) => {
+            setUser(u);
+            fetchDailyQuestion(u);
+            if (u) {
+                const unsubscribeSnapshot = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
+                    if (snap.exists()) {
+                        const cloudFavs = snap.data()?.favorites?.verses || {};
+                        setFavouriteVerses(cloudFavs);
+                        localStorage.setItem('favourite_verses', JSON.stringify(cloudFavs));
+                    }
+                });
+                return () => unsubscribeSnapshot();
+            }
+        });
+        return () => unsubscribeAuth();
     }, [fetchDailyQuestion]);
 
-    useEffect(() => { fetchDailyVerse(); }, [fetchDailyVerse]);
-    useEffect(() => { setStartedPlans(getStartedPlans()); }, []);
+    useEffect(() => { 
+        fetchDailyVerse(); 
+        setStartedPlans(allPlans.filter(plan => getPlanCompletionData(plan.id).daysCompletedCount > 0));
+    }, [fetchDailyVerse]);
 
     const copyDailyVerse = useCallback(async () => {
         if (!dailyVerse) return;
         await navigator.clipboard.writeText(`"${dailyVerse.verse}" - (${dailyVerse.reference})`);
-        showCopiedMessage('تم النسخ بنجاح!');
-    }, [dailyVerse, showCopiedMessage]);
+        toast.success('تم النسخ بنجاح!');
+    }, [dailyVerse]);
 
     const toggleFavoriteDailyVerse = useCallback(async () => {
         if (!dailyVerse) return;
         const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
-        const favorites = getFavorites();
-        let newFavorites = { ...favorites };
-        if (favorites[verseKey]) {
+        let newFavorites = { ...favouriteVerses };
+        
+        if (newFavorites[verseKey]) {
             delete newFavorites[verseKey];
-            showFavouriteMessage('تم الحذف!');
+            toast.error('تم الحذف من المفضلة');
         } else {
             newFavorites[verseKey] = { text: dailyVerse.verse, reference: dailyVerse.reference, dateAdded: new Date().toISOString() };
-            showFavouriteMessage('تمت الإضافة!');
+            toast.success('تمت الإضافة للمفضلة');
         }
-        saveFavorites(newFavorites);
-        if (user) await setDoc(doc(firestore, 'users', user.uid), { favorites: { verses: newFavorites } }, { merge: true });
-    }, [dailyVerse, getFavorites, saveFavorites, showFavouriteMessage, user]);
+        
+        setFavouriteVerses(newFavorites);
+        localStorage.setItem('favourite_verses', JSON.stringify(newFavorites));
+        
+        if (user) {
+            await setDoc(doc(firestore, 'users', user.uid), { favorites: { verses: newFavorites } }, { merge: true });
+        }
+    }, [dailyVerse, favouriteVerses, user]);
 
-    const isDailyVerseFavorite = useMemo(() => dailyVerse ? !!getFavorites()[`daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`] : false, [dailyVerse, getFavorites]);
+    const isDailyVerseFavorite = useMemo(() => {
+        if (!dailyVerse) return false;
+        return !!favouriteVerses[`daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`];
+    }, [dailyVerse, favouriteVerses]);
 
     const handleOptionClick = useCallback(async (index) => {
         if (hasAnswered || !dailyQuestion) return;
@@ -204,6 +192,10 @@ const LandingPage = () => {
         const isCorrect = index === dailyQuestion.answerIndex;
         const dateKey = getTodayDateKey();
         localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
+        
+        if (isCorrect) toast.success('إجابة صحيحة! 🎉');
+        else toast.error('إجابة خاطئة. 😔');
+
         if (user) {
             try {
                 await setDoc(doc(firestore, 'users', user.uid), {
@@ -211,12 +203,19 @@ const LandingPage = () => {
                         [dateKey]: { answered: true, correct: isCorrect, timestamp: new Date().toISOString() }
                     }
                 }, { merge: true });
-                showQuestionMessage(isCorrect ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
-            } catch (error) { console.error(error); }
-        } else {
-            showQuestionMessage(isCorrect ? 'إجابة صحيحة! 🎉' : 'إجابة خاطئة. 😔');
+            } catch (error) {}
         }
-    }, [hasAnswered, dailyQuestion, user, getTodayDateKey, showQuestionMessage]);
+    }, [hasAnswered, dailyQuestion, user, getTodayDateKey]);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+            setDeferredPrompt(null);
+            setShowInstallBtn(false);
+        }
+    };
 
     const getOptionClassName = (index) => {
         if (!hasAnswered) return styles.optionButton;
@@ -227,6 +226,7 @@ const LandingPage = () => {
 
     return (
         <main className={`${styles.container} ${styles.rtl}`}>
+            <Toaster position="bottom-center" />
             <header className={styles.header}>
                 <Image src="/images/Agios.png" alt="Logo" width={140} height={140} priority className={styles.logoImg} />
                 <div className={styles.titleWrapper}>
@@ -317,12 +317,6 @@ const LandingPage = () => {
                     </div>
                 </section>
             )}
-            
-            <div className={styles.toastContainer}>
-                {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
-                {favouriteMessage && <div className={styles.toast}>{favouriteMessage}</div>}
-                {questionMessage && <div className={styles.toast}>{questionMessage}</div>}
-            </div>
         </main>
     );
 };

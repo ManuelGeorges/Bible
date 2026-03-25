@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { db } from '../../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import styles from './search.module.css';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import _ from 'lodash';
+import { toast, Toaster } from 'react-hot-toast';
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 const geminiCache = {}; 
@@ -29,7 +30,7 @@ function normalizeArabicText(text) {
 function CustomSelect({ label, options, value, onChange, dir }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
-  const selectedLabel = options.find(opt => opt.value.toString() === value.toString())?.label || `اختر ${label}`;
+  const selectedLabel = options.find(opt => opt.value.toString() === (value || "").toString())?.label || `اختر ${label}`;
 
   const handleToggle = () => setIsOpen(!isOpen);
   const handleSelect = (optionValue) => {
@@ -54,7 +55,7 @@ function CustomSelect({ label, options, value, onChange, dir }) {
       </div>
       <ul className={`${styles.dropdownMenu} ${isOpen ? styles.open : ''}`}>
         {options.map(option => (
-          <li key={option.value} className={`${styles.dropdownItem} ${value.toString() === option.value.toString() ? styles.selected : ''}`} onClick={() => handleSelect(option.value)}>
+          <li key={option.value} className={`${styles.dropdownItem} ${(value || "").toString() === option.value.toString() ? styles.selected : ''}`} onClick={() => handleSelect(option.value)}>
             {option.label}
           </li>
         ))}
@@ -78,6 +79,8 @@ export default function BibleSearchPage({ user }) {
   const [selectedChapter, setSelectedChapter] = useState('');
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showDerivatives, setShowDerivatives] = useState(false);
+  const resultsRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,8 +132,22 @@ export default function BibleSearchPage({ user }) {
     if (lastSearch && now - parseInt(lastSearch) < 60000) return null;
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
-      const prompt = `أنت خبير لغوي في الصرف العربي والبحث الكتابي. الكلمة: "${term}". استخرج الجذر وقائمة شاملة جداً من المشتقات (أفعال بكل الضمائر، أسماء، جموع، صيغ مبالغة). الرد JSON فقط: {"root": "...", "derivatives": ["...", "..."]}`;
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+      const prompt = `أنت خبير لغوي متخصص في الصرف العربي العميق والنصوص الكتابية. 
+الكلمة المستهدفة: "${term}".
+
+المطلوب منك هو استخراج "أقصى عدد ممكن" من المشتقات والتصريفات دون اختصار، مع مراعاة النقاط التالية:
+1. استخراج الجذر اللغوي الصحيح.
+2. توليد كافة الأفعال (ماضي، مضارع، أمر) مع الضمائر (أنا، نحن، هو، هي، هما، هم، هن، أنتَ، أنتِ، أنتما، أنتم، أنتن).
+3. توليد كافة الأسماء المشتقة (اسم فاعل، اسم مفعول، اسم مكان، اسم زمان، مصدر، صيغ مبالغة).
+4. شمولية النوع والعدد (المذكر، المؤنث، المفرد، المثنى، الجمع بنوعيه).
+5. استخراج الكلمات ذات الصلة بالسياق الكتابي أو الأدبي القديم.
+
+يجب أن يكون الرد بصيغة JSON فقط وببنية دقيقة:
+{
+  "root": "الجذر هنا",
+  "derivatives": ["قائمة طويلة جداً وشاملة لكل ما سبق دون تكرار"]
+}`;
 
       const result = await model.generateContent(prompt);
       localStorage.setItem('last_gemini_search', Date.now().toString());
@@ -143,7 +160,7 @@ export default function BibleSearchPage({ user }) {
       const derivatives = _.uniq([
         normalizeArabicText(term),
         ...(parsed.derivatives || []).map(d => normalizeArabicText(typeof d === 'string' ? d : d.word))
-      ]).filter(d => d.length > 1);
+      ]).filter(d => d.length > 2);
 
       const finalResult = { derivatives, extractedRoot: parsed.root };
       geminiCache[term] = finalResult;
@@ -153,82 +170,87 @@ export default function BibleSearchPage({ user }) {
     }
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (inputTerm.trim().length >= 2) {
-      setSearchQuery(inputTerm.trim());
-    } else {
+  const performSearch = async () => {
+    if (allVerses.length === 0) return;
+    
+    const isFilterActive = selectedTestament !== '' || selectedBookIndex !== '' || selectedChapter !== '';
+    if (!inputTerm.trim() && !isFilterActive) {
+      setSearchResults([]);
       setSearchQuery('');
+      return;
     }
-  };
 
-  useEffect(() => {
-    const performSearch = async () => {
-      const isFilterActive = selectedTestament !== '' || selectedBookIndex !== '' || selectedChapter !== '';
-      
-      if (allVerses.length === 0 || (!searchQuery && !isFilterActive)) {
-        setSearchResults([]);
-        return;
-      }
-      
-      setIsLoading(true);
-      let filtered = allVerses;
+    setIsLoading(true);
+    setShowDerivatives(false);
+    
+    setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 
-      if (selectedTestament) {
-        filtered = filtered.filter(v => v.testament === selectedTestament);
-      }
-      
-      if (selectedBookIndex !== '') {
-        const bookIdxNum = parseInt(selectedBookIndex);
-        filtered = filtered.filter(v => v.book_index === bookIdxNum);
-      }
+    const currentQuery = inputTerm.trim();
+    setSearchQuery(currentQuery); 
 
-      if (selectedChapter !== '') {
-        const chIdxNum = parseInt(selectedChapter);
-        filtered = filtered.filter(v => v.chapter === chIdxNum);
-      }
+    let filtered = allVerses;
+    if (selectedTestament) filtered = filtered.filter(v => v.testament === selectedTestament);
+    if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
+    if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
-      if (searchQuery && searchQuery.length >= 2) {
-        if (searchType === 'derivatives') {
-          const info = await searchWithGeminiDerivatives(searchQuery);
-          if (info) {
-            const pattern = new RegExp(`(${info.derivatives.map(d => _.escapeRegExp(d)).join('|')})`, 'i');
-            filtered = filtered.filter(v => pattern.test(normalizeArabicText(v.text)));
-            setSearchInfo(info);
-          } else {
-            setIsLoading(false);
-            return;
-          }
-        } else {
-          const normQuery = normalizeArabicText(searchQuery);
-          filtered = filtered.filter(v => normalizeArabicText(v.text).includes(normQuery));
-          setSearchInfo(null);
+    if (currentQuery && currentQuery.length >= 2) {
+      if (searchType === 'derivatives') {
+        const info = await searchWithGeminiDerivatives(currentQuery);
+        if (info) {
+          const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
+          const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${info.derivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
+          const regex = new RegExp(pattern, 'i');
+          
+          filtered = filtered.filter(v => regex.test(normalizeArabicText(v.text)));
+          setSearchInfo(info);
         }
       } else {
+        const normQuery = normalizeArabicText(currentQuery);
+        filtered = filtered.filter(v => normalizeArabicText(v.text).includes(normQuery));
         setSearchInfo(null);
       }
-
-      setSearchResults(filtered);
+    } else if (currentQuery && currentQuery.length < 2) {
+      toast.error("يرجى إدخال حرفين على الأقل");
       setIsLoading(false);
-    };
+      return;
+    }
 
+    setSearchResults(filtered);
+    setIsLoading(false);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
     performSearch();
-  }, [searchQuery, searchType, selectedTestament, selectedBookIndex, selectedChapter, allVerses]);
+  };
 
   const renderHighlightedText = (text, highlight) => {
     if (!highlight || !text) return text;
-    let pattern;
+    
+    let regex;
     if (searchType === 'derivatives' && searchInfo?.derivatives) {
-      const sorted = [...searchInfo.derivatives].sort((a,b) => b.length - a.length);
-      pattern = `(${sorted.map(d => _.escapeRegExp(d)).join('|')})`;
+      const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
+      const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${searchInfo.derivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
+      regex = new RegExp(pattern, 'gi');
     } else {
-      pattern = `(${_.escapeRegExp(normalizeArabicText(highlight))})`;
+      const normHighlight = _.escapeRegExp(normalizeArabicText(highlight));
+      regex = new RegExp(`(${normHighlight})`, 'gi');
     }
-    const regex = new RegExp(pattern, 'gi');
+
     const parts = text.split(regex);
+    
     return (
       <span>
-        {parts.map((p, i) => regex.test(normalizeArabicText(p)) ? <span key={i} className={styles.highlight}>{p}</span> : p)}
+        {parts.map((p, i) => {
+          if (!p) return null;
+          const isMatch = searchType === 'derivatives' 
+            ? regex.test(normalizeArabicText(p)) 
+            : normalizeArabicText(p) === normalizeArabicText(highlight);
+
+          return isMatch ? <span key={i} className={styles.highlight}>{p}</span> : p;
+        })}
       </span>
     );
   };
@@ -236,16 +258,20 @@ export default function BibleSearchPage({ user }) {
   const handleCopy = (v) => {
     const ref = `(${v.book} ${convertToArabicNumber(v.chapter + 1)}:${convertToArabicNumber(v.verse + 1)})`;
     navigator.clipboard.writeText(`${v.text} ${ref}`);
+    toast.success("تم نسخ الآية");
   };
 
   const booksList = bookNamesData?.ar || [];
-  const filteredBooks = booksList.filter(b => !selectedTestament || b.testament === selectedTestament);
+  const filteredBooks = selectedTestament 
+    ? booksList.filter(b => b.testament === selectedTestament)
+    : booksList;
+    
   const chaptersCount = (selectedBookIndex !== '' && bibleData) ? bibleData[parseInt(selectedBookIndex)].chapters.length : 0;
-
-  const displayResults = useMemo(() => searchResults.slice(0, 300), [searchResults]);
+  const displayResults = useMemo(() => searchResults, [searchResults]);
 
   return (
     <div className={styles.container} dir="rtl">
+      <Toaster position="bottom-center" />
       <div className={styles.card}>
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
         <form onSubmit={handleSearchSubmit} className={styles.controls}>
@@ -255,7 +281,7 @@ export default function BibleSearchPage({ user }) {
               value={inputTerm} 
               onChange={e => setInputTerm(e.target.value)} 
               className={styles.input} 
-              placeholder="أدخل كلمة البحث (حرفين على الأقل)..." 
+              placeholder="أدخل كلمة البحث..." 
             />
             <button type="submit" className={styles.searchButton}>بحث الآن</button>
           </div>
@@ -278,7 +304,6 @@ export default function BibleSearchPage({ user }) {
             </div>
             {timeLeft > 0 && (
               <div className={styles.originalCooldownBadge}>
-                <div className={styles.originalProgressRing} style={{ '--progress': `${(timeLeft / 60) * 360}deg` }}></div>
                 <span className={styles.originalTimerText}>متاح خلال <strong>{convertToArabicNumber(timeLeft)}</strong> ث</span>
               </div>
             )}
@@ -287,24 +312,39 @@ export default function BibleSearchPage({ user }) {
           <div className={styles.filterGrid}>
             <CustomSelect 
               label="العهد" 
-              options={[{value:'', label:'كل العهدين'}, {value:'OT', label:'العهد القديم'}, {value:'NT', label:'العهد الجديد'}]} 
+              options={[
+                {value:'', label:'كل العهدين'}, 
+                {value:'OT', label:'العهد القديم'}, 
+                {value:'NT', label:'العهد الجديد'}
+              ]} 
               value={selectedTestament} 
-              onChange={e => {setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter('');}} 
+              onChange={e => {
+                setSelectedTestament(e.target.value); 
+                setSelectedBookIndex(''); 
+                setSelectedChapter('');
+              }} 
             />
             
-            {selectedTestament && (
-              <CustomSelect 
-                label="السفر" 
-                options={[{value:'', label:'كل الأسفار'}, ...filteredBooks.map(b => ({value: booksList.indexOf(b).toString(), label: b.name}))]} 
-                value={selectedBookIndex} 
-                onChange={e => {setSelectedBookIndex(e.target.value); setSelectedChapter('');}} 
-              />
-            )}
-
+            <CustomSelect 
+              label="السفر" 
+              options={[
+                {value:'', label:'كل الأسفار'}, 
+                ...filteredBooks.map(b => ({value: booksList.indexOf(b).toString(), label: b.name}))
+              ]} 
+              value={selectedBookIndex} 
+              onChange={e => {
+                setSelectedBookIndex(e.target.value); 
+                setSelectedChapter('');
+              }} 
+            />
+            
             {selectedBookIndex !== '' && (
               <CustomSelect 
                 label="الأصحاح" 
-                options={[{value:'', label:'الكل'}, ...Array.from({length: chaptersCount}, (_, i) => ({value: i.toString(), label: convertToArabicNumber(i+1)}))]} 
+                options={[
+                  {value:'', label:'الكل'}, 
+                  ...Array.from({length: chaptersCount}, (_, i) => ({value: i.toString(), label: convertToArabicNumber(i+1)}))
+                ]} 
                 value={selectedChapter} 
                 onChange={e => setSelectedChapter(e.target.value)} 
               />
@@ -312,35 +352,54 @@ export default function BibleSearchPage({ user }) {
           </div>
         </form>
 
-        {searchInfo && <div className={styles.searchInfoBox}>
-          <p><strong>الجذر:</strong> {searchInfo.extractedRoot}</p>
-          <div className={styles.derivativesList}>{searchInfo.derivatives.map((d, i) => <span key={i} className={styles.derivativeItem}>{d}</span>)}</div>
-        </div>}
-
-        {isLoading && (searchQuery || selectedTestament || selectedBookIndex !== '') ? <div className={styles.loading}>جاري البحث...</div> : (
-          (searchQuery || selectedTestament || selectedBookIndex !== '') && (
-            <div className={styles.resultsWrapper}>
-              <p className={styles.resultsCount}>نتائج البحث: {convertToArabicNumber(searchResults.length)} آية</p>
-              <div className={styles.resultsContainer}>
-                {displayResults.map((v, i) => (
-                  <div key={i} className={styles.verseCard}>
-                    <div className={styles.verseText}>
-                      <span className={styles.verseNumber}>{convertToArabicNumber(v.verse + 1)}</span>
-                      {renderHighlightedText(v.text, searchQuery)}
+        {searchInfo && (
+            <div className={styles.derivativesWrapper}>
+                <button 
+                    type="button" 
+                    className={styles.toggleDerivativesBtn}
+                    onClick={() => setShowDerivatives(!showDerivatives)}
+                >
+                    {showDerivatives ? 'إخفاء المشتقات ▲' : 'عرض المشتقات المستخرجة ▼'}
+                </button>
+                {showDerivatives && (
+                    <div className={styles.searchInfoBox}>
+                        <p><strong>الجذر المستخرج:</strong> {searchInfo.extractedRoot}</p>
+                        <div className={styles.derivativesList}>
+                            {searchInfo.derivatives.map((d, i) => (
+                                <span key={i} className={styles.derivativeItem}>{d}</span>
+                            ))}
+                        </div>
                     </div>
-                    <div className={styles.verseReference}>
-                      <span className={styles.referenceLink}>{`${v.book} ${convertToArabicNumber(v.chapter + 1)}:${convertToArabicNumber(v.verse + 1)}`}</span>
-                      <div className={styles.actions}>
-                        <button onClick={() => handleCopy(v)}>📋</button>
-                        <button onClick={() => {}}>{favouriteVerses[`${v.book_index}-${v.chapter}-${v.verse}`] ? '💙' : '🤍'}</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                )}
             </div>
-          )
         )}
+
+        <div ref={resultsRef}>
+            {isLoading ? <div className={styles.loading}>جاري البحث...</div> : (
+              (searchQuery || selectedTestament || selectedBookIndex !== '') && (
+                <div className={styles.resultsWrapper}>
+                  <p className={styles.resultsCount}>نتائج البحث: {convertToArabicNumber(searchResults.length)} آية</p>
+                  <div className={styles.resultsContainer}>
+                    {displayResults.map((v, i) => (
+                      <div key={i} className={styles.verseCard}>
+                        <div className={styles.verseText}>
+                          <span className={styles.verseNumber}>{convertToArabicNumber(v.verse + 1)}</span>
+                          {renderHighlightedText(v.text, searchQuery)}
+                        </div>
+                        <div className={styles.verseReference}>
+                          <span className={styles.referenceLink}>{`${v.book} ${convertToArabicNumber(v.chapter + 1)}:${convertToArabicNumber(v.verse + 1)}`}</span>
+                          <div className={styles.actions}>
+                            <button onClick={() => handleCopy(v)}>📋</button>
+                            <button onClick={() => {}}>{favouriteVerses[`${v.book_index}-${v.chapter}-${v.verse}`] ? '💙' : '🤍'}</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
+        </div>
       </div>
     </div>
   );
