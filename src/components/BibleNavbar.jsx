@@ -6,15 +6,14 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
-import { toast } from 'react-hot-toast'; // تأكد من تثبيت المكتبة: npm install react-hot-toast
+import { toast } from 'react-hot-toast';
 
-// فصل الـ Icons عشان الكود يبقى أنظف
 const ICONS = {
-    more: "M4 6H20V8H4V6ZM4 11H20V13H4V11ZM4 16H20V18H4V16Z",
-    search: "M15.5 14H14.71L14.25 13.59C15.41 12.09 16.17 10.15 16.17 8.08C16.17 3.63 12.54 0 8.08 0C3.63 0 0 3.63 0 8.08C0 12.54 3.63 16.17 8.08 16.17C10.15 16.17 12.09 15.41 13.59 14.25L14 14.71V15.5L19.5 21L21 19.5L15.5 14ZM8.08 14C4.75 14 2 11.25 2 8.08C2 4.75 4.75 2 8.08 2C11.25 2 14 4.75 14 8.08C14 11.25 11.25 14 8.08 14Z",
-    home: "M11.0001 1.00006L1.00006 9.00006V23.0001H9.00006V15.0001H15.0001V23.0001H23.0001V9.00006L13.0001 1.00006H11.0001Z",
-    bible: "M21 21H7V3H21V21ZM7 21C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H21C22.1046 3 23 3.89543 23 5V19C23 20.1046 22.1046 21 21 21H7ZM3 21H1V5C1 3.89543 1.89543 3 3 3V21Z",
-    maps: "M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z"
+    home: "M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z",
+    bible: "M12 11.67c2.68 0 5.92-1.28 5.92-1.28V5.83c0-.84-.99-1.39-1.76-.9l-4.16 2.49-4.16-2.49c-.77-.49-1.76.06-1.76.9v4.56s3.24 1.28 5.92 1.28z M21 5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5zm-2 14H5V5h14v14z",
+    maps: "M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z",
+    search: "M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",
+    more: "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
 };
 
 export default function BibleNavbar() {
@@ -27,49 +26,36 @@ export default function BibleNavbar() {
             setLoading(false);
             return;
         }
-
         const unsubscribe = onAuthStateChanged(auth, (authUser) => {
             setUser(authUser);
             setLoading(false);
         });
-
         return () => unsubscribe();
     }, []);
 
-    // دالة مساعدة لرسم الأيقونة
     const NavIcon = ({ path }) => (
         <svg viewBox="0 0 24 24" fill="currentColor" className={styles.navIcon}>
             <path d={path}></path>
         </svg>
     );
 
-    if (loading) return null; // أو ممكن ترجع نسخة باهتة من الـ Navbar
+    if (loading) return null;
 
     return (
         <>
             <div className={styles.navbarWrapper}>
                 <nav className={styles.navbar}>
-                    <div
-                        className={styles.navLink}
-                        onClick={() => setIsSidebarOpen(true)}
-                        style={{ cursor: 'pointer' }}
-                        aria-label="More"
-                    >
-                        <NavIcon path={ICONS.more} />
-                    </div>
-
-                    <Link href="/search" className={styles.navLink} aria-label="Search">
-                        <NavIcon path={ICONS.search} />
-                    </Link>
-
+                    {/* 1. الرئيسية (يمين) */}
                     <Link href="/" className={styles.navLink} aria-label="Home">
                         <NavIcon path={ICONS.home} />
                     </Link>
 
+                    {/* 2. الكتاب المقدس (أيقونة أوضح) */}
                     <Link href="/bible" className={styles.navLink} aria-label="Read">
                         <NavIcon path={ICONS.bible} />
                     </Link>
 
+                    {/* 3. الخريطة (أيقونة Map واضحة) */}
                     <Link 
                         href="/maps" 
                         className={styles.navLink} 
@@ -83,6 +69,21 @@ export default function BibleNavbar() {
                     >
                         <NavIcon path={ICONS.maps} />
                     </Link>
+
+                    {/* 4. البحث */}
+                    <Link href="/search" className={styles.navLink} aria-label="Search">
+                        <NavIcon path={ICONS.search} />
+                    </Link>
+
+                    {/* 5. الملف الشخصي / المزيد (3 شرط - شمال) */}
+                    <div
+                        className={styles.navLink}
+                        onClick={() => setIsSidebarOpen(true)}
+                        style={{ cursor: 'pointer' }}
+                        aria-label="More"
+                    >
+                        <NavIcon path={ICONS.more} />
+                    </div>
                 </nav>
             </div>
 

@@ -17,7 +17,7 @@
   margin-bottom: 2rem;
   font-size: clamp(1.8rem, 6vw, 2.8rem);
   font-weight: 800;
-  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 4px 15px var(--color-shadow-medium);
   width: 100%;
   font-family: 'Cairo', sans-serif;
 }
@@ -29,7 +29,7 @@
   gap: 12px;
   justify-content: center;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-card-bg);
   backdrop-filter: blur(10px);
   border-radius: 18px;
   width: 100%;
@@ -41,17 +41,17 @@
   padding: 10px 22px;
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-card-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.4s var(--transition-smooth);
+  transition: all 0.4s ease;
   font-size: 0.95rem;
   font-family: inherit;
 }
 
 .button:hover {
-  background: rgba(212, 175, 55, 0.1);
+  background: rgba(var(--color-accent-rgb), 0.1);
   color: var(--color-accent);
   border-color: var(--color-accent);
   transform: translateY(-2px);
@@ -59,9 +59,9 @@
 
 .button.active {
   background: var(--color-accent);
-  color: #0f172a;
+  color: var(--btn-text);
   border-color: var(--color-accent);
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--color-accent-rgb), 0.3);
   transform: scale(1.05);
 }
 
@@ -73,7 +73,7 @@
   gap: 8px;
   justify-content: center;
   padding: 15px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--color-bg-end);
   border-radius: 18px;
   max-height: 180px;
   overflow-y: auto;
@@ -96,7 +96,7 @@
   padding: 7px 14px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-card-bg);
   color: var(--color-text-primary);
   cursor: pointer;
   font-size: 0.9rem;
@@ -105,7 +105,7 @@
 
 .placeButton:hover {
   background: var(--color-accent);
-  color: #0f172a;
+  color: var(--btn-text);
   border-color: var(--color-accent);
 }
 
@@ -114,8 +114,8 @@
   border-radius: 24px;
   overflow: hidden;
   height: 650px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-  background: #1a1a1a;
+  box-shadow: 0 20px 50px var(--color-shadow-medium);
+  background: var(--color-bg-start);
   position: relative;
   width: 100%;
   margin-bottom: 100px;

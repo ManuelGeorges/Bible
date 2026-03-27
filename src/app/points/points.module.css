@@ -11,10 +11,10 @@
 .header {
   font-size: 2.2rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text-primary);
   margin-bottom: 40px;
   text-align: center;
-  background: linear-gradient(135deg, #fff 0%, var(--color-accent-cyan, #22d3ee) 100%);
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -24,13 +24,13 @@
   justify-content: center;
   align-items: center;
   padding: 40px;
-  background: rgba(30, 41, 59, 0.4);
+  background: var(--color-card-bg);
   border-radius: 24px;
   margin-bottom: 40px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 50px var(--color-shadow-medium);
 }
 
 .pointsTotal {
@@ -43,15 +43,15 @@
 .pointsNumber {
   font-size: 4rem;
   font-weight: 900;
-  color: var(--color-accent-cyan, #22d3ee);
+  color: var(--color-accent);
   line-height: 1;
-  text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+  text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.3);
 }
 
 .pointsLabel {
   font-size: 1.2rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
 }
 
 .timeframeButtons {
@@ -63,9 +63,9 @@
 }
 
 .timeframeButton {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-card-bg);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   padding: 12px 24px;
   border-radius: 12px;
   font-size: 0.95rem;
@@ -75,15 +75,15 @@
 }
 
 .timeframeButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--color-bg-start);
+  color: var(--color-text-primary);
 }
 
 .timeframeButton.active {
-  background: var(--color-accent-cyan, #22d3ee);
-  color: #0f172a;
+  background: var(--color-accent);
+  color: var(--btn-text);
   border-color: transparent;
-  box-shadow: 0 10px 20px rgba(34, 211, 238, 0.2);
+  box-shadow: 0 10px 20px rgba(var(--color-accent-rgb), 0.2);
 }
 
 .activitiesContainer {
@@ -99,66 +99,66 @@
 }
 
 .summaryCard {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-card-bg);
   border-radius: 20px;
   padding: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .summaryCard:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(34, 211, 238, 0.3);
+  background: var(--color-bg-start);
+  border-color: var(--color-accent);
 }
 
 .icon {
   font-size: 2rem;
-  color: var(--color-accent-cyan, #22d3ee);
+  color: var(--color-accent);
   margin-bottom: 15px;
-  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.3));
+  filter: drop-shadow(0 0 8px rgba(var(--color-accent-rgb), 0.3));
 }
 
 .cardTitle {
   font-size: 1rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   margin-bottom: 10px;
 }
 
 .cardCount {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .pointsSubText {
   font-size: 0.85rem;
-  color: var(--color-accent-cyan, #22d3ee);
+  color: var(--color-accent);
   font-weight: 600;
   margin-top: 5px;
   display: block;
 }
 
 .detailedHistory {
-  background: rgba(30, 41, 59, 0.3);
+  background: var(--color-card-bg);
   border-radius: 24px;
   padding: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
 }
 
 .detailedHeader {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
   margin-bottom: 25px;
   text-align: right;
   padding-right: 10px;
-  border-right: 4px solid var(--color-accent-cyan, #22d3ee);
+  border-right: 4px solid var(--color-accent);
 }
 
 .activityList {
@@ -172,12 +172,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border);
   transition: background 0.2s ease;
 }
 
 .activityItem:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-bg-start);
 }
 
 .activityItem:last-child {
@@ -192,14 +192,15 @@
 
 .activityDescription {
   font-size: 1rem;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0;
   font-weight: 500;
 }
 
 .activityDate {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-secondary);
+  opacity: 0.7;
 }
 
 .activityPoints {
@@ -218,14 +219,15 @@
   align-items: center;
   height: 100vh;
   font-size: 1.2rem;
-  color: var(--color-accent-cyan, #22d3ee);
+  color: var(--color-accent);
 }
 
 .noDataSection {
   text-align: center;
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-secondary);
   padding: 40px;
+  opacity: 0.6;
 }
 
 @media (max-width: 768px) {

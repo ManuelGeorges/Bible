@@ -1,13 +1,15 @@
-package com.agios.bible; // تأكد إن ده اسم الباكيدج بتاعك
+package com.agios.bible;
 
 import android.os.Bundle;
+import androidx.core.splashscreen.SplashScreen; // ضيف السطر ده
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // السطر ده هو اللي بيربط الـ Theme الجديد بالـ Activity
+        SplashScreen.installSplashScreen(this); 
+        
         super.onCreate(savedInstanceState);
-        // مش محتاج تضيف كود لـ Firebase هنا، الـ Plugin بيعمل ده لوحده 
-        // بس تأكد إن الـ BridgeActivity موجودة صح
     }
 }

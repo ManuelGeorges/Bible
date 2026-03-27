@@ -1,211 +1,164 @@
 .container {
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: var(--bg-color);
+  padding: 40px 20px;
+  direction: rtl;
   min-height: 100vh;
 }
 
+.title {
+  font-family: 'Cairo', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .section {
-  background: --;
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background-color: var(--color-card-bg);
+  padding: 25px;
+  border-radius: 20px;
+  margin-bottom: 25px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px var(--color-shadow-light);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.section:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
 }
 
 .sectionTitle {
-  font-size: 1.1rem;
-  color: #1a1a1a;
+  font-size: 1.25rem;
+  color: var(--color-accent);
   margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: bold;
+  gap: 12px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 12px;
 }
 
 .settingRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 0;
+  color: var(--color-text-primary);
+  font-weight: 500;
 }
 
-.settingRow:last-child { border-bottom: none; }
-
-/* Themes Grid */
 .themeGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 20px;
+  padding: 10px;
 }
 
 .themeCircle {
-  width: 45px;
-  height: 45px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  border: 3px solid transparent;
   cursor: pointer;
-  transition: transform 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 3px solid transparent;
+  box-shadow: 0 4px 12px var(--color-shadow-medium);
 }
 
-.themeCircle.active { border-color: #0070f3; transform: scale(1.1); }
+.themeCircle:hover {
+  transform: scale(1.15);
+}
 
-/* Custom Toggle Switch */
+.themeCircle.active {
+  border-color: var(--color-accent);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.4);
+}
+
 .switch {
   position: relative;
   display: inline-block;
   width: 50px;
-  height: 24px;
+  height: 26px;
 }
 
-.switch input { opacity: 0; width: 0; height: 0; }
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-border);
+  transition: 0.4s;
   border-radius: 34px;
 }
 
-.switch input:checked + .slider { background-color: #0070f3; }
+.switch input:checked + .slider {
+  background-color: #10b981;
+}
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 18px; width: 18px;
-  left: 4px; bottom: 3px;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.switch input:checked + .slider:before { transform: translateX(26px); }
-
-.fontSelect {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  background: white;
+.switch input:checked + .slider:before {
+  transform: translateX(24px);
 }
 
 .dangerBtn {
   width: 100%;
-  padding: 12px;
-  background: #fff5f5;
-  color: #ff4d4f;
-  border: 1px solid #ffccc7;
+  padding: 14px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 12px;
-  margin-top: 10px;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
   cursor: pointer;
-}
-.fontInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  transition: all 0.3s ease;
 }
 
-.sizeBadge {
-  font-size: 0.8rem;
-  color: var(--color-accent); /* الذهبى الذى حددته فى globals */
-  font-weight: bold;
+.dangerBtn:hover {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
 }
 
-.rangeInput {
-  width: 60%;
-  cursor: pointer;
-  accent-color: var(--color-accent); /* يغير لون الشريط نفسه */
-}
-
-.previewText {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 8px;
-  background: var(--color-card-bg);
-  border: 1px dashed var(--color-border);
-  text-align: center;
-  color: var(--color-text-primary);
-  transition: font-size 0.2s ease;
-}
-
-/* ستايل الـ Toggle Switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 22px;
-}
-
-.switch input { opacity: 0; width: 0; height: 0; }
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 34px;
-}
-
-.switch input:checked + .slider { background-color: #10b981; }
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px; width: 16px;
-  left: 3px; bottom: 3px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-.switch input:checked + .slider:before { transform: translateX(24px); }
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  /* بدلاً من background-color: white أو غيره، نجعله شفافاً ليرى خلفية الـ body */
-  background: transparent; 
-  min-height: 100vh;
-}
-
-.section {
-  /* نستخدم متغير الكروت الذي يتغير لونه بين الأبيض في اللايت والشفاف/الداكن في الدارك */
-  background-color: var(--color-card-bg); 
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  /* نستخدم متغير الحدود ليظهر بشكل صحيح في الوضعين */
-  border: 1px solid var(--color-border);
-  box-shadow: 0 4px 12px var(--color-shadow-light);
-}
-
-.title {
-  text-align: center;
-  /* نستخدم متغير النص الأساسي من الجلوبال */
-  color: var(--color-text-primary); 
-  margin-bottom: 30px;
-}
-
-.sectionTitle {
-  margin-top: 0;
-  font-size: 1.1rem;
-  /* نستخدم المتغير الذهبي/الأزرق حسب الثيم */
-  color: var(--color-accent); 
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-}
-
-.settingRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  /* لون النص الفرعي */
-  color: var(--color-text-primary);
+@media (max-width: 480px) {
+  .container {
+    padding: 20px 15px;
+  }
+  .themeGrid {
+    gap: 15px;
+  }
+  .themeCircle {
+    width: 50px;
+    height: 50px;
+  }
 }

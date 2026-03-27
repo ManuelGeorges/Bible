@@ -1,0 +1,43 @@
+.splashWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #191d34; /* لون الخلفية الرسمي للتطبيق */
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* محاكاة الـ Gravity Center والـ Bottom 50dp للوجو */
+.logoContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 50px; /* الـ 50dp اللي في الـ XML */
+}
+
+.mainLogo {
+  width: 140px; /* اضبط الحجم حسب الرغبة */
+  height: auto;
+}
+
+/* محاكاة الـ Gravity Bottom والـ Bottom 80dp للنص */
+.footerTextContainer {
+  position: absolute;
+  bottom: 80px; /* الـ 80dp اللي في الـ XML */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.footerText {
+  width: 120px; /* حجم صورة "From Agios" */
+  height: auto;
+  opacity: 0.9;
+}

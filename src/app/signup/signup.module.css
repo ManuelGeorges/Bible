@@ -8,13 +8,13 @@
 }
 
 .card {
-  background: rgba(30, 41, 59, 0.4);
+  background: var(--color-card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 40px;
   border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px var(--color-shadow-medium);
+  border: 1px solid var(--color-border);
   width: 100%;
   max-width: 450px;
   text-align: center;
@@ -27,8 +27,8 @@
   font-size: 2.2rem;
   font-weight: 800;
   margin-bottom: 30px;
-  color: #fff;
-  background: linear-gradient(135deg, #fff 0%, var(--color-accent-cyan, #22d3ee) 100%);
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Cairo', sans-serif;
@@ -50,10 +50,10 @@
   width: 100%;
   padding: 16px;
   font-size: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-start);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  color: #ffffff;
+  color: var(--color-text-primary);
   transition: all 0.3s ease;
   box-sizing: border-box;
   outline: none;
@@ -61,13 +61,14 @@
 }
 
 .input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-secondary);
+  opacity: 0.5;
 }
 
 .input:focus {
-  border-color: var(--color-accent-cyan, #22d3ee);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+  border-color: var(--color-accent);
+  background: var(--color-card-bg);
+  box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.2);
 }
 
 .button {
@@ -78,16 +79,16 @@
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  color: #0f172a;
-  background: var(--color-accent-cyan, #22d3ee);
+  color: var(--btn-text);
+  background: var(--color-accent);
   transition: all 0.3s ease;
   margin-top: 10px;
 }
 
 .button:hover:not(:disabled) {
   transform: translateY(-2px);
-  background: #06b6d4;
-  box-shadow: 0 10px 20px rgba(34, 211, 238, 0.3);
+  filter: brightness(1.1);
+  box-shadow: 0 10px 20px rgba(var(--color-accent-rgb), 0.3);
 }
 
 .button:disabled {
@@ -118,12 +119,12 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border);
 }
 
 .dividerText {
   padding: 0 15px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
 }
 
@@ -133,10 +134,10 @@
   font-size: 1rem;
   font-weight: 600;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  background: var(--color-bg-start);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,8 +146,8 @@
 }
 
 .googleButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--color-card-bg);
+  border-color: var(--color-accent);
 }
 
 .googleIcon {
@@ -157,11 +158,11 @@
 .toggleMode {
   margin-top: 25px;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
 }
 
 .link {
-  color: var(--color-accent-cyan, #22d3ee);
+  color: var(--color-accent);
   cursor: pointer;
   font-weight: 700;
   margin-right: 5px;

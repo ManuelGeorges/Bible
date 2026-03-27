@@ -228,10 +228,9 @@ const LandingPage = () => {
         <main className={`${styles.container} ${styles.rtl}`}>
             <Toaster position="bottom-center" />
             <header className={styles.header}>
-                <Image src="/images/Agios.png" alt="Logo" width={140} height={140} priority className={styles.logoImg} />
                 <div className={styles.titleWrapper}>
                     <h1 className={styles.siteTitle}>Agios Bible</h1>
-                    <span className={styles.betaBadge}>Beta version</span>
+                    <span className={styles.betaBadge}>Alpha version</span>
                 </div>
                 <h2 className={styles.subtitle}>مرحباً بك في رحلتك الروحية اليومية</h2>
             </header>

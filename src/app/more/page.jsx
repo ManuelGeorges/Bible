@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X } from 'lucide-react';
+import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings } from 'lucide-react';
 import styles from './more.module.css';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
@@ -9,6 +9,7 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
     { name: 'المسابقات', icon: <Trophy size={20} />, href: '/competitions' },
     { name: 'خطط القراءة', icon: <BookOpen size={20} />, href: '/studyPlans' },
     { name: 'الملف الشخصي', icon: <User size={20} />, href: '/profile' },
+    { name: 'الإعدادات', icon: <Settings size={20} />, href: '/settings' }, 
   ];
 
   return (
@@ -49,7 +50,7 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
           <Link href="/versions" className={styles.footerItem} onClick={onClose}>
             <History size={18} /> <span>التحديثات</span>
           </Link>
-                    <Link href="/privacy-policy" className={styles.footerItem} onClick={onClose}>
+          <Link href="/privacy-policy" className={styles.footerItem} onClick={onClose}>
             <History size={18} /> <span>سياسة الخصوصية</span>
           </Link>
         </div>

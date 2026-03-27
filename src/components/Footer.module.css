@@ -3,19 +3,21 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  padding: 20px;
   padding-bottom: 20px;
-  background-color: var(--color-primary);
-  border-top: 1px solid var(--color-border-light);
+  background-color: var(--color-card-bg);
+  border-top: 1px solid var(--color-border);
   width: 100%;
   margin-top: clamp(4rem, 10vw, 8rem);
   text-align: center;
   gap: 1.5rem;
+  backdrop-filter: blur(10px);
 }
 
 .footerLogo {
   max-width: clamp(100px, 15vw, 150px);
   height: auto;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  filter: drop-shadow(0 0 10px var(--color-shadow-light));
   transition: transform 0.3s ease-in-out;
   flex-shrink: 0;
 }
@@ -26,8 +28,8 @@
 
 .shareButton {
   padding: 12px 24px;
-  background: var(--button-bg-1);
-  color: var(--button-text-color);
+  background: var(--color-accent);
+  color: var(--btn-text);
   border: none;
   border-radius: 999px;
   font-family: 'Cairo', sans-serif;
@@ -40,15 +42,15 @@
 }
 
 .shareButton:hover {
-  background: var(--button-hover-1);
+  filter: brightness(1.1);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--color-shadow-medium);
 }
 
 .footerText {
-  color: var(--color-text-light);
+  color: var(--color-text-secondary);
   font-size: clamp(0.9rem, 1.5vw, 0.9rem);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cairo', sans-serif;
   line-height: 1.6;
   text-align: center;
   flex-grow: 1;
@@ -57,7 +59,19 @@
 @media (max-width: 768px) {
   .footer {
     flex-direction: column;
-    padding-bottom:60px;
-    gap: .1rem;
+    padding-bottom: 80px;
+    gap: 1.5rem;
+  }
+  
+  .footerText {
+    order: 2;
+  }
+  
+  .footerLogo {
+    order: 1;
+  }
+  
+  .shareButton {
+    order: 3;
   }
 }

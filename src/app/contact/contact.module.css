@@ -8,7 +8,7 @@
 }
 
 .title {
-  color: var(--color-text-light);
+  color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
   font-size: clamp(2.5rem, 6vw, 4rem);
   margin-bottom: 2rem;
@@ -18,7 +18,7 @@
 
 .section {
   background-color: var(--color-card-bg);
-  border-radius: var(--border-radius);
+  border-radius: 12px;
   padding: clamp(1.5rem, 3vw, 2.5rem);
   margin-bottom: 2rem;
   box-shadow: 0 4px 15px var(--color-shadow-medium);
@@ -26,7 +26,7 @@
 }
 
 .introParagraph {
-  color: var(--color-text-medium);
+  color: var(--color-text-secondary);
   font-family: 'Inter', sans-serif;
   font-size: clamp(0.9rem, 2vw, 1.1rem);
   line-height: 1.8;
@@ -35,7 +35,7 @@
 }
 
 .subtitle {
-  color: var(--color-accent-gold);
+  color: var(--color-accent);
   font-family: 'Cairo', sans-serif;
   font-size: clamp(1.5rem, 4vw, 2rem);
   margin-bottom: 1rem;
@@ -50,7 +50,7 @@
 }
 
 .reasonList li {
-  color: var(--color-text-medium);
+  color: var(--color-text-secondary);
   font-family: 'Inter', sans-serif;
   font-size: clamp(0.9rem, 2vw, 1.1rem);
   line-height: 1.6;
@@ -61,7 +61,7 @@
 
 .reasonList li::before {
   content: "•";
-  color: var(--color-accent-gold);
+  color: var(--color-accent);
   font-size: 1.5rem;
   position: absolute;
   right: 0;
@@ -78,22 +78,22 @@
 
 .contactLink {
   padding: 1rem 1.5rem;
-  background: var(--button-bg-1);
-  color: var(--button-text-color);
+  background: var(--color-accent);
+  color: var(--btn-text);
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 12px;
   font-family: 'Cairo', sans-serif;
   font-size: clamp(1rem, 2.5vw, 1.25rem);
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.3s var(--transition-smooth);
+  transition: all 0.3s ease;
   box-shadow: 0 4px 15px var(--color-shadow-medium);
   text-align: center;
 }
 
 .contactLink:hover {
-  background: var(--button-hover-1);
+  filter: brightness(1.1);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--color-shadow-medium);
 }

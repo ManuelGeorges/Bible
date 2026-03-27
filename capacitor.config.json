@@ -5,14 +5,17 @@
   "plugins": {
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
-      "providers": ["google.com"]
+      "providers": [
+        "google.com"
+      ]
     },
-    "SplashScreen": {
-      "launchShowDuration": 3000,
-      "launchAutoHide": true,
-      "backgroundColor": "#191d34",
-      "androidScaleType": "CENTER_CROP"
-    },
+"SplashScreen": {
+    "launchShowDuration": 1000, 
+    "launchAutoHide": false, 
+    "backgroundColor": "#0f172a",
+    "androidScaleType": "CENTER_CROP",
+    "showSpinner": false
+  },
     "CapacitorUpdater": {
       "autoUpdate": false,
       "stats": true,

@@ -59,6 +59,7 @@
 .navLink:hover {
   background-color: var(--color-border) !important;
   transform: translateY(-2px) !important;
+  color: var(--color-accent) !important;
 }
 
 .navIcon {

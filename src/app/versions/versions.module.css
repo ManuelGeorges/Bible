@@ -5,24 +5,29 @@
   padding: 2rem clamp(1rem, 5vw, 4rem);
   max-width: 900px;
   margin: 0 auto;
+  direction: rtl;
 }
 
 .title {
-  color: var(--color-text-light);
+  color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
   font-size: clamp(2.5rem, 6vw, 4rem);
   margin-bottom: 0.5rem;
   font-weight: 700;
   text-align: center;
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .introParagraph {
-  color: var(--color-text-medium);
-  font-family: 'Inter', sans-serif;
+  color: var(--color-text-secondary);
+  font-family: 'Cairo', sans-serif;
   font-size: clamp(0.9rem, 2vw, 1.1rem);
   line-height: 1.8;
   text-align: center;
   margin-bottom: 2rem;
+  opacity: 0.8;
 }
 
 .updatesGrid {
@@ -34,9 +39,16 @@
 
 .updateCard {
   background-color: var(--color-card-bg);
-  border-radius: var(--border-radius);
+  border-radius: 24px;
   padding: clamp(1.5rem, 3vw, 2rem);
   box-shadow: 0 4px 15px var(--color-shadow-medium);
+  border: 1px solid var(--color-border);
+  transition: transform 0.3s ease;
+}
+
+.updateCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-accent);
 }
 
 .updateHeader {
@@ -45,24 +57,24 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .versionNumber {
-  color: var(--color-accent-gold);
+  color: var(--color-accent);
   font-family: 'Cairo', sans-serif;
   font-size: clamp(1.2rem, 2.5vw, 1.5rem);
   font-weight: 700;
 }
 
 .updateDate {
-  color: var(--color-text-medium);
-  font-family: 'Inter', sans-serif;
+  color: var(--color-text-secondary);
+  font-family: 'Cairo', sans-serif;
   font-size: clamp(0.8rem, 1.5vw, 1rem);
 }
 
 .updateTitle {
-  color: var(--color-text-light);
+  color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
   font-size: clamp(1.2rem, 2.5vw, 1.5rem);
   font-weight: 600;
@@ -71,12 +83,12 @@
 }
 
 .listTitle {
-  color: var(--color-text-light);
+  color: var(--color-accent);
   font-family: 'Cairo', sans-serif;
   font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 500;
   margin-bottom: 0.5rem;
-  border-right: 3px solid var(--color-accent-gold);
+  border-right: 3px solid var(--color-accent);
   padding-right: 0.5rem;
   text-align: right;
 }
@@ -89,18 +101,19 @@
 }
 
 .listItem {
-  color: var(--color-text-medium);
-  font-family: 'Inter', sans-serif;
+  color: var(--color-text-secondary);
+  font-family: 'Cairo', sans-serif;
   font-size: clamp(0.9rem, 1.8vw, 1rem);
   line-height: 1.6;
   position: relative;
   padding-right: 1.5rem;
   margin-bottom: 0.5rem;
+  text-align: right;
 }
 
 .listItem::before {
   content: "✔";
-  color: var(--color-correct);
+  color: #10b981;
   position: absolute;
   right: 0;
   font-weight: bold;
@@ -108,5 +121,13 @@
 
 .fixesList .listItem::before {
   content: "✦";
-  color: var(--color-warning);
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .updateHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }

@@ -1,91 +1,86 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import styles from './Settings.module.css';
-
-export default function SettingsPage() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [fontSize, setFontSize] = useState(18);
+"use client"
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import styles from './Settings.module.css'
+const Settings = () => {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
-    
-    setIsDarkMode(savedTheme === 'dark');
-    setFontSize(parseInt(savedFontSize));
-    
-    applyTheme(savedTheme);
-    document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
-  }, []);
+    setMounted(true)
+  }, [])
 
-  const applyTheme = (theme) => {
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-    } else {
-      document.body.classList.remove('light-theme');
-    }
-  };
-
-  const toggleTheme = () => {
-    const newTheme = isDarkMode ? 'light' : 'dark';
-    setIsDarkMode(!isDarkMode);
-    localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme);
-  };
-
-  const handleFontSizeChange = (e) => {
-    const newSize = e.target.value;
-    setFontSize(newSize);
-    localStorage.setItem('bibleFontSize', newSize);
-    document.documentElement.style.setProperty('--main-font-size', newSize + 'px');
-  };
+  if (!mounted) return null
 
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container}>
       <h1 className={styles.title}>الإعدادات</h1>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>🎨 المظهر</h2>
+        <h2 className={styles.sectionTitle}>
+          <span>🎨</span> مظهر التطبيق
+        </h2>
+        
         <div className={styles.settingRow}>
-          <span>الوضع الداكن (Dark Mode)</span>
+          <span>اختر الوضع المفضل لك:</span>
+        </div>
+
+        <div className={styles.themeGrid}>
+          <div 
+            className={`${styles.themeCircle} ${theme === 'light' ? styles.active : ''}`}
+            style={{ backgroundColor: '#ffffff', border: '1px solid #ddd' }}
+            onClick={() => setTheme('light')}
+            title="الوضع الفاتح"
+          >
+            <span style={{ fontSize: '1.2rem' }}>☀️</span>
+          </div>
+
+          <div 
+            className={`${styles.themeCircle} ${theme === 'dark' ? styles.active : ''}`}
+            style={{ backgroundColor: '#0f172a' }}
+            onClick={() => setTheme('dark')}
+            title="الوضع الليلي"
+          >
+            <span style={{ fontSize: '1.2rem' }}>🌙</span>
+          </div>
+
+          <div 
+            className={`${styles.themeCircle} ${theme === 'system' ? styles.active : ''}`}
+            style={{ background: 'linear-gradient(to right, #ffffff 50%, #0f172a 50%)' }}
+            onClick={() => setTheme('system')}
+            title="حسب النظام"
+          >
+            <span style={{ fontSize: '1.2rem' }}>⚙️</span>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <span>🔔</span> التنبيهات
+        </h2>
+        <div className={styles.settingRow}>
+          <span>تفعيل تنبيهات المقالات الجديدة</span>
           <label className={styles.switch}>
-            <input 
-              type="checkbox" 
-              checked={isDarkMode} 
-              onChange={toggleTheme} 
-            />
+            <input type="checkbox" defaultChecked />
             <span className={styles.slider}></span>
           </label>
         </div>
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>📖 إعدادات القراءة</h2>
-        <div className={styles.settingRow}>
-          <div className={styles.fontInfo}>
-            <span>حجم الخط العام</span>
-            <span className={styles.sizeBadge}>{fontSize}px</span>
-          </div>
-          <input 
-            type="range" 
-            min="16" 
-            max="35" 
-            step="1"
-            value={fontSize} 
-            onChange={handleFontSizeChange}
-            className={styles.rangeInput}
-          />
-        </div>
-        <div className={styles.previewContainer}>
-          <p style={{ fontSize: 'var(--main-font-size)' }}>
-            هذا نص تجريبي لمعاينة الحجم المختار.
-          </p>
-        </div>
+        <h2 className={styles.sectionTitle}>
+          <span>⚙️</span> خيارات متقدمة
+        </h2>
+        <button className={styles.dangerBtn} onClick={() => alert('تم مسح التخزين المؤقت')}>
+          مسح بيانات التخزين المؤقت
+        </button>
       </div>
-
-      <div className={styles.footer}>
-        v1.0.0
-      </div>
+        <button onClick={() => FirebaseCrashlytics.crash({ message: "Test Crash" })}>
+    تجربة الـ Crash
+  </button>
     </div>
-  );
+  )
 }
+
+export default Settings
