@@ -59,41 +59,37 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
-        <style dangerouslySetInnerHTML={{ __html: `
-          html, body { 
-            background-color: #191d34; 
-            margin: 0; 
-            padding: 0;
-          }
-          [data-theme='light'] body {
-            background-color: #ffffff !important;
-          }
-        `}} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme');
-                  const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  const activeTheme = theme || (supportDarkMode ? 'dark' : 'light');
-                  
-                  if (activeTheme === 'light') {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                  } else {
-                    document.documentElement.setAttribute('data-theme', 'dark');
+                  var savedSize = localStorage.getItem('bibleFontSize');
+                  if (savedSize) {
+                    document.documentElement.style.setProperty('--bible-font-size', savedSize + 'px');
                   }
-                  
-                  const fontSize = localStorage.getItem('bibleFontSize') || '18';
-                  document.documentElement.style.setProperty('--main-font-size', fontSize + 'px');
                 } catch (e) {}
               })();
             `,
           }}
         />
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body { 
+            background-color: #ffffff; 
+            margin: 0; 
+            padding: 0;
+          }
+          [data-theme='dark'] body {
+            background-color: #191d34 !important;
+          }
+        `}} />
       </head>
       <body>
-        <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={true}>
+        <ThemeProvider 
+          attribute="data-theme" 
+          defaultTheme="system" 
+          enableSystem={true}
+        >
           <SplashHandler>
             <CapacitorFeatures />
             <SEOlinks />

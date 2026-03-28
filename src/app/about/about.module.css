@@ -10,7 +10,7 @@
 .title {
   color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: 2.2em;
   margin-bottom: 2rem;
   font-weight: 700;
   text-align: center;
@@ -23,7 +23,7 @@
   margin-bottom: 2rem;
   box-shadow: 0 4px 15px var(--color-shadow-medium);
   width: 100%;
-  box-sizing: content-box;
+  box-sizing: border-box;
   padding-left: 50px;
   border: 1px solid var(--color-border);
 }
@@ -31,7 +31,7 @@
 .subtitle {
   color: var(--color-accent-gold);
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: 1.5em;
   margin-bottom: 1rem;
   text-align: right;
   font-weight: 600;
@@ -40,7 +40,7 @@
 .paragraph {
   color: var(--color-text-secondary);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-size: 1em;
   line-height: 1.8;
   margin-bottom: 1rem;
   text-align: justify;
@@ -92,7 +92,7 @@
 .memberName {
   color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-size: 1.2em;
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
@@ -100,7 +100,7 @@
 .memberRole {
   color: var(--color-accent-gold);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  font-size: 0.9em;
   font-weight: 500;
   margin-bottom: 1rem;
 }
@@ -108,7 +108,7 @@
 .memberDescription {
   color: var(--color-text-primary);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  font-size: 0.95em;
   line-height: 1.6;
   text-align: center;
 }
@@ -159,5 +159,8 @@
   .honorableMention {
     flex-direction: column;
     text-align: center;
+  }
+  .section {
+    padding-left: 20px;
   }
 }

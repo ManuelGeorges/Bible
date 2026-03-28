@@ -26,7 +26,7 @@
 }
 
 .title {
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-size: clamp(1.8em, 5vw, 3em);
   font-weight: 800;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
@@ -52,6 +52,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Cairo', sans-serif;
+  font-size: 0.9em;
 }
 
 .filterButton:hover {
@@ -102,7 +103,7 @@
 }
 
 .cardTitle {
-  font-size: 1.4rem;
+  font-size: 1.25em;
   font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 20px;
@@ -134,7 +135,7 @@
 }
 
 .percentageText {
-  font-size: 0.9rem;
+  font-size: 0.85em;
   font-weight: 700;
   color: var(--color-accent);
 }
@@ -151,6 +152,7 @@
   border: 1px solid var(--color-border);
   transition: all 0.3s ease;
   margin-top: auto;
+  font-size: 0.95em;
 }
 
 .cardButton:hover {
@@ -165,7 +167,7 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-size: 1.5rem;
+  font-size: 1.3em;
   color: var(--color-accent);
   font-family: 'Cairo', sans-serif;
 }
@@ -182,6 +184,6 @@
     grid-template-columns: 1fr;
   }
   .title {
-    font-size: 2rem;
+    font-size: 1.6em;
   }
 }

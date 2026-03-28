@@ -15,7 +15,7 @@
   color: var(--color-accent);
   text-align: center;
   margin-bottom: 2rem;
-  font-size: clamp(1.8rem, 6vw, 2.8rem);
+  font-size: 2.2em;
   font-weight: 800;
   text-shadow: 0 4px 15px var(--color-shadow-medium);
   width: 100%;
@@ -46,7 +46,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.4s ease;
-  font-size: 0.95rem;
+  font-size: 0.95em;
   font-family: inherit;
 }
 
@@ -99,7 +99,7 @@
   background: var(--color-card-bg);
   color: var(--color-text-primary);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   transition: all 0.3s ease;
 }
 
@@ -128,7 +128,7 @@
   justify-content: center;
   padding: 60px;
   color: var(--color-text-primary);
-  font-size: 1.2rem;
+  font-size: 1.2em;
   gap: 20px;
 }
 
@@ -148,8 +148,8 @@
 
 @media (max-width: 768px) {
   .container { padding: 15px; }
-  .heading { font-size: 1.6rem; margin-top: 10px; }
+  .heading { font-size: 1.6em; margin-top: 10px; }
   .mapContainer { height: 450px; border-radius: 16px; }
-  .button { flex: 1 1 45%; font-size: 0.85rem; padding: 8px; }
+  .button { flex: 1 1 45%; font-size: 0.85em; padding: 8px; }
   .placeButtonsContainer { max-height: 150px; }
 }

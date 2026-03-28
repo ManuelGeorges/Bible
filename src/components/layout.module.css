@@ -109,3 +109,49 @@
     transform: translateY(-3px); /* رفعنا الأيقونة أكتر تكة للموبايل */
   }
 }
+/* تنسيق الأيقونة العادية (غير النشطة) */
+.navLink {
+  color: var(--color-text-secondary); /* لون هادئ للغير نشط */
+  text-decoration: none;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 0;
+  width: 45px;
+  height: 45px;
+  opacity: 0.7; /* تقليل الشفافية قليلاً للتركيز على النشط */
+}
+
+/* تنسيق الأيقونة النشطة */
+.active {
+  color: var(--color-primary); /* لون التطبيق الأساسي (مثلاً الأزرق أو البرتقالي) */
+  opacity: 1;
+  background-color: var(--color-primary-light); /* خلفية خفيفة جداً اختيارية */
+  transform: scale(1.1); /* تكبير بسيط جداً لتمييزها */
+}
+
+.active .navIcon {
+  transform: translateY(-4px); /* رفع إضافي للأيقونة النشطة */
+  filter: drop-shadow(0 2px 4px var(--color-shadow-light));
+}
+
+@media (max-width: 768px) {
+  /* في الموبايل نجعل التأثير أوضح */
+  .active {
+    background: transparent;
+    color: var(--color-primary);
+  }
+  
+  /* إضافة نقطة صغيرة تحت الأيقونة النشطة في الموبايل (اختياري) */
+  .active::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    width: 4px;
+    height: 4px;
+    background-color: currentColor;
+    border-radius: 50%;
+  }
+}

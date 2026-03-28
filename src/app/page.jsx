@@ -12,6 +12,7 @@ import { db } from '../lib/firebase';
 import { Capacitor } from '@capacitor/core';
 import { toast, Toaster } from 'react-hot-toast';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -44,11 +45,24 @@ const LandingPage = () => {
     const [fontSize, setFontSize] = useState(18);
     const [favouriteVerses, setFavouriteVerses] = useState({});
 
+    const requestNotificationPermission = useCallback(async () => {
+        if (!Capacitor.isNativePlatform()) return;
+        try {
+            const perm = await LocalNotifications.checkPermissions();
+            if (perm.display === 'prompt') {
+                await LocalNotifications.requestPermissions();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
     useEffect(() => {
+        requestNotificationPermission();
+
         if (Capacitor.isNativePlatform()) {
             const handleCapgoUpdate = async () => {
                 try {
-                    const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
                     await CapacitorUpdater.notifyAppReady();
                     const update = await CapacitorUpdater.getLatest();
                     if (update && update.url) {
@@ -64,11 +78,7 @@ const LandingPage = () => {
             };
             handleCapgoUpdate();
         }
-    }, []);
-    useEffect(() => {
-    CapacitorUpdater.notifyAppReady();
-  }, []);
-    useEffect(() => {
+
         const savedFontSize = localStorage.getItem('bibleFontSize');
         if (savedFontSize) setFontSize(parseInt(savedFontSize));
 
@@ -82,7 +92,7 @@ const LandingPage = () => {
         };
         window.addEventListener("beforeinstallprompt", handler);
         return () => window.removeEventListener("beforeinstallprompt", handler);
-    }, []);
+    }, [requestNotificationPermission]);
 
     const getTodayDateKey = useCallback(() => {
         const now = new Date();

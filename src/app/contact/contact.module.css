@@ -10,7 +10,7 @@
 .title {
   color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: 2.2em;
   margin-bottom: 2rem;
   font-weight: 700;
   text-align: center;
@@ -28,7 +28,7 @@
 .introParagraph {
   color: var(--color-text-secondary);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-size: 1em;
   line-height: 1.8;
   text-align: justify;
   margin-bottom: 1.5rem;
@@ -37,7 +37,7 @@
 .subtitle {
   color: var(--color-accent);
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: 1.5em;
   margin-bottom: 1rem;
   text-align: right;
   font-weight: 600;
@@ -52,7 +52,7 @@
 .reasonList li {
   color: var(--color-text-secondary);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-size: 1em;
   line-height: 1.6;
   margin-bottom: 0.5rem;
   position: relative;
@@ -62,7 +62,7 @@
 .reasonList li::before {
   content: "•";
   color: var(--color-accent);
-  font-size: 1.5rem;
+  font-size: 1.4em;
   position: absolute;
   right: 0;
   top: 50%;
@@ -83,7 +83,7 @@
   border: none;
   border-radius: 12px;
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: 1.1em;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;

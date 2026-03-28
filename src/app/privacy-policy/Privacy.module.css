@@ -22,7 +22,7 @@
 
 .title {
   font-family: 'Cairo', sans-serif;
-  font-size: 2rem;
+  font-size: 1.8em;
   font-weight: 900;
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
@@ -33,7 +33,7 @@
 .sectionTitle {
   font-family: 'Cairo', sans-serif;
   color: var(--color-accent);
-  font-size: 1.25rem;
+  font-size: 1.2em;
   font-weight: 700;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
@@ -44,7 +44,7 @@
 
 .text {
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: 1em;
   line-height: 1.8;
   margin-bottom: 1rem;
   text-align: justify;
@@ -58,6 +58,7 @@
 .listItem {
   color: var(--color-text-secondary);
   margin-bottom: 8px;
+  font-size: 0.95em;
   list-style-type: square;
 }
 
@@ -76,6 +77,6 @@
   padding-top: 1.5rem;
   border-top: 1px solid var(--color-border);
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.85em;
   color: var(--color-text-secondary);
 }

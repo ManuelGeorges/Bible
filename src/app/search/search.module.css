@@ -25,7 +25,7 @@
   border-radius: 0;
   border: none;
   box-shadow: none;
-  padding: clamp(1rem, 5vw, 2.5rem);
+  padding: clamp(1em, 5vw, 2.5em);
   padding-top: calc(env(safe-area-inset-top) + 40px);
   display: flex;
   flex-direction: column;
@@ -35,7 +35,7 @@
 
 .heading {
   font-family: 'Cairo', sans-serif;
-  font-size: clamp(1.8rem, 6vw, 2.8rem);
+  font-size: clamp(1.6em, 6vw, 2.5em);
   color: var(--color-accent);
   margin-top: 20px;
   margin-bottom: 30px;
@@ -45,7 +45,7 @@
 }
 
 .description {
-  font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+  font-size: clamp(0.85em, 3.5vw, 1em);
   color: var(--color-text-secondary);
   line-height: 1.8;
   margin-bottom: 2rem;
@@ -69,7 +69,7 @@
   padding: 1rem 1.5rem;
   border: 2px solid var(--color-border);
   border-radius: 16px;
-  font-size: 1.1rem;
+  font-size: 1em;
   background: var(--color-card-bg);
   color: var(--color-text-primary);
   transition: all 0.3s var(--transition-smooth);
@@ -90,7 +90,7 @@
   border-radius: 16px;
   cursor: pointer;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1em;
   transition: all 0.3s var(--transition-bounce);
   box-shadow: 0 8px 25px var(--color-shadow-medium);
 }
@@ -124,6 +124,7 @@
   transition: all 0.4s var(--transition-bounce);
   font-weight: 600;
   color: var(--color-text-secondary);
+  font-size: 0.9em;
 }
 
 .originalRadioGroup input[type="radio"] {
@@ -157,7 +158,7 @@
 .label {
   display: block;
   margin-bottom: 8px;
-  font-size: 0.9rem;
+  font-size: 0.85em;
   color: var(--color-accent);
   font-weight: 600;
 }
@@ -175,6 +176,7 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 101;
+  font-size: 0.95em;
 }
 
 .selectTrigger:hover {
@@ -228,6 +230,7 @@
   transition: all 0.2s ease;
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border);
+  font-size: 0.95em;
 }
 
 .dropdownItem:last-child {
@@ -275,7 +278,7 @@
 
 .instructionItem p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.8em;
   color: var(--color-text-primary);
   font-weight: 600;
   opacity: 0.8;
@@ -289,6 +292,7 @@
   margin: 20px auto;
   max-width: 800px;
   animation: slideDown 0.4s var(--transition-bounce);
+  font-size: 0.95em;
 }
 
 .derivativesWrapper {
@@ -307,7 +311,7 @@
   padding: 10px 20px;
   border-radius: 25px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0.85em;
   font-weight: 500;
   transition: all 0.3s ease;
   display: flex;
@@ -333,7 +337,7 @@
   color: var(--color-text-primary);
   padding: 4px 12px;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.85em;
   border: 1px solid var(--color-border);
   transition: transform 0.2s;
 }
@@ -357,13 +361,14 @@
   color: var(--color-text-secondary);
   margin-bottom: 20px;
   font-weight: 600;
+  font-size: 0.9em;
 }
 
 .verseCard {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: 24px;
-  padding: clamp(1.5rem, 5vw, 2.5rem);
+  padding: clamp(1.2em, 5vw, 2.2em);
   margin-bottom: 20px;
   transition: all 0.4s var(--transition-smooth);
   animation: slideIn 0.5s ease-out backwards;
@@ -377,7 +382,7 @@
 }
 
 .verseText {
-  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  font-size: clamp(1.1em, 4vw, 1.4em);
   line-height: 2.2;
   color: var(--color-text-primary);
   text-align: justify;
@@ -387,7 +392,7 @@
   color: var(--color-accent);
   font-weight: 900;
   margin-left: 10px;
-  font-size: 1.1rem;
+  font-size: 0.9em;
   font-family: 'Cairo', sans-serif;
 }
 
@@ -407,7 +412,7 @@
   align-items: center;
   color: var(--color-accent);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.05em;
 }
 
 .actions {
@@ -418,7 +423,7 @@
 .actions button {
   background: transparent;
   border: none;
-  font-size: 1.3rem;
+  font-size: 1.2em;
   cursor: pointer;
   transition: transform 0.2s ease;
   padding: 5px;
@@ -433,7 +438,7 @@
 .loading {
   text-align: center;
   padding: 40px;
-  font-size: 1.2rem;
+  font-size: 1.2em;
   color: var(--color-accent);
   font-weight: bold;
 }
@@ -451,6 +456,7 @@
   font-weight: 800;
   box-shadow: 0 10px 40px var(--color-shadow-medium);
   animation: slideUp 0.4s var(--transition-bounce);
+  font-size: 0.95em;
 }
 
 @keyframes slideUp {
@@ -474,12 +480,13 @@
 }
 
 @media (max-width: 768px) {
-  .card { padding: 1.2rem; }
+  .card { padding: 1.2em; }
   .inputGroup { flex-direction: column; }
   .searchButton { width: 100%; }
   .filterGrid { grid-template-columns: 1fr; }
   .instructionGrid { flex-direction: column; align-items: stretch; }
   .instructionItem { justify-content: center; }
+  .heading { font-size: 1.5em; }
 }
 
 .dropdownMenu::-webkit-scrollbar {

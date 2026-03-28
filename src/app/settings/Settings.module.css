@@ -8,7 +8,7 @@
 
 .title {
   font-family: 'Cairo', sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.2em;
   font-weight: 800;
   text-align: center;
   margin-bottom: 40px;
@@ -34,7 +34,7 @@
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-size: 1.2em;
   color: var(--color-accent);
   margin-bottom: 20px;
   display: flex;
@@ -45,13 +45,34 @@
   padding-bottom: 12px;
 }
 
-.settingRow {
+.notificationList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notificationItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--color-text-primary);
   font-weight: 500;
+}
+
+.notifIcon {
+  color: var(--color-accent);
 }
 
 .themeGrid {
@@ -85,6 +106,29 @@
   box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.4);
 }
 
+.fontControl {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.fontPreview {
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background: var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text-primary);
+  text-align: center;
+  transition: font-size 0.2s ease;
+  border: 1px dashed var(--color-accent);
+  font-size: 1em;
+}
+
 .switch {
   position: relative;
   display: inline-block;
@@ -98,7 +142,7 @@
   height: 0;
 }
 
-.slider {
+.sliderRound {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -110,11 +154,11 @@
   border-radius: 34px;
 }
 
-.switch input:checked + .slider {
+.switch input:checked + .sliderRound {
   background-color: #10b981;
 }
 
-.slider:before {
+.sliderRound:before {
   position: absolute;
   content: "";
   height: 20px;
@@ -124,10 +168,9 @@
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.switch input:checked + .slider:before {
+.switch input:checked + .sliderRound:before {
   transform: translateX(24px);
 }
 
@@ -142,12 +185,87 @@
   font-family: 'Cairo', sans-serif;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 10px;
+  font-size: 1em;
 }
 
 .dangerBtn:hover {
   background: #ef4444;
   color: white;
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.controlsWrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.stepBtn {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card-bg);
+  color: var(--color-text-primary);
+  font-size: 1.4em;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px var(--color-shadow-light);
+}
+
+.stepBtn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: white;
+}
+
+.stepBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.sliderContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 10px;
+  outline: none;
+  transition: background 0.3s;
+  accent-color: var(--color-accent);
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  border: 2px solid white;
+}
+
+.slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
 }
 
 @media (max-width: 480px) {
@@ -161,4 +279,133 @@
     width: 50px;
     height: 50px;
   }
+  .title {
+    font-size: 1.8em;
+  }
+}
+.masterToggleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.disabledList {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(0.5);
+  transition: all 0.3s ease;
+}
+
+.dimmed {
+  opacity: 0.4;
+  filter: blur(0.5px);
+  transition: opacity 0.3s ease;
+}
+
+.timeInput:disabled {
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+.switch input:disabled + .sliderRound {
+  cursor: not-allowed;
+  background-color: #ccc;
+}
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background-color: var(--background); /* سيتغير مع ثيم التطبيق */
+  background: white; /* كخلفية افتراضية إذا لم تستخدم المتغيرات */
+  padding: 25px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  animation: modalScale 0.3s ease-out;
+}
+
+[data-theme='dark'] .modalContent {
+  background: #1e293b;
+  color: white;
+}
+
+@keyframes modalScale {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modalIcon {
+  color: #3b82f6;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+}
+
+.modalContent h3 {
+  margin: 10px 0;
+  font-size: 1.2rem;
+}
+
+.modalContent p {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+}
+
+.cancelBtn, .confirmBtn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cancelBtn {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.confirmBtn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.confirmBtn:active {
+  transform: scale(0.95);
 }

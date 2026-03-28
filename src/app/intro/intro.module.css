@@ -20,7 +20,7 @@
 }
 
 .title {
-  font-size: 3.2rem;
+  font-size: 2.5em;
   font-weight: 800;
   color: var(--color-text-primary);
   margin-bottom: 15px;
@@ -30,7 +30,7 @@
 }
 
 .subtitle {
-  font-size: 1.4rem;
+  font-size: 1.2em;
   font-weight: 500;
   color: var(--color-text-secondary);
   line-height: 1.6;
@@ -49,7 +49,7 @@
 }
 
 .featuresTitle {
-  font-size: 2rem;
+  font-size: 1.8em;
   font-weight: 700;
   margin-bottom: 40px;
   color: var(--color-text-primary);
@@ -96,14 +96,14 @@
 }
 
 .featureTitle {
-  font-size: 1.25rem;
+  font-size: 1.15em;
   font-weight: 700;
   color: var(--color-accent);
   margin-bottom: 12px;
 }
 
 .featureDescription {
-  font-size: 1rem;
+  font-size: 0.95em;
   color: var(--color-text-secondary);
   line-height: 1.7;
 }
@@ -120,7 +120,7 @@
 }
 
 .ctaText {
-  font-size: 1.4rem;
+  font-size: 1.25em;
   font-weight: 600;
   margin-bottom: 30px;
   color: var(--color-text-primary);
@@ -128,7 +128,7 @@
 
 .button {
   padding: 16px 32px;
-  font-size: 1.05rem;
+  font-size: 1em;
   font-weight: 700;
   border-radius: 12px;
   border: none;
@@ -170,7 +170,7 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-size: 1.5rem;
+  font-size: 1.3em;
   color: var(--color-accent);
 }
 
@@ -192,8 +192,8 @@
 
 @media (max-width: 768px) {
   .container { padding: 80px 16px; }
-  .title { font-size: 2.2rem; }
-  .subtitle { font-size: 1.1rem; }
+  .title { font-size: 1.8em; }
+  .subtitle { font-size: 1.05em; }
   .featuresGrid { grid-template-columns: 1fr; }
   .button { width: 100%; margin: 8px 0; }
   .callToAction { padding: 30px 20px; }

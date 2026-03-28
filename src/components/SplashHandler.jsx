@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { Capacitor } from '@capacitor/core';
 import styles from './SplashHandler.module.css';
 
 const SplashHandler = ({ children }) => {
@@ -10,21 +11,21 @@ const SplashHandler = ({ children }) => {
   useEffect(() => {
     const initApp = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1500)); 
+        await new Promise(resolve => setTimeout(resolve, 2000)); 
         
-        // بنخفي الـ Native بـ Fade سريع جداً عشان ميبانش فراغ
-        await SplashScreen.hide({ fadeOutDuration: 200 });
-        
-        // بنستنى فمتو ثانية كمان قبل ما نشيل الـ React Overlay
-        await new Promise(resolve => setTimeout(resolve, 100));
         setIsReady(true);
       } catch (error) {
-        await SplashScreen.hide();
         setIsReady(true);
       }
     };
     initApp();
   }, []);
+
+  useEffect(() => {
+    if (isReady && Capacitor.isNativePlatform()) {
+      SplashScreen.hide();
+    }
+  }, [isReady]);
 
   if (!isReady) {
     return (

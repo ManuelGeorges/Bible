@@ -12,7 +12,7 @@
 .emptyMessage {
   padding: 3rem;
   text-align: center;
-  font-size: 1.3rem;
+  font-size: 1.1em;
   color: var(--color-accent);
   background: var(--color-card-bg);
   backdrop-filter: blur(10px);
@@ -22,7 +22,7 @@
 }
 
 .title {
-  font-size: 2.8rem;
+  font-size: 2.2em;
   font-weight: 800;
   color: var(--color-text-primary);
   margin-bottom: 2.5rem;
@@ -49,7 +49,7 @@
   flex: 1;
   text-align: center;
   padding: 0.8rem 1.5rem;
-  font-size: 1.1rem;
+  font-size: 1em;
   font-weight: 600;
   cursor: pointer;
   border-radius: 12px;
@@ -102,7 +102,7 @@
 
 .favouriteContent {
   flex-grow: 1;
-  font-size: 1.25rem;
+  font-size: 1.1em;
   line-height: 1.8;
   color: var(--color-text-primary);
 }
@@ -118,7 +118,7 @@
 
 .favouriteReference {
   display: inline-block;
-  font-size: 0.95rem;
+  font-size: 0.85em;
   font-weight: 700;
   color: var(--color-accent);
   padding: 4px 12px;
@@ -156,8 +156,8 @@
 }
 
 @media (max-width: 768px) {
-  .title { font-size: 2.2rem; }
-  .favouriteContent { font-size: 1.1rem; }
+  .title { font-size: 1.6em; }
+  .favouriteContent { font-size: 1.05em; }
   .favouriteItem { padding: 1.2rem; }
   .removeButton { width: 2.5rem; height: 2.5rem; margin-right: 1rem; }
 }

@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import styles from './layout.module.css';
@@ -20,6 +21,7 @@ export default function BibleNavbar() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!auth) {
@@ -45,20 +47,17 @@ export default function BibleNavbar() {
         <>
             <div className={styles.navbarWrapper}>
                 <nav className={styles.navbar}>
-                    {/* 1. الرئيسية (يمين) */}
-                    <Link href="/" className={styles.navLink} aria-label="Home">
+                    <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`} aria-label="Home">
                         <NavIcon path={ICONS.home} />
                     </Link>
 
-                    {/* 2. الكتاب المقدس (أيقونة أوضح) */}
-                    <Link href="/bible" className={styles.navLink} aria-label="Read">
+                    <Link href="/bible" className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`} aria-label="Read">
                         <NavIcon path={ICONS.bible} />
                     </Link>
 
-                    {/* 3. الخريطة (أيقونة Map واضحة) */}
                     <Link 
                         href="/maps" 
-                        className={styles.navLink} 
+                        className={`${styles.navLink} ${pathname === '/maps' ? styles.active : ''}`} 
                         aria-label="Maps" 
                         onClick={(e) => {
                             if (!navigator.onLine) {
@@ -70,12 +69,10 @@ export default function BibleNavbar() {
                         <NavIcon path={ICONS.maps} />
                     </Link>
 
-                    {/* 4. البحث */}
-                    <Link href="/search" className={styles.navLink} aria-label="Search">
+                    <Link href="/search" className={`${styles.navLink} ${pathname === '/search' ? styles.active : ''}`} aria-label="Search">
                         <NavIcon path={ICONS.search} />
                     </Link>
 
-                    {/* 5. الملف الشخصي / المزيد (3 شرط - شمال) */}
                     <div
                         className={styles.navLink}
                         onClick={() => setIsSidebarOpen(true)}

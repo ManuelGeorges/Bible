@@ -128,6 +128,22 @@
       "chapters": 13,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/16-Sefr-Nehemiah"
     },
+        {
+      "name": "طوبيا",
+      "testament": "OT",
+      "id": "Sefr-Tubia",
+      "type": "old",
+      "chapters": 14,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/16-Sefr-Tubia"
+    },
+            {
+      "name": "يهوديت",
+      "testament": "OT",
+      "id": "Sefr-Judith",
+      "type": "old",
+      "chapters": 14,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/16-Sefr-Judith"
+    },
     {
       "name": "أستير",
       "testament": "OT",
@@ -175,6 +191,14 @@
       "type": "old",
       "chapters": 8,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Nasheed-Al-Anshad"
+    },
+        {
+      "name": "الحكمة",
+      "testament": "OT",
+      "id": "Sefr-Hikma",
+      "type": "old",
+      "chapters": 19,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Hikma"
     },
     {
       "name": "إشعياء",

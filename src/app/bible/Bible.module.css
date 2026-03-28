@@ -14,7 +14,7 @@
 }
 
 .title {
-  font-size: clamp(1.3rem, 4vw, 2.2rem) !important;
+  font-size: 1.8em !important;
   margin-bottom: 1rem !important;
   color: var(--color-accent) !important;
   text-align: center !important;
@@ -73,6 +73,7 @@
   font-weight: 600 !important;
   color: var(--color-text-primary) !important;
   cursor: pointer !important;
+  font-size: 0.9em !important;
 }
 
 .dropdownMenu {
@@ -112,6 +113,7 @@
   color: var(--color-text-primary) !important;
   text-align: center !important;
   transition: background 0.3s ease, transform 0.2s ease !important;
+  font-size: 1em !important;
 }
 
 .dropdownItem:hover {
@@ -154,7 +156,7 @@
 }
 
 .chapterTitle {
-  font-size: clamp(1.2rem, 3vw, 1.8rem) !important;
+  font-size: 1.5em !important;
   color: var(--color-accent) !important;
   margin: 0 !important;
   font-weight: 700 !important;
@@ -186,14 +188,14 @@
 .verseNumber {
   color: var(--color-accent) !important;
   font-weight: bold !important;
-  font-size: 0.9rem !important;
+  font-size: 0.8em !important;
   min-width: 30px !important;
   flex-shrink: 0 !important;
   opacity: 0.8 !important;
 }
 
 .verseText {
-  font-size: var(--main-font-size) !important;
+  font-size: var(--bible-font-size) !important;
   line-height: 1.7 !important;
   color: var(--color-text-primary) !important;
   text-align: justify !important;
@@ -238,6 +240,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  font-size: 0.9em !important;
 }
 
 .actionBtn:hover {
@@ -290,17 +293,24 @@
   z-index: 25000 !important;
   font-weight: bold !important;
   box-shadow: 0 5px 20px var(--color-shadow-medium) !important;
+  font-size: 0.9em !important;
 }
 
 @media (max-width: 768px) {
-  .navigation {
-    top: 10px !important;
+.navigation {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
     bottom: auto !important;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
     background: var(--color-bg-end) !important;
     border-radius: 15px !important;
-    width: 90% !important;
+    display: flex;
     justify-content: space-around !important;
     box-shadow: 0 4px 15px var(--color-shadow-medium) !important;
+    padding: 10px env(safe-area-inset-right, 15px) 10px env(safe-area-inset-left, 15px);
+    z-index: 1000;
   }
 
   .container {
@@ -308,7 +318,7 @@
   }
 
   .title { 
-    font-size: 1.5rem !important; 
+    font-size: 1.3em !important; 
   }
 
   .verseContainer {
@@ -328,7 +338,6 @@
   .navigation { 
     width: 95% !important; 
     padding: 5px !important;
-    top: 5px !important; 
   }
 }
 
@@ -358,7 +367,7 @@
   }
 
   .instructionItem p {
-    font-size: 0.75rem !important;
+    font-size: 0.7em !important;
     margin: 0 !important;
     color: var(--color-text-primary) !important;
     line-height: 1.2 !important;
