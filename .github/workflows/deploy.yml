@@ -19,6 +19,10 @@ jobs:
           npm ci
           npm run build 
 
+      - name: Zip build
+        run: |
+          cd out && zip -r ../dist.zip . && cd ..
+
       - name: Deploy to Capgo
         run: |
-          npx @capgo/cli@latest bundle upload --channel production --path ./out --apikey ${{ secrets.CAPGO_TOKEN }} -v 1.0.2
+          npx @capgo/cli@latest bundle upload --channel production --path ./dist.zip --apikey ${{ secrets.CAPGO_TOKEN }} -v 1.0.2
