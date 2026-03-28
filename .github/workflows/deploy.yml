@@ -21,4 +21,4 @@ jobs:
 
       - name: Deploy to Capgo
         run: |
-          npx @capgo/cli@latest bundle upload --channel production --path ./out --apikey ${{ secrets.CAPGO_TOKEN }}
+          npx @capgo/cli@latest bundle upload --channel production --path ./out --apikey ${{ secrets.CAPGO_TOKEN }} --bundle-version 1.0.2
