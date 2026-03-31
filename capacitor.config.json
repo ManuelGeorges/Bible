@@ -17,6 +17,8 @@
     "showSpinner": false
   },
     "CapacitorUpdater": {
+      "appId": "com.agios.bible",
+      "version": "1.0.3",
       "autoUpdate": false,
       "stats": true,
       "resetWhenError": true

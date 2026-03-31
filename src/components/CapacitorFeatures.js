@@ -3,11 +3,24 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FirebaseCrashlytics } from '@capacitor-community/firebase-crashlytics';
 import { KeepAwake } from '@capacitor-community/keep-awake';
+import { AppUpdate } from '@capawesome/capacitor-app-update';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getRemoteConfig, fetchAndActivate, getNumber } from 'firebase/remote-config';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
+  authDomain: "profiles-system.firebaseapp.com",
+  projectId: "profiles-system",
+  storageBucket: "profiles-system.firebasestorage.app",
+  messagingSenderId: "900022943169",
+  appId: "1:900022943169:web:583b03be3f070dfe92c340",
+};
 
 export default function CapacitorFeatures() {
   const router = useRouter();
@@ -21,8 +34,36 @@ export default function CapacitorFeatures() {
     const setupNativeFeatures = async () => {
       try {
         await KeepAwake.keepAwake();
-        
         await FirebaseCrashlytics.setCrashlyticsCollectionEnabled({ enabled: true });
+
+        const playStoreResult = await AppUpdate.getAppUpdateInfo();
+        if (playStoreResult.updateAvailability === 2) {
+          try {
+            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+            const remoteConfig = getRemoteConfig(app);
+            
+            remoteConfig.settings.minimumFetchIntervalMillis = 0;
+            await fetchAndActivate(remoteConfig);
+            
+            const minRequiredVersion = getNumber(remoteConfig, 'min_required_version') || 0;
+            const appInfo = await App.getInfo();
+            const currentVersionCode = parseInt(appInfo.build);
+
+            if (currentVersionCode < minRequiredVersion) {
+              await AppUpdate.performImmediateUpdate();
+            } else {
+              await AppUpdate.startFlexibleUpdate();
+              await AppUpdate.addListener('onFlexibleUpdateStateChanged', async (state) => {
+                if (state.installStatus === 11) {
+                  await AppUpdate.completeFlexibleUpdate();
+                }
+              });
+            }
+          } catch (configError) {
+            console.error("Firebase Config Error:", configError);
+            await AppUpdate.startFlexibleUpdate();
+          }
+        }
 
         const currentTheme = theme || localStorage.getItem('theme') || 'system';
         const isDark = currentTheme === 'dark' || (currentTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -30,7 +71,7 @@ export default function CapacitorFeatures() {
         try {
           await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
           await StatusBar.setBackgroundColor({ color: isDark ? '#0f172a' : '#ffffff' });
-        } catch (e) {}
+        } catch (e) { }
 
         let localPerms = await LocalNotifications.checkPermissions();
         if (localPerms.display === 'prompt') {
@@ -39,7 +80,7 @@ export default function CapacitorFeatures() {
 
         if (localPerms.display === 'granted') {
           const savedNotifs = localStorage.getItem('notificationSettings');
-          const settings = savedNotifs ? JSON.parse(savedNotifs) : { 
+          const settings = savedNotifs ? JSON.parse(savedNotifs) : {
             dailyVerse: true, dailyVerseTime: '06:00',
             dailyQuestion: true, dailyQuestionTime: '18:00',
             studyPlans: true, studyPlansTime: '10:00'
@@ -128,7 +169,7 @@ export default function CapacitorFeatures() {
         if (pushPerms.receive === 'prompt') {
           pushPerms = await PushNotifications.requestPermissions();
         }
-        
+
         if (pushPerms.receive === 'granted') {
           await PushNotifications.register();
         }

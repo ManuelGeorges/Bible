@@ -200,6 +200,14 @@
       "chapters": 19,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Hikma"
     },
+          {
+      "name": "يشوع بن سيراخ",
+      "testament": "OT",
+      "id": "Sefr-Yassoua-bin-Siraakh",
+      "type": "old",
+      "chapters": 51,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Yassoua-bin-Siraakh"
+    },
     {
       "name": "إشعياء",
       "testament": "OT",
@@ -223,6 +231,14 @@
       "type": "old",
       "chapters": 5,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/25-Sefr-Marathy-Ermia"
+    },
+        {
+      "name": "باروخ",
+      "testament": "OT",
+      "id": "Sefr-Barukh",
+      "type": "old",
+      "chapters": 6,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/25-Sefr-Barukh"
     },
     {
       "name": "حزقيال",
@@ -336,8 +352,24 @@
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/39-Sefr-Malakhy"
     },
+        {
+      "name": "مكابيين أول",
+      "testament": "OT",
+      "id": "Sefr-Makabyeen-Al-Awal",
+      "type": "old",
+      "chapters": 4,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/39-Sefr-Makabyeen-Al-Awal"
+    },
+            {
+      "name": "مكابيين ثاني",
+      "testament": "OT",
+      "id": "Sefr-Makabyeen-Al-Thani",
+      "type": "old",
+      "chapters": 4,
+      "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/39-Sefr-Makabyeen-Al-Thani"
+    },
     {
-      "name": "إنجيل متى",
+      "name": "متى",
       "testament": "NT",
       "id": "Engil-Matta",
       "type": "new",
@@ -345,7 +377,7 @@
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/40-Engil-Matta"
     },
     {
-      "name": "إنجيل مرقس",
+      "name": "مرقس",
       "testament": "NT",
       "id": "Engil-Morqos",
       "type": "new",
@@ -353,7 +385,7 @@
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/41-Engil-Morqos"
     },
     {
-      "name": "إنجيل لوقا",
+      "name": "لوقا",
       "testament": "NT",
       "id": "Engil-Lowqa",
       "type": "new",
@@ -361,7 +393,7 @@
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/42-Engil-Lowqa"
     },
     {
-      "name": "إنجيل يوحنا",
+      "name": "يوحنا",
       "testament": "NT",
       "id": "Engil-Youhanna",
       "type": "new",

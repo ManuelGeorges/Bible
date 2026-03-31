@@ -7,6 +7,7 @@ import SEOlinks from '../components/SEOlinks';
 import CapacitorFeatures from '../components/CapacitorFeatures';
 import SplashHandler from '../components/SplashHandler';
 import { ThemeProvider } from 'next-themes'
+import { Toaster } from 'react-hot-toast'; // 1. استيراد المكون
 
 export const viewport = {
   width: 'device-width',
@@ -90,6 +91,9 @@ export default function RootLayout({ children }) {
           defaultTheme="system" 
           enableSystem={true}
         >
+          {/* 2. إضافة التوستر هنا ليكون متاحاً في كل الصفحات */}
+          <Toaster position="top-center" reverseOrder={false} />
+          
           <SplashHandler>
             <CapacitorFeatures />
             <SEOlinks />
