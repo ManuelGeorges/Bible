@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { Capacitor } from '@capacitor/core';
 import { toast, Toaster } from 'react-hot-toast';
@@ -40,6 +40,8 @@ const LandingPage = () => {
     const [isLoadingVerse, setIsLoadingVerse] = useState(true);
     const [startedPlans, setStartedPlans] = useState([]);
     const [user, setUser] = useState(null);
+    const [userStats, setUserStats] = useState({ points: 0, streak: 0 });
+    const [userBadges, setUserBadges] = useState([]);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallBtn, setShowInstallBtn] = useState(false);
     const [fontSize, setFontSize] = useState(18);
@@ -57,9 +59,45 @@ const LandingPage = () => {
         }
     }, []);
 
+    const checkAndAwardBadge = async (badgeId, badgeName) => {
+        if (!user || userBadges.includes(badgeId)) return;
+        
+        try {
+            const userRef = doc(firestore, 'users', user.uid);
+            await updateDoc(userRef, {
+                badges: arrayUnion(badgeId)
+            });
+            setUserBadges(prev => [...prev, badgeId]);
+            toast.success(`🎉 مبروك! حصلت على بادج: ${badgeName}`, { icon: '🏅', duration: 4000 });
+        } catch (e) {
+            console.error("Error awarding badge:", e);
+        }
+    };
+
+    const updateUserPoints = async (amount, reason) => {
+        if (!user) return;
+        try {
+            const userRef = doc(firestore, 'users', user.uid);
+            await updateDoc(userRef, {
+                totalPoints: increment(amount),
+                pointsHistory: arrayUnion({
+                    amount,
+                    reason,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            toast.success(`+${amount} نقطة: ${reason}`);
+        } catch (e) {
+            await setDoc(doc(firestore, 'users', user.uid), {
+                totalPoints: amount,
+                pointsHistory: [{ amount, reason, timestamp: new Date().toISOString() }]
+            }, { merge: true });
+            toast.success(`+${amount} نقطة: ${reason}`);
+        }
+    };
+
     useEffect(() => {
         requestNotificationPermission();
-
         if (Capacitor.isNativePlatform()) {
             const handleCapgoUpdate = async () => {
                 try {
@@ -78,13 +116,10 @@ const LandingPage = () => {
             };
             handleCapgoUpdate();
         }
-
         const savedFontSize = localStorage.getItem('bibleFontSize');
         if (savedFontSize) setFontSize(parseInt(savedFontSize));
-
         const localFavs = JSON.parse(localStorage.getItem('favourite_verses') || '{}');
         setFavouriteVerses(localFavs);
-
         const handler = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -121,7 +156,6 @@ const LandingPage = () => {
             const data = await response.json();
             const question = data.find(q => q.month === new Date().getMonth() + 1 && q.day === new Date().getDate());
             setDailyQuestion(question || null);
-            
             let answeredLocally = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
             if (loggedInUser) {
                 const userSnap = await getDoc(doc(firestore, 'users', loggedInUser.uid));
@@ -147,8 +181,14 @@ const LandingPage = () => {
             if (u) {
                 const unsubscribeSnapshot = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
-                        const cloudFavs = snap.data()?.favorites?.verses || {};
+                        const data = snap.data();
+                        const cloudFavs = data?.favorites?.verses || {};
                         setFavouriteVerses(cloudFavs);
+                        setUserStats({
+                            points: data?.totalPoints || 0,
+                            streak: data?.streak || 0
+                        });
+                        setUserBadges(data?.badges || []);
                         localStorage.setItem('favourite_verses', JSON.stringify(cloudFavs));
                     }
                 });
@@ -180,11 +220,13 @@ const LandingPage = () => {
         } else {
             newFavorites[verseKey] = { text: dailyVerse.verse, reference: dailyVerse.reference, dateAdded: new Date().toISOString() };
             toast.success('تمت الإضافة للمفضلة');
+            if (user) {
+                await updateUserPoints(5, "تفضيل آية اليوم");
+                await checkAndAwardBadge('verse_lover', 'محب الكلمة');
+            }
         }
-        
         setFavouriteVerses(newFavorites);
         localStorage.setItem('favourite_verses', JSON.stringify(newFavorites));
-        
         if (user) {
             await setDoc(doc(firestore, 'users', user.uid), { favorites: { verses: newFavorites } }, { merge: true });
         }
@@ -203,17 +245,33 @@ const LandingPage = () => {
         const dateKey = getTodayDateKey();
         localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
         
-        if (isCorrect) toast.success('إجابة صحيحة! 🎉');
-        else toast.error('إجابة خاطئة. 😔');
-
         if (user) {
-            try {
-                await setDoc(doc(firestore, 'users', user.uid), {
-                    answeredQuestions: {
-                        [dateKey]: { answered: true, correct: isCorrect, timestamp: new Date().toISOString() }
-                    }
-                }, { merge: true });
-            } catch (error) {}
+            const userRef = doc(firestore, 'users', user.uid);
+            const updatePayload = {
+                [`answeredQuestions.${dateKey}`]: { 
+                    answered: true, 
+                    correct: isCorrect, 
+                    timestamp: new Date().toISOString() 
+                }
+            };
+
+            if (isCorrect) {
+                toast.success('إجابة صحيحة! 🎉');
+                await updateUserPoints(25, "إجابة سؤال اليوم");
+                await updateDoc(userRef, {
+                    ...updatePayload,
+                    correctAnswersCount: increment(1)
+                });
+
+                const userSnap = await getDoc(userRef);
+                const currentCount = userSnap.data()?.correctAnswersCount || 0;
+                if (currentCount >= 100) {
+                    await checkAndAwardBadge('scholar', 'المثقف (الخبير)');
+                }
+            } else {
+                toast.error('إجابة خاطئة. 😔');
+                await updateDoc(userRef, updatePayload);
+            }
         }
     }, [hasAnswered, dailyQuestion, user, getTodayDateKey]);
 
@@ -238,9 +296,29 @@ const LandingPage = () => {
         <main className={`${styles.container} ${styles.rtl}`}>
             <Toaster position="bottom-center" />
             <header className={styles.header}>
-                <div className={styles.titleWrapper}>
-                    <h1 className={styles.siteTitle}>Agios Bible</h1>
-                    <span className={styles.betaBadge}>Alpha version</span>
+                <div className={styles.topBar}>
+                    <div className={styles.titleWrapper}>
+                        <h1 className={styles.siteTitle}>Agios Bible</h1>
+                        <span className={styles.betaBadge}>4th version</span>
+                    </div>
+                    {user && (
+                        <div className={styles.statsWrapper}>
+                            <div className={styles.badgeDisplay}>
+                                {userBadges.includes('first_chapter') && <span title="القارئ المبتدئ">🏅</span>}
+                                {userBadges.includes('treasure_hunter') && <span title="جامع الكنوز">💎</span>}
+                                {userBadges.includes('scholar') && <span title="المثقف الخبير (100 سؤال)">👑</span>}
+                                {userBadges.includes('verse_lover') && <span title="محب الكلمة">❤️</span>}
+                            </div>
+                            <div className={styles.statItem}>
+                                <span className={styles.statLabel}>XP</span>
+                                <span className={styles.statValue}>{userStats.points}</span>
+                            </div>
+                            <div className={styles.statItem}>
+                                <span className={styles.statLabel}>🔥</span>
+                                <span className={styles.statValue}>{userStats.streak}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <h2 className={styles.subtitle}>مرحباً بك في رحلتك الروحية اليومية</h2>
             </header>

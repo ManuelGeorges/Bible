@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './Bible.module.css';
 import { useSearchParams } from 'next/navigation';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,10 +21,12 @@ export default function BibleContent() {
 
   const [user, setUser] = useState(null);
   const [bibleData, setBibleData] = useState(null);
+  const [badgesData, setBadgesData] = useState({}); // لتخزين بيانات badges.json
   const [isLoading, setIsLoading] = useState(true);
   const [bookNamesData, setBookNamesData] = useState([]);
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
+  const [userBadges, setUserBadges] = useState([]);
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
   const [isBookDropdownOpen, setIsBookDropdownOpen] = useState(false);
@@ -46,7 +48,6 @@ export default function BibleContent() {
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
-      
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
       } else {
@@ -54,7 +55,6 @@ export default function BibleContent() {
       }
       document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
     };
-
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);
     return () => window.removeEventListener('storage', syncAppSettings);
@@ -62,32 +62,86 @@ export default function BibleContent() {
 
   const getBookName = (i) => bookNamesData?.[i]?.name || '';
 
+  const unlockBadge = async (badgeId) => {
+    if (!user || userBadges.includes(badgeId)) return;
+    
+    // محاولة إيجاد البادج في البيانات المحملة
+    const badgeInfo = badgesData[badgeId];
+    
+    const userRef = doc(firestore, 'users', user.uid);
+    await updateDoc(userRef, { 
+        "stats.unlocked_badges": arrayUnion(badgeId) 
+    });
+    
+    setUserBadges(prev => [...prev, badgeId]);
+    
+    if (badgeInfo) {
+        setCopiedMessage(`🎉 لقد حصلت على وسام: ${badgeInfo.name} (${badgeInfo.rarity})`);
+    } else {
+        setCopiedMessage(`🎉 حصلت على وسام جديد!`);
+    }
+
+    setTimeout(() => setCopiedMessage(''), 4000);
+    if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+  };
+
+  const checkBibleBadges = async (favs, completed) => {
+    const favCount = Object.keys(favs).length;
+    const chaptersCount = Object.keys(completed).filter(k => completed[k]).length;
+
+    if (favCount >= 1) await unlockBadge('fav_1');
+    if (favCount >= 20) await unlockBadge('fav_20');
+    if (favCount >= 100) await unlockBadge('fav_100');
+
+    if (chaptersCount >= 10) await unlockBadge('reader_10');
+    if (chaptersCount >= 50) await unlockBadge('reader_50');
+    if (chaptersCount >= 100) await unlockBadge('reader_100');
+    if (chaptersCount >= 250) await unlockBadge('reader_250');
+    if (chaptersCount >= 500) await unlockBadge('reader_500');
+    if (chaptersCount >= 594) await unlockBadge('reader_594');
+    if (chaptersCount >= 1189) await unlockBadge('bible_finisher');
+
+    const oldTestamentFinished = Array.from({length: 39}, (_, i) => i).every(bIdx => {
+        const bookChapters = bibleData[bIdx]?.chapters.length || 0;
+        return Array.from({length: bookChapters}, (_, cIdx) => completed[`${bIdx}-${cIdx}`]).every(v => v);
+    });
+    if (oldTestamentFinished) await unlockBadge('testament_old');
+
+    const newTestamentFinished = Array.from({length: 27}, (_, i) => i + 39).every(bIdx => {
+        const bookChapters = bibleData[bIdx]?.chapters.length || 0;
+        return Array.from({length: bookChapters}, (_, cIdx) => completed[`${bIdx}-${cIdx}`]).every(v => v);
+    });
+    if (newTestamentFinished) await unlockBadge('testament_new');
+  };
+
+  const updateUserPoints = async (amount, reason, isNegative = false) => {
+    if (!user) return;
+    const finalAmount = isNegative ? -amount : amount;
+    const userRef = doc(firestore, 'users', user.uid);
+    await updateDoc(userRef, {
+        "stats.total_points": increment(finalAmount),
+        pointsHistory: arrayUnion({
+            amount: finalAmount,
+            reason: reason,
+            timestamp: new Date().toISOString()
+        })
+    });
+  };
+
   const saveToFirestore = useCallback(async (v, c) => {
     if (!user || !firestore) return;
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      await updateDoc(userRef, {
+    const userRef = doc(firestore, 'users', user.uid);
+    await updateDoc(userRef, {
         "favorites.verses": v,
-        "completedChapters": c
-      });
-    } catch (e) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid), {
-          favorites: { verses: v },
-          completedChapters: c
-        }, { merge: true });
-      } catch (err) {}
-    }
+        "completedChapters": c,
+        "stats.chapters_read": Object.keys(c).filter(k => c[k]).length
+    });
   }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (bookDropdownRef.current && !bookDropdownRef.current.contains(event.target)) {
-        setIsBookDropdownOpen(false);
-      }
-      if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(event.target)) {
-        setIsChapterDropdownOpen(false);
-      }
+      if (bookDropdownRef.current && !bookDropdownRef.current.contains(event.target)) setIsBookDropdownOpen(false);
+      if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(event.target)) setIsChapterDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -96,24 +150,25 @@ export default function BibleContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [namesRes, bibleRes] = await Promise.all([
+        const [namesRes, bibleRes, badgesRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
-          fetch('/data/bibles/ar_svd.json').then(r => r.json())
+          fetch('/data/bibles/ar_svd.json').then(r => r.json()),
+          fetch('/data/badges.json').then(r => r.json())
         ]);
-        const arBooks = namesRes.ar || [];
-        setBookNamesData(arBooks);
+        
+        setBookNamesData(namesRes.ar || []);
         setBibleData(bibleRes);
+        setBadgesData(badgesRes); 
+
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
-        if (bParam && arBooks.length > 0) {
-          const idx = arBooks.findIndex(b => b.name === decodeURIComponent(bParam));
+        if (bParam && namesRes.ar.length > 0) {
+          const idx = namesRes.ar.findIndex(b => b.name === decodeURIComponent(bParam));
           if (idx !== -1) setSelectedBookIndex(idx);
         }
         if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
         setIsLoading(false);
-      } catch (e) { 
-        setIsLoading(false); 
-      }
+      } catch (e) { setIsLoading(false); }
     };
     loadData();
   }, [searchParams]);
@@ -125,8 +180,10 @@ export default function BibleContent() {
         if (u) {
           getDoc(doc(firestore, 'users', u.uid)).then(s => {
             if (s.exists()) {
-              setFavouriteVerses(s.data().favorites?.verses || {});
-              setCompletedChapters(s.data().completedChapters || {});
+              const data = s.data();
+              setFavouriteVerses(data.favorites?.verses || {});
+              setCompletedChapters(data.completedChapters || {});
+              setUserBadges(data.stats?.unlocked_badges || []);
             }
           });
         }
@@ -162,14 +219,17 @@ export default function BibleContent() {
       if (allExist) {
         keys.forEach(k => delete next[k]);
         setCopiedMessage('تم حذف الإصحاح من المفضلة');
+        updateUserPoints(20, `تراجع عن تفضيل إصحاح`, true);
       } else {
         versesInChapter.forEach((v, i) => {
           const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
           next[key] = { text: v, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: i };
         });
         setCopiedMessage('تمت إضافة الإصحاح للمفضلة');
+        updateUserPoints(20, `تفضيل إصحاح كامل`, false);
       }
       saveToFirestore(next, completedChapters);
+      checkBibleBadges(next, completedChapters);
       return next;
     });
     setTimeout(() => setCopiedMessage(''), 2000);
@@ -181,10 +241,13 @@ export default function BibleContent() {
       const next = { ...prev };
       if (next[key]) {
         delete next[key];
+        updateUserPoints(5, `تراجع عن تفضيل آية`, true);
       } else {
         next[key] = { text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: index };
+        updateUserPoints(5, `تفضيل آية`, false);
       }
       saveToFirestore(next, completedChapters);
+      checkBibleBadges(next, completedChapters);
       return next;
     });
     setActiveMenu(null);
@@ -210,8 +273,10 @@ export default function BibleContent() {
         next[key] = { text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index };
       });
       saveToFirestore(next, completedChapters);
+      checkBibleBadges(next, completedChapters);
       return next;
     });
+    updateUserPoints(selectedVerses.length * 5, "تفضيل مجموعة آيات", false);
     setCopiedMessage('تمت الإضافة للمفضلة');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
@@ -259,9 +324,7 @@ export default function BibleContent() {
     }
     lastTap.current = now;
     if (tapCount.current === 2) {
-      setTimeout(() => {
-        if (tapCount.current === 2) copyVerse(v, i);
-      }, 200);
+      setTimeout(() => { if (tapCount.current === 2) copyVerse(v, i); }, 200);
     } else if (tapCount.current === 3) {
       toggleFav(v, i);
       tapCount.current = 0;
@@ -273,6 +336,16 @@ export default function BibleContent() {
   const handleVerseClick = (key, v, i) => {
     if (window.matchMedia('(pointer: fine)').matches && selectedVerses.length === 0) {
       setActiveMenu(activeMenu === key ? null : key);
+    }
+
+    if (selectedBookIndex === 0 && selectedChapterIndex === 0 && i === 0) {
+        sessionStorage.setItem('alpha_clicked', Date.now());
+    }
+    if (selectedBookIndex === 72 && selectedChapterIndex === 21 && i === 20) {
+        const alphaTime = sessionStorage.getItem('alpha_clicked');
+        if (alphaTime && (Date.now() - alphaTime) < 60000) {
+            unlockBadge('alpha_omega');
+        }
     }
   };
 
@@ -295,112 +368,56 @@ export default function BibleContent() {
           </div>
         </div>
       )}
-
       <h1 className={styles.title}>الكتاب المقدس</h1>
-
-<div className={styles.controls}>
-  {/* دروب داون السفر - هيكون ليه Z-index أعلى تلقائياً من الـ CSS */}
-  <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
-    <div 
-      className={styles.selectTrigger} 
-      onClick={() => {
-        setIsBookDropdownOpen(!isBookDropdownOpen);
-        setIsChapterDropdownOpen(false);
-      }}
-    >
-      {getBookName(selectedBookIndex)}
-    </div>
-    <ul className={`${styles.dropdownMenu} ${isBookDropdownOpen ? styles.open : ''}`}>
-      {bookNamesData.map((b, i) => (
-        <li key={i} className={styles.dropdownItem} onClick={() => { 
-          setSelectedBookIndex(i); 
-          setSelectedChapterIndex(0); 
-          setIsBookDropdownOpen(false); 
-          setSelectedVerses([]); 
-        }}>
-          {b.name}
-        </li>
-      ))}
-    </ul>
-  </div>
-
-  {/* دروب داون الإصحاح */}
-  <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
-    <div 
-      className={styles.selectTrigger} 
-      onClick={() => {
-        setIsChapterDropdownOpen(!isChapterDropdownOpen);
-        setIsBookDropdownOpen(false);
-      }}
-    >
-      {`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}
-    </div>
-    <ul className={`${styles.dropdownMenu} ${isChapterDropdownOpen ? styles.open : ''}`}>
-      {chapters.map((_, i) => (
-        <li key={i} className={styles.dropdownItem} onClick={() => { 
-          setSelectedChapterIndex(i); 
-          setIsChapterDropdownOpen(false); 
-          setSelectedVerses([]); 
-        }}>
-          {`إصحاح ${convertToArabicNumber(i + 1)}`}
-        </li>
-      ))}
-    </ul>
-  </div>
-</div>
-<div className={styles.instructionGrid}>
-  <div className={styles.instructionItem}>
-    <span className={styles.icon}>🖱️</span>
-    <p>اضغط مرتين لنسخ الآية</p>
-  </div>
-  <div className={styles.instructionItem}>
-    <span className={styles.icon}>⭐</span>
-    <p>اضغط ٣ مرات للمفضلة</p>
-  </div>
-  <div className={styles.instructionItem}>
-    <span className={styles.icon}>👆</span>
-    <p>ضغطة مطولة لاختيار آيات متعددة</p>
-  </div>
-</div>
-
+      <div className={styles.controls}>
+        <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
+          <div className={styles.selectTrigger} onClick={() => { setIsBookDropdownOpen(!isBookDropdownOpen); setIsChapterDropdownOpen(false); }}>
+            {getBookName(selectedBookIndex)}
+          </div>
+          <ul className={`${styles.dropdownMenu} ${isBookDropdownOpen ? styles.open : ''}`}>
+            {bookNamesData.map((b, i) => (
+              <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedBookIndex(i); setSelectedChapterIndex(0); setIsBookDropdownOpen(false); setSelectedVerses([]); }}>
+                {b.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
+          <div className={styles.selectTrigger} onClick={() => { setIsChapterDropdownOpen(!isChapterDropdownOpen); setIsBookDropdownOpen(false); }}>
+            {`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}
+          </div>
+          <ul className={`${styles.dropdownMenu} ${isChapterDropdownOpen ? styles.open : ''}`}>
+            {chapters.map((_, i) => (
+              <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedChapterIndex(i); setIsChapterDropdownOpen(false); setSelectedVerses([]); }}>
+                {`إصحاح ${convertToArabicNumber(i + 1)}`}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className={styles.instructionGrid}>
+        <div className={styles.instructionItem}><span className={styles.icon}>🖱️</span><p>اضغط مرتين للنسخ</p></div>
+        <div className={styles.instructionItem}><span className={styles.icon}>⭐</span><p>اضغط ٣ مرات للمفضلة</p></div>
+        <div className={styles.instructionItem}><span className={styles.icon}>👆</span><p>ضغطة مطولة للاختيار</p></div>
+      </div>
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
-
       <AnimatePresence mode="wait">
-        <motion.div 
-          key={`${selectedBookIndex}-${selectedChapterIndex}`}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-          className={styles.verseContainer}
-        >
+        <motion.div key={`${selectedBookIndex}-${selectedChapterIndex}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className={styles.verseContainer}>
           <div className={styles.chapterHeader}>
             <button onClick={copyChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>📋</button>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
             <button onClick={favoriteChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>❤️</button>
           </div>
-          
           {verses.map((v, i) => {
             const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
             const isFav = favouriteVerses[key];
             const isSelected = selectedVerses.some(sv => sv.index === i);
-            
             return (
-              <div 
-                key={i} 
-                className={`${styles.singleVerse} ${isFav ? styles.favouriteHighlight : ''} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`}
-                onTouchStart={(e) => handleTouchStart(e, v, i)}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={(e) => handleTouchEnd(e, v, i)}
-                onContextMenu={(e) => e.preventDefault()}
-                onClick={() => handleVerseClick(key, v, i)}
-                style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}
-              >
+              <div key={i} className={`${styles.singleVerse} ${isFav ? styles.favouriteHighlight : ''} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`} onTouchStart={(e) => handleTouchStart(e, v, i)} onTouchMove={handleTouchMove} onTouchEnd={(e) => handleTouchEnd(e, v, i)} onContextMenu={(e) => e.preventDefault()} onClick={() => handleVerseClick(key, v, i)} style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}>
                 <div className={styles.verseContent}>
                   <span className={styles.verseNumber}>{convertToArabicNumber(i + 1)}</span>
                   <span className={styles.verseText}>{v}</span>
                 </div>
-
                 {activeMenu === key && (
                   <div className={styles.desktopMenu}>
                     <button onClick={(e) => { e.stopPropagation(); copyVerse(v, i); }}>📋</button>
@@ -412,14 +429,16 @@ export default function BibleContent() {
           })}
         </motion.div>
       </AnimatePresence>
-
       <div className={styles.navigation}>
         <button disabled={selectedChapterIndex === 0} onClick={() => {setSelectedChapterIndex(p => p - 1); setSelectedVerses([]);}}>«</button>
         <button onClick={() => {
            const key = `${selectedBookIndex}-${selectedChapterIndex}`;
-           const next = { ...completedChapters, [key]: !completedChapters[key] };
+           const isNowCompleted = !completedChapters[key];
+           const next = { ...completedChapters, [key]: isNowCompleted };
            setCompletedChapters(next);
            saveToFirestore(favouriteVerses, next);
+           checkBibleBadges(favouriteVerses, next);
+           updateUserPoints(50, `إتمام قراءة إصحاح`, !isNowCompleted);
         }}>{completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? '✅' : '✔️'}</button>
         <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => {setSelectedChapterIndex(p => p + 1); setSelectedVerses([]);}}>»</button>
       </div>

@@ -1,9 +1,10 @@
 "use client"
 import { useTheme } from 'next-themes'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Bell, Sun, Moon, BookOpen, HelpCircle, Clock, X, Settings as SettingsIcon } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import { syncNotifications } from '../../lib/notificationService';
 import styles from './Settings.module.css'
 
 const Settings = () => {
@@ -22,84 +23,6 @@ const Settings = () => {
     studyPlansTime: '10:00'
   })
 
-  const syncNotificationsWithSystem = useCallback(async (isMasterOn, currentSettings) => {
-    if (!Capacitor.isNativePlatform()) return;
-    try {
-      const pending = await LocalNotifications.getPending();
-      if (pending.notifications.length > 0) {
-        await LocalNotifications.cancel(pending);
-      }
-      if (!isMasterOn) return;
-      const perms = await LocalNotifications.checkPermissions();
-      if (perms.display !== 'granted') return;
-
-      const toSchedule = [];
-      const resV = await fetch('/data/dailyVerses.json');
-      const verses = await resV.json();
-      const resQ = await fetch('/data/dailyQuestions.json');
-      const questions = await resQ.json();
-
-      for (let i = 0; i < 30; i++) {
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + i);
-        const m = targetDate.getMonth() + 1;
-        const d = targetDate.getDate();
-        const verse = verses.find(v => v.month === m && v.day === d) || verses[0];
-        const question = questions.find(q => q.month === m && q.day === d) || questions[0];
-
-        if (currentSettings.dailyVerse) {
-          const vTime = currentSettings.dailyVerseTime.split(':');
-          const vDate = new Date(targetDate);
-          vDate.setHours(parseInt(vTime[0]), parseInt(vTime[1]), 0, 0);
-          if (vDate > new Date()) {
-            toSchedule.push({
-              title: "آية اليوم ✨",
-              body: `${verse.verse} ${verse.reference}`,
-              id: 100 + i,
-              smallIcon: "ic_stat_ic_notification",
-              schedule: { at: vDate },
-              extra: { url: "/" }
-            });
-          }
-        }
-
-        if (currentSettings.dailyQuestion) {
-          const qTime = currentSettings.dailyQuestionTime.split(':');
-          const qDate = new Date(targetDate);
-          qDate.setHours(parseInt(qTime[0]), parseInt(qTime[1]), 0, 0);
-          if (qDate > new Date()) {
-            toSchedule.push({
-              title: "سؤال اليوم 💡",
-              body: question.question,
-              id: 200 + i,
-              smallIcon: "ic_stat_ic_notification",
-              schedule: { at: qDate },
-              extra: { url: "/competitions" }
-            });
-          }
-        }
-      }
-
-      if (currentSettings.studyPlans) {
-        const sTime = currentSettings.studyPlansTime.split(':');
-        toSchedule.push({
-          title: "وقت القراءة 📖",
-          body: "هل أتممت وردك اليومي من الكتاب المقدس؟",
-          id: 1,
-          smallIcon: "ic_stat_ic_notification",
-          schedule: { on: { hour: parseInt(sTime[0]), minute: parseInt(sTime[1]) }, repeats: true },
-          extra: { url: "/studyPlans" }
-        });
-      }
-
-      if (toSchedule.length > 0) {
-        await LocalNotifications.schedule({ notifications: toSchedule });
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
-
   useEffect(() => {
     const initSettings = async () => {
       setMounted(true)
@@ -112,72 +35,72 @@ const Settings = () => {
       document.documentElement.style.setProperty('--bible-font-size', size + 'px')
 
       if (native) {
-        const perms = await LocalNotifications.checkPermissions();
-        const isGranted = perms.display === 'granted';
-        const savedMaster = localStorage.getItem('masterNotifications') === 'true';
-        const finalMasterState = isGranted && savedMaster;
-        setMasterNotifications(finalMasterState);
-        localStorage.setItem('masterNotifications', finalMasterState.toString());
+        const perms = await LocalNotifications.checkPermissions()
+        const isGranted = perms.display === 'granted'
+        const savedMaster = localStorage.getItem('masterNotifications') === 'true'
+        const finalMasterState = isGranted && savedMaster
+        setMasterNotifications(finalMasterState)
+        localStorage.setItem('masterNotifications', finalMasterState.toString())
       } else {
-        const savedMaster = localStorage.getItem('masterNotifications') === 'true';
-        setMasterNotifications(savedMaster);
+        const savedMaster = localStorage.getItem('masterNotifications') === 'true'
+        setMasterNotifications(savedMaster)
       }
 
       const savedNotifications = localStorage.getItem('notificationSettings')
       if (savedNotifications) {
         setNotifications(JSON.parse(savedNotifications))
       }
-    };
-    initSettings();
+    }
+    initSettings()
   }, [])
 
   const handleMasterToggle = async () => {
-    const nextState = !masterNotifications;
+    const nextState = !masterNotifications
     if (nextState) {
-      let perms = await LocalNotifications.checkPermissions();
+      let perms = await LocalNotifications.checkPermissions()
       if (perms.display === 'denied') {
-        setShowPermissionModal(true);
-        return;
+        setShowPermissionModal(true)
+        return
       }
       if (perms.display !== 'granted') {
-        perms = await LocalNotifications.requestPermissions();
+        perms = await LocalNotifications.requestPermissions()
       }
       if (perms.display !== 'granted') {
-        setMasterNotifications(false);
-        localStorage.setItem('masterNotifications', 'false');
-        return;
+        setMasterNotifications(false)
+        localStorage.setItem('masterNotifications', 'false')
+        return
       }
     }
-    setMasterNotifications(nextState);
-    localStorage.setItem('masterNotifications', nextState.toString());
-    syncNotificationsWithSystem(nextState, notifications);
-  };
+    setMasterNotifications(nextState)
+    localStorage.setItem('masterNotifications', nextState.toString())
+    await syncNotifications()
+  }
+
+  const updateSubSetting = async (key, value) => {
+    if (!masterNotifications) return
+    const updated = { ...notifications, [key]: value }
+    setNotifications(updated)
+    localStorage.setItem('notificationSettings', JSON.stringify(updated))
+    await syncNotifications()
+  }
 
   const openSystemSettings = async () => {
-    setShowPermissionModal(false);
+    setShowPermissionModal(false)
     try {
       if (Capacitor.isNativePlatform()) {
-        const Plugins = Capacitor.Plugins;
-        if (Plugins.NativeSettingsCustom) {
-          await Plugins.NativeSettingsCustom.openAppSettings();
+        const { NativeSettingsCustom } = Capacitor.Plugins
+        if (NativeSettingsCustom) {
+          await NativeSettingsCustom.openAppSettings()
         } else {
-          const { registerPlugin } = await import('@capacitor/core');
-          const NativeSettingsCustom = registerPlugin('NativeSettingsCustom');
-          await NativeSettingsCustom.openAppSettings();
+          const { registerPlugin } = await import('@capacitor/core')
+          const CustomSettings = registerPlugin('NativeSettingsCustom')
+          await CustomSettings.openAppSettings()
         }
       }
     } catch (err) {
-      console.error("Plugin Error:", err);
+      console.error(err)
     }
-  };
-
-  const updateSubSetting = (key, value) => {
-    if (!masterNotifications) return;
-    const updated = { ...notifications, [key]: value };
-    setNotifications(updated);
-    localStorage.setItem('notificationSettings', JSON.stringify(updated));
-    syncNotificationsWithSystem(masterNotifications, updated);
-  };
+  }
 
   const updateFontSize = (size) => {
     const newSize = Math.max(10, Math.min(40, size))
@@ -186,15 +109,12 @@ const Settings = () => {
     document.documentElement.style.setProperty('--bible-font-size', newSize + 'px')
   }
 
-  const handleSliderChange = (e) => {
-    updateFontSize(parseInt(e.target.value))
-  }
-
   if (!mounted) return null
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>الإعدادات</h1>
+      
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span>🎨</span> مظهر التطبيق
@@ -261,6 +181,7 @@ const Settings = () => {
                 />
               </div>
             </div>
+
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
@@ -289,6 +210,7 @@ const Settings = () => {
                 />
               </div>
             </div>
+
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
@@ -330,7 +252,7 @@ const Settings = () => {
           <div className={styles.controlsWrapper}>
             <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize - 1)} disabled={fontSize <= 10}>−</button>
             <div className={styles.sliderContainer}>
-              <input type="range" min="10" max="40" step="1" value={fontSize} onChange={handleSliderChange} className={styles.slider} />
+              <input type="range" min="10" max="40" step="1" value={fontSize} onChange={(e) => updateFontSize(parseInt(e.target.value))} className={styles.slider} />
             </div>
             <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize + 1)} disabled={fontSize >= 40}>+</button>
           </div>

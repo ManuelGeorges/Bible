@@ -164,7 +164,6 @@ function PlanDetailsContent() {
                     disabled={!canCheck && !isCompleted}
                     onChange={() => handleCheck(reading.day)}
                   />
-                  <label htmlFor={`day-${reading.day}`}></label>
                 </div>
               </div>
               <div className={styles.booksGrid}>

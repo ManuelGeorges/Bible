@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation'; 
-import { Map, Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
+import { Map, Source, Layer, NavigationControl, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import styles from './maps.module.css';
@@ -14,7 +14,11 @@ if (typeof window !== 'undefined') {
   );
 }
 
-const MAP_STYLE = 'https://api.maptiler.com/maps/basic-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7';
+const MAP_STYLES = {
+  streets: 'https://api.maptiler.com/maps/basic-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7',
+  satellite: 'https://api.maptiler.com/maps/hybrid/style.json?key=QvkUns3IvYwEEKb9dIJ7',
+  topo: 'https://api.maptiler.com/maps/topo-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7'
+};
 
 const INITIAL_VIEW_STATE = {
   longitude: 35.0,
@@ -27,11 +31,23 @@ const INITIAL_VIEW_STATE = {
 export default function MapsPage() {
   const router = useRouter(); 
   const [allPlaces, setAllPlaces] = useState([]);
-  const [selectedEra, setSelectedEra] = useState("الأناجيل");
+  const [selectedEra, setSelectedEra] = useState("الحقب الزمنية");
+  const [currentStyle, setCurrentStyle] = useState(MAP_STYLES.streets);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState(null);
+  const [isEraOpen, setIsEraOpen] = useState(false);
+  const [isPlaceOpen, setIsPlaceOpen] = useState(false);
+
+  const [visitedEras, setVisitedEras] = useState(new Set());
+  const [visitedPoints, setVisitedPoints] = useState(new Set());
+  const [searchCount, setSearchCount] = useState(0);
+  const [descriptionsRead, setDescriptionsRead] = useState(0);
+
   const mapRef = useRef(null);
+  const eraRef = useRef(null);
+  const placeRef = useRef(null);
 
   const eras = [
     "أيام إبراهيم",
@@ -43,38 +59,37 @@ export default function MapsPage() {
     "الكنيسة المبكرة ورحلات الرسل"
   ];
 
+  const unlockBadge = async (badgeId) => {
+    try {
+      await fetch('/api/badges/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ badgeId })
+      });
+    } catch (e) {
+      console.error("Badge error:", e);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (eraRef.current && !eraRef.current.contains(event.target)) setIsEraOpen(false);
+      if (placeRef.current && !placeRef.current.contains(event.target)) setIsPlaceOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     const handleConnectivity = () => {
       if (typeof window !== 'undefined' && !navigator.onLine) {
         router.replace('/offline');
       }
     };
-
     handleConnectivity();
-    window.addEventListener('offline', handleConnectivity);
-    window.addEventListener('online', handleConnectivity);
-
-    const syncAppSettings = () => {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
-      
-      if (savedTheme === 'light') {
-        document.body.classList.add('light-theme');
-      } else {
-        document.body.classList.remove('light-theme');
-      }
-      document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
-    };
-
-    syncAppSettings();
-    window.addEventListener('storage', syncAppSettings);
     setMounted(true);
 
     const fetchData = async () => {
-      if (!navigator.onLine) {
-        router.replace('/offline');
-        return;
-      }
       try {
         const response = await fetch('/data/places/places.json');
         if (!response.ok) throw new Error();
@@ -86,15 +101,22 @@ export default function MapsPage() {
         setIsLoading(false);
       }
     };
-
     fetchData();
-
-    return () => {
-      window.removeEventListener('offline', handleConnectivity);
-      window.removeEventListener('online', handleConnectivity);
-      window.removeEventListener('storage', syncAppSettings);
-    };
   }, [router]);
+
+  useEffect(() => {
+    if (selectedEra !== "الحقب الزمنية") {
+      setVisitedEras(prev => {
+        const newSet = new Set(prev).add(selectedEra);
+        if (newSet.size === eras.length) unlockBadge('era_traveler');
+        return newSet;
+      });
+    }
+  }, [selectedEra]);
+
+  useEffect(() => {
+    if (viewState.zoom <= 2) unlockBadge('explorer_infinite');
+  }, [viewState.zoom]);
 
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',
@@ -103,7 +125,7 @@ export default function MapsPage() {
       .map(p => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
-        properties: { name: p.name }
+        properties: { name: p.name, info: p.info, lng: p.lng, lat: p.lat, id: p.id || p.name }
       }))
   }), [allPlaces, selectedEra]);
 
@@ -114,33 +136,78 @@ export default function MapsPage() {
       .map(p => ({
         type: 'Feature',
         geometry: { type: 'LineString', coordinates: p.coordinates },
-        properties: { name: p.name }
+        properties: { name: p.name, info: p.info }
       }))
   }), [allPlaces, selectedEra]);
 
-  const flyToLocation = (lng, lat) => {
+  const flyToLocation = (lng, lat, name, info, id) => {
     mapRef.current?.flyTo({
       center: [lng, lat],
-      zoom: 11,
-      pitch: 0,
-      duration: 1500
+      zoom: 12,
+      duration: 1500,
+      essential: true
     });
+    setSearchCount(prev => {
+      const newVal = prev + 1;
+      if (newVal === 20) unlockBadge('ancient_navigator');
+      return newVal;
+    });
+    handlePointSelection({ lng, lat, name, info, id });
+  };
+
+  const handlePointSelection = (point) => {
+    setSelectedPoint(point);
+    if (point) {
+      setVisitedPoints(prev => {
+        const newSet = new Set(prev).add(point.id || point.name);
+        if (newSet.size === 5) unlockBadge('map_pioneer');
+        
+        const totalPointsInDB = allPlaces.filter(p => p.type === 'point').length;
+        if (totalPointsInDB > 0 && newSet.size === totalPointsInDB) {
+          unlockBadge('holy_land_pro');
+        }
+        
+        return newSet;
+      });
+      setDescriptionsRead(prev => {
+        const newValue = prev + 1;
+        if (newValue === 50) unlockBadge('info_addict');
+        return newValue;
+      });
+    }
+  };
+
+  const handleMapClick = (e) => {
+    const feature = e.features && e.features[0];
+    if (feature && feature.layer.id === 'unclustered-point') {
+      handlePointSelection({
+        lng: feature.properties.lng,
+        lat: feature.properties.lat,
+        name: feature.properties.name,
+        info: feature.properties.info,
+        id: feature.properties.id
+      });
+    } else {
+      setSelectedPoint(null);
+    }
   };
 
   const onMapLoad = (e) => {
     const map = e.target;
-    const style = map.getStyle();
-    if (style && style.layers) {
-      style.layers.forEach((layer) => {
-        if (layer.layout && layer.layout['text-field']) {
-          map.setLayoutProperty(layer.id, 'text-field', [
-            'coalesce',
-            ['get', 'name:ar'],
-            ['get', 'name']
-          ]);
-        }
-      });
-    }
+    const updateLabels = () => {
+      const style = map.getStyle();
+      if (style && style.layers) {
+        style.layers.forEach((layer) => {
+          if (layer.layout && layer.layout['text-field']) {
+            map.setLayoutProperty(layer.id, 'text-field', [
+              'coalesce', ['get', 'name:ar'], ['get', 'name']
+            ]);
+          }
+        });
+      }
+    };
+    updateLabels();
+    map.on('styledata', updateLabels);
   };
 
   if (!mounted) return null;
@@ -148,131 +215,78 @@ export default function MapsPage() {
   return (
     <div dir="rtl" className={styles.container}>
       <h1 className={styles.heading}>خرائط الكتاب المقدس</h1>
-
-      <div className={styles.buttonsContainer}>
-        {eras.map(era => (
-          <button
-            key={era}
-            onClick={() => setSelectedEra(era)}
-            className={`${styles.button} ${selectedEra === era ? styles.active : ''}`}
-          >
-            {era}
-          </button>
-        ))}
+      <div className={styles.controls}>
+        <div className={styles.customSelectWrapper} ref={eraRef}>
+          <div className={styles.selectTrigger} onClick={() => { setIsEraOpen(!isEraOpen); setIsPlaceOpen(false); }}>
+            {selectedEra}
+          </div>
+          <ul className={`${styles.dropdownMenu} ${isEraOpen ? styles.open : ''}`}>
+            {eras.map((era) => (
+              <li key={era} className={styles.dropdownItem} onClick={() => { setSelectedEra(era); setIsEraOpen(false); setSelectedPoint(null); }}>
+                {era}
+              </li>
+            ))}
+          </ul>
+        </div>
+        {selectedEra !== "الحقب الزمنية" && (
+          <div className={styles.customSelectWrapper} ref={placeRef}>
+            <div className={styles.selectTrigger} onClick={() => { setIsPlaceOpen(!isPlaceOpen); setIsEraOpen(false); }}>
+              انتقل إلى مكان...
+            </div>
+            <ul className={`${styles.dropdownMenu} ${isPlaceOpen ? styles.open : ''}`}>
+              {allPlaces.filter(p => p.era === selectedEra && p.type === 'point').map((place) => (
+                <li key={`${place.name}-${place.lng}`} className={styles.dropdownItem} onClick={() => { flyToLocation(place.lng, place.lat, place.name, place.info, place.id); setIsPlaceOpen(false); }}>
+                  {place.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
-
+      <div className={styles.styleSelector}>
+        <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.streets ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.streets)}>خريطة</button>
+        <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.satellite ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.satellite)}>قمر اصطناعي</button>
+        <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.topo ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.topo)}>تضاريس</button>
+      </div>
       {isLoading ? (
         <div className={styles.loadingMessage}>
           <div className={styles.spinner}></div>
           <p>جارٍ تحميل البيانات...</p>
         </div>
       ) : (
-        <>
-          <div className={styles.placeButtonsContainer}>
-            {allPlaces.filter(p => p.era === selectedEra && p.type === 'point').map(place => (
-              <button
-                key={`${place.name}-${place.lng}`}
-                onClick={() => flyToLocation(place.lng, place.lat)}
-                className={styles.placeButton}
-              >
-                {place.name}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.mapContainer}>
-            <Map
-              ref={mapRef}
-              {...viewState}
-              onMove={evt => setViewState(evt.viewState)}
-              mapLib={maplibregl}
-              mapStyle={MAP_STYLE}
-              onLoad={onMapLoad}
-              dragPan={true}
-              touchZoomRotate={true}
-              scrollZoom={true}
-              dragRotate={false}
-              touchPitch={false}
-              style={{ width: '100%', height: '100%' }}
-            >
-              <NavigationControl position="top-right" showCompass={false} />
-
-              <Source id="paths-data" type="geojson" data={geojsonPaths}>
-                <Layer
-                  id="line-layer"
-                  type="line"
-                  paint={{
-                    'line-color': '#00c8ff',
-                    'line-width': 4,
-                    'line-opacity': 0.8
-                  }}
-                />
-              </Source>
-
-              <Source 
-                id="points-data" 
-                type="geojson" 
-                data={geojsonPoints}
-                cluster={true}
-                clusterMaxZoom={14}
-                clusterRadius={50}
-              >
-                <Layer
-                  id="clusters"
-                  type="circle"
-                  filter={['has', 'point_count']}
-                  paint={{
-                    'circle-color': '#191d34',
-                    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#00c8ff'
-                  }}
-                />
-                <Layer
-                  id="cluster-count"
-                  type="symbol"
-                  filter={['has', 'point_count']}
-                  layout={{
-                    'text-field': '{point_count}',
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 12
-                  }}
-                  paint={{
-                    'text-color': '#ffffff'
-                  }}
-                />
-                <Layer
-                  id="unclustered-point"
-                  type="circle"
-                  filter={['!', ['has', 'point_count']]}
-                  paint={{
-                    'circle-radius': 7,
-                    'circle-color': '#00ffff',
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#ffffff'
-                  }}
-                />
-                <Layer
-                  id="label-layer"
-                  type="symbol"
-                  filter={['!', ['has', 'point_count']]}
-                  layout={{
-                    'text-field': ['get', 'name'],
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 14,
-                    'text-offset': [0, 1.2],
-                    'text-anchor': 'top'
-                  }}
-                  paint={{
-                    'text-color': '#ffffff',
-                    'text-halo-color': '#000000',
-                    'text-halo-width': 1.5
-                  }}
-                />
-              </Source>
-            </Map>
-          </div>
-        </>
+        <div className={styles.mapContainer}>
+          <Map
+            ref={mapRef}
+            {...viewState}
+            onMove={evt => setViewState(evt.viewState)}
+            mapLib={maplibregl}
+            mapStyle={currentStyle}
+            onLoad={onMapLoad}
+            onClick={handleMapClick}
+            interactiveLayerIds={['unclustered-point']}
+            maxZoom={currentStyle === MAP_STYLES.satellite ? 15 : 25}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <NavigationControl position="top-right" showCompass={false} />
+            <Source id="paths-data" type="geojson" data={geojsonPaths}>
+              <Layer id="line-layer" type="line" paint={{ 'line-color': '#00c8ff', 'line-width': 4, 'line-opacity': 0.8 }} />
+            </Source>
+            <Source id="points-data" type="geojson" data={geojsonPoints} cluster={true} clusterMaxZoom={14} clusterRadius={50}>
+              <Layer id="clusters" type="circle" filter={['has', 'point_count']} paint={{ 'circle-color': ['step', ['get', 'point_count'], '#191d34', 10, '#252b4d', 30, '#313966'], 'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40], 'circle-stroke-width': 2, 'circle-stroke-color': '#00c8ff' }} />
+              <Layer id="cluster-count" type="symbol" filter={['has', 'point_count']} layout={{ 'text-field': '{point_count}', 'text-size': 12 }} paint={{ 'text-color': '#ffffff' }} />
+              <Layer id="unclustered-point" type="circle" filter={['!', ['has', 'point_count']]} paint={{ 'circle-radius': 8, 'circle-color': '#00ffff', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' }} />
+              <Layer id="label-layer" type="symbol" filter={['!', ['has', 'point_count']]} layout={{ 'text-field': ['get', 'name'], 'text-size': 14, 'text-offset': [0, 1.5], 'text-anchor': 'top' }} paint={{ 'text-color': '#ffffff', 'text-halo-color': '#000000', 'text-halo-width': 1.5 }} />
+            </Source>
+            {selectedPoint && (
+              <Popup longitude={selectedPoint.lng} latitude={selectedPoint.lat} anchor="bottom" onClose={() => setSelectedPoint(null)} closeOnClick={false} maxWidth="300px">
+                <div style={{ color: '#1a1a1a', padding: '10px', direction: 'rtl', textAlign: 'right' }}>
+                  <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #eee', paddingBottom: '5px', fontSize: '18px', color: '#191d34' }}>{selectedPoint.name}</h3>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6', color: '#444' }}>{selectedPoint.info || "لا تتوفر معلومات إضافية لهذا الموقع."}</p>
+                </div>
+              </Popup>
+            )}
+          </Map>
+        </div>
       )}
     </div>
   );

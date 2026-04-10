@@ -8,7 +8,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 const staticPlans = studyPlansData.plans;
 
@@ -37,7 +37,7 @@ export default function StudyPlans() {
             setCustomPlans(data.customPlans || {});
           }
           setLoading(false);
-        }, (error) => {
+        }, () => {
           setLoading(false);
         });
       }
@@ -54,9 +54,11 @@ export default function StudyPlans() {
     e.stopPropagation();
 
     toast((t) => (
-      <div style={{ direction: 'rtl', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <span style={{ fontWeight: 'bold' }}>هل تريد حذف هذه الخطة نهائياً؟</span>
-        <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ direction: 'rtl', textAlign: 'center' }}>
+        <p style={{ marginBottom: '12px', fontWeight: 'bold', fontSize: '1.1rem' }}>
+          هل تريد حذف هذه الخطة نهائياً؟
+        </p>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
           <button 
             onClick={async () => {
               toast.dismiss(t.id);
@@ -71,9 +73,9 @@ export default function StudyPlans() {
               }
             }}
             style={{ 
-              background: '#ff4d4d', color: '#fff', border: 'none', 
-              padding: '6px 12px', borderRadius: '8px', cursor: 'pointer',
-              fontWeight: 'bold', flex: 1 , marginTop: 'calc(env(safe-area-inset-top) + 10px)',
+              background: '#ef4444', color: '#fff', border: 'none', 
+              padding: '10px 20px', borderRadius: '12px', cursor: 'pointer',
+              fontWeight: 'bold', fontSize: '1rem'
             }}
           >
             تأكيد
@@ -81,16 +83,29 @@ export default function StudyPlans() {
           <button 
             onClick={() => toast.dismiss(t.id)}
             style={{ 
-              background: 'rgba(255,255,255,0.1)', color: 'inherit', 
-              border: '1px solid var(--color-border)', padding: '6px 12px', 
-              borderRadius: '8px', cursor: 'pointer', flex: 1 
+              background: 'var(--color-bg-end)', color: 'var(--color-text-primary)', 
+              border: '1px solid var(--color-border)', 
+              padding: '10px 20px', borderRadius: '12px', cursor: 'pointer',
+              fontSize: '1rem'
             }}
           >
             تراجع
           </button>
         </div>
       </div>
-    ), { duration: 5000 });
+    ), { 
+      duration: 6000, 
+      position: 'top-center',
+      style: {
+        background: 'var(--color-card-bg)',
+        color: 'var(--color-text-primary)',
+        border: '1px solid var(--color-border)',
+        backdropFilter: 'blur(15px)',
+        borderRadius: '20px',
+        minWidth: '300px',
+        boxShadow: '0 20px 40px var(--color-shadow-medium)'
+      }
+    });
   };
 
   const allAvailablePlans = useMemo(() => {
@@ -111,14 +126,14 @@ export default function StudyPlans() {
   const filters = ['الكل', 'مخصصة', ...new Set(staticPlans.map(plan => plan.type))];
 
   if (loading) return (
-    <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>جاري التحميل...</p>
+    <div className={styles.container}>
+      <div className={styles.loading}>جاري التحميل...</div>
     </div>
   );
 
   return (
     <div className={styles.container}>
+      <Toaster />
       <div className={styles.heroSection}>
         <h1 className={styles.title}>خطط القراءة</h1>
         <Link href="/studyPlans/custom" className={styles.aiCreateButton}>
@@ -142,8 +157,14 @@ export default function StudyPlans() {
         {filteredPlans.length > 0 ? (
           filteredPlans.map(plan => {
             const progress = plan.isCustom 
-              ? { percent: plan.completionPercentage || 0, done: Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length }
-              : { percent: completionData[plan.id]?.completionPercentage || 0, done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length };
+              ? { 
+                  percent: plan.completionPercentage || 0, 
+                  done: Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length 
+                }
+              : { 
+                  percent: completionData[plan.id]?.completionPercentage || 0, 
+                  done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length 
+                };
 
             const hasStarted = progress.done > 0;
 
@@ -154,19 +175,18 @@ export default function StudyPlans() {
                     className={styles.deleteBtn}
                     onClick={(e) => handleDeletePlan(e, plan.id)}
                     type="button"
-                    aria-label="Delete"
                   >
                     ✕
                   </button>
                 )}
                 
                 <div className={styles.cardContent}>
-                  {plan.isCustom && <span className={styles.aiBadge}> مساعد آجيوس الذكي✨</span>}
+                  {plan.isCustom && <span className={styles.aiBadge}>مساعد آجيوس الذكي✨</span>}
                   <h3 className={styles.cardTitle}>{plan.title}</h3>
                   <p className={styles.cardType}>{plan.isCustom ? 'خطة شخصية' : plan.type}</p>
                   
                   {hasStarted && (
-                    <div className={styles.completionStatus}>
+                    <div className={styles.progressContainer}>
                       <div className={styles.progressBar}>
                         <div className={styles.progressFill} style={{ width: `${progress.percent}%` }}></div>
                       </div>
@@ -186,7 +206,7 @@ export default function StudyPlans() {
           })
         ) : (
           <div className={styles.emptyState}>
-            <h3>لا توجد خطط</h3>
+            <h3>لا توجد خطط حالياً</h3>
           </div>
         )}
       </div>
