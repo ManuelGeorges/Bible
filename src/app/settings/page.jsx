@@ -1,7 +1,11 @@
 "use client"
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { Bell, Sun, Moon, BookOpen, HelpCircle, Clock, X, Settings as SettingsIcon } from 'lucide-react'
+import { 
+  Bell, Sun, Moon, BookOpen, HelpCircle, 
+  Clock, X, Settings as SettingsIcon, 
+  Type, LayoutList, AlignJustify 
+} from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
@@ -12,6 +16,7 @@ const Settings = () => {
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [fontSize, setFontSize] = useState(18)
+  const [versePerLine, setVersePerLine] = useState(false)
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
   const [notifications, setNotifications] = useState({
@@ -29,11 +34,17 @@ const Settings = () => {
       const native = Capacitor.isNativePlatform()
       setIsNative(native)
 
+      // تحميل حجم الخط
       const savedSize = localStorage.getItem('bibleFontSize') || '18'
       const size = parseInt(savedSize)
       setFontSize(size)
       document.documentElement.style.setProperty('--bible-font-size', size + 'px')
 
+      // تحميل وضع عرض الآيات
+      const savedLayout = localStorage.getItem('versePerLine') === 'true'
+      setVersePerLine(savedLayout)
+
+      // إعدادات الإشعارات
       if (native) {
         const perms = await LocalNotifications.checkPermissions()
         const isGranted = perms.display === 'granted'
@@ -84,6 +95,21 @@ const Settings = () => {
     await syncNotifications()
   }
 
+  const updateFontSize = (size) => {
+    const newSize = Math.max(10, Math.min(40, size))
+    setFontSize(newSize)
+    localStorage.setItem('bibleFontSize', newSize.toString())
+    document.documentElement.style.setProperty('--bible-font-size', newSize + 'px')
+    window.dispatchEvent(new Event('storage'))
+  }
+
+  const toggleVerseLayout = () => {
+    const nextState = !versePerLine
+    setVersePerLine(nextState)
+    localStorage.setItem('versePerLine', nextState.toString())
+    window.dispatchEvent(new Event('storage'))
+  }
+
   const openSystemSettings = async () => {
     setShowPermissionModal(false)
     try {
@@ -91,10 +117,6 @@ const Settings = () => {
         const { NativeSettingsCustom } = Capacitor.Plugins
         if (NativeSettingsCustom) {
           await NativeSettingsCustom.openAppSettings()
-        } else {
-          const { registerPlugin } = await import('@capacitor/core')
-          const CustomSettings = registerPlugin('NativeSettingsCustom')
-          await CustomSettings.openAppSettings()
         }
       }
     } catch (err) {
@@ -102,19 +124,13 @@ const Settings = () => {
     }
   }
 
-  const updateFontSize = (size) => {
-    const newSize = Math.max(10, Math.min(40, size))
-    setFontSize(newSize)
-    localStorage.setItem('bibleFontSize', newSize.toString())
-    document.documentElement.style.setProperty('--bible-font-size', newSize + 'px')
-  }
-
   if (!mounted) return null
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} dir="rtl">
       <h1 className={styles.title}>الإعدادات</h1>
       
+      {/* قسم المظهر */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span>🎨</span> مظهر التطبيق
@@ -137,11 +153,75 @@ const Settings = () => {
         </div>
       </div>
 
+      {/* قسم الآيات - مدمج فيه حجم الخط وتنسيق الأسطر */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <span>📖</span> إعدادات الآيات
+        </h2>
+        
+        {/* Toggle تنسيق الأسطر */}
+        <div className={styles.settingItem}>
+          <div className={styles.settingInfo}>
+            <LayoutList size={20} className={styles.iconPrimary} />
+            <div className={styles.textContainer}>
+              <span className={styles.settingLabel}>كل آية في سطر مستقل</span>
+              <p className={styles.subText}>عرض النص كقائمة مرتبة بدلاً من فقرة</p>
+            </div>
+          </div>
+          <label className={styles.switch}>
+            <input 
+              type="checkbox" 
+              checked={versePerLine} 
+              onChange={toggleVerseLayout} 
+            />
+            <span className={styles.sliderRound}></span>
+          </label>
+        </div>
+
+        {/* تحكم حجم الخط */}
+        <div className={styles.fontControlGroup}>
+          <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
+            <Type size={20} className={styles.iconPrimary} />
+            <span className={styles.settingLabel}>حجم خط القراءة ({fontSize}px)</span>
+          </div>
+          
+          <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px` }}>
+            {versePerLine ? (
+              <div className={styles.previewList}>
+                <div>١ هكذا سيبدو شكل الآيات</div>
+                <div>٢ عند تفعيل خيار السطر المستقل</div>
+              </div>
+            ) : (
+              <p className={styles.previewParagraph}>
+                ١ هكذا سيبدو شكل الآيات في نظام الفقرة المستمرة حيث تظهر الأرقام بجانب بعضها البعض.
+              </p>
+            )}
+          </div>
+
+          <div className={styles.controlsWrapper}>
+            <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize - 1)} disabled={fontSize <= 10}>−</button>
+            <div className={styles.sliderContainer}>
+              <input 
+                type="range" 
+                min="10" 
+                max="40" 
+                step="1" 
+                value={fontSize} 
+                onChange={(e) => updateFontSize(parseInt(e.target.value))} 
+                className={styles.slider} 
+              />
+            </div>
+            <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize + 1)} disabled={fontSize >= 40}>+</button>
+          </div>
+        </div>
+      </div>
+
+      {/* قسم الإشعارات */}
       {isNative && (
         <div className={styles.section}>
           <div className={styles.masterToggleRow}>
             <h2 className={styles.sectionTitle}>
-              <span>🔔</span> تنبيهات الإشعارات
+              <span>🔔</span> الإشعارات
             </h2>
             <label className={styles.switch}>
               <input 
@@ -153,6 +233,7 @@ const Settings = () => {
             </label>
           </div>
           <div className={`${styles.notificationList} ${!masterNotifications ? styles.disabledList : ''}`}>
+             {/* مجموعة آية اليوم */}
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
@@ -182,6 +263,7 @@ const Settings = () => {
               </div>
             </div>
 
+            {/* مجموعة سؤال اليوم */}
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
@@ -210,55 +292,11 @@ const Settings = () => {
                 />
               </div>
             </div>
-
-            <div className={styles.notificationGroup}>
-              <div className={styles.notificationItem}>
-                <div className={styles.notificationInfo}>
-                  <BookOpen size={18} className={styles.notifIcon} />
-                  <span>إشعارات خطط القراءة</span>
-                </div>
-                <label className={styles.switch}>
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.studyPlans} 
-                    onChange={() => updateSubSetting('studyPlans', !notifications.studyPlans)}
-                    disabled={!masterNotifications}
-                  />
-                  <span className={styles.sliderRound}></span>
-                </label>
-              </div>
-              <div className={`${styles.timePickerRow} ${!notifications.studyPlans || !masterNotifications ? styles.dimmed : ''}`}>
-                <Clock size={16} />
-                <span>وقت التنبيه:</span>
-                <input 
-                  type="time" 
-                  value={notifications.studyPlansTime} 
-                  onChange={(e) => updateSubSetting('studyPlansTime', e.target.value)}
-                  className={styles.timeInput}
-                  disabled={!notifications.studyPlans || !masterNotifications}
-                />
-              </div>
-            </div>
           </div>
         </div>
       )}
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span>📖</span> حجم خط القراءة
-        </h2>
-        <div className={styles.fontControl}>
-          <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px` }}>هكذا سيبدو نص الكتاب المقدس</div>
-          <div className={styles.controlsWrapper}>
-            <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize - 1)} disabled={fontSize <= 10}>−</button>
-            <div className={styles.sliderContainer}>
-              <input type="range" min="10" max="40" step="1" value={fontSize} onChange={(e) => updateFontSize(parseInt(e.target.value))} className={styles.slider} />
-            </div>
-            <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize + 1)} disabled={fontSize >= 40}>+</button>
-          </div>
-        </div>
-      </div>
-
+      {/* مودال التصاريح */}
       {showPermissionModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -269,7 +307,7 @@ const Settings = () => {
               </button>
             </div>
             <h3>تفعيل الإشعارات</h3>
-            <p>لقد قمت برفض وصول الإشعارات سابقاً. يرجى تفعيلها من إعدادات الهاتف لتتمكن من استلام آيات اليوم والأسئلة.</p>
+            <p>يرجى تفعيل الإشعارات من إعدادات الهاتف لتتمكن من استلام المحتوى اليومي.</p>
             <div className={styles.modalActions}>
               <button onClick={() => setShowPermissionModal(false)} className={styles.cancelBtn}>إلغاء</button>
               <button onClick={openSystemSettings} className={styles.confirmBtn}>فتح الإعدادات</button>

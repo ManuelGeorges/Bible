@@ -96,7 +96,7 @@ export default function HomePage() {
   };
 
   const unlockBadge = async (badgeId, badgeName, rarity) => {
-    if (!user || userBadges.includes(badgeId)) return;
+    if (!user || (userBadges && userBadges.includes(badgeId))) return;
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
@@ -189,9 +189,12 @@ export default function HomePage() {
     const userRef = doc(db, "users", user.uid);
     const updatedHistory = [record, ...completedQuizzes.filter(q => q.category !== record.category)];
     
+    let pointsToAdd = 30; 
+    if (isPerfect) pointsToAdd += 50;
+
     await updateDoc(userRef, {
       completedQuizzes: updatedHistory,
-      "stats.total_points": increment(record.score * 10)
+      totalPoints: increment(pointsToAdd)
     });
 
     setCompletedQuizzes(updatedHistory);
@@ -286,7 +289,6 @@ export default function HomePage() {
               </div>
               
               <div style={{ display: 'flex', gap: '8px', marginTop: '20px', justifyContent: 'center' }}>
-                <button className={styles.actionBtn} onClick={() => { if(quizState.currentIndex > 0) setQuizState(p => ({...p, currentIndex: p.currentIndex - 1}))}} disabled={quizState.currentIndex === 0 || quizState.answered}>السابق</button>
                 {quizState.answered && <button onClick={nextQuestion} className={styles.nextButton}>التالي</button>}
                 <button className={styles.actionBtn} onClick={resetQuiz} style={{ background: '#666' }}>إلغاء</button>
               </div>

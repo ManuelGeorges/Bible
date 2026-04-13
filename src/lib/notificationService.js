@@ -27,6 +27,9 @@ export const syncNotifications = async () => {
 
     const notifications = [];
     const now = new Date();
+    
+    const ICON_NAME = 'ic_stat_ic_notification';
+    const ICON_COLOR = '#488AFF';
 
     for (let i = 0; i < 30; i++) {
       const targetDate = new Date();
@@ -47,6 +50,8 @@ export const syncNotifications = async () => {
             title: "آية اليوم ✨",
             body: `${verse.verse || verse.text} ${verse.reference || ""}`,
             schedule: { at: vDate, allowWhileIdle: true },
+            smallIcon: ICON_NAME,
+            iconColor: ICON_COLOR,
             extra: { url: "/" }
           });
         }
@@ -62,6 +67,8 @@ export const syncNotifications = async () => {
             title: "سؤال اليوم 💡",
             body: question.question,
             schedule: { at: qDate, allowWhileIdle: true },
+            smallIcon: ICON_NAME,
+            iconColor: ICON_COLOR,
             extra: { url: "/competitions" }
           });
         }
@@ -79,6 +86,8 @@ export const syncNotifications = async () => {
           repeats: true,
           allowWhileIdle: true 
         },
+        smallIcon: ICON_NAME,
+        iconColor: ICON_COLOR,
         extra: { url: "/studyPlans" }
       });
     }

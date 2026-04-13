@@ -1,10 +1,14 @@
 "use client";
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { Map, Source, Layer, NavigationControl, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import styles from './maps.module.css';
+import { getAuth } from "firebase/auth";
+import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
+import { db } from '../../lib/firebase';
+import { toast, Toaster } from 'react-hot-toast';
 
 if (typeof window !== 'undefined') {
   maplibregl.setRTLTextPlugin(
@@ -13,6 +17,9 @@ if (typeof window !== 'undefined') {
     true
   );
 }
+
+const auth = typeof window !== 'undefined' ? getAuth() : null;
+const firestore = db;
 
 const MAP_STYLES = {
   streets: 'https://api.maptiler.com/maps/basic-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7',
@@ -39,11 +46,8 @@ export default function MapsPage() {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [isEraOpen, setIsEraOpen] = useState(false);
   const [isPlaceOpen, setIsPlaceOpen] = useState(false);
-
-  const [visitedEras, setVisitedEras] = useState(new Set());
+  const [user, setUser] = useState(null);
   const [visitedPoints, setVisitedPoints] = useState(new Set());
-  const [searchCount, setSearchCount] = useState(0);
-  const [descriptionsRead, setDescriptionsRead] = useState(0);
 
   const mapRef = useRef(null);
   const eraRef = useRef(null);
@@ -59,15 +63,33 @@ export default function MapsPage() {
     "الكنيسة المبكرة ورحلات الرسل"
   ];
 
-  const unlockBadge = async (badgeId) => {
+  const updateUserPoints = async (amount, reason) => {
+    if (!user) return;
     try {
-      await fetch('/api/badges/unlock', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ badgeId })
+      const userRef = doc(firestore, 'users', user.uid);
+      await updateDoc(userRef, {
+        totalPoints: increment(amount)
       });
+      toast.success(`+${amount} نقطة: ${reason}`);
     } catch (e) {
-      console.error("Badge error:", e);
+      console.error(e);
+    }
+  };
+
+  const checkAndAwardBadge = async (badgeId, badgeName) => {
+    if (!user) return;
+    try {
+      const userRef = doc(firestore, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const currentBadges = userSnap.data()?.badges || [];
+      if (!currentBadges.includes(badgeId)) {
+        await updateDoc(userRef, {
+          badges: arrayUnion(badgeId)
+        });
+        toast.success(`🎉 مبروك! حصلت على بادج: ${badgeName}`, { icon: '🏅' });
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -81,18 +103,25 @@ export default function MapsPage() {
   }, []);
 
   useEffect(() => {
-    const handleConnectivity = () => {
-      if (typeof window !== 'undefined' && !navigator.onLine) {
-        router.replace('/offline');
+    if (!auth) return;
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      setUser(u);
+      if (u) {
+        getDoc(doc(firestore, 'users', u.uid)).then(snap => {
+          if (snap.exists()) {
+            setVisitedPoints(new Set(snap.data().visitedMapPoints || []));
+          }
+        });
       }
-    };
-    handleConnectivity();
-    setMounted(true);
+    });
+    return () => unsubscribe();
+  }, []);
 
+  useEffect(() => {
+    setMounted(true);
     const fetchData = async () => {
       try {
         const response = await fetch('/data/places/places.json');
-        if (!response.ok) throw new Error();
         const data = await response.json();
         setAllPlaces(data);
       } catch (error) {
@@ -102,21 +131,7 @@ export default function MapsPage() {
       }
     };
     fetchData();
-  }, [router]);
-
-  useEffect(() => {
-    if (selectedEra !== "الحقب الزمنية") {
-      setVisitedEras(prev => {
-        const newSet = new Set(prev).add(selectedEra);
-        if (newSet.size === eras.length) unlockBadge('era_traveler');
-        return newSet;
-      });
-    }
-  }, [selectedEra]);
-
-  useEffect(() => {
-    if (viewState.zoom <= 2) unlockBadge('explorer_infinite');
-  }, [viewState.zoom]);
+  }, []);
 
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',
@@ -140,6 +155,25 @@ export default function MapsPage() {
       }))
   }), [allPlaces, selectedEra]);
 
+  const handlePointSelection = async (point) => {
+    setSelectedPoint(point);
+    if (point && user) {
+      const pointId = point.id || point.name;
+      if (!visitedPoints.has(pointId)) {
+        setVisitedPoints(prev => new Set(prev).add(pointId));
+        await updateUserPoints(40, `اكتشاف معلم: ${point.name}`);
+        const userRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+          visitedMapPoints: arrayUnion(pointId)
+        });
+        
+        const newVisitedSize = visitedPoints.size + 1;
+        if (newVisitedSize === 5) await checkAndAwardBadge('map_pioneer', 'رائد الخرائط');
+        if (newVisitedSize === 20) await checkAndAwardBadge('ancient_navigator', 'الملاح القديم');
+      }
+    }
+  };
+
   const flyToLocation = (lng, lat, name, info, id) => {
     mapRef.current?.flyTo({
       center: [lng, lat],
@@ -147,34 +181,7 @@ export default function MapsPage() {
       duration: 1500,
       essential: true
     });
-    setSearchCount(prev => {
-      const newVal = prev + 1;
-      if (newVal === 20) unlockBadge('ancient_navigator');
-      return newVal;
-    });
     handlePointSelection({ lng, lat, name, info, id });
-  };
-
-  const handlePointSelection = (point) => {
-    setSelectedPoint(point);
-    if (point) {
-      setVisitedPoints(prev => {
-        const newSet = new Set(prev).add(point.id || point.name);
-        if (newSet.size === 5) unlockBadge('map_pioneer');
-        
-        const totalPointsInDB = allPlaces.filter(p => p.type === 'point').length;
-        if (totalPointsInDB > 0 && newSet.size === totalPointsInDB) {
-          unlockBadge('holy_land_pro');
-        }
-        
-        return newSet;
-      });
-      setDescriptionsRead(prev => {
-        const newValue = prev + 1;
-        if (newValue === 50) unlockBadge('info_addict');
-        return newValue;
-      });
-    }
   };
 
   const handleMapClick = (e) => {
@@ -214,6 +221,7 @@ export default function MapsPage() {
 
   return (
     <div dir="rtl" className={styles.container}>
+      <Toaster position="bottom-center" />
       <h1 className={styles.heading}>خرائط الكتاب المقدس</h1>
       <div className={styles.controls}>
         <div className={styles.customSelectWrapper} ref={eraRef}>

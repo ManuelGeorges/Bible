@@ -61,7 +61,6 @@ const LandingPage = () => {
 
     const checkAndAwardBadge = async (badgeId, badgeName) => {
         if (!user || userBadges.includes(badgeId)) return;
-        
         try {
             const userRef = doc(firestore, 'users', user.uid);
             await updateDoc(userRef, {
@@ -70,7 +69,7 @@ const LandingPage = () => {
             setUserBadges(prev => [...prev, badgeId]);
             toast.success(`🎉 مبروك! حصلت على بادج: ${badgeName}`, { icon: '🏅', duration: 4000 });
         } catch (e) {
-            console.error("Error awarding badge:", e);
+            console.error(e);
         }
     };
 
@@ -79,20 +78,11 @@ const LandingPage = () => {
         try {
             const userRef = doc(firestore, 'users', user.uid);
             await updateDoc(userRef, {
-                totalPoints: increment(amount),
-                pointsHistory: arrayUnion({
-                    amount,
-                    reason,
-                    timestamp: new Date().toISOString()
-                })
+                totalPoints: increment(amount)
             });
             toast.success(`+${amount} نقطة: ${reason}`);
         } catch (e) {
-            await setDoc(doc(firestore, 'users', user.uid), {
-                totalPoints: amount,
-                pointsHistory: [{ amount, reason, timestamp: new Date().toISOString() }]
-            }, { merge: true });
-            toast.success(`+${amount} نقطة: ${reason}`);
+            console.error(e);
         }
     };
 
@@ -221,7 +211,7 @@ const LandingPage = () => {
             newFavorites[verseKey] = { text: dailyVerse.verse, reference: dailyVerse.reference, dateAdded: new Date().toISOString() };
             toast.success('تمت الإضافة للمفضلة');
             if (user) {
-                await updateUserPoints(5, "تفضيل آية اليوم");
+                await updateUserPoints(5, "إضافة آية للمفضلة");
                 await checkAndAwardBadge('verse_lover', 'محب الكلمة');
             }
         }
@@ -257,7 +247,7 @@ const LandingPage = () => {
 
             if (isCorrect) {
                 toast.success('إجابة صحيحة! 🎉');
-                await updateUserPoints(25, "إجابة سؤال اليوم");
+                await updateUserPoints(20, "سؤال اليوم");
                 await updateDoc(userRef, {
                     ...updatePayload,
                     correctAnswersCount: increment(1)

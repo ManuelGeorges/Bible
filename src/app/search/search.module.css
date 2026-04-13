@@ -497,3 +497,259 @@
   background: var(--color-accent);
   border-radius: 10px;
 }
+/* لوحة الألوان والتحكم */
+.actionPanel {
+  background-color: #f9f9f9;
+  border-top: 1px solid #eee;
+  padding: 15px;
+  border-radius: 0 0 12px 12px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.colorPalette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: center;
+}
+
+.colorCircle {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.colorCircle:hover {
+  transform: scale(1.2);
+}
+
+.activeColor {
+  border-color: #333;
+  transform: scale(1.1);
+}
+
+.clearColor {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+}
+
+/* منطقة الملحوظات */
+.noteInputArea {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.noteTextArea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.saveNoteBtn {
+  align-self: flex-end;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.saveNoteBtn:hover {
+  background-color: #0056b3;
+}
+
+/* عرض الملحوظة المحفوظة */
+.noteDisplay {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-right: 3px solid #007bff;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.noteDisplay p {
+  margin: 0;
+  font-size: 13px;
+  color: #444;
+  font-style: italic;
+}
+
+.noteIcon {
+  font-size: 14px;
+}
+
+/* تحسينات كارت الآية */
+.verseCard {
+  transition: border-right 0.3s ease;
+  overflow: hidden; /* لضمان عدم خروج الأنميشن عن الكارت */
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.referenceLink {
+    color: #007bff; /* لون أزرق خفيف */
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.referenceLink:hover {
+    color: #0056b3; /* يغمق شوية عند الـ hover */
+    text-decoration: underline; /* شد خط تحتيه عشان يحس إنه لينك */
+}
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.selectionActions {
+  display: flex;
+  gap: 10px;
+}
+
+.multiCopyBtn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.multiCopyBtn:hover {
+  background-color: #218838;
+}
+
+.clearSelectionBtn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* حالة اختيار الكارت */
+.selectedCard {
+  background-color: #e3f2fd !important; /* لون أزرق خفيف جداً */
+  border: 1px solid #2196f3 !important;
+  transform: scale(1.01);
+  transition: all 0.2s ease;
+}
+
+.verseCard {
+  cursor: pointer; /* عشان المستخدم يعرف إنه يقدر يضغط للاختيار */
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.verseCard:hover {
+  background-color: #fcfcfc;
+}
+
+/* تعديل بسيط لضمان أن الأزرار داخل الكارت لا تمنع الضغط */
+.actions button {
+  position: relative;
+  z-index: 2;
+}
+.derivativeItem {
+  animation: popIn 0.3s ease-out forwards;
+  display: inline-block;
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.derivativeItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f3f5;
+  padding: 5px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
+  border: 1px solid transparent;
+}
+
+.activeItem {
+  background: #e7f3ff;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.selectionActionsSmall {
+  display: flex;
+  gap: 10px;
+}
+
+.selectionActionsSmall button {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.derivativeItem input {
+  cursor: pointer;
+}
+.referenceLink {
+  display: flex;
+  flex-direction: row; /* يضمن ترتيب العناصر بجانب بعضها */
+  align-items: center;
+  gap: 4px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+  direction: rtl; /* اتجاه الحاوية الكبير يمين لليسار */
+}
+
+/* لضمان أن الأرقام والنقطة لا تنعكس */
+.referenceLink span[dir="ltr"] {
+  display: inline-block;
+  direction: ltr; 
+  unicode-bidi: isolate;
+}

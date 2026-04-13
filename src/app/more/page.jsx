@@ -5,7 +5,7 @@ import styles from './more.module.css';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
   const menuItems = [
-    { name: 'الآيات المفضلة', icon: <Heart size={20} />, href: '/favourites' },
+    { name: 'الملاحظات والتفضيلات', icon: <Heart size={20} />, href: '/favourites' },
     { name: 'المسابقات', icon: <Trophy size={20} />, href: '/competitions' },
     { name: 'خطط القراءة', icon: <BookOpen size={20} />, href: '/studyPlans' },
     { name: 'الملف الشخصي', icon: <User size={20} />, href: '/profile' },

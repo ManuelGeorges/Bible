@@ -225,3 +225,46 @@
   .mainContainer { padding: 10px; }
   .quizContentWrapper { border-radius: 0; border: none; background: transparent; box-shadow: none; }
 }
+.navModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.backBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #2196F3;
+  padding: 5px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chaptersGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 أعمدة للأرقام */
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px 5px;
+}
+
+.chapterGridItem {
+  aspect-ratio: 1; /* يخليها مربعة */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chapterGridItem:hover {
+  background: #2196F3;
+  transform: translateY(-2px);
+}

@@ -2,14 +2,25 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './Bible.module.css';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
+import BibleNavModal from '../../components/BibleNavModal';
+import { toast } from 'react-hot-toast';
+import { Share2 } from 'lucide-react';
+import { Share } from '@capacitor/share';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
+
+const HIGHLIGHT_COLORS = [
+  '#FFC107', '#FF5722', '#F44336', '#E91E63', '#9C27B0',
+  '#673AB7', '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4',
+  '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFECB3',
+  '#F8BBD0', '#E1BEE7', '#CFD8DC'
+];
 
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -18,22 +29,29 @@ function convertToArabicNumber(num) {
 
 export default function BibleContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [user, setUser] = useState(null);
   const [bibleData, setBibleData] = useState(null);
-  const [badgesData, setBadgesData] = useState({}); // لتخزين بيانات badges.json
   const [isLoading, setIsLoading] = useState(true);
   const [bookNamesData, setBookNamesData] = useState([]);
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
-  const [userBadges, setUserBadges] = useState([]);
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
-  const [isBookDropdownOpen, setIsBookDropdownOpen] = useState(false);
-  const [isChapterDropdownOpen, setIsChapterDropdownOpen] = useState(false);
+  
+  const [isNavModalOpen, setIsNavModalOpen] = useState(false);
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [copiedMessage, setCopiedMessage] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
+  const [versePerLine, setVersePerLine] = useState(false);
+  
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [currentNoteText, setCurrentNoteText] = useState('');
+  const [targetVerseKey, setTargetVerseKey] = useState(null);
+
+  const [readingSeconds, setReadingSeconds] = useState(0);
+  const [canClaimPoints, setCanClaimPoints] = useState(false);
 
   const lastTap = useRef(0);
   const tapCount = useRef(0);
@@ -41,130 +59,125 @@ export default function BibleContent() {
   const isMoving = useRef(false);
   const isLongPressActive = useRef(false);
   const touchStartPos = useRef({ x: 0, y: 0 });
-  const bookDropdownRef = useRef(null);
-  const chapterDropdownRef = useRef(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
+      const savedLayout = localStorage.getItem('versePerLine') === 'true';
+      
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
       } else {
         document.body.classList.remove('light-theme');
       }
       document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
+      setVersePerLine(savedLayout);
     };
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);
     return () => window.removeEventListener('storage', syncAppSettings);
   }, []);
 
+  useEffect(() => {
+    setReadingSeconds(0);
+    setCanClaimPoints(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      setReadingSeconds(prev => {
+        if (prev + 1 >= 40) {
+          setCanClaimPoints(true);
+          clearInterval(timerRef.current);
+        }
+        return prev + 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+  }, [selectedBookIndex, selectedChapterIndex]);
+
   const getBookName = (i) => bookNamesData?.[i]?.name || '';
-
-  const unlockBadge = async (badgeId) => {
-    if (!user || userBadges.includes(badgeId)) return;
-    
-    // محاولة إيجاد البادج في البيانات المحملة
-    const badgeInfo = badgesData[badgeId];
-    
-    const userRef = doc(firestore, 'users', user.uid);
-    await updateDoc(userRef, { 
-        "stats.unlocked_badges": arrayUnion(badgeId) 
-    });
-    
-    setUserBadges(prev => [...prev, badgeId]);
-    
-    if (badgeInfo) {
-        setCopiedMessage(`🎉 لقد حصلت على وسام: ${badgeInfo.name} (${badgeInfo.rarity})`);
-    } else {
-        setCopiedMessage(`🎉 حصلت على وسام جديد!`);
-    }
-
-    setTimeout(() => setCopiedMessage(''), 4000);
-    if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
-  };
-
-  const checkBibleBadges = async (favs, completed) => {
-    const favCount = Object.keys(favs).length;
-    const chaptersCount = Object.keys(completed).filter(k => completed[k]).length;
-
-    if (favCount >= 1) await unlockBadge('fav_1');
-    if (favCount >= 20) await unlockBadge('fav_20');
-    if (favCount >= 100) await unlockBadge('fav_100');
-
-    if (chaptersCount >= 10) await unlockBadge('reader_10');
-    if (chaptersCount >= 50) await unlockBadge('reader_50');
-    if (chaptersCount >= 100) await unlockBadge('reader_100');
-    if (chaptersCount >= 250) await unlockBadge('reader_250');
-    if (chaptersCount >= 500) await unlockBadge('reader_500');
-    if (chaptersCount >= 594) await unlockBadge('reader_594');
-    if (chaptersCount >= 1189) await unlockBadge('bible_finisher');
-
-    const oldTestamentFinished = Array.from({length: 39}, (_, i) => i).every(bIdx => {
-        const bookChapters = bibleData[bIdx]?.chapters.length || 0;
-        return Array.from({length: bookChapters}, (_, cIdx) => completed[`${bIdx}-${cIdx}`]).every(v => v);
-    });
-    if (oldTestamentFinished) await unlockBadge('testament_old');
-
-    const newTestamentFinished = Array.from({length: 27}, (_, i) => i + 39).every(bIdx => {
-        const bookChapters = bibleData[bIdx]?.chapters.length || 0;
-        return Array.from({length: bookChapters}, (_, cIdx) => completed[`${bIdx}-${cIdx}`]).every(v => v);
-    });
-    if (newTestamentFinished) await unlockBadge('testament_new');
-  };
 
   const updateUserPoints = async (amount, reason, isNegative = false) => {
     if (!user) return;
     const finalAmount = isNegative ? -amount : amount;
     const userRef = doc(firestore, 'users', user.uid);
-    await updateDoc(userRef, {
-        "stats.total_points": increment(finalAmount),
+    try {
+      await updateDoc(userRef, {
+        totalPoints: increment(finalAmount),
         pointsHistory: arrayUnion({
-            amount: finalAmount,
-            reason: reason,
-            timestamp: new Date().toISOString()
+          amount: finalAmount,
+          reason: reason,
+          timestamp: new Date().toISOString()
         })
-    });
+      });
+      if (!isNegative) toast.success(`${reason}: +${amount} نقطة ✨`);
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+const shareVerse = async (text, index) => {
+  const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
+  const verseLabel = convertToArabicNumber(index + 1);
+  const bookName = getBookName(selectedBookIndex);
+  
+  const rlm = "\u200F"; 
+
+  try {
+    const canShare = await Share.canShare();
+    if (canShare.value) {
+      await Share.share({
+        title: 'آية من الكتاب المقدس',
+        text: fullText,
+        dialogTitle: 'مشاركة الآية',
+      });
+      updateUserPoints(15, "مشاركة آية");
+    } 
+    else if (navigator.share) {
+      await navigator.share({
+        title: 'آية من الكتاب المقدس',
+        text: fullText
+      });
+      updateUserPoints(15, "مشاركة آية");
+    } 
+    else {
+      copyVerse(text, index);
+    }
+  } catch (err) {
+    console.log('Share failed or cancelled', err);
+  }
+};
 
   const saveToFirestore = useCallback(async (v, c) => {
     if (!user || !firestore) return;
     const userRef = doc(firestore, 'users', user.uid);
     await updateDoc(userRef, {
-        "favorites.verses": v,
-        "completedChapters": c,
-        "stats.chapters_read": Object.keys(c).filter(k => c[k]).length
+      "favorites.verses": v,
+      "completedChapters": c
     });
   }, [user]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (bookDropdownRef.current && !bookDropdownRef.current.contains(event.target)) setIsBookDropdownOpen(false);
-      if (chapterDropdownRef.current && !chapterDropdownRef.current.contains(event.target)) setIsChapterDropdownOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
     const loadData = async () => {
       try {
-        const [namesRes, bibleRes, badgesRes] = await Promise.all([
+        const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
-          fetch('/data/bibles/ar_svd.json').then(r => r.json()),
-          fetch('/data/badges.json').then(r => r.json())
+          fetch('/data/bibles/ar_svd.json').then(r => r.json())
         ]);
-        
         setBookNamesData(namesRes.ar || []);
         setBibleData(bibleRes);
-        setBadgesData(badgesRes); 
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
+
         if (bParam && namesRes.ar.length > 0) {
           const idx = namesRes.ar.findIndex(b => b.name === decodeURIComponent(bParam));
-          if (idx !== -1) setSelectedBookIndex(idx);
+          if (idx !== -1) {
+            setSelectedBookIndex(idx);
+          }
         }
         if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
         setIsLoading(false);
@@ -183,7 +196,6 @@ export default function BibleContent() {
               const data = s.data();
               setFavouriteVerses(data.favorites?.verses || {});
               setCompletedChapters(data.completedChapters || {});
-              setUserBadges(data.stats?.unlocked_badges || []);
             }
           });
         }
@@ -193,92 +205,79 @@ export default function BibleContent() {
   }, []);
 
   const copyVerse = (text, index) => {
-    const fullText = `${text} (${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1}:${index + 1})`;
+    const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
+    const verseLabel = convertToArabicNumber(index + 1);
+    const rlm = "\u200F"; 
+    const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${verseLabel}:${chapterLabel})`;
     navigator.clipboard.writeText(fullText);
     setCopiedMessage('تم النسخ');
     setActiveMenu(null);
+    updateUserPoints(5, "نسخ آية");
     setTimeout(() => setCopiedMessage(''), 2000);
-  };
-
-  const copyChapter = () => {
-    const chapters = bibleData[selectedBookIndex]?.chapters || [];
-    const verses = chapters[selectedChapterIndex] || [];
-    const fullContent = verses.map((v, i) => `${i + 1}. ${v}`).join('\n') + `\n\n(${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1})`;
-    navigator.clipboard.writeText(fullContent);
-    setCopiedMessage('تم نسخ الإصحاح كاملاً');
-    setTimeout(() => setCopiedMessage(''), 2000);
-  };
-
-  const favoriteChapter = () => {
-    const chapters = bibleData[selectedBookIndex]?.chapters || [];
-    const versesInChapter = chapters[selectedChapterIndex] || [];
-    setFavouriteVerses(prev => {
-      const next = { ...prev };
-      const keys = versesInChapter.map((_, i) => `${selectedBookIndex}-${selectedChapterIndex}-${i}`);
-      const allExist = keys.every(k => next[k]);
-      if (allExist) {
-        keys.forEach(k => delete next[k]);
-        setCopiedMessage('تم حذف الإصحاح من المفضلة');
-        updateUserPoints(20, `تراجع عن تفضيل إصحاح`, true);
-      } else {
-        versesInChapter.forEach((v, i) => {
-          const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
-          next[key] = { text: v, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: i };
-        });
-        setCopiedMessage('تمت إضافة الإصحاح للمفضلة');
-        updateUserPoints(20, `تفضيل إصحاح كامل`, false);
-      }
-      saveToFirestore(next, completedChapters);
-      checkBibleBadges(next, completedChapters);
-      return next;
-    });
-    setTimeout(() => setCopiedMessage(''), 2000);
-  };
-
-  const toggleFav = (text, index) => {
-    const key = `${selectedBookIndex}-${selectedChapterIndex}-${index}`;
-    setFavouriteVerses(prev => {
-      const next = { ...prev };
-      if (next[key]) {
-        delete next[key];
-        updateUserPoints(5, `تراجع عن تفضيل آية`, true);
-      } else {
-        next[key] = { text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: index };
-        updateUserPoints(5, `تفضيل آية`, false);
-      }
-      saveToFirestore(next, completedChapters);
-      checkBibleBadges(next, completedChapters);
-      return next;
-    });
-    setActiveMenu(null);
-    if (window.navigator.vibrate) window.navigator.vibrate([50]);
   };
 
   const copySelected = () => {
-    const text = selectedVerses
-      .sort((a, b) => a.index - b.index)
-      .map(sv => `${sv.text} (${getBookName(selectedBookIndex)} ${selectedChapterIndex + 1}:${sv.index + 1})`)
-      .join('\n');
-    navigator.clipboard.writeText(text);
-    setCopiedMessage('تم نسخ الآيات المختارة');
+    const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    const bookName = getBookName(selectedBookIndex);
+    const sortedVerses = [...selectedVerses].sort((a, b) => a.index - b.index);
+    const versesText = sortedVerses.map(sv => sv.text).join(' ');
+    let verseRange = sortedVerses.length === 1 
+      ? convertToArabicNumber(sortedVerses[0].index + 1)
+      : `${convertToArabicNumber(sortedVerses[0].index + 1)} - ${convertToArabicNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
+    
+    const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
+    navigator.clipboard.writeText(fullText);
+    setCopiedMessage('تم النسخ بدقة ✨');
+    updateUserPoints(15, "مشاركة مجموعة آيات");
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
-  const favoriteSelected = () => {
+  const highlightSelected = (color) => {
+    if (!user) { router.push('/intro'); return; }
     setFavouriteVerses(prev => {
       const next = { ...prev };
+      let newlyAddedCount = 0;
       selectedVerses.forEach(sv => {
         const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
-        next[key] = { text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index };
+        if (color) {
+          if (!next[key]) newlyAddedCount++;
+          next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: color };
+        } else { delete next[key]; }
       });
+      if (newlyAddedCount > 0) updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة");
       saveToFirestore(next, completedChapters);
-      checkBibleBadges(next, completedChapters);
       return next;
     });
-    updateUserPoints(selectedVerses.length * 5, "تفضيل مجموعة آيات", false);
-    setCopiedMessage('تمت الإضافة للمفضلة');
+    setCopiedMessage(color ? 'تم التظليل ✨' : 'تم حذف التظليل 🗑️');
     setSelectedVerses([]);
+    setTimeout(() => setCopiedMessage(''), 2000);
+  };
+
+  const openNoteEditor = (key) => {
+    if (!user) { router.push('/intro'); return; }
+    setTargetVerseKey(key);
+    setCurrentNoteText(favouriteVerses[key]?.note || '');
+    setIsNoteModalOpen(true);
+    setActiveMenu(null);
+  };
+
+  const saveNote = () => {
+    setFavouriteVerses(prev => {
+      const next = { ...prev };
+      if (!next[targetVerseKey]) {
+        const [b, c, v] = targetVerseKey.split('-');
+        next[targetVerseKey] = { text: bibleData[b].chapters[c][v], book: getBookName(b), ch: parseInt(c), v: parseInt(v), color: '#FFC107' };
+      }
+      next[targetVerseKey].note = currentNoteText;
+      saveToFirestore(next, completedChapters);
+      return next;
+    });
+    setIsNoteModalOpen(false);
+    updateUserPoints(5, "كتابة تأمل شخصي");
+    setCopiedMessage('تم حفظ ملاحظتك 📝');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -316,8 +315,7 @@ export default function BibleContent() {
     clearTimeout(longPressTimer.current);
     if (isLongPressActive.current || isMoving.current) return;
     const now = Date.now();
-    const timespan = now - lastTap.current;
-    if (timespan < 350 && timespan > 0) {
+    if (now - lastTap.current < 350) {
       tapCount.current++;
     } else {
       tapCount.current = 1;
@@ -325,27 +323,8 @@ export default function BibleContent() {
     lastTap.current = now;
     if (tapCount.current === 2) {
       setTimeout(() => { if (tapCount.current === 2) copyVerse(v, i); }, 200);
-    } else if (tapCount.current === 3) {
-      toggleFav(v, i);
-      tapCount.current = 0;
     } else if (selectedVerses.length > 0) {
       toggleVerseSelection(v, i);
-    }
-  };
-
-  const handleVerseClick = (key, v, i) => {
-    if (window.matchMedia('(pointer: fine)').matches && selectedVerses.length === 0) {
-      setActiveMenu(activeMenu === key ? null : key);
-    }
-
-    if (selectedBookIndex === 0 && selectedChapterIndex === 0 && i === 0) {
-        sessionStorage.setItem('alpha_clicked', Date.now());
-    }
-    if (selectedBookIndex === 72 && selectedChapterIndex === 21 && i === 20) {
-        const alphaTime = sessionStorage.getItem('alpha_clicked');
-        if (alphaTime && (Date.now() - alphaTime) < 60000) {
-            unlockBadge('alpha_omega');
-        }
     }
   };
 
@@ -358,89 +337,137 @@ export default function BibleContent() {
     <div dir="rtl" className={styles.container}>
       {selectedVerses.length > 0 && (
         <div className={styles.selectionBar}>
-          <div className={styles.selectionInfo}>
-            <span>{`تحديد ${convertToArabicNumber(selectedVerses.length)}`}</span>
-          </div>
           <div className={styles.selectionActions}>
-            <button onClick={copySelected} className={styles.actionBtn}>📋</button>
-            <button onClick={favoriteSelected} className={styles.actionBtn}>❤️</button>
             <button onClick={() => setSelectedVerses([])} className={styles.actionBtn}>✕</button>
+            <button onClick={copySelected} className={styles.actionBtn}>📋</button>
+            <button onClick={() => shareVerse(selectedVerses.map(v => v.text).join(' '), selectedVerses[0].index)} className={styles.actionBtn}><Share2 size={20} /></button>
+            <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn}>📝</button>
+            <button onClick={() => highlightSelected(null)} className={styles.actionBtn} style={{color: '#ff4d4d'}}>🗑️</button>
+          </div>
+          <div className={styles.colorGrid}>
+            {HIGHLIGHT_COLORS.map((color, idx) => (
+              <span key={idx} className={styles.colorDot} style={{ backgroundColor: color }} onClick={() => highlightSelected(color)} />
+            ))}
           </div>
         </div>
       )}
+
+      <BibleNavModal 
+        isOpen={isNavModalOpen}
+        onClose={() => setIsNavModalOpen(false)}
+        bookNamesData={bookNamesData}
+        bibleData={bibleData}
+        selectedBookIndex={selectedBookIndex}
+        onSelectLocation={(bookIdx, chapterIdx) => {
+          setSelectedBookIndex(bookIdx);
+          setSelectedChapterIndex(chapterIdx);
+          setSelectedVerses([]);
+        }}
+      />
+
+      {isNoteModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.noteModal}>
+            <h3>أضف تأملك الشخصي</h3>
+            <textarea value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder="اكتب هنا ما لمسه قلبك في هذه الآية..." />
+            <div className={styles.modalActions}>
+              <button onClick={saveNote} className={styles.saveBtn}>حفظ</button>
+              <button onClick={() => setIsNoteModalOpen(false)} className={styles.cancelBtn}>إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h1 className={styles.title}>الكتاب المقدس</h1>
+      
       <div className={styles.controls}>
-        <div className={styles.customSelectWrapper} ref={bookDropdownRef}>
-          <div className={styles.selectTrigger} onClick={() => { setIsBookDropdownOpen(!isBookDropdownOpen); setIsChapterDropdownOpen(false); }}>
-            {getBookName(selectedBookIndex)}
-          </div>
-          <ul className={`${styles.dropdownMenu} ${isBookDropdownOpen ? styles.open : ''}`}>
-            {bookNamesData.map((b, i) => (
-              <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedBookIndex(i); setSelectedChapterIndex(0); setIsBookDropdownOpen(false); setSelectedVerses([]); }}>
-                {b.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className={styles.customSelectWrapper} ref={chapterDropdownRef}>
-          <div className={styles.selectTrigger} onClick={() => { setIsChapterDropdownOpen(!isChapterDropdownOpen); setIsBookDropdownOpen(false); }}>
-            {`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}
-          </div>
-          <ul className={`${styles.dropdownMenu} ${isChapterDropdownOpen ? styles.open : ''}`}>
-            {chapters.map((_, i) => (
-              <li key={i} className={styles.dropdownItem} onClick={() => { setSelectedChapterIndex(i); setIsChapterDropdownOpen(false); setSelectedVerses([]); }}>
-                {`إصحاح ${convertToArabicNumber(i + 1)}`}
-              </li>
-            ))}
-          </ul>
+        <div className={styles.navigationDisplay} onClick={() => setIsNavModalOpen(true)}>
+          <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
+          <span className={styles.navSeparator}>|</span>
+          <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
         </div>
       </div>
-      <div className={styles.instructionGrid}>
-        <div className={styles.instructionItem}><span className={styles.icon}>🖱️</span><p>اضغط مرتين للنسخ</p></div>
-        <div className={styles.instructionItem}><span className={styles.icon}>⭐</span><p>اضغط ٣ مرات للمفضلة</p></div>
-        <div className={styles.instructionItem}><span className={styles.icon}>👆</span><p>ضغطة مطولة للاختيار</p></div>
-      </div>
+
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
+
       <AnimatePresence mode="wait">
-        <motion.div key={`${selectedBookIndex}-${selectedChapterIndex}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className={styles.verseContainer}>
+        <motion.div 
+          key={`${selectedBookIndex}-${selectedChapterIndex}`} 
+          initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} 
+          className={styles.verseContainer}
+          style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
+        >
           <div className={styles.chapterHeader}>
-            <button onClick={copyChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>📋</button>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
-            <button onClick={favoriteChapter} className={styles.actionBtn} style={{ fontSize: '1.1rem' }}>❤️</button>
+            {!canClaimPoints && !completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] && (
+               <div className={styles.timerIndicator}>متبقي {40 - readingSeconds} ثانية للحصول على نقاط القراءة ⏳</div>
+            )}
           </div>
-          {verses.map((v, i) => {
-            const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
-            const isFav = favouriteVerses[key];
-            const isSelected = selectedVerses.some(sv => sv.index === i);
-            return (
-              <div key={i} className={`${styles.singleVerse} ${isFav ? styles.favouriteHighlight : ''} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`} onTouchStart={(e) => handleTouchStart(e, v, i)} onTouchMove={handleTouchMove} onTouchEnd={(e) => handleTouchEnd(e, v, i)} onContextMenu={(e) => e.preventDefault()} onClick={() => handleVerseClick(key, v, i)} style={{ WebkitTouchCallout: 'none', userSelect: 'none' }}>
-                <div className={styles.verseContent}>
-                  <span className={styles.verseNumber}>{convertToArabicNumber(i + 1)}</span>
-                  <span className={styles.verseText}>{v}</span>
-                </div>
-                {activeMenu === key && (
-                  <div className={styles.desktopMenu}>
-                    <button onClick={(e) => { e.stopPropagation(); copyVerse(v, i); }}>📋</button>
-                    <button onClick={(e) => { e.stopPropagation(); toggleFav(v, i); }}>{isFav ? '❤️' : '🤍'}</button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          
+          <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
+            {verses.map((v, i) => {
+              const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
+              const annotation = favouriteVerses[key];
+              const isSelected = selectedVerses.some(sv => sv.index === i);
+              return (
+                <span
+                  key={i} id={`verse-${i}`}
+                  className={`${styles.inlineVerse} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`}
+                  onTouchStart={(e) => handleTouchStart(e, v, i)} onTouchMove={handleTouchMove} onTouchEnd={(e) => handleTouchEnd(e, v, i)}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onClick={() => { if (window.matchMedia('(pointer: fine)').matches && selectedVerses.length === 0) setActiveMenu(activeMenu === key ? null : key); }}
+                  style={{
+                    backgroundColor: annotation?.color ? `${annotation.color}66` : 'transparent',
+                    display: versePerLine ? 'block' : 'inline',
+                    marginBottom: versePerLine ? '15px' : '0',
+                    padding: '2px 4px', borderRadius: '4px', position: 'relative'
+                  }}
+                >
+                  <span className={styles.styledVerseNumber}>{convertToArabicNumber(i + 1)}</span>
+                  <span className={styles.verseText}>{v} </span>
+                  {annotation?.note && <span className={styles.miniNoteIndicator} onClick={(e) => { e.stopPropagation(); openNoteEditor(key); }}> 📝 </span>}
+                  {activeMenu === key && (
+                    <div className={styles.desktopMenuInline}>
+                      <button onClick={(e) => { e.stopPropagation(); copyVerse(v, i); }}>📋</button>
+                      <button onClick={(e) => { e.stopPropagation(); shareVerse(v, i); }}><Share2 size={16} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); openNoteEditor(key); }}>📝</button>
+                      <button onClick={(e) => { e.stopPropagation(); highlightSelected('#FFC107'); }}>✨</button>
+                      <button onClick={(e) => { e.stopPropagation(); highlightSelected(null); }}>🗑️</button>
+                    </div>
+                  )}
+                </span>
+              );
+            })}
+          </div>
         </motion.div>
       </AnimatePresence>
+
       <div className={styles.navigation}>
-        <button disabled={selectedChapterIndex === 0} onClick={() => {setSelectedChapterIndex(p => p - 1); setSelectedVerses([]);}}>«</button>
-        <button onClick={() => {
-           const key = `${selectedBookIndex}-${selectedChapterIndex}`;
-           const isNowCompleted = !completedChapters[key];
-           const next = { ...completedChapters, [key]: isNowCompleted };
-           setCompletedChapters(next);
-           saveToFirestore(favouriteVerses, next);
-           checkBibleBadges(favouriteVerses, next);
-           updateUserPoints(50, `إتمام قراءة إصحاح`, !isNowCompleted);
-        }}>{completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? '✅' : '✔️'}</button>
-        <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => {setSelectedChapterIndex(p => p + 1); setSelectedVerses([]);}}>»</button>
+        <button disabled={selectedChapterIndex === 0} onClick={() => { setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); }}> « </button>
+<button onClick={() => {
+  if (!user) { router.push('/intro'); return; }
+  const key = `${selectedBookIndex}-${selectedChapterIndex}`;
+  if (completedChapters[key]) {
+    const next = { ...completedChapters, [key]: false };
+    setCompletedChapters(next);
+    saveToFirestore(favouriteVerses, next);
+    updateUserPoints(20, `إلغاء قراءة إصحاح`, true);
+    // توست عند الإلغاء
+    toast.error("تم إلغاء تحديد الإصحاح", { duration: 3000 }); 
+  } else {
+    if (!canClaimPoints) {
+      toast.error("عليك القراءة لمدة ٤٠ ثانية على الأقل!", { duration: 4000 });
+      return;
+    }
+    const next = { ...completedChapters, [key]: true };
+    setCompletedChapters(next);
+    saveToFirestore(favouriteVerses, next);
+    updateUserPoints(20, `قراءة إصحاح كامل`);
+  }
+}}>
+  {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? '✅' : '✔️'}
+</button>
+        <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => { setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
       </div>
     </div>
   );

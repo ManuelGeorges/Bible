@@ -409,3 +409,49 @@
 .confirmBtn:active {
   transform: scale(0.95);
 }
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+}
+
+.settingLabel {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.subText {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 2px 0 0 0;
+}
+
+.fontControlGroup {
+  padding-top: 20px;
+}
+
+.fontPreview {
+  background: var(--bg-secondary, rgba(0,0,0,0.05));
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-height: 100px;
+  border: 1px dashed #8884;
+  overflow: hidden;
+}
+
+.previewList div {
+  margin-bottom: 8px;
+}
+
+.iconPrimary {
+  color: var(--accent-color, #007bff);
+}
+
+.controlsWrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}

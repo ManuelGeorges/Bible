@@ -1,0 +1,165 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 15px;
+}
+
+.booksSelectorModal {
+  background: #1a1a1b;
+  width: 100%;
+  max-width: 450px;
+  height: 80vh;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stickyHeader {
+  flex-shrink: 0;
+  background: #1a1a1b;
+  z-index: 100;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.topNavTabs {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.subHeaderControls {
+  padding: 15px 20px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 8px 15px;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.activeTabHighlight {
+  opacity: 1;
+  border-bottom: 2px solid #2196F3;
+  font-weight: bold;
+}
+
+.modalContentArea {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalHeader {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.modalHeader button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #888;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activeTab {
+  background: #2196F3 !important;
+  color: white !important;
+}
+
+.bookSearchInput {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  outline: none;
+  font-size: 1rem;
+}
+
+.booksGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bookGridItem {
+  padding: 16px 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  color: #ddd;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.selectedBook {
+  background: rgba(33, 150, 243, 0.2) !important;
+  border-color: #2196F3 !important;
+  color: #2196F3 !important;
+}
+
+.chaptersGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.chapterGridItem {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+}
+
+.selectedChapter {
+  background: #2196F3 !important;
+}
+
+.modalContentArea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modalContentArea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+@media (max-width: 400px) {
+  .booksGrid { grid-template-columns: repeat(2, 1fr); }
+  .chaptersGrid { grid-template-columns: repeat(4, 1fr); }
+}

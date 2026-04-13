@@ -9,6 +9,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { FirebaseCrashlytics } from '@capacitor-community/firebase-crashlytics';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
+import { AppReview } from '@capawesome/capacitor-app-review';
 import { fetchAndActivate, getNumber } from 'firebase/remote-config';
 import { remoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
@@ -25,7 +26,7 @@ export default function CapacitorFeatures() {
     const handleAppUpdate = async () => {
       try {
         if (!remoteConfig) return;
-        remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
+        remoteConfig.settings.minimumFetchIntervalMillis = 600000;
         await fetchAndActivate(remoteConfig).catch(() => {});
         
         const minRequiredVersion = getNumber(remoteConfig, 'min_required_version') || 0;
@@ -39,11 +40,20 @@ export default function CapacitorFeatures() {
         });
 
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
-        if (updateInfo && updateInfo.updateAvailability === 2) {
-          if (currentVersionCode < minRequiredVersion) {
-            await AppUpdate.performImmediateUpdate();
-          } else {
-            await AppUpdate.startFlexibleUpdate();
+        
+        if (updateInfo) {
+          if (updateInfo.installStatus === 11) {
+            await AppUpdate.completeFlexibleUpdate();
+            return;
+          }
+          if (updateInfo.updateAvailability === 2) {
+            if (currentVersionCode < minRequiredVersion) {
+              await AppUpdate.performImmediateUpdate();
+            } else {
+              if (updateInfo.installStatus !== 1) {
+                await AppUpdate.startFlexibleUpdate();
+              }
+            }
           }
         }
       } catch (e) {
@@ -78,6 +88,28 @@ export default function CapacitorFeatures() {
       }
     };
 
+    const handleReviewLogic = () => {
+      const interval = setInterval(async () => {
+        const totalSeconds = parseInt(localStorage.getItem('total_usage_seconds') || '0');
+        const newTotal = totalSeconds + 30;
+        localStorage.setItem('total_usage_seconds', newTotal.toString());
+
+        const alreadyAsked = localStorage.getItem('review_asked') === 'true';
+        
+        if (newTotal >= 1800 && !alreadyAsked) {
+          try {
+            await AppReview.requestReview();
+            localStorage.setItem('review_asked', 'true');
+            clearInterval(interval);
+          } catch (e) {
+            console.error("Review Error:", e);
+          }
+        }
+      }, 30000);
+
+      return interval;
+    };
+
     const init = async () => {
       await handleAppUpdate();
       await setupUIAndPush();
@@ -85,6 +117,11 @@ export default function CapacitorFeatures() {
     };
 
     init();
+    const reviewInterval = handleReviewLogic();
+
+    return () => {
+      clearInterval(reviewInterval);
+    };F
   }, [router, theme]);
 
   return null;
