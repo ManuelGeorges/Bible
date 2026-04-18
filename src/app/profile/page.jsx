@@ -5,34 +5,13 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut, getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
+import { 
+  User, Mail, Calendar, Share2, LogOut, 
+  BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon 
+} from 'lucide-react';
 import styles from './profile.module.css';
-
-const calculatePoints = (data) => {
-  let totalPoints = 0;
-  const POINTS_PER_DAILY_QUESTION = 10;
-  const POINTS_PER_FAVOURITE_VERSE = 10;
-  const POINTS_PER_COMPLETED_CHAPTER = 20;
-  const POINTS_PER_STUDY_PLAN_DAY = 30;
-
-  if (data.answeredQuestions) {
-    Object.values(data.answeredQuestions).forEach(q => { if (q?.isCorrect) totalPoints += POINTS_PER_DAILY_QUESTION; });
-  }
-  if (data.favorites?.verses) {
-    totalPoints += Object.keys(data.favorites.verses).length * POINTS_PER_FAVOURITE_VERSE;
-  }
-  if (data.completedChapters) {
-    Object.values(data.completedChapters).forEach(done => { if (done === true) totalPoints += POINTS_PER_COMPLETED_CHAPTER; });
-  }
-  if (data.completedPlans) {
-    Object.values(data.completedPlans).forEach(plan => {
-      if (plan?.completedDays) {
-        const days = Object.values(plan.completedDays).filter(d => d.isCompleted).length;
-        totalPoints += days * POINTS_PER_STUDY_PLAN_DAY;
-      }
-    });
-  }
-  return totalPoints;
-};
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -41,8 +20,8 @@ const ProfilePage = () => {
   const [userStats, setUserStats] = useState({
     verses: 0,
     chapters: 0,
-    points: 0,
     plans: 0,
+    joinDate: ''
   });
   const router = useRouter();
 
@@ -58,13 +37,16 @@ const ProfilePage = () => {
         const versesCount = data.favorites?.verses ? Object.keys(data.favorites.verses).length : 0;
         const completedChaptersCount = data.completedChapters ? Object.keys(data.completedChapters).filter(k => data.completedChapters[k] === true).length : 0;
         const activePlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
-        const totalPoints = calculatePoints(data);
+        
+        const registrationDate = currentUser.metadata.creationTime 
+          ? new Date(currentUser.metadata.creationTime).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' })
+          : 'غير متوفر';
 
         setUserStats({
           verses: versesCount,
           chapters: completedChaptersCount,
-          points: totalPoints,
           plans: activePlansCount,
+          joinDate: registrationDate
         });
       }
     } catch (e) {
@@ -85,9 +67,27 @@ const ProfilePage = () => {
         setLoading(false);
       }
     });
-
     return () => unsubscribe();
   }, [router, fetchProfileData]);
+
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'تطبيق أجيوس',
+      text: 'حمل تطبيق أجيوس واقرأ الكتاب المقدس بطريقة تفاعلية وتابع خططك الدراسية!',
+      url: 'https://agios-app.com', // استبدله برابط تطبيقك الفعلي
+      dialogTitle: 'مشاركة التطبيق مع الأصدقاء',
+    };
+
+    if (Capacitor.isNativePlatform()) {
+      await Share.share(shareData);
+    } else {
+      if (navigator.share) {
+        navigator.share(shareData);
+      } else {
+        alert('المشاركة غير مدعومة في المتصفح، يمكنك نسخ الرابط: ' + shareData.url);
+      }
+    }
+  };
 
   const handleLogout = async () => {
     const auth = getAuth();
@@ -95,46 +95,74 @@ const ProfilePage = () => {
     router.push('/intro');
   };
 
-  if (loading) {
-    return <div className={styles.loading}>جاري التحميل...</div>;
-  }
-
+  if (loading) return <div className={styles.loading}>جاري التحميل...</div>;
   if (!user) return null;
-
-  const userFeatures = [
-    { title: 'الآيات المفضلة', count: userStats.verses, description: 'عدد الآيات التي قمت بحفظها.' },
-    { title: 'إصحاحات مقروءة', count: userStats.chapters, description: 'عدد الإصحاحات التي انتهيت منها.' },
-    { title: 'نقاطي', count: userStats.points, description: 'إجمالي النقاط التي جمعتها من نشاطك.' },
-    { title: 'الخطط الدراسية', count: userStats.plans, description: 'عدد الخطط التي بدأت بمتابعتها.' },
-  ];
 
   return (
     <div className={styles.container} dir="rtl">
-      <div className={styles.profileCard}>
-        <div className={styles.profileHeader}>
-
-          <div className={styles.userInfo}>
-            <h1 className={styles.userName}>{userData?.firstName || user.displayName || 'يا صديق'}</h1>
-            <p className={styles.userEmail}>{user.email}</p>
+      <div className={styles.profileHeader}>
+        <div className={styles.avatarWrapper}>
+          <div className={styles.avatar}>
+            {userData?.firstName?.[0] || user.displayName?.[0] || <User size={40} />}
           </div>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            تسجيل الخروج
-          </button>
         </div>
-
-        <section className={styles.statsSection}>
-          <h2 className={styles.sectionTitle}>نظرة عامة على نشاطك</h2>
-          <div className={styles.statsGrid}>
-            {userFeatures.map((item, index) => (
-              <div key={index} className={styles.statCard}>
-                <h3 className={styles.statTitle}>{item.title}</h3>
-                <p className={styles.statCount}>{item.count.toLocaleString('ar-EG')}</p>
-                <p className={styles.statDescription}>{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <h1 className={styles.userName}>{userData?.firstName || user.displayName || 'يا صديق'}</h1>
+        <p className={styles.userEmail}><Mail size={14} /> {user.email}</p>
+        <p className={styles.joinDate}><Calendar size={14} /> عضو منذ: {userStats.joinDate}</p>
       </div>
+
+      <div className={styles.statsOverview}>
+        <div className={styles.statBox}>
+          <Heart className={styles.statIcon} size={20} />
+          <span className={styles.statValue}>{userStats.verses}</span>
+          <span className={styles.statLabel}>آيات مفضلة</span>
+        </div>
+        <div className={styles.statBox}>
+          <BookOpen className={styles.statIcon} size={20} />
+          <span className={styles.statValue}>{userStats.chapters}</span>
+          <span className={styles.statLabel}>إصحاح مقروء</span>
+        </div>
+        <div className={styles.statBox}>
+          <Activity className={styles.statIcon} size={20} />
+          <span className={styles.statValue}>{userStats.plans}</span>
+          <span className={styles.statLabel}>خطط نشطة</span>
+        </div>
+      </div>
+
+      <div className={styles.menuSection}>
+        <h3 className={styles.menuTitle}>الخيارات العامة</h3>
+        
+        <button className={styles.menuItem} onClick={() => router.push('/settings')}>
+          <div className={styles.menuItemRight}>
+            <SettingsIcon size={20} />
+            <span>إعدادات التطبيق</span>
+          </div>
+        </button>
+        <button className={styles.menuItem} onClick={() => router.push('/settings')}>
+          <div className={styles.menuItemRight}>
+            <Trophy size={20} />
+            <span>النقاط والأوسمة</span>
+          </div>
+        </button>
+
+        <button className={styles.menuItem} onClick={handleShareApp}>
+          <div className={styles.menuItemRight}>
+            <Share2 size={20} />
+            <span>دعوة صديق للتطبيق</span>
+          </div>
+        </button>
+
+        <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
+          <div className={styles.menuItemRight}>
+            <LogOut size={20} />
+            <span>تسجيل الخروج</span>
+          </div>
+        </button>
+      </div>
+
+      <footer className={styles.profileFooter}>
+        <p>تطبيق أجيوس - الإصدار 1.2.0</p>
+      </footer>
     </div>
   );
 };

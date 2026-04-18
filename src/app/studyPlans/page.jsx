@@ -33,8 +33,21 @@ export default function StudyPlans() {
         unsubFirestore = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setCompletionData(data.completedPlans || {});
+            const serverCompletion = data.completedPlans || {};
+            setCompletionData(serverCompletion);
             setCustomPlans(data.customPlans || {});
+
+            Object.keys(serverCompletion).forEach(planId => {
+              const planProgress = serverCompletion[planId];
+              if (planProgress.completedDays) {
+                const simpleProgress = {};
+                Object.keys(planProgress.completedDays).forEach(day => {
+                  simpleProgress[day] = planProgress.completedDays[day].isCompleted;
+                });
+                localStorage.setItem(`completedDays_${planId}`, JSON.stringify(simpleProgress));
+              }
+            });
+            window.dispatchEvent(new Event('storage'));
           }
           setLoading(false);
         }, () => {
@@ -67,6 +80,8 @@ export default function StudyPlans() {
                 await updateDoc(userRef, {
                   [`customPlans.${planId}`]: deleteField()
                 });
+                localStorage.removeItem(`completedDays_${planId}`);
+                window.dispatchEvent(new Event('storage'));
                 toast.success("تم الحذف بنجاح");
               } catch (error) {
                 toast.error("حدث خطأ أثناء الحذف");
@@ -168,6 +183,11 @@ export default function StudyPlans() {
 
             const hasStarted = progress.done > 0;
 
+            // بناء الرابط الصحيح بناءً على نوع الخطة
+            const planUrl = plan.isCustom 
+              ? `/studyPlans/details?id=${plan.id}&type=custom`
+              : `/studyPlans/details?id=${plan.id}`;
+
             return (
               <div key={plan.id} className={`${styles.card} ${plan.isCustom ? styles.customCard : ''}`}>
                 {plan.isCustom && (
@@ -195,7 +215,7 @@ export default function StudyPlans() {
                   )}
 
                   <Link 
-                    href={`/studyPlans/details?id=${plan.id}${plan.isCustom ? '&type=custom' : ''}`} 
+                    href={planUrl} 
                     className={styles.cardButton}
                   >
                     {hasStarted ? 'متابعة' : 'ابدأ الآن'}

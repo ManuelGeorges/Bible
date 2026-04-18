@@ -39,6 +39,7 @@
     "framer-motion": "^12.38.0",
     "fuse.js": "^7.1.0",
     "harfbuzzjs": "^0.4.8",
+    "html-to-image": "^1.11.13",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
     "lucide-react": "^0.575.0",

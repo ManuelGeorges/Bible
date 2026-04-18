@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+'use client';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { Map, Source, Layer, NavigationControl, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
@@ -68,7 +68,13 @@ export default function MapsPage() {
     try {
       const userRef = doc(firestore, 'users', user.uid);
       await updateDoc(userRef, {
-        totalPoints: increment(amount)
+        totalPoints: increment(amount),
+        pointsHistory: arrayUnion({
+          type: 'mapExploration',
+          points: amount,
+          reason: reason,
+          timestamp: new Date().toISOString()
+        })
       });
       toast.success(`+${amount} نقطة: ${reason}`);
     } catch (e) {

@@ -5,7 +5,6 @@ import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import CapacitorFeatures from '../components/CapacitorFeatures';
-import SplashHandler from '../components/SplashHandler';
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'react-hot-toast';
 import UserTracker from '../components/UserTracker';
@@ -98,7 +97,6 @@ export default function RootLayout({ children }) {
           
           <UserTracker />
 
-          <SplashHandler>
             <CapacitorFeatures />
             <SEOlinks />
             <BibleNavbar />
@@ -118,7 +116,6 @@ export default function RootLayout({ children }) {
                 gtag('config', 'G-J90H6JXHNG');
               `}
             </Script>
-          </SplashHandler>
         </ThemeProvider>
       </body>
     </html>

@@ -33,27 +33,39 @@ const calculatePointsFromData = (data) => {
     streakBonus: 0 
   };
 
+  // 1. معالجة سجل النقاط (تأكد إنه Object أو Array)
   if (data.pointsHistory) {
-    Object.values(data.pointsHistory).forEach(item => {
+    const historyArray = Array.isArray(data.pointsHistory) 
+      ? data.pointsHistory 
+      : Object.values(data.pointsHistory);
+
+    historyArray.forEach(item => {
       history.push({
-        activity: item.type,
+        activity: item.type || 'unknown',
         points: item.points || POINTS_MAP[item.type] || 0,
-        description: item.reason,
-        timestamp: item.timestamp
+        description: item.reason || 'نشاط غير محدد',
+        timestamp: item.timestamp?.seconds ? item.timestamp.toDate() : item.timestamp
       });
     });
   }
 
+  // 2. دمج الأسئلة المجابة (لو مش موجودة في الـ history)
   if (data.answeredQuestions) {
     Object.entries(data.answeredQuestions).forEach(([dateKey, q]) => {
       if (q && (q.correct || q.isCorrect)) {
-        const exists = history.some(h => h.timestamp === (q.timestamp || dateKey));
+        // تحويل التاريخ لـ ISO string للتحقق من عدم التكرار بدقة
+        const qTime = q.timestamp || dateKey;
+        const exists = history.some(h => {
+           const hTime = h.timestamp?.toISOString ? h.timestamp.toISOString() : h.timestamp;
+           return hTime === qTime;
+        });
+
         if (!exists) {
           history.push({
             activity: 'dailyQuestion',
             points: POINTS_MAP.dailyQuestion,
             description: `إجابة صحيحة على سؤال يوم ${dateKey}`,
-            timestamp: q.timestamp || dateKey,
+            timestamp: qTime,
           });
         }
       }
@@ -62,8 +74,9 @@ const calculatePointsFromData = (data) => {
 
   return { 
     totalPoints, 
+    // الترتيب مهم جداً عشان الأحدث يظهر فوق
     history: history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
-    unlockedFromFirestore: data.stats.unlocked_badges || [],
+    unlockedFromFirestore: data.stats?.unlocked_badges || [],
     streak: data.streak || 0,
     rawStats: {
       questions: Object.keys(data.answeredQuestions || {}).length,

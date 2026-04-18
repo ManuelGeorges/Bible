@@ -204,21 +204,6 @@
   box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.2);
 }
 
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.95rem;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-}
-
-.checkboxLabel input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-accent);
-}
-
 .selectGroup {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -291,22 +276,21 @@
   color: #ffffff !important;
 }
 
-.dropdownMenu::-webkit-scrollbar {
-  width: 5px;
-}
-
-.dropdownMenu::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
-  border-radius: 10px;
+.badgesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
 }
 
 .familyRow {
-  margin-bottom: 40px;
+  width: 95%;
+  max-width: 1100px;
+  margin: 0 auto 40px auto;
   padding: 30px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  width: 100%;
   box-sizing: border-box;
 }
 
@@ -316,12 +300,15 @@
   margin-bottom: 30px;
   border-right: 4px solid var(--color-accent);
   padding-right: 15px;
+  font-weight: 800;
 }
 
 .badgesListHorizontal {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 25px;
+  width: 100%;
+  justify-items: center;
 }
 
 .activitiesContainer {
@@ -339,25 +326,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-}
-
-.toggleVisibilityBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s;
-}
-
-.toggleVisibilityBtn:hover {
-  border-color: var(--color-accent);
-  background: rgba(var(--color-accent-rgb), 0.1);
 }
 
 .summaryGrid {
@@ -381,40 +349,30 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.summaryCard h3 {
-  margin: 15px 0 10px 0;
-  font-size: 1.1rem;
-  color: var(--color-text-primary);
-}
-
-.summaryCard p {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-accent);
-}
-
-.summaryCard .icon {
-  font-size: 2rem;
-  color: var(--color-accent);
-  opacity: 0.8;
-}
-
-.detailedHistory {
-  border-top: 1px solid var(--color-border);
-  padding-top: 20px;
-}
-
 .activityList {
   list-style: none;
   padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
 }
 
 .activityItem {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 20px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  background: var(--color-card-bg);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  width: calc(33.33% - 20px);
+  min-width: 250px;
+  text-align: center;
+  box-sizing: border-box;
+  transition: transform 0.3s ease;
 }
 
 .activityIconWrapper {
@@ -426,52 +384,24 @@
   justify-content: center;
   align-items: center;
   color: var(--color-accent);
-  font-size: 1.2rem;
-  margin-left: 15px;
-}
-
-.activityInfo {
-  flex-grow: 1;
-}
-
-.activityInfo p {
-  font-weight: 600;
-  margin-bottom: 5px;
-  color: var(--color-text-primary);
-}
-
-.activityDate {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  margin-bottom: 15px;
 }
 
 .activityPoints {
   color: var(--color-accent);
   font-weight: 800;
   font-size: 1.1rem;
-  white-space: nowrap;
 }
 
-.loading {
-  display: flex;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.5rem;
-  color: var(--color-accent);
-}
-
-.noDataSection {
-  text-align: center;
-  padding: 40px;
-  color: var(--color-text-secondary);
-  font-weight: 600;
+@media (max-width: 1024px) {
+  .activityItem {
+    width: calc(50% - 20px);
+  }
 }
 
 @media (max-width: 768px) {
   .topNav {
     width: 90%;
-    gap: 5px;
     padding: 8px;
   }
   .topNav button {
@@ -481,113 +411,92 @@
   .pointsNumber { font-size: 3.5em; }
   .selectGroup { grid-template-columns: 1fr; }
   .summaryGrid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 480px) {
-  .summaryGrid { grid-template-columns: 1fr; }
-  .badgesListHorizontal { grid-template-columns: 1fr 1fr; }
-  .pointsNumber { font-size: 2.8em; }
-  .streakBadge { padding: 10px 15px; font-size: 0.9rem; }
-}
-.badgesGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  width: 100%;
-}
-
-.familyRow {
-  width: 100%;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-sizing: border-box;
-}
-
-.familyTitleSmall {
-  font-size: 1.2rem;
-  color: var(--color-accent);
-  margin-bottom: 20px;
-  border-right: 4px solid var(--color-accent);
-  padding-right: 15px;
-  font-weight: 800;
-}
-
-.badgesListHorizontal {
-  display: flex;
-  flex-wrap: wrap; /* ده اللي هيخليهم ييجوا جنب بعض ولو السطر خلص ينزلوا تحت بعض */
-  gap: 20px;
-  justify-content: flex-start;
-}
-
-/* لو عايزهم ييجوا جنب بعض "جداً" وشاشات الموبايل تعرضهم بسكرول جانبي، استخدم ده بدل wrap */
-@media (max-width: 600px) {
+  
   .badgesListHorizontal {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* توزيع منتظم في الموبايل */
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
 }
-.activityList {
-  list-style: none; /* إزالة النقط بتاعة القائمة */
-  padding: 0;
-  margin: 0;
-  display: flex; /* تحويل القائمة لنظام Flexbox */
-  flex-wrap: wrap; /* ده السحر: بيخليهم ييجوا جنب بعض ولو السطر خلص ينزلوا تلقائي */
-  gap: 20px; /* المسافة بين كل عنصر واللي جنبه */
-  justify-content: space-evenly; /* توزيع العناصر بمسافات متساوية في السطر */
-  width: 100%;
-  box-sizing: border-box;
+
+@media (max-width: 480px) {
+  .badgesListHorizontal {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .activityItem {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .summaryGrid { grid-template-columns: 1fr; }
+  .pointsNumber { font-size: 2.8em; }
+  .streakBadge { padding: 10px 15px; font-size: 0.9rem; }
 }
 
-/* تعديل الـ Item عشان يبقى شكله كرت صغير ومستقل */
-.activityItem {
-  display: flex; /* عشان الأيقونة والكلام يبقوا جنب بعض جوه الكرت */
-  flex-direction: column; /* لو عايز الأيقونة فوق الكلام في الموبايل */
-  align-items: center; /* توسيط المحتوى */
-  padding: 20px;
-  background: var(--color-card-bg); /* خلفية كلاسيك */
-  border-radius: 20px;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* ظل خفيف */
-  width: calc(25% - 20px); /* عرض تقريبي ليكونوا 4 جنب بعض */
-  min-width: 250px; /* أقل عرض عشان الشكل ميبوظش في الموبايل */
-  text-align: center;
-  box-sizing: border-box;
-  transition: transform 0.3s ease; /* تأثير هوفر */
+@media (max-width: 350px) {
+  .badgesListHorizontal {
+    grid-template-columns: 1fr;
+  }
 }
 
-.activityItem:hover {
-  transform: translateY(-5px); /* رفع الكرت عند الهوفر */
-}
 .badgesListHorizontal {
-  display: grid; /* استخدام الجريد هو الحل الأمثل هنا */
-  /* التعديل ده بيخلي العناصر تترص جنب بعضها تلقائي حسب مساحة الشاشة */
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-  gap: 25px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* تقليل المسافات البينية لأقل درجة */
+  gap: 8px; 
   width: 100%;
-  padding: 10px;
-  justify-items: center; /* لتوسيط الوسام جوه الخلية بتاعته */
+  padding: 5px; /* بادنج خفيف جداً للأب */
+  box-sizing: border-box;
 }
 
 .familyRow {
-  width: 95%; /* تأكد إن العيلة نفسها واخدة مساحة كافية */
-  max-width: 1100px;
-  margin-bottom: 40px;
-  padding: 30px;
+  width: 100%;
+  /* حذف المارجن والبادنج الزيادة من الحاوية الكبيرة */
+  padding: 15px 5px; 
+  margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 28px;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  display: block; /* تأكد إن الصف نفسه بلوك */
 }
 
-/* أهم جزء: تأكد إن مكون الـ Badge نفسه مش واخد width: 100% */
-/* لو الـ Badge عبارة عن div جوه الـ badgesListHorizontal */
 .badgesListHorizontal > div {
-  width: 100%; 
-  max-width: 200px; /* تحديد أقصى عرض للوسام الواحد */
+  /* تقليل بادنج الكارت نفسه عشان الكلام ياخد راحته */
+  padding: 10px 5px; 
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 15px;
+}
+
+/* تصغير الأيقونة شوية عشان نوفر مساحة رأسية */
+.badgesListHorizontal img,
+.badgesListHorizontal svg,
+.badgesListHorizontal .badgeIcon {
+  width: 55px;
+  height: 55px;
+  margin-bottom: 5px;
+}
+
+.familyTitleSmall {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  padding-right: 10px;
+  /* تقليل الهوامش حول العنوان */
+  margin-top: 0;
+}
+
+.badgesListHorizontal p {
+  font-size: 0.7rem; /* خط أصغر يخلي الكلام يظهر كامل */
+  line-height: 1.2;
+  margin: 0;
+  padding: 0 2px;
+}
+
+.badgesListHorizontal .badgeTag {
+  font-size: 0.65rem;
+  padding: 1px 8px;
+  margin-bottom: 5px;
 }

@@ -1,179 +1,197 @@
 .container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 40px 20px 100px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 100px 24px;
-  background: transparent;
-  color: var(--color-text-primary);
-  font-family: 'Cairo', sans-serif;
-}
-
-.profileCard {
-  background: var(--color-card-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 40px;
-  border-radius: 24px;
-  box-shadow: 0 20px 50px var(--color-shadow-medium);
-  border: 1px solid var(--color-border);
-  width: 100%;
-  max-width: 900px;
-  animation: fadeIn 0.8s ease-out;
+  box-sizing: border-box;
 }
 
 .profileHeader {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  margin-bottom: 30px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 30px;
-  margin-bottom: 40px;
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 30px;
+}
+
+.avatarWrapper {
+  position: relative;
+  margin-bottom: 15px;
 }
 
 .avatar {
   width: 100px;
   height: 100px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
   border-radius: 50%;
-  border: 3px solid var(--color-accent);
-  object-fit: cover;
-  box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.2);
-}
-
-.userInfo {
-  flex-grow: 1;
-  text-align: right;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  font-weight: 900;
+  box-shadow: 0 10px 25px var(--color-shadow-medium);
+  border: 4px solid var(--color-card-bg);
 }
 
 .userName {
-  font-size: 1.8em;
-  font-weight: 800;
-  color: var(--color-text-primary);
+  font-size: 28px;
+  margin-bottom: 8px;
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 5px;
 }
 
-.userEmail {
-  font-size: 1em;
+.userEmail, .joinDate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   color: var(--color-text-secondary);
+  font-size: 14px;
+  margin-bottom: 4px;
 }
 
-.logoutButton {
-  padding: 12px 24px;
-  font-size: 0.9em;
-  font-weight: 700;
-  border-radius: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  cursor: pointer;
-  color: #f87171;
-  background: rgba(239, 68, 68, 0.1);
-  transition: all 0.3s ease;
-}
-
-.logoutButton:hover {
-  background: #ef4444;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
-}
-
-.sectionTitle {
-  font-size: 1.4em;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 30px;
-  position: relative;
-  text-align: right;
-}
-
-.sectionTitle::after {
-  content: '';
-  display: block;
-  width: 50px;
-  height: 4px;
-  background: var(--color-accent);
-  margin-top: 10px;
-  border-radius: 10px;
-}
-
-.statsSection {
-  margin-bottom: 30px;
-}
-
-.statsGrid {
+.statsOverview {
+  width: 100%;
+  max-width: 600px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 30px;
 }
 
-.statCard {
-  background: var(--color-bg-end);
-  border-radius: 20px;
-  padding: 25px;
-  text-align: center;
+.statBox {
+  background: var(--color-card-bg);
   border: 1px solid var(--color-border);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 15px 10px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s var(--transition-bounce);
 }
 
-.statCard:hover {
-  transform: translateY(-8px);
-  background: var(--color-bg-start);
-  border-color: var(--color-accent);
-  box-shadow: 0 10px 30px var(--color-shadow-medium);
+.statBox:hover {
+  transform: translateY(-5px);
 }
 
-.statTitle {
-  font-size: 0.85em;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
-}
-
-.statCount {
-  font-size: 1.8em;
-  font-weight: 900;
+.statIcon {
   color: var(--color-accent);
   margin-bottom: 8px;
-  text-shadow: 0 2px 10px rgba(var(--color-accent-rgb), 0.2);
+  opacity: 0.8;
 }
 
-.statDescription {
-  font-size: 0.8em;
+.statValue {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.statLabel {
+  font-size: 12px;
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  font-weight: 600;
+}
+
+.menuSection {
+  width: 100%;
+  max-width: 600px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 10px;
+  box-shadow: 0 4px 20px var(--color-shadow-medium);
+}
+
+.menuTitle {
+  padding: 15px 20px 10px 20px;
+  font-size: 16px;
+  color: var(--color-accent);
+  font-weight: 800;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  border-radius: 16px;
+  transition: all 0.2s var(--transition-smooth);
+}
+
+.menuItemRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.menuItem:hover {
+  background: rgba(var(--color-accent-rgb), 0.05);
+  transform: translateX(-5px);
+}
+
+.logout {
+  color: #ef4444;
+}
+
+.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.profileFooter {
+  margin-top: 40px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
   opacity: 0.7;
 }
 
 .loading {
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  font-size: 1.3em;
+  font-family: 'Cairo', sans-serif;
   color: var(--color-accent);
+  font-weight: 700;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
-  .container { padding: 80px 16px; }
-  .profileHeader {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
+@media (max-width: 480px) {
+  .container {
+    padding: 20px 15px 80px 15px;
   }
-  .userInfo { text-align: center; }
-  .logoutButton { width: 100%; }
-  .sectionTitle { text-align: center; }
-  .sectionTitle::after { margin: 10px auto 0; }
-  .statsGrid { grid-template-columns: 1fr; }
-  .profileCard { padding: 30px 20px; }
-  .statCard { padding: 20px; }
+
+  .userName {
+    font-size: 24px;
+  }
+
+  .statsOverview {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .statValue {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 11px;
+  }
+
+  .menuItem {
+    padding: 14px 15px;
+  }
 }

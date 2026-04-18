@@ -216,8 +216,7 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* قسم الإشعارات */}
-      {isNative && (
+{isNative && (
         <div className={styles.section}>
           <div className={styles.masterToggleRow}>
             <h2 className={styles.sectionTitle}>
@@ -232,65 +231,166 @@ const Settings = () => {
               <span className={styles.sliderRound}></span>
             </label>
           </div>
+
           <div className={`${styles.notificationList} ${!masterNotifications ? styles.disabledList : ''}`}>
-             {/* مجموعة آية اليوم */}
+            
+            {/* آية اليوم */}
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <Bell size={18} className={styles.notifIcon} />
-                  <span>إشعارات آية اليوم</span>
+                  <Bell size={18} /> 
+                  <div className={styles.textContainer}>
+                    <span>آية اليوم</span>
+                    <p className={styles.subText}>استلام آية مشجعة يومياً</p>
+                  </div>
                 </div>
                 <label className={styles.switch}>
                   <input 
                     type="checkbox" 
                     checked={notifications.dailyVerse} 
-                    onChange={() => updateSubSetting('dailyVerse', !notifications.dailyVerse)}
-                    disabled={!masterNotifications}
+                    onChange={() => updateSubSetting('dailyVerse', !notifications.dailyVerse)} 
+                    disabled={!masterNotifications} 
                   />
                   <span className={styles.sliderRound}></span>
                 </label>
               </div>
-              <div className={`${styles.timePickerRow} ${!notifications.dailyVerse || !masterNotifications ? styles.dimmed : ''}`}>
+              <div className={`${styles.timePickerRow} ${!notifications.dailyVerse ? styles.dimmed : ''}`}>
                 <Clock size={16} />
                 <span>وقت التنبيه:</span>
                 <input 
                   type="time" 
                   value={notifications.dailyVerseTime} 
-                  onChange={(e) => updateSubSetting('dailyVerseTime', e.target.value)}
-                  className={styles.timeInput}
-                  disabled={!notifications.dailyVerse || !masterNotifications}
+                  onChange={(e) => updateSubSetting('dailyVerseTime', e.target.value)} 
+                  className={styles.timeInput} 
+                  disabled={!notifications.dailyVerse} 
                 />
               </div>
             </div>
 
-            {/* مجموعة سؤال اليوم */}
+            {/* سؤال اليوم */}
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <HelpCircle size={18} className={styles.notifIcon} />
-                  <span>إشعارات سؤال اليوم</span>
+                  <HelpCircle size={18} /> 
+                  <div className={styles.textContainer}>
+                    <span>سؤال اليوم</span>
+                    <p className={styles.subText}>تحديات ومسابقات يومية</p>
+                  </div>
                 </div>
                 <label className={styles.switch}>
                   <input 
                     type="checkbox" 
                     checked={notifications.dailyQuestion} 
-                    onChange={() => updateSubSetting('dailyQuestion', !notifications.dailyQuestion)}
-                    disabled={!masterNotifications}
+                    onChange={() => updateSubSetting('dailyQuestion', !notifications.dailyQuestion)} 
+                    disabled={!masterNotifications} 
                   />
                   <span className={styles.sliderRound}></span>
                 </label>
               </div>
-              <div className={`${styles.timePickerRow} ${!notifications.dailyQuestion || !masterNotifications ? styles.dimmed : ''}`}>
+              <div className={`${styles.timePickerRow} ${!notifications.dailyQuestion ? styles.dimmed : ''}`}>
                 <Clock size={16} />
                 <span>وقت التنبيه:</span>
                 <input 
                   type="time" 
                   value={notifications.dailyQuestionTime} 
-                  onChange={(e) => updateSubSetting('dailyQuestionTime', e.target.value)}
-                  className={styles.timeInput}
-                  disabled={!notifications.dailyQuestion || !masterNotifications}
+                  onChange={(e) => updateSubSetting('dailyQuestionTime', e.target.value)} 
+                  className={styles.timeInput} 
+                  disabled={!notifications.dailyQuestion} 
                 />
               </div>
+            </div>
+
+            {/* تذكير الخطط الدراسية */}
+            <div className={styles.notificationGroup}>
+              <div className={styles.notificationItem}>
+                <div className={styles.notificationInfo}>
+                  <BookOpen size={18} /> 
+                  <div className={styles.textContainer}>
+                    <span>تذكير الخطط الدراسية</span>
+                    <p className={styles.subText}>تنبيه بمتابعة ورد القراءة المتبقي</p>
+                  </div>
+                </div>
+                <label className={styles.switch}>
+                  <input 
+                    type="checkbox" 
+                    checked={notifications.studyPlans} 
+                    onChange={() => updateSubSetting('studyPlans', !notifications.studyPlans)} 
+                    disabled={!masterNotifications} 
+                  />
+                  <span className={styles.sliderRound}></span>
+                </label>
+              </div>
+              <div className={`${styles.timePickerRow} ${!notifications.studyPlans ? styles.dimmed : ''}`}>
+                <Clock size={16} />
+                <span>وقت التنبيه:</span>
+                <input 
+                  type="time" 
+                  value={notifications.studyPlansTime} 
+                  onChange={(e) => updateSubSetting('studyPlansTime', e.target.value)} 
+                  className={styles.timeInput} 
+                  disabled={!notifications.studyPlans} 
+                />
+              </div>
+            </div>
+
+            {/* حماية الستريك */}
+            <div className={styles.notificationItem}>
+              <div className={styles.notificationInfo}>
+                <Flame size={18} color="#f97316" /> 
+                <div className={styles.textContainer}>
+                  <span>تنبيه حماية الستريك</span>
+                  <p className={styles.subText}>تذكيرك قبل انتهاء اليوم للحفاظ على أيامك</p>
+                </div>
+              </div>
+              <label className={styles.switch}>
+                <input 
+                  type="checkbox" 
+                  checked={notifications.streakReminder} 
+                  onChange={() => updateSubSetting('streakReminder', !notifications.streakReminder)} 
+                  disabled={!masterNotifications} 
+                />
+                <span className={styles.sliderRound}></span>
+              </label>
+            </div>
+
+            {/* اقتراحات ومزايا */}
+            <div className={styles.notificationItem}>
+              <div className={styles.notificationInfo}>
+                <Sparkles size={18} color="#8b5cf6" /> 
+                <div className={styles.textContainer}>
+                  <span>اقتراحات ومزايا التطبيق</span>
+                  <p className={styles.subText}>تعرف على خصائص أجيوس الجديدة</p>
+                </div>
+              </div>
+              <label className={styles.switch}>
+                <input 
+                  type="checkbox" 
+                  checked={notifications.appSuggestions} 
+                  onChange={() => updateSubSetting('appSuggestions', !notifications.appSuggestions)} 
+                  disabled={!masterNotifications} 
+                />
+                <span className={styles.sliderRound}></span>
+              </label>
+            </div>
+
+            {/* تحديثات البرنامج */}
+            <div className={styles.notificationItem}>
+              <div className={styles.notificationInfo}>
+                <RefreshCw size={18} color="#10b981" /> 
+                <div className={styles.textContainer}>
+                  <span>إشعارات التحديثات</span>
+                  <p className={styles.subText}>تنبيه فور توفر نسخة جديدة من التطبيق</p>
+                </div>
+              </div>
+              <label className={styles.switch}>
+                <input 
+                  type="checkbox" 
+                  checked={notifications.updateAlerts} 
+                  onChange={() => updateSubSetting('updateAlerts', !notifications.updateAlerts)} 
+                  disabled={!masterNotifications} 
+                />
+                <span className={styles.sliderRound}></span>
+              </label>
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ import BibleNavModal from '../../components/BibleNavModal';
 import { toast } from 'react-hot-toast';
 import { Share2 } from 'lucide-react';
 import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -61,6 +62,36 @@ export default function BibleContent() {
   const touchStartPos = useRef({ x: 0, y: 0 });
   const timerRef = useRef(null);
 
+  const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
+
+  const saveLastRead = useCallback(async (bookIdx, chapIdx) => {
+    if (!bookNamesData[bookIdx]) return;
+    
+    const lastReadData = {
+      bookIndex: bookIdx,
+      chapterIndex: chapIdx,
+      bookName: bookNamesData[bookIdx].name,
+      timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('lastReadLocation', JSON.stringify(lastReadData));
+
+    if (user) {
+      const userRef = doc(firestore, 'users', user.uid);
+      try {
+        await updateDoc(userRef, { lastRead: lastReadData });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [user, bookNamesData]);
+
+  useEffect(() => {
+    if (!isLoading && bookNamesData.length > 0) {
+      saveLastRead(selectedBookIndex, selectedChapterIndex);
+    }
+  }, [selectedBookIndex, selectedChapterIndex, isLoading, bookNamesData, saveLastRead]);
+
   useEffect(() => {
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -81,26 +112,11 @@ export default function BibleContent() {
   }, []);
 
   useEffect(() => {
-    setReadingSeconds(0);
-    setCanClaimPoints(false);
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    timerRef.current = setInterval(() => {
-      setReadingSeconds(prev => {
-        if (prev + 1 >= 40) {
-          setCanClaimPoints(true);
-          clearInterval(timerRef.current);
-        }
-        return prev + 1;
-      });
-    }, 1000);
 
     return () => clearInterval(timerRef.current);
   }, [selectedBookIndex, selectedChapterIndex]);
 
-  const getBookName = (i) => bookNamesData?.[i]?.name || '';
-
-  const updateUserPoints = async (amount, reason, isNegative = false) => {
+  const updateUserPoints = async (amount, reason, type = 'general', isNegative = false) => {
     if (!user) return;
     const finalAmount = isNegative ? -amount : amount;
     const userRef = doc(firestore, 'users', user.uid);
@@ -108,7 +124,8 @@ export default function BibleContent() {
       await updateDoc(userRef, {
         totalPoints: increment(finalAmount),
         pointsHistory: arrayUnion({
-          amount: finalAmount,
+          type: type,
+          points: finalAmount,
           reason: reason,
           timestamp: new Date().toISOString()
         })
@@ -119,37 +136,37 @@ export default function BibleContent() {
     }
   };
 
-const shareVerse = async (text, index) => {
-  const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
-  const verseLabel = convertToArabicNumber(index + 1);
-  const bookName = getBookName(selectedBookIndex);
-  
-  const rlm = "\u200F"; 
+  const shareVerse = async (text, index) => {
+    const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
+    const verseLabel = convertToArabicNumber(index + 1);
+    const bookName = getBookName(selectedBookIndex);
+    const rlm = "\u200F"; 
+    const fullText = `${text} ${rlm}(${bookName} ${verseLabel}:${chapterLabel})`;
 
-  try {
-    const canShare = await Share.canShare();
-    if (canShare.value) {
-      await Share.share({
-        title: 'آية من الكتاب المقدس',
-        text: fullText,
-        dialogTitle: 'مشاركة الآية',
-      });
-      updateUserPoints(15, "مشاركة آية");
-    } 
-    else if (navigator.share) {
-      await navigator.share({
-        title: 'آية من الكتاب المقدس',
-        text: fullText
-      });
-      updateUserPoints(15, "مشاركة آية");
-    } 
-    else {
-      copyVerse(text, index);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          title: 'آية من الكتاب المقدس',
+          text: fullText,
+          dialogTitle: 'مشاركة الآية عبر...',
+        });
+        updateUserPoints(15, "مشاركة آية", 'share');
+      } 
+      else if (navigator.share) {
+        await navigator.share({
+          title: 'آية من الكتاب المقدس',
+          text: fullText
+        });
+        updateUserPoints(15, "مشاركة آية", 'share');
+      } 
+      else {
+        copyVerse(text, index);
+        toast.info("المشاركة غير مدعومة، تم نسخ النص بدلاً من ذلك");
+      }
+    } catch (err) {
+      console.log('Share error', err);
     }
-  } catch (err) {
-    console.log('Share failed or cancelled', err);
-  }
-};
+  };
 
   const saveToFirestore = useCallback(async (v, c) => {
     if (!user || !firestore) return;
@@ -167,19 +184,24 @@ const shareVerse = async (text, index) => {
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch('/data/bibles/ar_svd.json').then(r => r.json())
         ]);
-        setBookNamesData(namesRes.ar || []);
+        
+        const names = namesRes.ar || [];
+        setBookNamesData(names);
         setBibleData(bibleRes);
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
+        const savedLastRead = localStorage.getItem('lastReadLocation');
 
-        if (bParam && namesRes.ar.length > 0) {
-          const idx = namesRes.ar.findIndex(b => b.name === decodeURIComponent(bParam));
-          if (idx !== -1) {
-            setSelectedBookIndex(idx);
-          }
+        if (bParam) {
+          const idx = names.findIndex(b => b.name === decodeURIComponent(bParam));
+          if (idx !== -1) setSelectedBookIndex(idx);
+          if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
+        } else if (savedLastRead) {
+          const parsed = JSON.parse(savedLastRead);
+          setSelectedBookIndex(parsed.bookIndex);
+          setSelectedChapterIndex(parsed.chapterIndex);
         }
-        if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
         setIsLoading(false);
       } catch (e) { setIsLoading(false); }
     };
@@ -196,13 +218,17 @@ const shareVerse = async (text, index) => {
               const data = s.data();
               setFavouriteVerses(data.favorites?.verses || {});
               setCompletedChapters(data.completedChapters || {});
+              if (!searchParams.get('book') && data.lastRead) {
+                setSelectedBookIndex(data.lastRead.bookIndex);
+                setSelectedChapterIndex(data.lastRead.chapterIndex);
+              }
             }
           });
         }
       });
       return unsub;
     }
-  }, []);
+  }, [searchParams]);
 
   const copyVerse = (text, index) => {
     const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
@@ -212,7 +238,7 @@ const shareVerse = async (text, index) => {
     navigator.clipboard.writeText(fullText);
     setCopiedMessage('تم النسخ');
     setActiveMenu(null);
-    updateUserPoints(5, "نسخ آية");
+    updateUserPoints(5, "نسخ آية", 'search');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -230,7 +256,7 @@ const shareVerse = async (text, index) => {
     const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
     navigator.clipboard.writeText(fullText);
     setCopiedMessage('تم النسخ بدقة ✨');
-    updateUserPoints(15, "مشاركة مجموعة آيات");
+    updateUserPoints(15, "مشاركة مجموعة آيات", 'share');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -247,7 +273,7 @@ const shareVerse = async (text, index) => {
           next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: color };
         } else { delete next[key]; }
       });
-      if (newlyAddedCount > 0) updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة");
+      if (newlyAddedCount > 0) updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة", 'favouriteVerse');
       saveToFirestore(next, completedChapters);
       return next;
     });
@@ -276,7 +302,7 @@ const shareVerse = async (text, index) => {
       return next;
     });
     setIsNoteModalOpen(false);
-    updateUserPoints(5, "كتابة تأمل شخصي");
+    updateUserPoints(5, "كتابة تأمل شخصي", 'favouriteVerse');
     setCopiedMessage('تم حفظ ملاحظتك 📝');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -340,7 +366,10 @@ const shareVerse = async (text, index) => {
           <div className={styles.selectionActions}>
             <button onClick={() => setSelectedVerses([])} className={styles.actionBtn}>✕</button>
             <button onClick={copySelected} className={styles.actionBtn}>📋</button>
-            <button onClick={() => shareVerse(selectedVerses.map(v => v.text).join(' '), selectedVerses[0].index)} className={styles.actionBtn}><Share2 size={20} /></button>
+            <button onClick={() => {
+                const combinedText = selectedVerses.map(v => v.text).join(' ');
+                shareVerse(combinedText, selectedVerses[0].index);
+            }} className={styles.actionBtn}><Share2 size={20} /></button>
             <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn}>📝</button>
             <button onClick={() => highlightSelected(null)} className={styles.actionBtn} style={{color: '#ff4d4d'}}>🗑️</button>
           </div>
@@ -399,9 +428,7 @@ const shareVerse = async (text, index) => {
         >
           <div className={styles.chapterHeader}>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
-            {!canClaimPoints && !completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] && (
-               <div className={styles.timerIndicator}>متبقي {40 - readingSeconds} ثانية للحصول على نقاط القراءة ⏳</div>
-            )}
+
           </div>
           
           <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
@@ -444,29 +471,28 @@ const shareVerse = async (text, index) => {
 
       <div className={styles.navigation}>
         <button disabled={selectedChapterIndex === 0} onClick={() => { setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); }}> « </button>
-<button onClick={() => {
-  if (!user) { router.push('/intro'); return; }
-  const key = `${selectedBookIndex}-${selectedChapterIndex}`;
-  if (completedChapters[key]) {
-    const next = { ...completedChapters, [key]: false };
-    setCompletedChapters(next);
-    saveToFirestore(favouriteVerses, next);
-    updateUserPoints(20, `إلغاء قراءة إصحاح`, true);
-    // توست عند الإلغاء
-    toast.error("تم إلغاء تحديد الإصحاح", { duration: 3000 }); 
-  } else {
-    if (!canClaimPoints) {
-      toast.error("عليك القراءة لمدة ٤٠ ثانية على الأقل!", { duration: 4000 });
-      return;
-    }
-    const next = { ...completedChapters, [key]: true };
-    setCompletedChapters(next);
-    saveToFirestore(favouriteVerses, next);
-    updateUserPoints(20, `قراءة إصحاح كامل`);
-  }
-}}>
-  {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? '✅' : '✔️'}
-</button>
+        <button onClick={() => {
+          if (!user) { router.push('/intro'); return; }
+          const key = `${selectedBookIndex}-${selectedChapterIndex}`;
+          if (completedChapters[key]) {
+            const next = { ...completedChapters, [key]: false };
+            setCompletedChapters(next);
+            saveToFirestore(favouriteVerses, next);
+            updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
+            toast.error("تم إلغاء تحديد الإصحاح"); 
+          } else {
+            if (!canClaimPoints) {
+              toast.error("عليك القراءة لمدة ٤٠ ثانية على الأقل!");
+              return;
+            }
+            const next = { ...completedChapters, [key]: true };
+            setCompletedChapters(next);
+            saveToFirestore(favouriteVerses, next);
+            updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
+          }
+        }}>
+          {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? '✅' : '✔️'}
+        </button>
         <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => { setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
       </div>
     </div>

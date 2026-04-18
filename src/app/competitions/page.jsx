@@ -6,7 +6,7 @@ import { allQuestions } from './questionsData';
 import styles from './competitions.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, auth } from '../../lib/firebase'; 
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const normalizeArabic = (text) => {
@@ -190,33 +190,47 @@ export default function HomePage() {
     const updatedHistory = [record, ...completedQuizzes.filter(q => q.category !== record.category)];
     
     let pointsToAdd = 30; 
-    if (isPerfect) pointsToAdd += 50;
-
-    await updateDoc(userRef, {
-      completedQuizzes: updatedHistory,
-      totalPoints: increment(pointsToAdd)
-    });
-
-    setCompletedQuizzes(updatedHistory);
-
-    await unlockBadge('quiz_first', 'أول خطوة', 'عادي');
+    let reason = `إكمال مسابقة: ${record.category}`;
     
-    if (updatedHistory.length >= 3) await unlockBadge('scholar_3', 'الباحث المبتدئ', 'عادي');
-    if (updatedHistory.length >= 10) await unlockBadge('scholar_10', 'المتفرغ', 'مميز');
-    if (updatedHistory.length >= 30) await unlockBadge('scholar_30', 'الدارس', 'نادر');
-    if (updatedHistory.length >= 50) await unlockBadge('scholar_50', 'العلامة', 'أسطوري');
-    if (updatedHistory.length >= 73) await unlockBadge('bible_master', 'خاتم الأسفار', 'خرافي');
-
     if (isPerfect) {
-      await unlockBadge('perfect_1', 'العلامة الكاملة', 'عادي');
-      const perfectCount = updatedHistory.filter(q => q.score === q.total).length;
-      if (perfectCount >= 10) await unlockBadge('perfect_10', 'القناص', 'مميز');
-      if (perfectCount >= 73) await unlockBadge('perfect_all', 'القاموس', 'أسطوري');
+      pointsToAdd += 50;
+      reason = `الدرجة الكاملة في مسابقة: ${record.category}`;
     }
 
-    if (timeTaken < 30 && isPerfect) {
-      await unlockBadge('flawless_victory', 'لا يُقهر', 'نادر');
-      await unlockBadge('speed_demon', 'بطل السرعة', 'سري');
+    try {
+      await updateDoc(userRef, {
+        completedQuizzes: updatedHistory,
+        totalPoints: increment(pointsToAdd),
+        pointsHistory: arrayUnion({
+          type: 'quiz',
+          points: pointsToAdd,
+          reason: reason,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      setCompletedQuizzes(updatedHistory);
+
+      await unlockBadge('quiz_first', 'أول خطوة', 'عادي');
+      if (updatedHistory.length >= 3) await unlockBadge('scholar_3', 'الباحث المبتدئ', 'عادي');
+      if (updatedHistory.length >= 10) await unlockBadge('scholar_10', 'المتفرغ', 'مميز');
+      if (updatedHistory.length >= 30) await unlockBadge('scholar_30', 'الدارس', 'نادر');
+      if (updatedHistory.length >= 50) await unlockBadge('scholar_50', 'العلامة', 'أسطوري');
+      if (updatedHistory.length >= 73) await unlockBadge('bible_master', 'خاتم الأسفار', 'خرافي');
+
+      if (isPerfect) {
+        await unlockBadge('perfect_1', 'العلامة الكاملة', 'عادي');
+        const perfectCount = updatedHistory.filter(q => q.score === q.total).length;
+        if (perfectCount >= 10) await unlockBadge('perfect_10', 'القناص', 'مميز');
+        if (perfectCount >= 73) await unlockBadge('perfect_all', 'القاموس', 'أسطوري');
+      }
+
+      if (timeTaken < 30 && isPerfect) {
+        await unlockBadge('flawless_victory', 'لا يُقهر', 'نادر');
+        await unlockBadge('speed_demon', 'بطل السرعة', 'سري');
+      }
+    } catch (e) {
+      console.error("Error finalizing quiz points:", e);
     }
   };
 
