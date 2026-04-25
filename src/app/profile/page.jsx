@@ -74,7 +74,7 @@ const ProfilePage = () => {
     const shareData = {
       title: 'تطبيق أجيوس',
       text: 'حمل أبليكيشن أجيوس واقرأ الكتاب المقدس بطريقة جديدة!',
-      url: 'https://play.google.com/store/apps/details?id=com.agios.bible, 
+      url: 'https://play.google.com/store/apps/details?id=com.agios.bible', 
       dialogTitle: 'مشاركة التطبيق مع الأصدقاء',
     };
 
