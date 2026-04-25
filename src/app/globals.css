@@ -21,13 +21,23 @@
 }
 
 [data-theme='dark'] {
-  --color-bg-start: #0f172a;
-  --color-bg-end: #1e3a8a;
-  --color-card-bg: rgba(15, 23, 42, 0.8);
-  --color-text-primary: #f8f9fa;
-  --color-text-secondary: #94a3b8;
-  --color-shadow-medium: rgba(0, 0, 0, 0.4);
-  --btn-text: #0f172a;
+  /* تدرج خلفية أعمق وأفخم */
+  --color-bg-start: #020617; /* أسود كحلي عميق */
+  --color-bg-end: #0f172a;   /* أزرق غامق متزن */
+  
+  --color-card-bg: rgba(255, 255, 255, 0.05); 
+  --color-card-border: rgba(255, 255, 255, 0.1); 
+  
+  --color-text-primary: #ffffff; 
+  --color-text-secondary: #cbd5e1; 
+  
+  --color-accent: #38bdf8; 
+  
+  /* الظلال */
+  --color-shadow-medium: rgba(0, 0, 0, 0.6);
+  
+  /* لون نص الزراير */
+  --btn-text: #ffffff;
 }
 
 * {

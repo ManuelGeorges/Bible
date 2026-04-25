@@ -51,16 +51,12 @@ export default function BibleContent() {
   const [currentNoteText, setCurrentNoteText] = useState('');
   const [targetVerseKey, setTargetVerseKey] = useState(null);
 
-  const [readingSeconds, setReadingSeconds] = useState(0);
-  const [canClaimPoints, setCanClaimPoints] = useState(false);
-
   const lastTap = useRef(0);
   const tapCount = useRef(0);
   const longPressTimer = useRef(null);
   const isMoving = useRef(false);
   const isLongPressActive = useRef(false);
   const touchStartPos = useRef({ x: 0, y: 0 });
-  const timerRef = useRef(null);
 
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
@@ -110,11 +106,6 @@ export default function BibleContent() {
     window.addEventListener('storage', syncAppSettings);
     return () => window.removeEventListener('storage', syncAppSettings);
   }, []);
-
-  useEffect(() => {
-
-    return () => clearInterval(timerRef.current);
-  }, [selectedBookIndex, selectedChapterIndex]);
 
   const updateUserPoints = async (amount, reason, type = 'general', isNegative = false) => {
     if (!user) return;
@@ -442,7 +433,11 @@ export default function BibleContent() {
                   className={`${styles.inlineVerse} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`}
                   onTouchStart={(e) => handleTouchStart(e, v, i)} onTouchMove={handleTouchMove} onTouchEnd={(e) => handleTouchEnd(e, v, i)}
                   onContextMenu={(e) => e.preventDefault()}
-                  onClick={() => { if (window.matchMedia('(pointer: fine)').matches && selectedVerses.length === 0) setActiveMenu(activeMenu === key ? null : key); }}
+                  onClick={() => { 
+                    if (window.matchMedia('(pointer: fine)').matches) {
+                        toggleVerseSelection(v, i);
+                    }
+                  }}
                   style={{
                     backgroundColor: annotation?.color ? `${annotation.color}66` : 'transparent',
                     display: versePerLine ? 'block' : 'inline',
@@ -453,15 +448,6 @@ export default function BibleContent() {
                   <span className={styles.styledVerseNumber}>{convertToArabicNumber(i + 1)}</span>
                   <span className={styles.verseText}>{v} </span>
                   {annotation?.note && <span className={styles.miniNoteIndicator} onClick={(e) => { e.stopPropagation(); openNoteEditor(key); }}> 📝 </span>}
-                  {activeMenu === key && (
-                    <div className={styles.desktopMenuInline}>
-                      <button onClick={(e) => { e.stopPropagation(); copyVerse(v, i); }}>📋</button>
-                      <button onClick={(e) => { e.stopPropagation(); shareVerse(v, i); }}><Share2 size={16} /></button>
-                      <button onClick={(e) => { e.stopPropagation(); openNoteEditor(key); }}>📝</button>
-                      <button onClick={(e) => { e.stopPropagation(); highlightSelected('#FFC107'); }}>✨</button>
-                      <button onClick={(e) => { e.stopPropagation(); highlightSelected(null); }}>🗑️</button>
-                    </div>
-                  )}
                 </span>
               );
             })}
@@ -481,10 +467,6 @@ export default function BibleContent() {
             updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
             toast.error("تم إلغاء تحديد الإصحاح"); 
           } else {
-            if (!canClaimPoints) {
-              toast.error("عليك القراءة لمدة ٤٠ ثانية على الأقل!");
-              return;
-            }
             const next = { ...completedChapters, [key]: true };
             setCompletedChapters(next);
             saveToFirestore(favouriteVerses, next);

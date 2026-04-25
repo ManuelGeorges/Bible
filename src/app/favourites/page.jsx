@@ -160,9 +160,15 @@ export default function FavouritesPage() {
               <p className={styles.favouriteText}>{item.text}</p>
               {item.note && <div className={styles.userNote}><p>{item.note}</p></div>}
               <div className={styles.favouriteMeta}>
-                <span className={styles.favouriteReference}>
-                  {`${item.book} ${convertToArabicNumber(item.ch + 1)}:${convertToArabicNumber(item.v + 1)}`}
-                </span>
+<span className={styles.favouriteReference}>
+  {item.reference ? (
+    // لو الآية جاية من "آية اليوم" ومعاها مرجع جاهز اعرضه فوراً
+    item.reference
+  ) : (
+    // لو آية قديمة من الكتاب المقدس، اعرضها بالنظام القديم
+    `${item.book} ${convertToArabicNumber((item.ch || 0) + 1)}:${convertToArabicNumber((item.v || 0) + 1)}`
+  )}
+</span>
               </div>
             </div>
             <button onClick={() => handleRemove(item)} className={styles.removeButton}>✖</button>

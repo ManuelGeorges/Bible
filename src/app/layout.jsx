@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import Script from 'next/script';
 import SEOlinks from '../components/SEOlinks';
 import CapacitorFeatures from '../components/CapacitorFeatures';
+import SplashHandler from '../components/SplashHandler';
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'react-hot-toast';
 import UserTracker from '../components/UserTracker';
@@ -86,7 +87,7 @@ export default function RootLayout({ children }) {
           }
         `}} />
       </head>
-      <body>
+<body>
         <StatsWatcher />
         <ThemeProvider 
           attribute="data-theme" 
@@ -97,18 +98,26 @@ export default function RootLayout({ children }) {
           
           <UserTracker />
 
-            <CapacitorFeatures />
-            <SEOlinks />
+          <SplashHandler>
+            {/* 1. اظهر الـ Navbar فوراً */}
             <BibleNavbar />
+            
             <main className={styles.mainContent}>
               <div className={styles.container}>{children}</div>
             </main>
+
             <Footer />
+
+            {/* 2. المكونات التقنية التي تستهلك وقتاً أو نت تضعها في الأسفل */}
+            <CapacitorFeatures />
+            <SEOlinks />
+
+            {/* 3. السكريبتات الخارجية دائماً في الآخر وبإستراتيجية lazy */}
             <Script
               src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-              strategy="afterInteractive"
+              strategy="lazyOnload" 
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-analytics" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
@@ -116,6 +125,7 @@ export default function RootLayout({ children }) {
                 gtag('config', 'G-J90H6JXHNG');
               `}
             </Script>
+          </SplashHandler>
         </ThemeProvider>
       </body>
     </html>

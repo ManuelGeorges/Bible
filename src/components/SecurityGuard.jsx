@@ -5,12 +5,10 @@ import { useEffect } from 'react';
 export default function SecurityGuard() {
   return null;
   /*useEffect(() => {
-    // 1. منع القائمة المنبثقة (الكليك يمين)
     const handleContextMenu = (e) => {
       e.preventDefault();
     };
 
-    // 2. منع اختصارات لوحة المفاتيح لأدوات المطورين
     const handleKeyDown = (e) => {
       if (
         e.key === 'F12' || 
@@ -30,5 +28,5 @@ export default function SecurityGuard() {
     };
   }, []);
 
-  return null; // مكون صامت لا يظهر في الواجهة*/
+  return null; 
 }

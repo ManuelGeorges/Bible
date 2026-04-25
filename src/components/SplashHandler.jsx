@@ -11,7 +11,7 @@ const SplashHandler = ({ children }) => {
   useEffect(() => {
     const initApp = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
+        await new Promise(resolve => setTimeout(resolve, 50)); 
         
         setIsReady(true);
       } catch (error) {
@@ -31,7 +31,7 @@ const SplashHandler = ({ children }) => {
     return (
       <div className={styles.splashWrapper}>
         <div className={styles.logoContainer}>
-          <img src="/splash_full.png" alt="Logo" className={styles.mainLogo} />
+          <img src="/logo.png" alt="Logo" className={styles.mainLogo} />
         </div>
       </div>
     );

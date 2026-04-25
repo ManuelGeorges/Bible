@@ -8,6 +8,9 @@ project(':capacitor-community-firebase-crashlytics').projectDir = new File('../n
 include ':capacitor-community-keep-awake'
 project(':capacitor-community-keep-awake').projectDir = new File('../node_modules/@capacitor-community/keep-awake/android')
 
+include ':capacitor-community-media'
+project(':capacitor-community-media').projectDir = new File('../node_modules/@capacitor-community/media/android')
+
 include ':capacitor-firebase-authentication'
 project(':capacitor-firebase-authentication').projectDir = new File('../node_modules/@capacitor-firebase/authentication/android')
 
@@ -16,6 +19,9 @@ project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/
 
 include ':capacitor-browser'
 project(':capacitor-browser').projectDir = new File('../node_modules/@capacitor/browser/android')
+
+include ':capacitor-filesystem'
+project(':capacitor-filesystem').projectDir = new File('../node_modules/@capacitor/filesystem/android')
 
 include ':capacitor-local-notifications'
 project(':capacitor-local-notifications').projectDir = new File('../node_modules/@capacitor/local-notifications/android')
@@ -31,6 +37,9 @@ project(':capacitor-splash-screen').projectDir = new File('../node_modules/@capa
 
 include ':capacitor-status-bar'
 project(':capacitor-status-bar').projectDir = new File('../node_modules/@capacitor/status-bar/android')
+
+include ':capacitor-toast'
+project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/toast/android')
 
 include ':capawesome-capacitor-app-review'
 project(':capawesome-capacitor-app-review').projectDir = new File('../node_modules/@capawesome/capacitor-app-review/android')

@@ -1,176 +1,128 @@
 .container {
   width: 100%;
-  padding: 20px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-/* إخفاء التيمبلت تماماً عن عين المستخدم (ولكن يمكن تصويره) */
-.offscreen {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-}
-
-/* التيمبلت المخفي (التصميم اللي هيتشير) */
-.cardTemplate {
-  width: 1080px; /* مقاس عالي الجودة للستوري أو البوست */
-  height: 1080px;
-  background-color: var(--color-bg-start); /* لون خلفية جلوبال */
-  background-image: url('/images/agios-share-bg.png'); /* خلفية فيها نقوش وقورة (اختياري) */
-  background-size: cover;
-  background-position: center;
-  border-radius: 0;
-  position: relative;
-  overflow: hidden;
+  padding: 10px;
   box-sizing: border-box;
 }
 
-/* طبقة جلاسمورفيزم شفافة شيك جداً */
-.innerContent {
+.offscreen {
   position: absolute;
-  inset: 60px; /* مسافة من الحواف */
-  background: rgba(255, 255, 255, 0.05); /* ويب */
-  backdrop-filter: blur(25px); /* جلاسمورفيزم */
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 40px;
+  left: -2000px;
+  top: 0;
+  z-index: -1;
+}
+
+.cardTemplate {
+  width: 1080px; 
+  height: 1080px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 40px;
+}
+
+.innerContent {
+  width: 100%;
+  height: 100%;
+  border-width: 8px;
+  border-style: solid;
+  border-radius: 80px;
   padding: 60px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 2;
+  justify-content: center;
   box-sizing: border-box;
+  text-align: center;
+  overflow: hidden;
 }
 
-/* لو التيم داارك نخلي الجلاسمورفيزم غامقة */
-[data-theme='dark'] .innerContent {
-  background: rgba(var(--color-card-bg-rgb), 0.7);
-  border-color: rgba(255, 255, 255, 0.05);
+.header, .footer {
+  flex-shrink: 0;
+}
+
+.body {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 20px 0;
 }
 
 .appLogo {
   font-family: 'Inter', sans-serif;
-  font-size: 40px;
+  font-size: 54px;
   font-weight: 900;
-  color: var(--color-accent);
-  letter-spacing: 5px;
-  position: absolute;
-  top: 40px;
-  z-index: 3;
+  letter-spacing: 12px;
+  margin: 0;
+  text-transform: uppercase;
 }
 
 .mainVerse {
   font-family: 'Cairo', sans-serif;
-  font-size: 60px; /* خط كبير وواضح */
+  font-size: 72px; 
   font-weight: 800;
-  line-height: 1.5;
-  text-align: center;
-  margin-bottom: 30px;
-  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  line-height: 1.6;
+  margin: 0;
+  width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  direction: rtl;
 }
 
 .mainRef {
-  font-size: 50px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 48px;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  opacity: 0.8;
-  margin-bottom: 20px;
+  margin: 0;
 }
 
-/* عنصر زخرفي عصري */
-.decorativeElements {
-  position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 300px;
-  height: 300px;
-  background: rgba(var(--color-accent-rgb), 0.1);
-  border-radius: 50%;
-  z-index: 1;
-  filter: blur(60px);
-}
-
-.decorativeElements::after {
-  content: '';
-  position: absolute;
-  bottom: -400px;
-  left: -400px;
-  width: 400px;
-  height: 400px;
-  background: rgba(var(--color-bg-end-rgb), 0.2);
-  border-radius: 50%;
-  filter: blur(80px);
-}
-
-/* التاج والسنة (تمت المشاركة من أجيوس) */
-.badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(var(--color-accent-rgb), 0.05);
-  padding: 10px 20px;
-  border-radius: 50px;
-  border: 1px solid var(--color-border);
-  position: absolute;
-  bottom: 40px;
-  z-index: 3;
-  color: var(--color-accent);
-  font-weight: 700;
-  font-size: 14px;
-}
-
-/* أزرار التحكم الفعالة */
 .actionGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 12px;
   width: 100%;
-  max-width: 400px;
-  margin-top: 30px;
+  max-width: 500px;
+  margin-top: 20px;
 }
 
 .actionBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 15px;
-  background: var(--btn-bg);
-  color: var(--btn-text);
+  gap: 8px;
+  padding: 16px 10px;
+  background: #1e3a8a;
+  color: white;
   border: none;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: 16px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s var(--transition-bounce);
-  box-shadow: 0 10px 30px var(--color-shadow-medium);
-}
-
-.actionBtn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 40px var(--color-shadow-medium);
+  transition: all 0.2s;
 }
 
 .actionBtn:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
 }
 
 .downloadBtn {
-  background: var(--color-card-bg);
-  color: var(--color-accent);
-  border: 1px solid var(--color-border);
+  background: transparent;
+  color: #1e3a8a;
+  border: 2px solid #1e3a8a;
 }
 
-.downloadBtn:hover {
-  border-color: var(--color-accent);
-}
-
-.loading {
+.spin {
   animation: rotate 1s linear infinite;
 }
 
@@ -180,13 +132,8 @@
 }
 
 @media (max-width: 480px) {
-  .innerContent {
-    inset: 30px;
-    padding: 30px;
-    border-radius: 30px;
+  .actionGrid {
+    grid-template-columns: 1fr;
+    padding: 0 10px;
   }
-  .mainVerse { font-size: 32px; }
-  .mainRef { font-size: 20px; }
-  .actionGrid { grid-template-columns: 1fr; gap: 10px; }
-  .actionBtn { padding: 12px; font-size: 14px; }
 }

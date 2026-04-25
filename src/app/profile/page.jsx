@@ -73,8 +73,8 @@ const ProfilePage = () => {
   const handleShareApp = async () => {
     const shareData = {
       title: 'تطبيق أجيوس',
-      text: 'حمل تطبيق أجيوس واقرأ الكتاب المقدس بطريقة تفاعلية وتابع خططك الدراسية!',
-      url: 'https://agios-app.com', // استبدله برابط تطبيقك الفعلي
+      text: 'حمل أبليكيشن أجيوس واقرأ الكتاب المقدس بطريقة جديدة!',
+      url: 'https://play.google.com/store/apps/details?id=com.agios.bible, 
       dialogTitle: 'مشاركة التطبيق مع الأصدقاء',
     };
 

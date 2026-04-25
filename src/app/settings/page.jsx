@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { 
   Bell, Sun, Moon, BookOpen, HelpCircle, 
   Clock, X, Settings as SettingsIcon, 
-  Type, LayoutList, AlignJustify 
+  Type, LayoutList, AlignJustify , Flame, RefreshCw , Sparkles,
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'

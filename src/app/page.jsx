@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc, onSnapshot, updateDoc, increment, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, updateDoc, increment, arrayUnion, deleteField } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { Capacitor } from '@capacitor/core';
 import { toast, Toaster } from 'react-hot-toast';
@@ -18,7 +18,6 @@ import {
     ChevronLeft, Award, Flame, LogIn, ArrowRight
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
-
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const staticPlans = studyPlansData.plans;
@@ -161,47 +160,57 @@ const LandingPage = () => {
         }
     };
 
-    const toggleFavorite = async () => {
-        if (!dailyVerse || !user) return;
+const toggleFavorite = async () => {
+    if (!dailyVerse || !user) return;
 
-        // التأكد من استخدام نفس نمط الـ ID المستخدم في التطبيق
-        const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
-        const userRef = doc(db, 'users', user.uid);
-        let newFavs = { ...favouriteVerses };
+    const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
+    const userRef = doc(db, 'users', user.uid);
+    let newFavs = { ...favouriteVerses };
 
-        if (newFavs[verseKey]) {
-            // حالة الحذف
-            delete newFavs[verseKey];
-            setFavouriteVerses(newFavs); // تحديث الواجهة فوراً
+    if (newFavs[verseKey]) {
+        delete newFavs[verseKey];
+        setFavouriteVerses(newFavs);
+        await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
+        toast.error('تم الحذف من كنوزك');
+    } else {
+        // 1. تنظيف المرجع من الأقواس
+        const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
 
-            await updateDoc(userRef, {
-                [`favorites.verses.${verseKey}`]: deleteField()
-            });
-            toast.error('تم الحذف من كنوزك');
-        } else {
-            // حالة الإضافة - إضافة البيانات التي تتوقعها صفحة Favourites
-            const verseData = {
-                text: dailyVerse.verse,
-                // قمنا بتقسيم المرجع أو إرساله بشكل يتوافق مع صفحة الـ Favourites
-                reference: dailyVerse.reference,
-                book: dailyVerse.book || "آية اليوم",
-                ch: dailyVerse.chapter || 0,
-                v: dailyVerse.verseNumber || 0,
-                color: '#FFC107', // إعطاء لون افتراضي ليتم قراءته في الفلتر
-                dateAdded: new Date().toISOString()
-            };
+        // 2. دالة لتحويل الأرقام الهندية (١، ٢، ٣) إلى إنجليزية (1, 2, 3)
+        // هذا يمنع ظهور 131 و NaN تماماً
+        const convertNumbers = (str) => {
+            if (!str) return "";
+            return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '');
+        };
 
-            newFavs[verseKey] = verseData;
-            setFavouriteVerses(newFavs);
+        // 3. تقسيم النص (اسم السفر والأرقام)
+        const parts = cleanRef.split(' ');
+        const rawNumbers = parts[parts.length - 1]; // الجزء مثل "١٣:١١"
+        const bookName = parts.slice(0, -1).join(' '); // الجزء مثل "كورنثوس الأولى"
 
-            await updateDoc(userRef, {
-                totalPoints: increment(5),
-                [`favorites.verses.${verseKey}`]: verseData
-            });
-            toast.success('تمت الإضافة لكنوزك (+5 نقاط)');
-        }
-    };
+        // 4. فصل الإصحاح والآية
+        const [rawCh, rawV] = rawNumbers.split(':');
 
+        const verseData = {
+            text: dailyVerse.verse,
+            reference: cleanRef,
+            book: bookName,
+            ch: convertNumbers(rawCh), // سيخزن 13 بدلاً من ١٣
+            v: convertNumbers(rawV),   // سيخزن 11 بدلاً من ١١
+            color: '#FFC107',
+            dateAdded: new Date().toISOString()
+        };
+
+        newFavs[verseKey] = verseData;
+        setFavouriteVerses(newFavs);
+
+        await updateDoc(userRef, {
+            totalPoints: increment(5),
+            [`favorites.verses.${verseKey}`]: verseData
+        });
+        toast.success('تمت الإضافة لكنوزك (+5 نقاط)');
+    }
+};
     const quickLinks = [
         { name: 'الكتاب المقدس', icon: <BookOpen />, path: '/bible', color: '#6366f1' },
         { name: 'الخرائط', icon: <Map />, path: '/maps', color: '#10b981' },

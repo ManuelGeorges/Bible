@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { FirebaseCrashlytics } from '@capacitor-community/firebase-crashlytics';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
@@ -18,6 +19,30 @@ export default function CapacitorFeatures() {
   const router = useRouter();
   const { theme } = useTheme();
   const hasSetup = useRef(false);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const updateStatusBar = async () => {
+      try {
+        if (Capacitor.getPlatform() === 'android') {
+          const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          
+          if (isDark) {
+            await StatusBar.setStyle({ style: Style.Dark });
+            await StatusBar.setBackgroundColor({ color: '#0f172a' });
+          } else {
+            await StatusBar.setStyle({ style: Style.Light });
+            await StatusBar.setBackgroundColor({ color: '#ffffff' });
+          }
+        }
+      } catch (e) {
+        console.error("StatusBar Error:", e);
+      }
+    };
+
+    updateStatusBar();
+  }, [theme]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform() || hasSetup.current) return;
@@ -61,30 +86,27 @@ export default function CapacitorFeatures() {
       }
     };
 
-    const setupUIAndPush = async () => {
+    const setupUIAndNotifications = async () => {
       try {
         await KeepAwake.keepAwake().catch(() => {});
         await FirebaseCrashlytics.setCrashlyticsCollectionEnabled({ enabled: true }).catch(() => {});
 
-        const currentTheme = theme || localStorage.getItem('theme') || 'system';
-        const isDark = currentTheme === 'dark' || (currentTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        
-        if (Capacitor.getPlatform() === 'android') {
-          await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(() => {});
-          await StatusBar.setBackgroundColor({ color: isDark ? '#0f172a' : '#ffffff' }).catch(() => {});
-        }
+        await LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
+          const url = notification.notification.extra?.url;
+          if (url) router.push(url);
+        });
 
         let pushPerms = await PushNotifications.checkPermissions();
         if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions();
         if (pushPerms.receive === 'granted') {
           await PushNotifications.register().catch(() => {});
           await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-            const url = notification.notification.data.url;
+            const url = notification.notification.data?.url;
             if (url) router.push(url);
           });
         }
       } catch (e) {
-        console.error("UI/Push Error:", e);
+        console.error("UI/Notification Error:", e);
       }
     };
 
@@ -112,7 +134,7 @@ export default function CapacitorFeatures() {
 
     const init = async () => {
       await handleAppUpdate();
-      await setupUIAndPush();
+      await setupUIAndNotifications();
       await syncNotifications();
     };
 
@@ -121,8 +143,10 @@ export default function CapacitorFeatures() {
 
     return () => {
       clearInterval(reviewInterval);
-    };F
-  }, [router, theme]);
+      LocalNotifications.removeAllListeners();
+      PushNotifications.removeAllListeners();
+    };
+  }, [router]);
 
   return null;
 }

@@ -175,24 +175,44 @@
 }
 
 .verseActions {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
 }
 
 .glassBtn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  border-radius: 14px;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+
+.glassBtn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
 }
 
 .activeFav {
-  background: var(--color-accent) !important;
+  background: #1e3a8a !important;
   color: white !important;
+}
+
+.copyBtn {
+  background: transparent !important;
+  color: #1e3a8a !important;
+  border: 2px solid #1e3a8a !important;
 }
 
 .lastReadBar {
@@ -289,7 +309,8 @@
 }
 
 .startedPlansSection {
-  margin: 10px 0;
+  margin: 16px 0;
+  padding: 0 4px;
   direction: rtl;
 }
 
@@ -305,94 +326,13 @@
   display: none;
 }
 
-.planProgressCard {
-  min-width: 280px;
-  background: var(--color-card-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 16px;
-  text-align: right;
-  transition: transform 0.3s ease;
-  cursor: pointer;
-  border: 1px solid var(--color-border);
-}
-
-.planProgressCard:active {
-  transform: scale(0.97);
-}
-
-.planNameRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.planTitle {
-  font-weight: 700;
-  color: var(--color-text-primary);
-  font-size: 1rem;
-}
-
-.planPercent {
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-
-.progressBar {
-  width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
-  border-radius: 10px;
-}
-
-.planMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-}
-
-.skeletonText {
-  width: 100%;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-.startedPlansSection {
-  margin: 16px 0;
-  padding: 0 4px;
-  direction: rtl;
-}
-
 .plansVerticalList {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* المسافة بين كل كارت والتاني */
+  gap: 12px;
 }
 
-.planProgressCardVertical {
+.planProgressCard, .planProgressCardVertical {
   width: 100%;
   background: var(--color-card-bg);
   backdrop-filter: blur(15px);
@@ -407,7 +347,11 @@
   box-shadow: 0 4px 12px var(--color-shadow-light);
 }
 
-.planProgressCardVertical:active {
+.planProgressCard {
+  min-width: 280px;
+}
+
+.planProgressCard:active, .planProgressCardVertical:active {
   transform: scale(0.98);
   background: rgba(255, 255, 255, 0.08);
 }
@@ -464,4 +408,24 @@
   gap: 4px;
   color: var(--color-accent);
   font-weight: 600;
+}
+
+.skeletonText {
+  width: 100%;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+@media (max-width: 480px) {
+  .verseActions {
+    grid-template-columns: 1fr;
+  }
 }
