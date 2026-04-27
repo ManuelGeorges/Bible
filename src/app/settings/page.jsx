@@ -1,10 +1,10 @@
 "use client"
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { 
-  Bell, Sun, Moon, BookOpen, HelpCircle, 
-  Clock, X, Settings as SettingsIcon, 
-  Type, LayoutList, AlignJustify , Flame, RefreshCw , Sparkles,
+import {
+  Bell, Sun, Moon, BookOpen, HelpCircle,
+  Clock, X, Settings as SettingsIcon,
+  Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
@@ -20,12 +20,17 @@ const Settings = () => {
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
   const [notifications, setNotifications] = useState({
-    dailyVerse: true,
-    dailyVerseTime: '06:00',
-    dailyQuestion: true,
-    dailyQuestionTime: '18:00',
+    verse: true,
+    verseTime: '06:00',
+    question: true,
+    questionTime: '18:00',
     studyPlans: true,
-    studyPlansTime: '10:00'
+    studyPlansTime: '10:00',
+    streak: true,
+    tip: true,
+    tipTime: '15:00',
+    appSuggestions: true,
+    updateAlerts: true
   })
 
   useEffect(() => {
@@ -34,22 +39,26 @@ const Settings = () => {
       const native = Capacitor.isNativePlatform()
       setIsNative(native)
 
-      // تحميل حجم الخط
       const savedSize = localStorage.getItem('bibleFontSize') || '18'
       const size = parseInt(savedSize)
       setFontSize(size)
       document.documentElement.style.setProperty('--bible-font-size', size + 'px')
 
-      // تحميل وضع عرض الآيات
       const savedLayout = localStorage.getItem('versePerLine') === 'true'
       setVersePerLine(savedLayout)
 
-      // إعدادات الإشعارات
       if (native) {
         const perms = await LocalNotifications.checkPermissions()
         const isGranted = perms.display === 'granted'
-        const savedMaster = localStorage.getItem('masterNotifications') === 'true'
-        const finalMasterState = isGranted && savedMaster
+        const savedMasterRaw = localStorage.getItem('masterNotifications')
+
+        let finalMasterState
+        if (savedMasterRaw === null) {
+          finalMasterState = isGranted
+        } else {
+          finalMasterState = isGranted && savedMasterRaw === 'true'
+        }
+
         setMasterNotifications(finalMasterState)
         localStorage.setItem('masterNotifications', finalMasterState.toString())
       } else {
@@ -84,16 +93,28 @@ const Settings = () => {
     }
     setMasterNotifications(nextState)
     localStorage.setItem('masterNotifications', nextState.toString())
+    
+    if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateSettings) {
+        window.AgiosScannerNative.updateSettings(JSON.stringify(notifications), nextState);
+    }
+
     await syncNotifications()
   }
 
   const updateSubSetting = async (key, value) => {
-    if (!masterNotifications) return
-    const updated = { ...notifications, [key]: value }
-    setNotifications(updated)
-    localStorage.setItem('notificationSettings', JSON.stringify(updated))
-    await syncNotifications()
-  }
+    if (!masterNotifications) return;
+    
+    const updated = { ...notifications, [key]: value };
+    setNotifications(updated);
+    
+    localStorage.setItem('notificationSettings', JSON.stringify(updated));
+    
+    if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateSettings) {
+        window.AgiosScannerNative.updateSettings(JSON.stringify(updated), masterNotifications);
+    }
+
+    await syncNotifications(); 
+  };
 
   const updateFontSize = (size) => {
     const newSize = Math.max(10, Math.min(40, size))
@@ -129,37 +150,44 @@ const Settings = () => {
   return (
     <div className={styles.container} dir="rtl">
       <h1 className={styles.title}>الإعدادات</h1>
-      
-      {/* قسم المظهر */}
+
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span>🎨</span> مظهر التطبيق
         </h2>
         <div className={styles.themeGrid}>
-          <div 
+          <div
             className={`${styles.themeCircle} ${theme === 'light' ? styles.active : ''}`}
             style={{ backgroundColor: '#ffffff', border: '1px solid #ddd' }}
             onClick={() => setTheme('light')}
           >
             <Sun size={20} color="#fbbf24" />
+            <span className={styles.themeLabel}>فاتح</span>
           </div>
-          <div 
+          <div
             className={`${styles.themeCircle} ${theme === 'dark' ? styles.active : ''}`}
             style={{ backgroundColor: '#0f172a' }}
             onClick={() => setTheme('dark')}
           >
             <Moon size={20} color="#60a5fa" />
+            <span className={styles.themeLabel}>داكن</span>
+          </div>
+          <div
+            className={`${styles.themeCircle} ${theme === 'system' ? styles.active : ''}`}
+            style={{ backgroundColor: '#475569' }}
+            onClick={() => setTheme('system')}
+          >
+            <Monitor size={20} color="#e2e8f0" />
+            <span className={styles.themeLabel}>تلقائي</span>
           </div>
         </div>
       </div>
 
-      {/* قسم الآيات - مدمج فيه حجم الخط وتنسيق الأسطر */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <span>📖</span> إعدادات الآيات
         </h2>
-        
-        {/* Toggle تنسيق الأسطر */}
+
         <div className={styles.settingItem}>
           <div className={styles.settingInfo}>
             <LayoutList size={20} className={styles.iconPrimary} />
@@ -169,22 +197,21 @@ const Settings = () => {
             </div>
           </div>
           <label className={styles.switch}>
-            <input 
-              type="checkbox" 
-              checked={versePerLine} 
-              onChange={toggleVerseLayout} 
+            <input
+              type="checkbox"
+              checked={versePerLine}
+              onChange={toggleVerseLayout}
             />
             <span className={styles.sliderRound}></span>
           </label>
         </div>
 
-        {/* تحكم حجم الخط */}
         <div className={styles.fontControlGroup}>
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <Type size={20} className={styles.iconPrimary} />
             <span className={styles.settingLabel}>حجم خط القراءة ({fontSize}px)</span>
           </div>
-          
+
           <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px` }}>
             {versePerLine ? (
               <div className={styles.previewList}>
@@ -201,14 +228,14 @@ const Settings = () => {
           <div className={styles.controlsWrapper}>
             <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize - 1)} disabled={fontSize <= 10}>−</button>
             <div className={styles.sliderContainer}>
-              <input 
-                type="range" 
-                min="10" 
-                max="40" 
-                step="1" 
-                value={fontSize} 
-                onChange={(e) => updateFontSize(parseInt(e.target.value))} 
-                className={styles.slider} 
+              <input
+                type="range"
+                min="10"
+                max="40"
+                step="1"
+                value={fontSize}
+                onChange={(e) => updateFontSize(parseInt(e.target.value))}
+                className={styles.slider}
               />
             </div>
             <button className={styles.stepBtn} onClick={() => updateFontSize(fontSize + 1)} disabled={fontSize >= 40}>+</button>
@@ -216,106 +243,103 @@ const Settings = () => {
         </div>
       </div>
 
-{isNative && (
+      {isNative && (
         <div className={styles.section}>
           <div className={styles.masterToggleRow}>
             <h2 className={styles.sectionTitle}>
               <span>🔔</span> الإشعارات
             </h2>
             <label className={styles.switch}>
-              <input 
-                type="checkbox" 
-                checked={masterNotifications} 
-                onChange={handleMasterToggle} 
+              <input
+                type="checkbox"
+                checked={masterNotifications}
+                onChange={handleMasterToggle}
               />
               <span className={styles.sliderRound}></span>
             </label>
           </div>
 
           <div className={`${styles.notificationList} ${!masterNotifications ? styles.disabledList : ''}`}>
-            
-            {/* آية اليوم */}
+
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <Bell size={18} /> 
+                  <Bell size={18} />
                   <div className={styles.textContainer}>
                     <span>آية اليوم</span>
                     <p className={styles.subText}>استلام آية مشجعة يومياً</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.dailyVerse} 
-                    onChange={() => updateSubSetting('dailyVerse', !notifications.dailyVerse)} 
-                    disabled={!masterNotifications} 
+                  <input
+                    type="checkbox"
+                    checked={notifications.verse}
+                    onChange={() => updateSubSetting('verse', !notifications.verse)}
+                    disabled={!masterNotifications}
                   />
                   <span className={styles.sliderRound}></span>
                 </label>
               </div>
-              <div className={`${styles.timePickerRow} ${!notifications.dailyVerse ? styles.dimmed : ''}`}>
+              <div className={`${styles.timePickerRow} ${!notifications.verse ? styles.dimmed : ''}`}>
                 <Clock size={16} />
                 <span>وقت التنبيه:</span>
-                <input 
-                  type="time" 
-                  value={notifications.dailyVerseTime} 
-                  onChange={(e) => updateSubSetting('dailyVerseTime', e.target.value)} 
-                  className={styles.timeInput} 
-                  disabled={!notifications.dailyVerse} 
+                <input
+                  type="time"
+                  value={notifications.verseTime}
+                  onChange={(e) => updateSubSetting('verseTime', e.target.value)}
+                  className={styles.timeInput}
+                  disabled={!notifications.verse}
                 />
               </div>
             </div>
 
-            {/* سؤال اليوم */}
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <HelpCircle size={18} /> 
+                  <HelpCircle size={18} />
                   <div className={styles.textContainer}>
                     <span>سؤال اليوم</span>
                     <p className={styles.subText}>تحديات ومسابقات يومية</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.dailyQuestion} 
-                    onChange={() => updateSubSetting('dailyQuestion', !notifications.dailyQuestion)} 
-                    disabled={!masterNotifications} 
+                  <input
+                    type="checkbox"
+                    checked={notifications.question}
+                    onChange={() => updateSubSetting('question', !notifications.question)}
+                    disabled={!masterNotifications}
                   />
                   <span className={styles.sliderRound}></span>
                 </label>
               </div>
-              <div className={`${styles.timePickerRow} ${!notifications.dailyQuestion ? styles.dimmed : ''}`}>
+              <div className={`${styles.timePickerRow} ${!notifications.question ? styles.dimmed : ''}`}>
                 <Clock size={16} />
                 <span>وقت التنبيه:</span>
-                <input 
-                  type="time" 
-                  value={notifications.dailyQuestionTime} 
-                  onChange={(e) => updateSubSetting('dailyQuestionTime', e.target.value)} 
-                  className={styles.timeInput} 
-                  disabled={!notifications.dailyQuestion} 
+                <input
+                  type="time"
+                  value={notifications.questionTime}
+                  onChange={(e) => updateSubSetting('questionTime', e.target.value)}
+                  className={styles.timeInput}
+                  disabled={!notifications.question}
                 />
               </div>
             </div>
 
-            {/* تذكير الخطط الدراسية */}
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <BookOpen size={18} /> 
+                  <BookOpen size={18} />
                   <div className={styles.textContainer}>
                     <span>تذكير الخطط الدراسية</span>
                     <p className={styles.subText}>تنبيه بمتابعة ورد القراءة المتبقي</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.studyPlans} 
-                    onChange={() => updateSubSetting('studyPlans', !notifications.studyPlans)} 
-                    disabled={!masterNotifications} 
+                  <input
+                    type="checkbox"
+                    checked={notifications.studyPlans}
+                    onChange={() => updateSubSetting('studyPlans', !notifications.studyPlans)}
+                    disabled={!masterNotifications}
                   />
                   <span className={styles.sliderRound}></span>
                 </label>
@@ -323,71 +347,68 @@ const Settings = () => {
               <div className={`${styles.timePickerRow} ${!notifications.studyPlans ? styles.dimmed : ''}`}>
                 <Clock size={16} />
                 <span>وقت التنبيه:</span>
-                <input 
-                  type="time" 
-                  value={notifications.studyPlansTime} 
-                  onChange={(e) => updateSubSetting('studyPlansTime', e.target.value)} 
-                  className={styles.timeInput} 
-                  disabled={!notifications.studyPlans} 
+                <input
+                  type="time"
+                  value={notifications.studyPlansTime}
+                  onChange={(e) => updateSubSetting('studyPlansTime', e.target.value)}
+                  className={styles.timeInput}
+                  disabled={!notifications.studyPlans}
                 />
               </div>
             </div>
 
-            {/* حماية الستريك */}
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <Flame size={18} color="#f97316" /> 
+                <Flame size={18} color="#f97316" />
                 <div className={styles.textContainer}>
                   <span>تنبيه حماية الستريك</span>
                   <p className={styles.subText}>تذكيرك قبل انتهاء اليوم للحفاظ على أيامك</p>
                 </div>
               </div>
               <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={notifications.streakReminder} 
-                  onChange={() => updateSubSetting('streakReminder', !notifications.streakReminder)} 
-                  disabled={!masterNotifications} 
+                <input
+                  type="checkbox"
+                  checked={notifications.streak}
+                  onChange={() => updateSubSetting('streak', !notifications.streak)}
+                  disabled={!masterNotifications}
                 />
                 <span className={styles.sliderRound}></span>
               </label>
             </div>
 
-            {/* اقتراحات ومزايا */}
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <Sparkles size={18} color="#8b5cf6" /> 
+                <Sparkles size={18} color="#8b5cf6" />
                 <div className={styles.textContainer}>
                   <span>اقتراحات ومزايا التطبيق</span>
                   <p className={styles.subText}>تعرف على خصائص أجيوس الجديدة</p>
                 </div>
               </div>
               <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={notifications.appSuggestions} 
-                  onChange={() => updateSubSetting('appSuggestions', !notifications.appSuggestions)} 
-                  disabled={!masterNotifications} 
+                <input
+                  type="checkbox"
+                  checked={notifications.appSuggestions}
+                  onChange={() => updateSubSetting('appSuggestions', !notifications.appSuggestions)}
+                  disabled={!masterNotifications}
                 />
                 <span className={styles.sliderRound}></span>
               </label>
             </div>
 
-            {/* تحديثات البرنامج */}
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <RefreshCw size={18} color="#10b981" /> 
+                <RefreshCw size={18} color="#10b981" />
                 <div className={styles.textContainer}>
                   <span>إشعارات التحديثات</span>
                   <p className={styles.subText}>تنبيه فور توفر نسخة جديدة من التطبيق</p>
                 </div>
               </div>
               <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={notifications.updateAlerts} 
-                  onChange={() => updateSubSetting('updateAlerts', !notifications.updateAlerts)} 
-                  disabled={!masterNotifications} 
+                <input
+                  type="checkbox"
+                  checked={notifications.updateAlerts}
+                  onChange={() => updateSubSetting('updateAlerts', !notifications.updateAlerts)}
+                  disabled={!masterNotifications}
                 />
                 <span className={styles.sliderRound}></span>
               </label>
@@ -396,7 +417,6 @@ const Settings = () => {
         </div>
       )}
 
-      {/* مودال التصاريح */}
       {showPermissionModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -409,8 +429,8 @@ const Settings = () => {
             <h3>تفعيل الإشعارات</h3>
             <p>يرجى تفعيل الإشعارات من إعدادات الهاتف لتتمكن من استلام المحتوى اليومي.</p>
             <div className={styles.modalActions}>
+              <button onClick={openSystemSettings} className={styles.primaryBtn}>فتح الإعدادات</button>
               <button onClick={() => setShowPermissionModal(false)} className={styles.cancelBtn}>إلغاء</button>
-              <button onClick={openSystemSettings} className={styles.confirmBtn}>فتح الإعدادات</button>
             </div>
           </div>
         </div>
@@ -419,4 +439,4 @@ const Settings = () => {
   )
 }
 
-export default Settings
+export default Settings;

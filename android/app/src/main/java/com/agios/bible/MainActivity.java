@@ -1,46 +1,67 @@
 package com.agios.bible;
 
+import android.app.AlarmManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
-import com.getcapacitor.Plugin;
-import com.getcapacitor.PluginCall;
-import com.getcapacitor.PluginMethod;
-import com.getcapacitor.annotation.CapacitorPlugin;
-import java.util.ArrayList;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // 1. تثبيت الـ Splash Screen أولاً
         SplashScreen.installSplashScreen(this);
-        
-        // 2. استدعاء الـ super.onCreate (هام جداً أن يكون قبل التسجيل في بعض النسخ)
         super.onCreate(savedInstanceState);
         
-        // 3. تسجيل البلجن يدوياً للتأكد من ربطه بالـ Bridge
-        registerPlugin(NativeSettingsCustom.class);
-    }
-}
+        checkAndRequestAlarmPermission();
+        refreshAllAlarms();
 
-// أضفت كلمة public لضمان وصول الـ Bridge للكلاس بسهولة
-@CapacitorPlugin(name = "NativeSettingsCustom")
-class NativeSettingsCustom extends Plugin {
-    @PluginMethod
-    public void openAppSettings(PluginCall call) {
-        try {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            Uri uri = Uri.fromParts("package", getContext().getPackageName(), null);
-            intent.setData(uri);
-            // إضافة Flag لضمان فتح النشاط حتى لو كان السياق غير نشط
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getContext().startActivity(intent);
-            call.resolve();
-        } catch (Exception e) {
-            call.reject(e.getLocalizedMessage());
+        WebView webView = getBridge().getWebView();
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void scanFile(String path) {
+                if (path == null) return;
+                MediaScannerConnection.scanFile(MainActivity.this,
+                        new String[]{path}, null, null);
+            }
+
+            @JavascriptInterface
+            public void refreshAlarms() {
+                refreshAllAlarms();
+            }
+
+            @JavascriptInterface
+            public void updateSettings(String json, boolean masterEnabled) {
+                SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+                prefs.edit()
+                    .putString("notificationSettings", json)
+                    .putString("masterNotifications", String.valueOf(masterEnabled))
+                    .apply();
+                refreshAllAlarms();
+            }
+        }, "AgiosScannerNative");
+    }
+
+    private void checkAndRequestAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            }
         }
+    }
+
+    private void refreshAllAlarms() {
+        AgiosNotificationReceiver receiver = new AgiosNotificationReceiver();
+        receiver.refreshAllAlarms(MainActivity.this);
     }
 }

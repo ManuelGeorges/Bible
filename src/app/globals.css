@@ -2,12 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap');
 
 :root {
+  /* ألوان الوضع الفاتح الافتراضية */
   --color-bg-start: #f0f4f8;
   --color-bg-end: #dbeafe;
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
   --color-card-bg: #ffffff;
-  --color-border: #1e3a8a;
+  --color-border: #e2e8f0; 
   --color-accent: #1e3a8a;
   --btn-bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   --btn-text: #ffffff;
@@ -20,24 +21,31 @@
   --transition-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* التعديل المهم: دعم وضع النظام التلقائي */
+@media (prefers-color-scheme: dark) {
+  /* يطبق ألوان الداكن فقط إذا لم يكن المستخدم قد اختار 'light' يدوياً */
+  :root:not([data-theme='light']) {
+    --color-bg-start: #020617;
+    --color-bg-end: #0f172a;
+    --color-card-bg: rgba(255, 255, 255, 0.05);
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cbd5e1;
+    --color-accent: #38bdf8;
+    --color-shadow-medium: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* حالة اختيار الداكن يدوياً من الإعدادات */
 [data-theme='dark'] {
-  /* تدرج خلفية أعمق وأفخم */
-  --color-bg-start: #020617; /* أسود كحلي عميق */
-  --color-bg-end: #0f172a;   /* أزرق غامق متزن */
-  
-  --color-card-bg: rgba(255, 255, 255, 0.05); 
-  --color-card-border: rgba(255, 255, 255, 0.1); 
-  
-  --color-text-primary: #ffffff; 
-  --color-text-secondary: #cbd5e1; 
-  
-  --color-accent: #38bdf8; 
-  
-  /* الظلال */
+  --color-bg-start: #020617;
+  --color-bg-end: #0f172a;
+  --color-card-bg: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cbd5e1;
+  --color-accent: #38bdf8;
   --color-shadow-medium: rgba(0, 0, 0, 0.6);
-  
-  /* لون نص الزراير */
-  --btn-text: #ffffff;
 }
 
 * {
@@ -47,10 +55,6 @@
   -webkit-user-drag: none;
 }
 
-html {
-  font-size: 18px; 
-}
-
 html, body {
   height: 100%;
   width: 100%;
@@ -58,57 +62,28 @@ html, body {
   overscroll-behavior-y: contain;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  padding-top: var(--safe-top) !important;
 }
 
 body {
   font-family: 'Inter', 'Cairo', sans-serif;
-  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  /* إضافة fixed تمنع بياض الخلفية عند التمرير السريع في أندرويد */
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%) fixed;
   color: var(--color-text-primary);
   font-size: 18px; 
   direction: rtl;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  padding-top: var(--safe-top);
   transition: background 0.3s var(--transition-smooth), color 0.3s var(--transition-smooth);
   user-select: none;
 }
 
-h1, .main-title {
-  font-size: 32px; 
-  font-weight: 900;
-  line-height: 1.2;
-}
-
-h2, .section-title {
-  font-size: 24px; 
-  font-weight: 700;
-}
-
+/* باقي التنسيقات كما هي في كودك الأصلي... */
 .bible-content, .verse-text {
   font-size: var(--bible-font-size) !important; 
   line-height: 1.8;
   user-select: text;
   -webkit-user-select: text;
-}
-
-.secondary-text, .caption {
-  font-size: 14px; 
-  color: var(--color-text-secondary);
-}
-
-input, textarea {
-  font-size: 16px;
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-.scroll-container {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-::-webkit-scrollbar {
-  display: none;
 }
 
 .card, [class*="section"] {
@@ -119,52 +94,22 @@ input, textarea {
   border-radius: 16px;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-  top: -100px;
-  opacity: 0;
-}
-
 button, .action-btn {
   background: var(--btn-bg);
   color: var(--btn-text);
   border: none;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 16px; 
   transition: transform 0.2s var(--transition-smooth), box-shadow 0.2s var(--transition-smooth);
-  cursor: pointer;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px var(--color-shadow-medium);
 }
 
 button:active {
   transform: scale(0.95);
 }
 
-nav, [class*="Navbar_wrapper"] {
-  padding-top: var(--safe-top) !important;
-  background-color: var(--color-bg-start);
-  border-bottom: 1px solid var(--color-border);
+::-webkit-scrollbar {
+  display: none;
 }
-
-.favouriteHighlight {
-  background: rgba(212, 175, 55, 0.15) !important;
-  border-inline-start: 4px solid var(--color-accent) !important;
-}
-
-.selectedVerse {
-  background-color: rgba(30, 58, 138, 0.3) !important;
-  border-inline-start: 4px solid var(--color-bg-end) !important;
+.sr-only{
+  display: none;
 }

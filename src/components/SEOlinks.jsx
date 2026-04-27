@@ -1,14 +1,14 @@
 export default function SEOlinks() {
   return (
-    <nav className="sr-only">
-    <a href="/">Home</a>
-      <a href="/maps">Maps</a>
-      <a href="/bible">Bible</a>
-      <a href="/search">Search</a>
-      <a href="/competitions">Competitions</a>
-      <a href="/studyPlans">Study Plans</a>
-      <a href="/intro">Intro</a>
-      <a href="/more">More</a>
+    <nav className="sr-only" aria-hidden="false">
+      <a href="/">الرئيسية</a>
+      <a href="/maps">الخرائط التفاعلية</a>
+      <a href="/bible">الكتاب المقدس</a>
+      <a href="/search">البحث الذكي</a>
+      <a href="/competitions">المسابقات والأسئلة</a>
+      <a href="/studyPlans">خطط القراءة</a>
+      <a href="/intro">مقدمة أجيوس</a>
+      <a href="/more">المزيد</a>
     </nav>
   );
 }

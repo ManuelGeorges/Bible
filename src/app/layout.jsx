@@ -83,7 +83,7 @@ export default function RootLayout({ children }) {
             padding: 0;
           }
           [data-theme='dark'] body {
-            background-color: #191d34 !important;
+            background-color: #191d34 
           }
         `}} />
       </head>

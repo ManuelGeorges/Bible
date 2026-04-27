@@ -4,7 +4,6 @@ import { useRef, useState, useEffect } from 'react';
 import { toPng } from 'html-to-image';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Media } from '@capacitor-community/media';
 import { Toast } from '@capacitor/toast';
 import { Capacitor } from '@capacitor/core';
 import { Share2, Download, Loader2 } from 'lucide-react';
@@ -45,7 +44,6 @@ const ShareVerseCard = ({ verse, reference }) => {
 
   const generateImage = async () => {
     if (!templateRef.current) return null;
-    
     try {
       return await toPng(templateRef.current, { 
         cacheBust: true,
@@ -53,7 +51,7 @@ const ShareVerseCard = ({ verse, reference }) => {
         skipFonts: false,
       });
     } catch (err) {
-      console.error("Image generation failed", err);
+      console.error(err);
       return null;
     }
   };
@@ -62,13 +60,13 @@ const ShareVerseCard = ({ verse, reference }) => {
     setIsProcessing(true);
     try {
       const dataUrl = await generateImage();
-      if (!dataUrl) throw new Error('Failed to generate image');
+      if (!dataUrl) throw new Error();
 
       const fileName = `Agios-${Date.now()}.png`;
       const base64Data = dataUrl.split(',')[1];
 
       if (Capacitor.isNativePlatform()) {
-        const savedFile = await Filesystem.writeFile({
+        const cacheFile = await Filesystem.writeFile({
           path: fileName,
           data: base64Data,
           directory: Directory.Cache
@@ -77,25 +75,27 @@ const ShareVerseCard = ({ verse, reference }) => {
         if (type === 'share') {
           await Share.share({
             title: 'آية اليوم',
-            files: [savedFile.uri],
+            files: [cacheFile.uri],
             dialogTitle: 'مشاركة كصورة',
           });
+          await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
         } else {
-          const perm = await Media.requestPermissions();
-          if (perm.photos !== 'granted') {
-            await showToast('يجب السماح بالوصول للصور من الإعدادات');
-            return;
-          }
+          const permanentFile = await Filesystem.writeFile({
+            path: `Pictures/${fileName}`,
+            data: base64Data,
+            directory: Directory.ExternalStorage,
+            recursive: true
+          });
 
-          let photoPath = savedFile.uri;
-          if (Capacitor.getPlatform() === 'android') {
-            photoPath = savedFile.uri.replace('file://', '');
+          const cleanPath = permanentFile.uri.replace('file://', '');
+          const decodedPath = decodeURI(cleanPath);
+          
+          if (window.AgiosScannerNative) {
+            window.AgiosScannerNative.scanFile(decodedPath);
           }
-
-          await Media.savePhoto({ path: photoPath });
+          
           await showToast('تم حفظ الآية في المعرض بنجاح');
         }
-        await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
       } else {
         if (type === 'share' && navigator.share) {
           const blob = await fetch(dataUrl).then(res => res.blob());
@@ -109,7 +109,8 @@ const ShareVerseCard = ({ verse, reference }) => {
         }
       }
     } catch (err) {
-      await showToast('حدث خطأ ما أثناء معالجة الصورة');
+      console.error(err);
+      await showToast('حدث خطأ أثناء معالجة الصورة');
     } finally {
       setIsProcessing(false);
     }
@@ -127,11 +128,9 @@ const ShareVerseCard = ({ verse, reference }) => {
              <div className={styles.header}>
                <h2 className={styles.appLogo} style={{ color: themeColors.accent }}>AGIOS BIBLE</h2>
              </div>
-             
              <div className={styles.body}>
                <p className={styles.mainVerse} style={{ color: themeColors.text }}>"{verse}"</p>
              </div>
-
              <div className={styles.footer}>
                <p className={styles.mainRef} style={{ color: themeColors.secondary }}>({reference})</p>
              </div>

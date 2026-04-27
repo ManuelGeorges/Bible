@@ -17,21 +17,34 @@ import { syncNotifications } from '../lib/notificationService';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const hasSetup = useRef(false);
 
+  // جعل الثيم الافتراضي هو النظام عند أول تحميل
+  useEffect(() => {
+    if (!localStorage.getItem('theme')) {
+      setTheme('system');
+    }
+  }, [setTheme]);
+
+  // حل مشكلة الـ StatusBar وتناسق الخلفية مع الأيقونات
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
     const updateStatusBar = async () => {
       try {
         if (Capacitor.getPlatform() === 'android') {
-          const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          // التحقق مما إذا كان النظام أو الاختيار الحالي هو "Dark"
+          const isDark = 
+            theme === 'dark' || 
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           
           if (isDark) {
+            // أيقونات بيضاء على خلفية غامقة
             await StatusBar.setStyle({ style: Style.Dark });
             await StatusBar.setBackgroundColor({ color: '#0f172a' });
           } else {
+            // أيقونات سوداء على خلفية بيضاء
             await StatusBar.setStyle({ style: Style.Light });
             await StatusBar.setBackgroundColor({ color: '#ffffff' });
           }
