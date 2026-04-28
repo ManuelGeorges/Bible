@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings } from 'lucide-react';
+import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck } from 'lucide-react';
 import styles from './more.module.css';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
@@ -18,8 +18,8 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
       
       <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.header}>
-          <button className={styles.closeBtn} onClick={onClose}><X size={24} /></button>
           <h1 className={styles.title}>المزيد</h1>
+          <button className={styles.closeBtn} onClick={onClose}><X size={24} /></button>
         </div>
 
         <div className={styles.gridContainer}>
@@ -42,16 +42,16 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
 
         <div className={styles.footerLinks}>
           <Link href="/about" className={styles.footerItem} onClick={onClose}>
-            <Info size={18} /> <span>من نحن</span>
+             <Info size={22} /> <span>من نحن</span>
           </Link>
           <Link href="/contact" className={styles.footerItem} onClick={onClose}>
-            <Mail size={18} /> <span>تواصل معنا</span>
+             <Mail size={22} /> <span>تواصل معنا</span>
           </Link>
           <Link href="/versions" className={styles.footerItem} onClick={onClose}>
-            <History size={18} /> <span>التحديثات</span>
+             <History size={22} /> <span>التحديثات</span>
           </Link>
           <Link href="/privacy-policy" className={styles.footerItem} onClick={onClose}>
-            <History size={18} /> <span>سياسة الخصوصية</span>
+             <ShieldCheck size={22} /> <span>سياسة الخصوصية</span>
           </Link>
         </div>
       </div>

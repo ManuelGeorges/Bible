@@ -13,7 +13,7 @@ import { Capacitor } from '@capacitor/core';
 import { toast, Toaster } from 'react-hot-toast';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import {
-    BookOpen, Map, Search, User, Trophy,
+    Book, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
     ChevronLeft, Award, Flame, LogIn, ArrowRight
 } from 'lucide-react';
@@ -126,18 +126,31 @@ const LandingPage = () => {
 
         return () => unsubAuth?.();
     }, [fetchDailyContent, calculatePlanStats]);
-    const handleScroll = (e) => {
-        const container = e.target;
-        const scrollLeft = Math.abs(container.scrollLeft);
-        const cardWidth = container.offsetWidth * 0.8;
-        const newIndex = Math.round(scrollLeft / cardWidth);
 
-        if (newIndex !== activePlanIndex) {
-            setActivePlanIndex(newIndex);
+    // مزامنة ملخص الخطط الدراسية للإشعارات (فقط للمسجلين)
+    useEffect(() => {
+        if (user && startedPlans.length > 0) {
+            const summary = {
+                count: startedPlans.length,
+                mainPlanTitle: startedPlans[0].title,
+                remainingDays: startedPlans[0].stats.totalDays - startedPlans[0].stats.daysDone
+            };
+            localStorage.setItem('studyPlansSummary', JSON.stringify(summary));
+            if (Capacitor.isNativePlatform()) {
+                import('../lib/notificationService').then(m => m.syncNotifications());
+            }
+        } else {
+            localStorage.removeItem('studyPlansSummary');
         }
-    };
+    }, [startedPlans, user]);
+
     const handleOptionClick = async (index) => {
-        if (hasAnswered || !dailyQuestion || !user) return;
+        if (!user) {
+            router.push('/intro');
+            return;
+        }
+        if (hasAnswered || !dailyQuestion) return;
+
         const now = new Date();
         const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
@@ -160,61 +173,55 @@ const LandingPage = () => {
         }
     };
 
-const toggleFavorite = async () => {
-    if (!dailyVerse || !user) return;
+    const toggleFavorite = async () => {
+        if (!user) {
+            router.push('/intro');
+            return;
+        }
+        if (!dailyVerse) return;
 
-    const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
-    const userRef = doc(db, 'users', user.uid);
-    let newFavs = { ...favouriteVerses };
+        const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
+        const userRef = doc(db, 'users', user.uid);
+        let newFavs = { ...favouriteVerses };
 
-    if (newFavs[verseKey]) {
-        delete newFavs[verseKey];
-        setFavouriteVerses(newFavs);
-        await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
-        toast.error('تم الحذف من كنوزك');
-    } else {
-        // 1. تنظيف المرجع من الأقواس
-        const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
+        if (newFavs[verseKey]) {
+            delete newFavs[verseKey];
+            setFavouriteVerses(newFavs);
+            await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
+            toast.error('تم الحذف من كنوزك');
+        } else {
+            const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
+            const convertNumbers = (str) => {
+                if (!str) return "";
+                return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '');
+            };
+            const parts = cleanRef.split(' ');
+            const rawNumbers = parts[parts.length - 1];
+            const bookName = parts.slice(0, -1).join(' ');
+            const [rawCh, rawV] = rawNumbers.split(':');
+            const verseData = {
+                text: dailyVerse.verse,
+                reference: cleanRef,
+                book: bookName,
+                ch: convertNumbers(rawCh),
+                v: convertNumbers(rawV),
+                color: '#FFC107',
+                dateAdded: new Date().toISOString()
+            };
+            newFavs[verseKey] = verseData;
+            setFavouriteVerses(newFavs);
+            await updateDoc(userRef, {
+                totalPoints: increment(5),
+                [`favorites.verses.${verseKey}`]: verseData
+            });
+            toast.success('تمت الإضافة لكنوزك (+5 نقاط)');
+        }
+    };
 
-        // 2. دالة لتحويل الأرقام الهندية (١، ٢، ٣) إلى إنجليزية (1, 2, 3)
-        // هذا يمنع ظهور 131 و NaN تماماً
-        const convertNumbers = (str) => {
-            if (!str) return "";
-            return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '');
-        };
-
-        // 3. تقسيم النص (اسم السفر والأرقام)
-        const parts = cleanRef.split(' ');
-        const rawNumbers = parts[parts.length - 1]; // الجزء مثل "١٣:١١"
-        const bookName = parts.slice(0, -1).join(' '); // الجزء مثل "كورنثوس الأولى"
-
-        // 4. فصل الإصحاح والآية
-        const [rawCh, rawV] = rawNumbers.split(':');
-
-        const verseData = {
-            text: dailyVerse.verse,
-            reference: cleanRef,
-            book: bookName,
-            ch: convertNumbers(rawCh), // سيخزن 13 بدلاً من ١٣
-            v: convertNumbers(rawV),   // سيخزن 11 بدلاً من ١١
-            color: '#FFC107',
-            dateAdded: new Date().toISOString()
-        };
-
-        newFavs[verseKey] = verseData;
-        setFavouriteVerses(newFavs);
-
-        await updateDoc(userRef, {
-            totalPoints: increment(5),
-            [`favorites.verses.${verseKey}`]: verseData
-        });
-        toast.success('تمت الإضافة لكنوزك (+5 نقاط)');
-    }
-};
     const quickLinks = [
-        { name: 'الكتاب المقدس', icon: <BookOpen />, path: '/bible', color: '#6366f1' },
-        { name: 'الخرائط', icon: <Map />, path: '/maps', color: '#10b981' },
-        { name: 'البحث', icon: <Search />, path: '/search', color: '#f59e0b' },
+        { name: 'الكتاب المقدس', icon: <Book />, path: '/bible', color: '#6366f1' },
+        { name: 'الخرائط', icon: <Map />, path: user ? '/maps' : '/intro', color: '#10b981' },
+        { name: 'البحث', icon: <Search />, path: user ? '/search' : '/intro', color: '#f59e0b' },
         { name: 'الخطط الدراسية', icon: <BookMarked />, path: user ? '/studyPlans' : '/intro', color: '#ec4899' },
         { name: 'المسابقات', icon: <Trophy />, path: user ? '/competitions' : '/intro', color: '#8b5cf6' },
         { name: 'المفضلة', icon: <Heart />, path: user ? '/favourites' : '/intro', color: '#ef4444' },
@@ -269,7 +276,13 @@ const toggleFavorite = async () => {
 
             {lastRead && (
                 <button
-                    onClick={() => router.push(`/bible?book=${encodeURIComponent(lastRead.bookName)}&chapter=${lastRead.chapterIndex + 1}`)}
+                    onClick={() => {
+                        if (!user) {
+                            router.push('/intro');
+                            return;
+                        }
+                        router.push(`/bible?book=${encodeURIComponent(lastRead.bookName)}&chapter=${lastRead.chapterIndex + 1}`)
+                    }}
                     className={styles.lastReadBar}
                 >
                     <div className={styles.lastReadContent}>
@@ -279,7 +292,7 @@ const toggleFavorite = async () => {
                             <strong>{lastRead.bookName} - إصحاح {lastRead.chapterIndex + 1}</strong>
                         </div>
                     </div>
-                    <div className={styles.lastReadIcon}><BookOpen size={20} /></div>
+                    <div className={styles.lastReadIcon}><Book size={20} /></div>
                 </button>
             )}
 
@@ -295,19 +308,44 @@ const toggleFavorite = async () => {
                             <span className={styles.verseRef}>{dailyVerse?.reference}</span>
                             <div className={styles.verseActions}>
                                 <button onClick={() => {
+                                    if (!user) { router.push('/intro'); return; }
                                     navigator.clipboard.writeText(`"${dailyVerse?.verse}" (${dailyVerse?.reference})`);
                                     toast.success('تم النسخ');
-                                }} className={styles.glassBtn}>نسخ</button>
+                                }} className={`${styles.glassBtn} ${styles.copyBtn}`}>نسخ</button>
                                 <button onClick={toggleFavorite} className={`${styles.glassBtn} ${favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? styles.activeFav : ''}`}>
                                     {favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? '⭐ مضافة' : '⭐ مفضلة'}
                                 </button>
                                 <ShareVerseCard
-                                    verse={dailyVerse.verse}
-                                    reference={dailyVerse.reference}
-                                    book={dailyVerse.book}
+                                    verse={dailyVerse?.verse}
+                                    reference={dailyVerse?.reference}
+                                    book={dailyVerse?.book}
                                 />
                             </div>
                         </>
+                    )}
+
+                    <div className={styles.bottomDivider} style={{margin: '20px 0', opacity: 0.1, height: '1px', background: 'var(--color-text-primary)'}} />
+
+                    {dailyQuestion && (
+                        <div className={styles.questionSection}>
+                            <div className={styles.glassHeader}>
+                                <Trophy size={18} color="#f59e0b" />
+                                <span>تحدي اليوم</span>
+                            </div>
+                            <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
+                            <div className={styles.optionsList}>
+                                {dailyQuestion.options.map((opt, i) => (
+                                    <button
+                                        key={i}
+                                        disabled={hasAnswered}
+                                        onClick={() => handleOptionClick(i)}
+                                        className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             </section>
@@ -341,27 +379,6 @@ const toggleFavorite = async () => {
                                 </div>
                             </button>
                         ))}
-                    </div>
-                </section>
-            )}
-
-            {dailyQuestion && (
-                <section className={styles.questionSection}>
-                    <h2 className={styles.sectionTitle}>تحدي اليوم</h2>
-                    <div className={styles.questionCard}>
-                        <p className={styles.questionTitle}>{dailyQuestion.question}</p>
-                        <div className={styles.optionsList}>
-                            {dailyQuestion.options.map((opt, i) => (
-                                <button
-                                    key={i}
-                                    disabled={hasAnswered}
-                                    onClick={() => handleOptionClick(i)}
-                                    className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}
-                                >
-                                    {opt}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </section>
             )}

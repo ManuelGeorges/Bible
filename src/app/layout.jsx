@@ -17,7 +17,10 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#191d34',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f0f4f8' },
+    { media: '(prefers-color-scheme: dark)', color: '#020617' },
+  ],
 };
 
 export const metadata = {
@@ -78,28 +81,28 @@ export default function RootLayout({ children }) {
         />
         <style dangerouslySetInnerHTML={{ __html: `
           html, body { 
-            background-color: #ffffff; 
+            background-color: #f0f4f8;
             margin: 0; 
             padding: 0;
           }
           [data-theme='dark'] body {
-            background-color: #191d34 
+            background-color: #020617;
           }
         `}} />
       </head>
-<body>
+      <body>
         <StatsWatcher />
         <ThemeProvider 
           attribute="data-theme" 
           defaultTheme="system" 
           enableSystem={true}
+          enableColorScheme={false}
         >
           <Toaster position="top-center" reverseOrder={false} />
           
           <UserTracker />
 
           <SplashHandler>
-            {/* 1. اظهر الـ Navbar فوراً */}
             <BibleNavbar />
             
             <main className={styles.mainContent}>
@@ -108,11 +111,9 @@ export default function RootLayout({ children }) {
 
             <Footer />
 
-            {/* 2. المكونات التقنية التي تستهلك وقتاً أو نت تضعها في الأسفل */}
             <CapacitorFeatures />
             <SEOlinks />
 
-            {/* 3. السكريبتات الخارجية دائماً في الآخر وبإستراتيجية lazy */}
             <Script
               src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
               strategy="lazyOnload" 

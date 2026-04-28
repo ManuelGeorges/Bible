@@ -8,14 +8,7 @@ import { auth } from '../lib/firebase';
 import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
 import { toast } from 'react-hot-toast';
-
-const ICONS = {
-    home: "M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z",
-    bible: "M12 11.67c2.68 0 5.92-1.28 5.92-1.28V5.83c0-.84-.99-1.39-1.76-.9l-4.16 2.49-4.16-2.49c-.77-.49-1.76.06-1.76.9v4.56s3.24 1.28 5.92 1.28z M21 5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5zm-2 14H5V5h14v14z",
-    maps: "M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z",
-    search: "M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",
-    more: "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
-};
+import { Home, Book, Map as MapIcon, Search, Menu } from 'lucide-react';
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
@@ -35,12 +28,6 @@ export default function BibleNavbar() {
         return () => unsubscribe();
     }, []);
 
-    const NavIcon = ({ path }) => (
-        <svg viewBox="0 0 24 24" fill="currentColor" className={styles.navIcon}>
-            <path d={path}></path>
-        </svg>
-    );
-
     if (loading) return null;
 
     return (
@@ -48,11 +35,11 @@ export default function BibleNavbar() {
             <div className={styles.navbarWrapper}>
                 <nav className={styles.navbar}>
                     <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`} aria-label="Home">
-                        <NavIcon path={ICONS.home} />
+                        <Home size={24} />
                     </Link>
 
                     <Link href="/bible" className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`} aria-label="Read">
-                        <NavIcon path={ICONS.bible} />
+                        <Book size={24} />
                     </Link>
 
                     <Link 
@@ -66,11 +53,11 @@ export default function BibleNavbar() {
                             }
                         }}
                     >
-                        <NavIcon path={ICONS.maps} />
+                        <MapIcon size={24} />
                     </Link>
 
                     <Link href="/search" className={`${styles.navLink} ${pathname === '/search' ? styles.active : ''}`} aria-label="Search">
-                        <NavIcon path={ICONS.search} />
+                        <Search size={24} />
                     </Link>
 
                     <div
@@ -79,7 +66,7 @@ export default function BibleNavbar() {
                         style={{ cursor: 'pointer' }}
                         aria-label="More"
                     >
-                        <NavIcon path={ICONS.more} />
+                        <Menu size={24} />
                     </div>
                 </nav>
             </div>

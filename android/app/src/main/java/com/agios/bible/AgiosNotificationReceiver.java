@@ -12,199 +12,217 @@ import android.os.Build;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import java.util.Calendar;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import org.json.JSONArray;
 
 public class AgiosNotificationReceiver extends BroadcastReceiver {
-    private String[] agiosTips = {
-            "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
-            "يمكن انشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
-            "يمكنك تظليل الآيات التي تعجبك باللون الذي يريحك وكتابة ملحوظات عليها",
-            "يمكنك تجربة الخرائط التفاعلية الآن واستكشاف الأماكن الكتابية",
-            "يمكنك تغيير حجم الخط في صفحة الإعدادات."
-    };
-    private static final String TAG = "AgiosDebug";
+    private static final java.lang.String TAG = "AgiosDebug";
 
-    @Override
+    @java.lang.Override
     public void onReceive(Context context, Intent intent) {
-        String type = intent.getStringExtra("notification_type");
-        Log.d(TAG, "onReceive triggered for type: " + type);
+        if (intent == null) return;
+        java.lang.String type = intent.getStringExtra("notification_type");
+        java.lang.String action = intent.getAction();
 
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction()) ||
-            "android.intent.action.QUICKBOOT_POWERON".equals(intent.getAction())) {
+        Log.d(TAG, "onReceive: action=" + action + ", type=" + type);
+
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
+                "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
             refreshAllAlarms(context);
             return;
         }
 
         if (type == null) return;
 
-        String normalizedType = normalizeType(type);
-
-        switch (normalizedType) {
-            case "dailyVerse":
+        java.lang.String norm = normalizeType(type);
+        switch (norm) {
+            case "verse":
                 handleVerseNotification(context);
                 break;
-            case "dailyQuestion":
-                handleGenericNotification(context, "سؤال اليوم", "حان وقت سؤال اليوم، اختبر معلوماتك!");
+            case "question":
+                handleQuestionNotification(context);
                 break;
-            case "streakReminder":
-                handleGenericNotification(context, "حافظ على حماسك", "لا تنسَ قراءة آية اليوم لتحافظ على السلسلة!");
+            case "streak":
+                showNotification(context, "حافظ على حماسك", "لا تنسَ قراءة آية اليوم لتحافظ على السلسلة!", 103);
                 break;
             case "studyPlans":
-                handleGenericNotification(context, "خطة القراءة", "لديك جزء متبقي في خطة اليوم.");
-                break;
-            case "tip":
-                handleTipNotification(context);
+                handleStudyPlansNotification(context);
                 break;
             default:
-                Log.d(TAG, "Unknown notification type: " + type);
+                showNotification(context, "تنبيه أجيوس", "لديك محتوى جديد في انتظارك", 105);
+                break;
         }
 
-        // Reschedule for the next day
-        scheduleAlarm(context, type, getDefaultHour(normalizedType), 0);
-    }
-
-    private String normalizeType(String type) {
-        if (type == null) return "";
-        if (type.equals("verse")) return "dailyVerse";
-        if (type.equals("question")) return "dailyQuestion";
-        if (type.equals("streak")) return "streakReminder";
-        return type;
-    }
-
-    private int getDefaultHour(String type) {
-        switch (type) {
-            case "dailyVerse": return 6;
-            case "dailyQuestion": return 18;
-            case "studyPlans": return 10;
-            case "streakReminder": return 21;
-            case "tip": return 15;
-            case "checkUpdate": return 12;
-            default: return -1;
-        }
+        // جدولة الإشعار لليوم التالي تلقائياً
+        scheduleAlarm(context, type, getDefaultHour(type), 0);
     }
 
     private void handleVerseNotification(Context context) {
         try {
-            String json = loadJSONFromAsset(context, "dailyVerses.json");
-            if (json != null) {
-                JSONArray array = new JSONArray(json);
-                int dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
-                JSONObject verseObj = array.getJSONObject(dayOfYear % array.length());
-                String title = verseObj.optString("reference", "آية اليوم");
-                String text = verseObj.optString("text", "اكتشف آية اليوم");
+            JSONObject data = getTodayData(context, "dailyVerses.json");
+            if (data != null) {
+                java.lang.String title = data.optString("reference", "آية اليوم");
+                java.lang.String text = data.optString("verse", data.optString("text", "اكتشف آية اليوم"));
                 showNotification(context, title, text, 101);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error in handleVerseNotification", e);
+        } catch (java.lang.Exception e) {
+            Log.e(TAG, "Verse Notify Error", e);
         }
     }
 
-    private void handleGenericNotification(Context context, String title, String text) {
-        showNotification(context, title, text, 102);
+    private void handleQuestionNotification(Context context) {
+        try {
+            JSONObject data = getTodayData(context, "dailyQuestions.json");
+            if (data != null) {
+                java.lang.String question = data.optString("question", "حان وقت سؤال اليوم!");
+                showNotification(context, "سؤال اليوم", question, 102);
+            }
+        } catch (java.lang.Exception e) {
+            Log.e(TAG, "Question Notify Error", e);
+        }
+    }
+
+    private void handleStudyPlansNotification(Context context) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+            java.lang.String summaryJson = getPrefsString(prefs, "studyPlansSummary");
+            if (!summaryJson.isEmpty()) {
+                JSONObject json = new JSONObject(summaryJson);
+                int count = json.optInt("count", 0);
+                java.lang.String title = json.optString("mainPlanTitle", "");
+                int remaining = json.optInt("remainingDays", 0);
+
+                java.lang.String msg;
+                if (count > 1) {
+                    msg = "لديك " + count + " خطط جارية. تبقّى " + remaining + " يوم في " + title;
+                } else {
+                    msg = "تبقّى لك " + remaining + " يوم لإكمال " + title;
+                }
+                showNotification(context, "خطة القراءة", msg, 104);
+            } else {
+                showNotification(context, "خطة القراءة", "لديك جزء متبقي في خطة اليوم.", 104);
+            }
+        } catch (java.lang.Exception e) {
+            Log.e(TAG, "StudyPlans Notify Error", e);
+        }
+    }
+
+    private JSONObject getTodayData(Context context, java.lang.String filename) {
+        try {
+            InputStream is;
+            try {
+                is = context.getAssets().open("public/data/" + filename);
+            } catch (java.lang.Exception e) {
+                try {
+                    is = context.getAssets().open("data/" + filename);
+                } catch (java.lang.Exception e2) {
+                    is = context.getAssets().open(filename);
+                }
+            }
+
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            JSONArray array = new JSONArray(new String(buffer, StandardCharsets.UTF_8));
+
+            Calendar now = Calendar.getInstance();
+            int m = now.get(Calendar.MONTH) + 1;
+            int d = now.get(Calendar.DAY_OF_MONTH);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                if (obj.optInt("month") == m && obj.optInt("day") == d) return obj;
+            }
+        } catch (java.lang.Exception e) {
+            Log.e(TAG, "Error loading " + filename, e);
+        }
+        return null;
+    }
+
+    private java.lang.String normalizeType(java.lang.String type) {
+        if (type == null) return "";
+        java.lang.String low = type.toLowerCase();
+        if (low.contains("verse")) return "verse";
+        if (low.contains("question")) return "question";
+        if (low.contains("streak")) return "streak";
+        if (low.contains("study") || low.contains("plan")) return "studyPlans";
+        return type;
+    }
+
+    private int getDefaultHour(java.lang.String type) {
+        java.lang.String n = normalizeType(type);
+        if (n.equals("verse")) return 6;
+        if (n.equals("question")) return 18;
+        if (n.equals("studyPlans")) return 10;
+        if (n.equals("streak")) return 21;
+        return 12;
     }
 
     public void refreshAllAlarms(Context context) {
-        Log.d(TAG, "Refreshing all alarms...");
         scheduleAlarm(context, "dailyVerse", 6, 0);
         scheduleAlarm(context, "dailyQuestion", 18, 0);
         scheduleAlarm(context, "studyPlans", 10, 0);
         scheduleAlarm(context, "streakReminder", 21, 0);
-        scheduleAlarm(context, "tip", 15, 0);
-        scheduleAlarm(context, "checkUpdate", 12, 0);
     }
 
-    public void scheduleAlarm(Context context, String type, int defaultHour, int defaultMinute) {
+    public void scheduleAlarm(Context context, java.lang.String type, int defH, int defM) {
         if (type == null) return;
-
         SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-        
-        String savedTime = "";
-        boolean isEnabled = true;
 
-        // 1. Try to read from notificationSettings JSON object (Capacitor style)
-        String settingsJson = prefs.getString("_cap_notificationSettings", prefs.getString("notificationSettings", null));
-        if (settingsJson != null) {
+        java.lang.String master = getPrefsString(prefs, "masterNotifications");
+        if ("false".equals(master)) {
+            cancelAlarm(context, type);
+            return;
+        }
+
+        java.lang.String savedTime = "";
+        boolean enabled = true;
+        java.lang.String norm = normalizeType(type);
+
+        java.lang.String jsonStr = getPrefsString(prefs, "notificationSettings");
+        if (!jsonStr.isEmpty()) {
             try {
-                JSONObject json = new JSONObject(settingsJson);
-                String normalizedType = normalizeType(type);
-                
-                savedTime = json.optString(normalizedType + "Time", "");
+                JSONObject json = new JSONObject(jsonStr);
+                savedTime = json.optString(norm + "Time", "");
                 if (savedTime.isEmpty()) savedTime = json.optString(type + "Time", "");
-                
-                if (savedTime.isEmpty()) {
-                    if (normalizedType.equals("dailyVerse")) savedTime = json.optString("verseTime", "");
-                    else if (normalizedType.equals("dailyQuestion")) savedTime = json.optString("questionTime", "");
-                    else if (normalizedType.equals("streakReminder")) savedTime = json.optString("streakTime", "");
-                }
 
-                if (json.has(normalizedType)) isEnabled = json.optBoolean(normalizedType, true);
-                else if (json.has(type)) isEnabled = json.optBoolean(type, true);
-                else {
-                    if (normalizedType.equals("dailyVerse")) isEnabled = json.optBoolean("verse", true);
-                    else if (normalizedType.equals("dailyQuestion")) isEnabled = json.optBoolean("question", true);
-                    else if (normalizedType.equals("streakReminder")) isEnabled = json.optBoolean("streak", true);
-                }
-                Log.d(TAG, "Found in JSON: " + type + " -> " + savedTime + " enabled: " + isEnabled);
-            } catch (Exception e) {
-                Log.e(TAG, "JSON Parse Error", e);
-            }
+                if (json.has(norm)) enabled = json.optBoolean(norm, true);
+                else if (json.has(type)) enabled = json.optBoolean(type, true);
+            } catch (java.lang.Exception e) { e.printStackTrace(); }
         }
 
-        // 2. If not found in JSON, try individual SharedPreferences keys (Direct Preferences style)
         if (savedTime.isEmpty()) {
-            String normalizedType = normalizeType(type);
-            savedTime = getPrefsString(prefs, normalizedType + "Time");
+            savedTime = getPrefsString(prefs, norm + "Time");
             if (savedTime.isEmpty()) savedTime = getPrefsString(prefs, type + "Time");
-            
+
             if (savedTime.isEmpty()) {
-                if (normalizedType.equals("dailyVerse")) savedTime = getPrefsString(prefs, "verseTime");
-                else if (normalizedType.equals("dailyQuestion")) savedTime = getPrefsString(prefs, "questionTime");
-                else if (normalizedType.equals("streakReminder")) savedTime = getPrefsString(prefs, "streakTime");
-            }
-            
-            // Check enabled status as individual key
-            String enabledStr = getPrefsString(prefs, normalizedType);
-            if (enabledStr.isEmpty()) enabledStr = getPrefsString(prefs, type);
-            if (!enabledStr.isEmpty()) {
-                isEnabled = Boolean.parseBoolean(enabledStr);
-            }
-            
-            if (!savedTime.isEmpty()) {
-                Log.d(TAG, "Found in individual prefs: " + type + " -> " + savedTime);
+                if (norm.equals("verse")) savedTime = getPrefsString(prefs, "verseTime");
+                else if (norm.equals("question")) savedTime = getPrefsString(prefs, "questionTime");
             }
         }
 
-        if (!isEnabled) {
-            Log.d(TAG, "Notification disabled for: " + type);
+        if (!enabled) {
             cancelAlarm(context, type);
             return;
         }
 
         Calendar cal = Calendar.getInstance();
-        boolean timeFound = false;
-
+        boolean customFound = false;
         if (!savedTime.isEmpty() && savedTime.contains(":")) {
             try {
-                String[] parts = savedTime.split(":");
-                cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
-                cal.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
-                timeFound = true;
-            } catch (Exception e) {
-                Log.e(TAG, "Error parsing savedTime: " + savedTime, e);
-            }
-        } 
-        
-        if (!timeFound) {
-            if (defaultHour != -1) {
-                cal.set(Calendar.HOUR_OF_DAY, defaultHour);
-                cal.set(Calendar.MINUTE, defaultMinute);
-                Log.d(TAG, "Using default time for " + type + ": " + defaultHour + ":" + defaultMinute);
-            } else {
-                return;
-            }
+                java.lang.String[] p = savedTime.split(":");
+                cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(p[0]));
+                cal.set(Calendar.MINUTE, Integer.parseInt(p[1]));
+                customFound = true;
+            } catch (java.lang.Exception e) {}
+        }
+
+        if (!customFound) {
+            cal.set(Calendar.HOUR_OF_DAY, defH);
+            cal.set(Calendar.MINUTE, defM);
         }
 
         cal.set(Calendar.SECOND, 0);
@@ -214,84 +232,46 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             cal.add(Calendar.DATE, 1);
         }
 
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AgiosNotificationReceiver.class);
         intent.putExtra("notification_type", type);
-        
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-            context, normalizeType(type).hashCode(), intent, 
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
+        PendingIntent pi = PendingIntent.getBroadcast(context, norm.hashCode(), intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && am.canScheduleExactAlarms()) {
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
         } else {
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
         }
-        
-        Log.d(TAG, "Scheduled " + type + " for: " + cal.getTime().toString() + (timeFound ? " (from settings)" : " (default)"));
+        Log.d(TAG, "Scheduled " + type + " at " + cal.getTime().toString());
     }
 
-    private String getPrefsString(SharedPreferences prefs, String key) {
-        // Try with and without _cap_ prefix
-        String val = prefs.getString("_cap_" + key, null);
+    private java.lang.String getPrefsString(SharedPreferences prefs, java.lang.String key) {
+        java.lang.String val = prefs.getString("_cap_" + key, null);
         if (val == null) val = prefs.getString(key, "");
         return val;
     }
 
-    private void cancelAlarm(Context context, String type) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    private void cancelAlarm(Context context, java.lang.String type) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AgiosNotificationReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-            context, normalizeType(type).hashCode(), intent, 
-            PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE
-        );
-        if (pendingIntent != null) {
-            alarmManager.cancel(pendingIntent);
-            pendingIntent.cancel();
-        }
+        PendingIntent pi = PendingIntent.getBroadcast(context, normalizeType(type).hashCode(), intent,
+                PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+        if (pi != null) { am.cancel(pi); pi.cancel(); }
     }
 
-    private void showNotification(Context context, String title, String text, int id) {
-        String channelId = "agios_notifications";
-        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
+    private void showNotification(Context context, java.lang.String title, java.lang.String text, int id) {
+        java.lang.String cid = "agios_notifications";
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId, "Agios Daily", NotificationManager.IMPORTANCE_HIGH);
-            manager.createNotificationChannel(channel);
+            nm.createNotificationChannel(new NotificationChannel(cid, "Agios Daily", NotificationManager.IMPORTANCE_HIGH));
         }
-
         Intent intent = new Intent(context, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
+        PendingIntent pi = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context, cid)
                 .setSmallIcon(R.drawable.ic_stat_ic_notification)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
-
-        manager.notify(id, builder.build());
-    }
-
-    private String loadJSONFromAsset(Context context, String fileName) {
-        try {
-            InputStream is = context.getAssets().open(fileName);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            return new String(buffer, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            Log.e(TAG, "Asset Error: " + fileName, e);
-            return null;
-        }
-    }
-
-    private void handleTipNotification(Context context) {
-        int randomIndex = (int) (Math.random() * agiosTips.length);
-        String randomTip = agiosTips[randomIndex];
-        showNotification(context, "نصيحة أجيوس ", randomTip, 104);
+                .setContentTitle(title).setContentText(text).setAutoCancel(true).setContentIntent(pi);
+        nm.notify(id, b.build());
     }
 }

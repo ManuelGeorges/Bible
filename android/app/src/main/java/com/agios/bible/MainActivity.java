@@ -42,8 +42,12 @@ public class MainActivity extends BridgeActivity {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 prefs.edit()
                     .putString("notificationSettings", json)
+                    .putString("_cap_notificationSettings", json)
                     .putString("masterNotifications", String.valueOf(masterEnabled))
+                    .putString("_cap_masterNotifications", String.valueOf(masterEnabled))
                     .apply();
+                
+                // Refresh alarms immediately with new settings
                 refreshAllAlarms();
             }
         }, "AgiosScannerNative");
@@ -60,7 +64,7 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    private void refreshAllAlarms() {
+    public void refreshAllAlarms() {
         AgiosNotificationReceiver receiver = new AgiosNotificationReceiver();
         receiver.refreshAllAlarms(MainActivity.this);
     }

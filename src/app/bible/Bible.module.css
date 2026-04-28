@@ -37,89 +37,52 @@
 }
 
 .controls {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 12px !important;
+  display: flex !important;
+  justify-content: center !important;
   margin-bottom: 1.5rem !important;
   width: 90% !important;
   max-width: 500px !important;
-  position: relative !important;
 }
 
-.controls > div:nth-child(1) { z-index: 1000 !important; }
-.controls > div:nth-child(2) { z-index: 999 !important; }
-
-.customSelectWrapper {
-  position: relative !important;
-  width: 100% !important;
-  background: var(--color-card-bg) !important;
+.navigationDisplay {
+  background-color: #eef7ff !important;
+  padding: 12px 24px !important;
   border-radius: 12px !important;
-  border: 1px solid var(--color-border) !important;
-  backdrop-filter: blur(10px) !important;
-  transition: all 0.3s ease !important;
-}
-
-.selectTrigger {
-  padding: 10px 16px !important;
-  min-height: 45px !important;
+  border: 1px solid #0047ab !important;
+  border-bottom: 3px solid #0047ab !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  font-weight: 600 !important;
-  color: var(--color-text-primary) !important;
+  justify-content: center !important;
+  gap: 8px !important;
   cursor: pointer !important;
-  font-size: 0.9em !important;
-}
-
-.dropdownMenu {
-  position: absolute !important;
-  top: calc(100% + 4px) !important;
-  left: 0 !important;
-  right: 0 !important;
   width: 100% !important;
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 8px 0 !important;
-  background-color: var(--color-bg-start) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 30px var(--color-shadow-medium) !important;
-  max-height: 35vh !important;
-  overflow-y: auto !important;
-  display: block !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transform-origin: top !important;
-  transform: translateY(-8px) scale(0.98) !important;
-  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.5s !important;
+  transition: all 0.2s !important;
+  box-shadow: 0 4px 12px rgba(0, 71, 171, 0.1) !important;
 }
 
-.dropdownMenu.open {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0) scale(1) !important;
-  pointer-events: auto !important;
+.navigationDisplay:hover {
+  background-color: #e5f1fc !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 15px rgba(0, 71, 171, 0.15) !important;
 }
 
-.dropdownItem {
-  padding: 12px 16px !important;
-  cursor: pointer !important;
-  color: var(--color-text-primary) !important;
-  text-align: center !important;
-  transition: background 0.3s ease, transform 0.2s ease !important;
-  font-size: 1em !important;
+.navigationDisplay:active {
+  transform: translateY(1px) !important;
+  border-bottom-width: 1px !important;
 }
 
-.dropdownItem:hover {
-  background: rgba(var(--color-accent-rgb), 0.1) !important;
-  color: var(--color-accent) !important;
-  transform: scale(1.02) !important;
-  font-weight: bold !important;
+.navText {
+  color: #003366 !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
 }
 
-.dropdownMenu::-webkit-scrollbar { width: 5px !important; }
-.dropdownMenu::-webkit-scrollbar-thumb { background: var(--color-accent) !important; border-radius: 10px !important; }
+.navSeparator {
+  color: #0047ab !important;
+  font-size: 1.4rem !important;
+  font-weight: 300 !important;
+  margin: 0 5px !important;
+}
 
 .verseContainer {
   width: 95% !important;
@@ -139,7 +102,7 @@
   justify-content: center !important;
   align-items: center !important;
   gap: 20px !important;
-  margin-bottom: 0px !important;
+  margin-bottom: 15px !important;
   padding-bottom: 15px !important;
   border-bottom: 1px solid var(--color-border) !important;
 }
@@ -151,45 +114,17 @@
   font-weight: 700 !important;
 }
 
-.singleVerse {
-  position: relative !important;
-  padding: 12px 16px !important;
-  margin-bottom: 8px !important;
-  border-radius: 10px !important;
-  transition: all 0.3s ease !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  cursor: pointer !important;
-  border-bottom: 1px solid var(--color-border) !important;
-}
-
-.verseContent {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
-  width: 100% !important;
-}
-
-.verseNumber {
-  color: var(--color-accent) !important;
-  font-weight: bold !important;
-  font-size: 0.8em !important;
-  min-width: 30px !important;
-  flex-shrink: 0 !important;
-  opacity: 0.8 !important;
-}
-
 .verseText {
-  font-size: var(--bible-font-size) !important;
-  line-height: 1.7 !important;
+  font-size: var(--main-font-size) !important;
+  line-height: 1.8 !important;
   color: var(--color-text-primary) !important;
-  text-align: justify !important;
 }
 
 .selectedVerse {
-  background-color: rgba(var(--color-accent-rgb), 0.2) !important;
-  border-inline-start: 4px solid var(--color-accent) !important;
-  transform: translateX(5px) !important;
+  text-decoration: underline !important;
+  text-decoration-color: var(--color-accent) !important;
+  text-underline-offset: 4px !important;
+  text-decoration-thickness: 2px !important;
 }
 
 .selectionBar {
@@ -201,7 +136,7 @@
   max-width: 500px !important;
   background: var(--color-bg-start) !important;
   backdrop-filter: blur(15px) !important;
-  padding: 10px !important;
+  padding: 10px 15px !important;
   border-radius: 20px !important;
   display: flex !important;
   flex-direction: row !important;
@@ -211,19 +146,14 @@
   z-index: 20000 !important;
   box-shadow: 0 -4px 25px var(--color-shadow-medium) !important;
   border: 1px solid var(--color-border) !important;
-  direction: rtl !important;
+  direction: ltr !important;
   overflow-x: auto !important;
-  overflow-y: hidden !important;
-  white-space: nowrap !important;
   scrollbar-width: none !important;
-  scroll-snap-type: none !important;
   -webkit-overflow-scrolling: touch !important;
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.selectionBar::-webkit-scrollbar {
-  display: none !important;
-}
+.selectionBar::-webkit-scrollbar { display: none !important; }
 
 @keyframes slideUp {
   from { transform: translate(-50%, 100%); opacity: 0; }
@@ -233,18 +163,17 @@
 .selectionActions {
   display: flex !important;
   flex-direction: row !important;
-  gap: 15px !important;
-  padding-left: 15px !important;
-  border-left: 1px solid var(--color-border) !important;
+  gap: 12px !important;
+  padding-right: 15px !important;
+  border-right: 1px solid var(--color-border) !important;
   flex-shrink: 0 !important;
 }
 
 .colorGrid {
   display: flex !important;
   flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  gap: 10px !important;
-  padding: 0 10px !important;
+  gap: 8px !important;
+  padding: 0 5px !important;
   flex-shrink: 0 !important;
 }
 
@@ -252,22 +181,31 @@
   width: 32px !important;
   height: 32px !important;
   border-radius: 50% !important;
-  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
-  background-image: none !important;
-  display: inline-block !important;
   transition: transform 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
+
+.colorDot:active { transform: scale(0.9) !important; }
 
 .actionBtn {
   background: transparent !important;
   border: none !important;
-  font-size: 1.4rem !important;
   cursor: pointer !important;
   color: var(--color-text-primary) !important;
-  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px !important;
+  border-radius: 10px !important;
+  transition: background 0.2s !important;
 }
+
+.actionBtn:hover { background: rgba(255, 255, 255, 0.1) !important; }
 
 .navigation {
   position: fixed !important;
@@ -304,7 +242,7 @@
   left: 50% !important;
   transform: translateX(-50%) !important;
   background: var(--color-accent) !important;
-  color: var(--btn-text) !important;
+  color: #fff !important;
   padding: 10px 20px !important;
   border-radius: 20px !important;
   z-index: 25000 !important;
@@ -312,506 +250,58 @@
   font-size: 0.85em !important;
 }
 
+.styledVerseNumber {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: var(--color-accent) !important;
+  color: white !important;
+  font-size: 0.7em !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 4px !important;
+  margin-left: 6px !important;
+  margin-right: 2px !important;
+  font-weight: bold !important;
+  vertical-align: middle !important;
+}
+
+.versesParagraph {
+  display: block !important;
+  text-align: justify !important;
+  direction: rtl !important;
+}
+
+.inlineVerse {
+  transition: all 0.3s ease !important;
+  display: inline !important;
+}
+
 @media (max-width: 768px) {
   .navigation {
     top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
     bottom: auto !important;
   }
-  .container { padding-top: 60px !important; }
+  .container { padding-top: 80px !important; }
 }
 
-@media (max-width: 480px) {
-  .selectionBar { width: 95% !important; bottom: 75px !important; }
-  .verseContainer { padding: 15px 10px !important; border-radius: 0 !important; }
-}
-.selectionBar {
-  position: fixed !important;
-  bottom: 85px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 92% !important;
-  max-width: 500px !important;
-  background: var(--color-bg-start) !important;
-  backdrop-filter: blur(15px) !important;
-  padding: 10px 15px !important; /* زيادة البادنج الجانبي */
-  border-radius: 20px !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 15px !important;
-  z-index: 20000 !important;
-  box-shadow: 0 -4px 25px var(--color-shadow-medium) !important;
-  border: 1px solid var(--color-border) !important;
-  
-  /* الاتجاه والسكرول */
-  direction: ltr !important; 
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  white-space: nowrap !important;
-  scrollbar-width: none !important;
-  
-  /* إلغاء الارتداد وجعل السكرول حر تماماً */
-  scroll-snap-type: none !important;
-  -webkit-overflow-scrolling: touch !important;
-  
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.selectionBar::-webkit-scrollbar {
-  display: none !important;
-}
-
-.selectionActions {
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 15px !important;
-  padding-right: 15px !important;
-  border-right: 1px solid var(--color-border) !important;
-  flex-shrink: 0 !important;
-  /* شيلنا الـ sticky والـ left */
-  position: relative !important; 
-}
-
-.colorGrid {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  gap: 10px !important;
-  padding: 0 5px !important;
-  flex-shrink: 0 !important;
-}
-
-.colorDot {
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 50% !important;
-  border: 2px solid rgba(255, 255, 255, 0.8) !important;
-  cursor: pointer !important;
-  flex-shrink: 0 !important;
-  transition: transform 0.2s ease !important;
-}
-
-.actionBtn {
-  background: transparent !important;
-  border: none !important;
-  font-size: 1.4rem !important;
-  cursor: pointer !important;
-  color: var(--color-text-primary) !important;
-  flex-shrink: 0 !important;
-}
-.selectionActions {
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 15px !important; /* المسافة بين الأزرار */
-  padding-right: 15px !important; /* المسافة قبل الخط الفاصل */
-  border-right: 1px solid var(--color-border) !important; /* الخط الفاصل اللي في الصورة */
-  flex-shrink: 0 !important;
-}
-
-.actionBtn {
-  background: transparent !important;
-  border: none !important;
-  font-size: 1.4rem !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
+/* Modal styles used by BibleNavModal */
 .modalOverlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 2000;
+  position: fixed !important;
+  top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;
+  background: rgba(0,0,0,0.8) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  z-index: 100000 !important;
 }
 .noteModal {
-  background: var(--bg-card); /* أو اللون اللي بتستخدمه */
-  padding: 20px; border-radius: 15px; width: 90%; max-width: 400px;
+  background: var(--color-card-bg) !important;
+  padding: 20px !important; border-radius: 15px !important; width: 90% !important; max-width: 400px !important;
+  border: 1px solid var(--color-border) !important;
 }
 .noteModal textarea {
-  width: 100%; height: 120px; margin: 15px 0; padding: 10px;
-  border-radius: 8px; border: 1px solid #444; background: #222; color: white;
+  width: 100% !important; height: 120px !important; margin: 15px 0 !important; padding: 10px !important;
+  border-radius: 8px !important; border: 1px solid var(--color-border) !important; background: rgba(255,255,255,0.05) !important; color: white !important;
 }
-.noteIndicator {
-  font-size: 0.8rem; color: #aaa; margin-top: 5px; 
-  font-style: italic; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px;
-}
-.modalActions { display: flex; gap: 10px; }
-.saveBtn { background: #4CAF50; color: white; padding: 10px; flex: 1; border-radius: 8px; }
-.cancelBtn { background: #f44336; color: white; padding: 10px; flex: 1; border-radius: 8px; }
-/* تنسيق النص كفقرة */
-.versesParagraph {
-  display: block;
-  text-align: justify;
-  direction: rtl;
-}
-
-/* ستايل رقم الآية الملون */
-.styledVerseNumber {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--accent-color, #007bff); /* لونك المفضل */
-  color: white;
-  font-size: 0.7em;
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  margin-left: 6px;
-  margin-right: 2px;
-  font-weight: bold;
-  vertical-align: middle;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* المنيو في وضع الـ inline */
-.desktopMenuInline {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: var(--bg-secondary, #222);
-  border: 1px solid #444;
-  border-radius: 8px;
-  display: flex;
-  gap: 5px;
-  padding: 5px;
-  z-index: 100;
-}
-
-.desktopMenuInline button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-.miniNoteIndicator {
-  cursor: pointer;
-  font-size: 0.8em;
-  filter: drop-shadow(0 0 2px gold);
-}
-.selectedVerse {
-  /* حذف الخط الجانبي إذا كان موجوداً */
-  border-right: none !important;
-  border-left: none !important;
-  
-  /* إضافة خط تحت النص */
-  text-decoration: underline;
-  text-decoration-color: var(--accent-color, rgb(115, 115, 243)
-  ); /* لون الخط السفلي */
-  text-underline-offset: 4px; /* مسافة الخط عن الكلام */
-  text-decoration-thickness: 2px; /* سمك الخط */
-  
-  /* اختياري: تغيير لون الخلفية بسيط لتمييز التحديد أكثر */
-}
-.temporaryHighlight {
-    animation: pulseHighlight 2s ease-in-out;
-}
-
-@keyframes pulseHighlight {
-    0% { background-color: rgba(255, 235, 59, 0.8); transform: scale(1.02); }
-    50% { background-color: rgba(255, 235, 59, 0.4); }
-    100% { background-color: transparent; transform: scale(1); }
-}
-
-/* تأكد إن الـ inlineVerse واخد transition عشان الحركة تكون ناعمة */
-.inlineVerse {
-    transition: all 0.3s ease;
-    display: inline-block;
-}
-/* لوحة اختيار الأسفار (المودال) */
-.booksSelectorModal {
-  background: #1a1a1b; /* لون خلفية غامق متناسق مع التطبيق */
-  width: 90%;
-  max-width: 500px;
-  max-height: 85vh;
-  border-radius: 24px;
-  padding: 20px;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* تبديل العهد القديم والجديد */
-.modalHeader {
-  display: flex;
-  gap: 10px;
-  position: sticky;
-  top: 0;
-  background: #1a1a1b;
-  padding-bottom: 10px;
-  z-index: 10;
-}
-
-.modalHeader button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #888;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.modalHeader button.activeTab {
-  background: #2196F3;
-  color: white;
-  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-}
-
-/* شريط البحث */
-.bookSearchInput {
-  width: 100%;
-  padding: 12px 15px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.bookSearchInput:focus {
-  border-color: #2196F3;
-}
-
-/* شبكة الأسفار */
-.booksGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding-bottom: 10px;
-}
-
-.bookGridItem {
-  padding: 15px 5px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  color: #ddd;
-  font-size: 0.95rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bookGridItem:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.bookGridItem:active {
-  transform: scale(0.95);
-}
-
-/* السفر المختار حالياً */
-.selectedBook {
-  background: rgba(33, 150, 243, 0.15) !important;
-  border-color: #2196F3 !important;
-  color: #2196F3 !important;
-  font-weight: bold;
-}
-
-/* تحسين شكل السكرول بار للمودال */
-.booksSelectorModal::-webkit-scrollbar {
-  width: 5px;
-}
-
-.booksSelectorModal::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.booksSelectorModal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-@media (max-width: 360px) {
-  .booksGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-.navModalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.backBtn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #2196F3;
-  padding: 5px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.chaptersGrid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 أعمدة للأرقام */
-  gap: 10px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 10px 5px;
-}
-
-.chapterGridItem {
-  aspect-ratio: 1; /* يخليها مربعة */
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.chapterGridItem:hover {
-  background: #2196F3;
-  transform: translateY(-2px);
-}
-.verseCard {
-  background-color: #eef7ff; /* لون الخلفية اللبني الفاتح */
-  border: 1px solid #b2d7ff; /* إطار خفيف جداً */
-  border-radius: 20px; /* زوايا دائرية واضحة */
-  padding: 20px;
-  width: 100%;
-  max-width: 400px;
-  position: relative;
-  box-shadow: 0 10px 25px rgba(178, 215, 255, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  font-family: sans-serif; /* أو الخط اللي بتستخدمه */
-}
-
-/* نص الآية */
-.verseTextContent {
-  color: #333;
-  line-height: 1.8;
-  font-size: 1.2rem;
-  text-align: right;
-  margin: 0;
-}
-
-/* الكلمات المميزة (مثل "لا تخف") */
-.highlightedText {
-  color: #0047ab;
-  font-weight: 800;
-}
-
-/* الخط الفاصل */
-.cardDivider {
-  height: 1px;
-  background-color: #0047ab;
-  width: 100%;
-  opacity: 0.6;
-  margin: 10px 0;
-}
-
-/* المرجع (التكوين 15:1) */
-.verseReference {
-  color: #2196F3;
-  font-weight: bold;
-  font-size: 1.1rem;
-  text-align: left; /* حسب رغبتك في التصميم */
-}
-
-/* منطقة الأيقونات (القلب والنوته) */
-.cardActions {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.actionIcon {
-  width: 35px;
-  height: 35px;
-  border-radius: 10px;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-}
-.headerStrip {
-  background-color: #eef7ff;
-  border-bottom: 2px solid #0047ab; /* الخط الأزرق اللي تحت العنوان */
-  padding: 12px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.headerTitle {
-  color: #003366; /* لون أزرق غامق */
-  font-size: 1.4rem;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.titleSeparator {
-  margin: 0 10px;
-  color: #003366;
-  font-weight: 300;
-}
-.navigationDisplay {
-  /* الخلفية اللبني الفاتحة جداً */
-  background-color: #eef7ff; 
-  
-  /* المسافات الداخلية */
-  padding: 12px 24px;
-  
-  /* الحواف */
-  border-radius: 0px; /* في الصورة ملوش زوايا دائرية لو كان Header كامل */
-  /* لو عايزه كزرار وسط الشاشة خليه 12px مثلاً */
-  
-  /* الخط الأزرق الرفيع اللي تحت (لو محتاجه زي الصورة) */
-  border-bottom: 2px solid #0047ab; 
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  width: 100%;
-  transition: background-color 0.2s;
-}
-
-.navigationDisplay:hover {
-  background-color: #e5f1fc;
-}
-
-/* ستايل النص (التكوين / إصحاح) */
-.navText {
-  color: #003366; /* أزرق كحلي هادي */
-  font-size: 1.4rem;
-  font-weight: 500;
-  font-family: 'Cairo', sans-serif; /* الخط ده هيكون قريب جداً لشكل الصورة */
-}
-
-/* الفاصل الرأسي (|) */
-.navSeparator {
-  color: #0047ab;
-  font-size: 1.6rem;
-  font-weight: 300;
-  margin: 0 5px;
-  /* سحب الفاصل للأعلى قليلاً ليوازي النص */
-  position: relative;
-  top: -2px; 
-}
+.modalActions { display: flex !important; gap: 10px !important; }
+.saveBtn { background: #4CAF50 !important; color: white !important; padding: 10px !important; flex: 1 !important; border-radius: 8px !important; border: none !important; }
+.cancelBtn { background: #f44336 !important; color: white !important; padding: 10px !important; flex: 1 !important; border-radius: 8px !important; border: none !important; }

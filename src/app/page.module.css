@@ -34,6 +34,14 @@
   letter-spacing: -0.5px;
 }
 
+/* 11- Agios Bible white in dark/system mode */
+[data-theme='dark'] .siteTitle,
+[data-theme='system'] .siteTitle {
+  background: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
 .userGreeting {
   font-size: 16px;
   color: var(--color-text-secondary);
@@ -71,18 +79,27 @@
   flex-wrap: wrap;
 }
 
+/* 13- XP button styling */
 .statPill {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
+  border-bottom: 3px solid var(--color-border);
   border-radius: 20px;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   color: var(--color-text-primary);
+  transition: all 0.2s;
+  box-shadow: 0 4px 8px var(--color-shadow-light);
+}
+
+.statPill:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
 }
 
 .badgeList {
@@ -142,8 +159,8 @@
 .verseGlass {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: 28px;
+  padding: 24px;
   backdrop-filter: blur(15px);
   box-shadow: 0 10px 30px var(--color-shadow-medium);
 }
@@ -152,17 +169,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 15px;
   margin-bottom: 12px;
-  color: var(--color-text-secondary);
+  color: var(--color-accent);
 }
 
 .verseText {
   font-size: 20px !important;
   font-weight: 600;
   line-height: 1.6;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   color: var(--color-text-primary);
 }
 
@@ -171,7 +188,7 @@
   font-size: 14px;
   color: var(--color-accent);
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .verseActions {
@@ -179,9 +196,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   width: 100%;
-  margin-top: 10px;
 }
 
+/* 14- Buttons styling for Dark/System */
 .glassBtn {
   display: flex;
   align-items: center;
@@ -193,15 +210,35 @@
   color: white;
   border: none;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   width: 100%;
+  border-bottom: 3px solid rgba(0,0,0,0.3);
+}
+
+[data-theme='dark'] .glassBtn,
+[data-theme='system'] .glassBtn {
+  background: #ffffff !important;
+  color: #003366 !important;
+  border-bottom: 3px solid #dddddd !important;
 }
 
 .glassBtn:active {
-  opacity: 0.8;
-  transform: scale(0.98);
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
+.copyBtn {
+  background: #f1f5f9;
+  color: #1e3a8a;
+  border: 1px solid #e2e8f0;
+}
+
+[data-theme='dark'] .copyBtn,
+[data-theme='system'] .copyBtn {
+  background: #ffffff !important;
+  color: #003366 !important;
 }
 
 .activeFav {
@@ -209,23 +246,39 @@
   color: white !important;
 }
 
-.copyBtn {
-  background: transparent !important;
-  color: #1e3a8a !important;
-  border: 2px solid #1e3a8a !important;
+[data-theme='dark'] .activeFav,
+[data-theme='system'] .activeFav {
+  background: #003366 !important;
+  color: #ffffff !important;
 }
 
+/* 14- Continue Reading styling */
 .lastReadBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--btn-bg);
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-radius: 20px;
   border: none;
+  border-bottom: 4px solid rgba(0,0,0,0.3);
   color: white;
   width: 100%;
-  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.2);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+[data-theme='dark'] .lastReadBar,
+[data-theme='system'] .lastReadBar {
+  background: #ffffff !important;
+  color: #003366 !important;
+  border-bottom: 4px solid #dddddd !important;
+}
+
+.lastReadBar:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
 }
 
 .lastReadContent {
@@ -237,30 +290,24 @@
 .lastReadText {
   display: flex;
   flex-direction: column;
+  text-align: right;
 }
 
 .lastReadText small {
   font-size: 11px;
   opacity: 0.8;
+  font-weight: 700;
 }
 
 .questionSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  margin-top: 24px;
 }
 
-.sectionTitle {
-  font-size: 18px;
-  font-weight: 800;
-  padding-inline-start: 4px;
-}
-
-.questionCard {
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-  padding: 20px;
+.questionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
 }
 
 .optionsList {
@@ -273,20 +320,116 @@
   padding: 14px;
   border-radius: 14px;
   border: 1px solid var(--color-border);
-  background: transparent;
+  background: var(--color-card-bg);
   color: var(--color-text-primary);
   text-align: right;
+  font-weight: 600;
   transition: all 0.2s;
 }
 
 .correct {
   background: #10b981 !important;
   color: white !important;
+  border-color: #10b981 !important;
 }
 
 .wrong {
   background: #ef4444 !important;
   color: white !important;
+  border-color: #ef4444 !important;
+}
+
+.startedPlansSection {
+  margin-top: 8px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--color-text-primary);
+}
+
+.plansVerticalList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.planProgressCardVertical {
+  width: 100%;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 16px;
+  text-align: right;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: block;
+}
+
+.planProgressCardVertical:active {
+  transform: scale(0.98);
+}
+
+.planNameRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.planTitle {
+  font-weight: 800;
+  color: var(--color-text-primary);
+  font-size: 15px;
+}
+
+.planPercent {
+  font-size: 12px;
+  font-weight: 800;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--btn-bg);
+  border-radius: 10px;
+}
+
+.planMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.planActionText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-accent);
+}
+
+.bottomDivider {
+  margin: 20px 0;
+  opacity: 0.1;
+  height: 1px;
+  background: var(--color-text-primary);
 }
 
 .guestBanner {
@@ -297,131 +440,30 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-top: 20px;
 }
 
 .loginLink {
   background: var(--btn-bg);
   color: white;
-  padding: 8px 20px;
+  padding: 10px 24px;
   border-radius: 12px;
   text-decoration: none;
-  font-weight: 700;
-}
-
-.startedPlansSection {
-  margin: 16px 0;
-  padding: 0 4px;
-  direction: rtl;
-}
-
-.plansScroll {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding: 4px 4px 12px 4px;
-  scrollbar-width: none;
-}
-
-.plansScroll::-webkit-scrollbar {
-  display: none;
-}
-
-.plansVerticalList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.planProgressCard, .planProgressCardVertical {
-  width: 100%;
-  background: var(--color-card-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 16px;
-  text-align: right;
-  transition: transform 0.2s ease, background 0.2s ease;
-  cursor: pointer;
-  display: block;
-  box-shadow: 0 4px 12px var(--color-shadow-light);
-}
-
-.planProgressCard {
-  min-width: 280px;
-}
-
-.planProgressCard:active, .planProgressCardVertical:active {
-  transform: scale(0.98);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.planNameRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.planTitle {
-  font-weight: 700;
-  color: var(--color-text-primary);
-  font-size: 1rem;
-}
-
-.planPercent {
-  font-size: 0.8rem;
   font-weight: 800;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-  padding: 3px 10px;
-  border-radius: 10px;
-}
-
-.progressBar {
-  width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
-  border-radius: 10px;
-  transition: width 0.8s ease-out;
-}
-
-.planMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-}
-
-.planActionText {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--color-accent);
-  font-weight: 600;
 }
 
 .skeletonText {
   width: 100%;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  height: 100px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 16px;
   animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
 }
 
 @media (max-width: 480px) {

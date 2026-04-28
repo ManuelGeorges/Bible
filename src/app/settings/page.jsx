@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
-  Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor
+  Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
@@ -153,31 +153,36 @@ const Settings = () => {
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          <span>🎨</span> مظهر التطبيق
+          <Palette size={22} className={styles.iconPrimary} /> مظهر التطبيق
         </h2>
         <div className={styles.themeGrid}>
           <div
-            className={`${styles.themeCircle} ${theme === 'light' ? styles.active : ''}`}
-            style={{ backgroundColor: '#ffffff', border: '1px solid #ddd' }}
+            className={`${styles.themeOption} ${theme === 'light' ? styles.active : ''}`}
             onClick={() => setTheme('light')}
           >
-            <Sun size={20} color="#fbbf24" />
+            <div className={`${styles.themeCircle} ${styles.light}`}>
+              <Sun size={24} />
+            </div>
             <span className={styles.themeLabel}>فاتح</span>
           </div>
+
           <div
-            className={`${styles.themeCircle} ${theme === 'dark' ? styles.active : ''}`}
-            style={{ backgroundColor: '#0f172a' }}
+            className={`${styles.themeOption} ${theme === 'dark' ? styles.active : ''}`}
             onClick={() => setTheme('dark')}
           >
-            <Moon size={20} color="#60a5fa" />
+            <div className={`${styles.themeCircle} ${styles.dark}`}>
+              <Moon size={24} />
+            </div>
             <span className={styles.themeLabel}>داكن</span>
           </div>
+
           <div
-            className={`${styles.themeCircle} ${theme === 'system' ? styles.active : ''}`}
-            style={{ backgroundColor: '#475569' }}
+            className={`${styles.themeOption} ${theme === 'system' ? styles.active : ''}`}
             onClick={() => setTheme('system')}
           >
-            <Monitor size={20} color="#e2e8f0" />
+            <div className={`${styles.themeCircle} ${styles.system}`}>
+              <Monitor size={24} />
+            </div>
             <span className={styles.themeLabel}>تلقائي</span>
           </div>
         </div>
@@ -185,7 +190,7 @@ const Settings = () => {
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          <span>📖</span> إعدادات الآيات
+          <BookOpen size={22} className={styles.iconPrimary} /> إعدادات الآيات
         </h2>
 
         <div className={styles.settingItem}>
@@ -247,7 +252,7 @@ const Settings = () => {
         <div className={styles.section}>
           <div className={styles.masterToggleRow}>
             <h2 className={styles.sectionTitle}>
-              <span>🔔</span> الإشعارات
+              <Bell size={22} className={styles.iconPrimary} /> الإشعارات
             </h2>
             <label className={styles.switch}>
               <input
@@ -359,7 +364,7 @@ const Settings = () => {
 
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <Flame size={18} color="#f97316" />
+                <Flame size={18} className={styles.notifIcon} />
                 <div className={styles.textContainer}>
                   <span>تنبيه حماية الستريك</span>
                   <p className={styles.subText}>تذكيرك قبل انتهاء اليوم للحفاظ على أيامك</p>
@@ -378,7 +383,7 @@ const Settings = () => {
 
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <Sparkles size={18} color="#8b5cf6" />
+                <Sparkles size={18} className={styles.notifIcon} />
                 <div className={styles.textContainer}>
                   <span>اقتراحات ومزايا التطبيق</span>
                   <p className={styles.subText}>تعرف على خصائص أجيوس الجديدة</p>
@@ -397,7 +402,7 @@ const Settings = () => {
 
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <RefreshCw size={18} color="#10b981" />
+                <RefreshCw size={18} className={styles.notifIcon} />
                 <div className={styles.textContainer}>
                   <span>إشعارات التحديثات</span>
                   <p className={styles.subText}>تنبيه فور توفر نسخة جديدة من التطبيق</p>

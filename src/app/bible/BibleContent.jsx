@@ -9,7 +9,7 @@ import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import BibleNavModal from '../../components/BibleNavModal';
 import { toast } from 'react-hot-toast';
-import { Share2 } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 
@@ -254,21 +254,26 @@ export default function BibleContent() {
 
   const highlightSelected = (color) => {
     if (!user) { router.push('/intro'); return; }
+
+    const firstVerseKey = selectedVerses.length > 0 ? `${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}` : null;
+    const isAlreadyThisColor = firstVerseKey && favouriteVerses[firstVerseKey]?.color === color;
+    const targetColor = isAlreadyThisColor ? null : color;
+
     setFavouriteVerses(prev => {
       const next = { ...prev };
       let newlyAddedCount = 0;
       selectedVerses.forEach(sv => {
         const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
-        if (color) {
+        if (targetColor) {
           if (!next[key]) newlyAddedCount++;
-          next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: color };
+          next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: targetColor };
         } else { delete next[key]; }
       });
       if (newlyAddedCount > 0) updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة", 'favouriteVerse');
       saveToFirestore(next, completedChapters);
       return next;
     });
-    setCopiedMessage(color ? 'تم التظليل ✨' : 'تم حذف التظليل 🗑️');
+    setCopiedMessage(targetColor ? 'تم التظليل ✨' : 'تم حذف التظليل 🗑️');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -356,18 +361,28 @@ export default function BibleContent() {
         <div className={styles.selectionBar}>
           <div className={styles.selectionActions}>
             <button onClick={() => setSelectedVerses([])} className={styles.actionBtn}>✕</button>
-            <button onClick={copySelected} className={styles.actionBtn}>📋</button>
+            <button onClick={copySelected} className={styles.actionBtn} title="نسخ"><Copy size={20} /></button>
             <button onClick={() => {
                 const combinedText = selectedVerses.map(v => v.text).join(' ');
                 shareVerse(combinedText, selectedVerses[0].index);
             }} className={styles.actionBtn}><Share2 size={20} /></button>
-            <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn}>📝</button>
-            <button onClick={() => highlightSelected(null)} className={styles.actionBtn} style={{color: '#ff4d4d'}}>🗑️</button>
+            <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title="ملاحظة"><MessageSquare size={20} /></button>
           </div>
           <div className={styles.colorGrid}>
-            {HIGHLIGHT_COLORS.map((color, idx) => (
-              <span key={idx} className={styles.colorDot} style={{ backgroundColor: color }} onClick={() => highlightSelected(color)} />
-            ))}
+            {HIGHLIGHT_COLORS.map((color, idx) => {
+              const firstVerseKey = selectedVerses.length > 0 ? `${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}` : null;
+              const isCurrentColor = firstVerseKey && favouriteVerses[firstVerseKey]?.color === color;
+              return (
+                <span
+                  key={idx}
+                  className={styles.colorDot}
+                  style={{ backgroundColor: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={() => highlightSelected(color)}
+                >
+                  {isCurrentColor && <Check size={16} color="white" />}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -401,11 +416,11 @@ export default function BibleContent() {
       <h1 className={styles.title}>الكتاب المقدس</h1>
       
       <div className={styles.controls}>
-        <div className={styles.navigationDisplay} onClick={() => setIsNavModalOpen(true)}>
+        <button className={styles.navigationDisplay} onClick={() => setIsNavModalOpen(true)}>
           <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
           <span className={styles.navSeparator}>|</span>
           <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
-        </div>
+        </button>
       </div>
 
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}

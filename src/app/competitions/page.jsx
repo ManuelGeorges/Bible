@@ -6,7 +6,7 @@ import { allQuestions } from './questionsData';
 import styles from './competitions.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, auth } from '../../lib/firebase'; 
-import { doc, getDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, increment, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const normalizeArabic = (text) => {
@@ -54,26 +54,21 @@ export default function HomePage() {
         router.push('/intro');
       } else {
         setUser(currentUser);
-        fetchUserData(currentUser.uid);
+        // استخدام onSnapshot للمزامنة الفورية
+        const userRef = doc(db, "users", currentUser.uid);
+        const unsubSnap = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setCompletedQuizzes(data.completedQuizzes || []);
+            setUserBadges(data.badges || []); // توحيد مكان الأوسمة
+          }
+        });
+        return () => unsubSnap();
       }
       setAuthLoading(false);
     });
     return () => unsubscribe();
   }, [router]);
-
-  const fetchUserData = async (uid) => {
-    try {
-      const docRef = doc(db, "users", uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setCompletedQuizzes(data.completedQuizzes || []);
-        setUserBadges(data.stats?.unlocked_badges || []);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -100,10 +95,9 @@ export default function HomePage() {
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
-        "stats.unlocked_badges": arrayUnion(badgeId)
+        badges: arrayUnion(badgeId) // توحيد الحقل إلى badges
       });
-      setUserBadges(prev => [...prev, badgeId]);
-      showBadgeToast(`🎉 لقد حصلت على وسام: ${badgeName} (${rarity})`);
+      showBadgeToast(`🎉 وسام جديد: ${badgeName}`);
     } catch (e) {
       console.error(e);
     }
@@ -117,7 +111,7 @@ export default function HomePage() {
     });
 
     if (filtered.length === 0) {
-      alert("عذراً، لا توجد أسئلة متوفرة حالياً.");
+      alert("عذراً، لا توجد أسئلة متوفرة حالياً لهذه الفئة.");
       return;
     }
 
@@ -150,11 +144,6 @@ export default function HomePage() {
     }));
 
     if (newStreak === 10) await unlockBadge('rapid_10', 'سريع الاشتعال', 'مميز');
-    
-    const now = new Date();
-    if (now.getHours() === 3 && now.getMinutes() === 0) {
-      await unlockBadge('ghost_user', 'المستخدم الشبح', 'سري');
-    }
   };
 
   const nextQuestion = async () => {
@@ -167,24 +156,20 @@ export default function HomePage() {
       }));
       setUserAnswer('');
     } else {
-      const timeTaken = (Date.now() - quizState.startTime) / 1000;
       const finalScore = quizState.score;
       const totalQuestions = questions.length;
-      const isPerfect = finalScore === totalQuestions;
-
       const record = {
         category: quizState.category,
         score: finalScore,
         total: totalQuestions,
         date: new Date().toISOString()
       };
-
       setQuizState(prev => ({ ...prev, showResults: true }));
-      await finalizeQuiz(record, isPerfect, timeTaken);
+      await finalizeQuiz(record, finalScore === totalQuestions);
     }
   };
 
-  const finalizeQuiz = async (record, isPerfect, timeTaken) => {
+  const finalizeQuiz = async (record, isPerfect) => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
     const updatedHistory = [record, ...completedQuizzes.filter(q => q.category !== record.category)];
@@ -194,7 +179,7 @@ export default function HomePage() {
     
     if (isPerfect) {
       pointsToAdd += 50;
-      reason = `الدرجة الكاملة في مسابقة: ${record.category}`;
+      reason = `العلامة الكاملة: ${record.category}`;
     }
 
     try {
@@ -209,28 +194,10 @@ export default function HomePage() {
         })
       });
 
-      setCompletedQuizzes(updatedHistory);
-
-      await unlockBadge('quiz_first', 'أول خطوة', 'عادي');
-      if (updatedHistory.length >= 3) await unlockBadge('scholar_3', 'الباحث المبتدئ', 'عادي');
+      if (updatedHistory.length >= 1) await unlockBadge('quiz_first', 'أول خطوة', 'عادي');
       if (updatedHistory.length >= 10) await unlockBadge('scholar_10', 'المتفرغ', 'مميز');
-      if (updatedHistory.length >= 30) await unlockBadge('scholar_30', 'الدارس', 'نادر');
-      if (updatedHistory.length >= 50) await unlockBadge('scholar_50', 'العلامة', 'أسطوري');
-      if (updatedHistory.length >= 73) await unlockBadge('bible_master', 'خاتم الأسفار', 'خرافي');
-
-      if (isPerfect) {
-        await unlockBadge('perfect_1', 'العلامة الكاملة', 'عادي');
-        const perfectCount = updatedHistory.filter(q => q.score === q.total).length;
-        if (perfectCount >= 10) await unlockBadge('perfect_10', 'القناص', 'مميز');
-        if (perfectCount >= 73) await unlockBadge('perfect_all', 'القاموس', 'أسطوري');
-      }
-
-      if (timeTaken < 30 && isPerfect) {
-        await unlockBadge('flawless_victory', 'لا يُقهر', 'نادر');
-        await unlockBadge('speed_demon', 'بطل السرعة', 'سري');
-      }
     } catch (e) {
-      console.error("Error finalizing quiz points:", e);
+      console.error(e);
     }
   };
 
@@ -322,10 +289,10 @@ export default function HomePage() {
           <div className={styles.historyContainer} style={{ marginTop: '40px' }}>
             <h3>سجل نتائجك ☁️</h3>
             {completedQuizzes.map((quiz, idx) => (
-              <div key={idx} className={styles.historyItem} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: '#fff', margin: '5px 0', borderRadius: '8px', borderBottom: '2px solid #eee' }}>
+              <div key={idx} className={styles.historyItem} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'var(--color-card-bg)', margin: '5px 0', borderRadius: '8px', borderBottom: '2px solid var(--color-border)' }}>
                 <span>{quiz.category}</span>
                 <strong>{quiz.score} / {quiz.total}</strong>
-                <button onClick={() => loadQuestionsByCategory(quiz.category)} style={{ background: '#3498db', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}>إعادة</button>
+                <button onClick={() => loadQuestionsByCategory(quiz.category)} style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}>إعادة</button>
               </div>
             ))}
           </div>

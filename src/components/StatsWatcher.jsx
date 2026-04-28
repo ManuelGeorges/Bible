@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { auth, db } from '../lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, getCountFromServer } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, getCountFromServer, deleteField } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function StatsWatcher() {
@@ -27,21 +27,21 @@ export default function StatsWatcher() {
     try {
       const userRef = doc(db, "users", auth.currentUser.uid);
       const docSnap = await getDoc(userRef);
-      const unlocked = docSnap.data()?.stats?.unlocked_badges || [];
+      const unlocked = docSnap.data()?.badges || [];
       if (!unlocked.includes(badgeId)) {
-        await updateDoc(userRef, { "stats.unlocked_badges": arrayUnion(badgeId) });
+        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
       }
     } catch (e) { console.error(e); }
   };
 
   const syncUserData = async (user) => {
-    const userStatsRef = doc(db, "users", user.uid);
+    const userRef = doc(db, "users", user.uid);
     try {
-      const docSnap = await getDoc(userStatsRef);
+      const docSnap = await getDoc(userRef);
       const today = new Date().toISOString().split('T')[0];
       const now = new Date();
 
-      if (!docSnap.exists() || !docSnap.data().stats) {
+      if (!docSnap.exists()) {
         const coll = collection(db, "users");
         const snapshot = await getCountFromServer(coll);
         const userNumber = snapshot.data().count;
@@ -50,63 +50,70 @@ export default function StatsWatcher() {
         if (userNumber <= 100) loyaltyBadges.push('agios_legend');
         if (userNumber <= 1000) loyaltyBadges.push('agios_og');
 
-        const initialStats = {
-          current_streak: 1,
-          last_active_date: today,
-          total_points: 0,
-          chapters_read: 0,
-          quizzes_done: 0,
-          perfect_quizzes: 0,
-          map_points: 0,
-          app_shares: 0,
-          unlocked_badges: loyaltyBadges
-        };
-        await setDoc(userStatsRef, { 
-            stats: initialStats,
-            email: user.email // إضافة الإيميل للمستخدم الجديد
+        await setDoc(userRef, {
+            email: user.email,
+            displayName: user.displayName,
+            totalPoints: 10, // هدية التسجيل
+            streak: 1,
+            lastActiveDate: today,
+            badges: loyaltyBadges,
+            createdAt: new Date().toISOString()
         }, { merge: true });
       } else {
-        const data = docSnap.data();
-        const stats = data.stats;
+        let data = docSnap.data();
 
-        // تصحيح: إضافة الإيميل لو مكنش موجود للمستخدم القديم
+        // 0. كود الهجرة (Migration): نقل البيانات من كائن stats القديم إلى المستوى الأول
+        if (data.stats) {
+          console.log("Migrating legacy stats for user:", user.uid);
+          const legacy = data.stats;
+          const migrationUpdates = {
+            totalPoints: data.totalPoints || legacy.total_points || 0,
+            badges: data.badges || legacy.unlocked_badges || [],
+            streak: data.streak || legacy.current_streak || 0,
+            lastActiveDate: data.lastActiveDate || legacy.last_active_date || today,
+            stats: deleteField()
+          };
+          await updateDoc(userRef, migrationUpdates);
+
+          // تحديث الكائن المحلي لمتابعة العمليات القادمة بشكل صحيح
+          data = { ...data, ...migrationUpdates };
+          delete data.stats;
+        }
+
+        // 1. تحديث الإيميل إذا كان ناقصاً
         if (!data.email && user.email) {
-          await updateDoc(userStatsRef, { email: user.email });
+          await updateDoc(userRef, { email: user.email });
         }
 
-        const loyaltyIds = ['agios_pioneer', 'agios_legend', 'agios_og'];
-        const hasLoyaltyBadge = loyaltyIds.some(id => stats.unlocked_badges.includes(id));
-        if (!hasLoyaltyBadge) {
-          const coll = collection(db, "users");
-          const snapshot = await getCountFromServer(coll);
-          const userNumber = snapshot.data().count;
-          if (userNumber <= 20) await unlockBadge('agios_pioneer');
-          else if (userNumber <= 100) await unlockBadge('agios_legend');
-          else if (userNumber <= 1000) await unlockBadge('agios_og');
-        }
+        // 2. تحديث الستريك (Streak)
+        const lastActive = data.lastActiveDate;
+        let currentStreak = data.streak || 0;
 
-        const lastActive = stats.last_active_date;
-        let newStreak = stats.current_streak;
         if (lastActive !== today) {
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
           const yesterdayStr = yesterday.toISOString().split('T')[0];
-          newStreak = (lastActive === yesterdayStr) ? newStreak + 1 : 1;
-          await updateDoc(userStatsRef, {
-            "stats.current_streak": newStreak,
-            "stats.last_active_date": today
+
+          let newStreak = (lastActive === yesterdayStr) ? currentStreak + 1 : 1;
+
+          await updateDoc(userRef, {
+            streak: newStreak,
+            lastActiveDate: today
           });
+
+          // 3. فحص أوسمة الاستمرارية
+          const consistencyBadges = checkConsistencyBadges(newStreak);
+          const currentBadges = data.badges || [];
+          for (const id of consistencyBadges) {
+            if (!currentBadges.includes(id)) { await unlockBadge(id); }
+          }
         }
 
-        const consistencyBadges = checkConsistencyBadges(newStreak);
-        for (const id of consistencyBadges) {
-          if (!stats.unlocked_badges.includes(id)) { await unlockBadge(id); }
-        }
-
+        // 4. أوسمة الوقت
         if (now.getHours() < 7) await unlockBadge('early_bird');
         if (now.getHours() >= 0 && now.getHours() < 3) await unlockBadge('night_owl');
       }
-    } catch (error) { console.error(error); }
+    } catch (error) { console.error("StatsWatcher Sync Error:", error); }
   };
 
   useEffect(() => {
@@ -117,22 +124,8 @@ export default function StatsWatcher() {
       }
     });
 
-    const now = new Date();
-    if (now.getHours() === 3 && now.getMinutes() === 0) { unlockBadge('ghost_user'); }
-
-    let pointsTimer;
-    if (pathname === '/points') { pointsTimer = setTimeout(() => unlockBadge('deep_diver'), 600000); }
-    if (pathname === '/settings') {
-      const dailyCount = parseInt(sessionStorage.getItem('settings_clicks') || '0') + 1;
-      sessionStorage.setItem('settings_clicks', dailyCount);
-      if (dailyCount >= 10) unlockBadge('data_obsessive');
-    }
-
-    return () => {
-      unsubscribe();
-      if (pointsTimer) clearTimeout(pointsTimer);
-    };
-  }, [pathname]);
+    return () => unsubscribe();
+  }, []);
 
   return null;
 }

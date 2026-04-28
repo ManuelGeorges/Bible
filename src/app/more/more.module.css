@@ -14,17 +14,7 @@
   box-shadow: -10px 0 30px var(--color-shadow-medium);
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-accent) transparent;
-}
-
-.sidebar::-webkit-scrollbar {
-  width: 5px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
-  border-radius: 10px;
+  direction: rtl;
 }
 
 .sidebar.open {
@@ -36,14 +26,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 35px;
-  flex-direction: row-reverse;
   flex-shrink: 0;
 }
 
 .title {
   color: var(--color-text-primary);
   font-size: 1.5em;
-  font-weight: bold;
+  font-weight: 800;
+  margin: 0;
 }
 
 .closeBtn {
@@ -58,12 +48,6 @@
   justify-content: center;
   cursor: pointer;
   transition: 0.3s;
-}
-
-.closeBtn:hover {
-  background: var(--color-accent);
-  color: var(--btn-text);
-  border-color: var(--color-accent);
 }
 
 .gridContainer {
@@ -86,14 +70,7 @@
   border: 1px solid var(--color-border);
 }
 
-.gridItem:hover {
-  background: var(--color-bg-end);
-  transform: translateY(-4px);
-  border-color: var(--color-accent);
-}
-
 .iconWrapper {
-  background: rgba(var(--color-accent-rgb), 0.1);
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -101,6 +78,7 @@
   align-items: center;
   justify-content: center;
   color: var(--color-accent);
+  background: rgba(var(--color-accent-rgb), 0.1);
   border: 1px solid var(--color-border);
 }
 
@@ -108,38 +86,44 @@
   color: var(--color-text-primary);
   font-size: 0.85em;
   text-align: center;
+  font-weight: 600;
 }
 
 .bottomDivider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+  background: var(--color-border);
   margin: 30px 0;
+  opacity: 0.5;
   flex-shrink: 0;
 }
 
 .footerLinks {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
   padding-bottom: 30px;
-  flex-shrink: 0;
 }
 
+/* Footer links: Icon on right, Text to its left, aligned with header title */
 .footerItem {
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  font-size: 1em;
-  padding: 8px;
-  flex-direction: row-reverse;
+  font-size: 1.05rem;
+  padding: 5px 0;
   transition: 0.3s;
+  flex-direction: row; /* In RTL, first child is on the right */
+  justify-content: flex-start;
 }
 
 .footerItem:hover {
   color: var(--color-accent);
-  padding-right: 12px;
+}
+
+.footerItem span {
+  font-weight: 600;
 }
 
 .overlay {

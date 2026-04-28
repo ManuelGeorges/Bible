@@ -169,9 +169,9 @@ export default function BibleSearchPage() {
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
-        "stats.total_points": increment(amount),
+        totalPoints: increment(amount), // توحيد الحقل إلى totalPoints
         pointsHistory: arrayUnion({
-          amount,
+          points: amount, // توحيد الحقل إلى points
           reason,
           timestamp: new Date().toISOString()
         })
