@@ -12,7 +12,7 @@ import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
 import { AppReview } from '@capawesome/capacitor-app-review';
 import { fetchAndActivate, getNumber } from 'firebase/remote-config';
-import { remoteConfig } from '../lib/firebase';
+import { getFirebaseRemoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
 
 export default function CapacitorFeatures() {
@@ -63,6 +63,7 @@ export default function CapacitorFeatures() {
 
     const handleAppUpdate = async () => {
       try {
+        const remoteConfig = await getFirebaseRemoteConfig();
         if (!remoteConfig) return;
         remoteConfig.settings.minimumFetchIntervalMillis = 600000;
         await fetchAndActivate(remoteConfig).catch(() => {});

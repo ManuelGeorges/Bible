@@ -79,7 +79,6 @@
   flex-wrap: wrap;
 }
 
-/* 13- XP button styling */
 .statPill {
   display: flex;
   align-items: center;
@@ -110,6 +109,172 @@
 .miniBadge {
   font-size: 18px;
   filter: drop-shadow(0 2px 4px var(--color-shadow-medium));
+}
+
+/* Remote Config News Banner - NEW */
+.newsBanner {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  animation: slideIn 0.5s var(--transition-bounce);
+  overflow: hidden;
+}
+
+.newsIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.newsContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.newsContent h3 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.newsContent p {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.newsActionBtn {
+  width: fit-content;
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.newsActionBtn:active {
+  transform: scale(0.95);
+}
+
+.closeNews {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Daily Goals Summary */
+.dailyGoalsSummary {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 4px 15px var(--color-shadow-light);
+}
+
+.goalsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.goalsTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.viewMoreLink {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.goalsProgressWrapper {
+  margin-bottom: 15px;
+}
+
+.goalsProgressText {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.miniProgressBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.miniProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.goalsMiniList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.miniGoalItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: var(--color-border);
+  background-opacity: 0.1;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.goalDone {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
 }
 
 .quickGrid {
@@ -198,7 +363,6 @@
   width: 100%;
 }
 
-/* 14- Buttons styling for Dark/System */
 .glassBtn {
   display: flex;
   align-items: center;
@@ -252,7 +416,6 @@
   color: #ffffff !important;
 }
 
-/* 14- Continue Reading styling */
 .lastReadBar {
   display: flex;
   justify-content: space-between;

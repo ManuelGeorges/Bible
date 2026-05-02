@@ -8,19 +8,26 @@ import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc, onSnapshot, updateDoc, increment, arrayUnion, deleteField } from "firebase/firestore";
-import { db } from '../lib/firebase';
+import { db, getFirebaseRemoteConfig } from '../lib/firebase';
+import { fetchAndActivate, getValue } from "firebase/remote-config";
 import { Capacitor } from '@capacitor/core';
 import { toast, Toaster } from 'react-hot-toast';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import {
     Book, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
-    ChevronLeft, Award, Flame, LogIn, ArrowRight
+    ChevronLeft, Award, Flame, LogIn, ArrowRight,
+    CheckCircle, Circle, ArrowUpRight, Bell, X
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const staticPlans = studyPlansData.plans;
+
+const convertToArabicNumber = (num) => {
+    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return num.toString().split('').map(d => arabicNums[+d] || d).join('');
+};
 
 const LandingPage = () => {
     const router = useRouter();
@@ -36,6 +43,37 @@ const LandingPage = () => {
     const [userBadges, setUserBadges] = useState([]);
     const [favouriteVerses, setFavouriteVerses] = useState({});
     const [lastRead, setLastRead] = useState(null);
+    const [dailyGoals, setDailyGoals] = useState([]);
+    const [remoteNews, setRemoteNews] = useState(null);
+    const [showNews, setShowNews] = useState(true);
+
+    // جلب بيانات Remote Config مع محاولة متكررة
+    useEffect(() => {
+        let retries = 0;
+        const maxRetries = 5;
+
+        const fetchRemoteConfig = async () => {
+            const config = await getFirebaseRemoteConfig();
+            if (config) {
+                try {
+                    await fetchAndActivate(config);
+                    const newsJson = getValue(config, 'app_news').asString();
+                    if (newsJson && newsJson !== '{"active":false}') {
+                        const parsedNews = JSON.parse(newsJson);
+                        if (parsedNews && parsedNews.active) {
+                            setRemoteNews(parsedNews);
+                        }
+                    }
+                } catch (err) {
+                    console.error("Remote Config error:", err);
+                }
+            } else if (retries < maxRetries) {
+                retries++;
+                setTimeout(fetchRemoteConfig, 1000);
+            }
+        };
+        fetchRemoteConfig();
+    }, []);
 
     const calculatePlanStats = useCallback((planId, isCustom, customPlanData, serverCompletion) => {
         let completedDays = {};
@@ -105,29 +143,52 @@ const LandingPage = () => {
                         const serverComp = data.completedPlans || {};
                         const customPlans = data.customPlans || {};
 
-                        const activeStatic = staticPlans.map(plan => {
-                            const stats = calculatePlanStats(plan.id, false, null, serverComp);
-                            return { ...plan, stats };
-                        }).filter(p => p.stats.daysDone > 0 && p.stats.percent < 100);
+                        const activeStatic = staticPlans
+                            .filter(plan => serverComp[plan.id])
+                            .map(plan => {
+                                const stats = calculatePlanStats(plan.id, false, null, serverComp);
+                                return { ...plan, stats };
+                            }).filter(p => p.stats.percent < 100);
 
                         const activeCustom = Object.values(customPlans).map(plan => {
                             const stats = calculatePlanStats(plan.id, true, plan, null);
                             return { ...plan, isCustom: true, stats };
-                        }).filter(p => p.stats.daysDone > 0 && p.stats.percent < 100);
+                        }).filter(p => p.stats.percent < 100);
 
                         setStartedPlans([...activeCustom, ...activeStatic]);
+
+                        const today = new Date().toISOString().split('T')[0];
+                        const historyRaw = data.pointsHistory || [];
+                        const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
+
+                        const checkGoal = (type) => history.some(h => {
+                            if (!h.timestamp) return false;
+                            const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
+                            return h.type === type && ts.toISOString().split('T')[0] === today;
+                        });
+
+                        const goals = [
+                            { id: 'dailyLogin', label: 'تسجيل الدخول', completed: data.lastActiveDate === today },
+                            { id: 'dailyQuestion', label: 'سؤال التحدي', completed: !!data.answeredQuestions?.[today]?.answered },
+                            { id: 'mapExploration', label: 'استكشاف الخريطة', completed: checkGoal('mapExploration') },
+                            { id: 'share', label: 'المشاركة اليومية', completed: checkGoal('share') },
+                            { id: 'completedChapter', label: 'قراءة أصحاح', completed: checkGoal('completedChapter') },
+                            { id: 'favouriteVerse', label: 'تظليل آية', completed: checkGoal('favouriteVerse') },
+                        ];
+                        setDailyGoals(goals);
                     }
                 });
                 return () => unsubSnap();
             } else {
                 setStartedPlans([]);
+                setDailyGoals([]);
             }
         });
 
         return () => unsubAuth?.();
     }, [fetchDailyContent, calculatePlanStats]);
 
-    // مزامنة ملخص الخطط الدراسية للإشعارات (فقط للمسجلين)
+    // مزامنة البيانات مع كود الأندرويد الأصلي
     useEffect(() => {
         if (user && startedPlans.length > 0) {
             const summary = {
@@ -135,12 +196,21 @@ const LandingPage = () => {
                 mainPlanTitle: startedPlans[0].title,
                 remainingDays: startedPlans[0].stats.totalDays - startedPlans[0].stats.daysDone
             };
+
             localStorage.setItem('studyPlansSummary', JSON.stringify(summary));
+
+            if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateStudySummary) {
+                window.AgiosScannerNative.updateStudySummary(JSON.stringify(summary));
+            }
+
             if (Capacitor.isNativePlatform()) {
                 import('../lib/notificationService').then(m => m.syncNotifications());
             }
         } else {
             localStorage.removeItem('studyPlansSummary');
+            if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateStudySummary) {
+                window.AgiosScannerNative.updateStudySummary("");
+            }
         }
     }, [startedPlans, user]);
 
@@ -166,7 +236,17 @@ const LandingPage = () => {
 
         if (isCorrect) {
             toast.success('إجابة صحيحة! 🎉');
-            await updateDoc(userRef, { ...updatePayload, totalPoints: increment(20), correctAnswersCount: increment(1) });
+            await updateDoc(userRef, {
+                ...updatePayload,
+                totalPoints: increment(20),
+                correctAnswersCount: increment(1),
+                pointsHistory: arrayUnion({
+                    type: 'dailyQuestion',
+                    points: 20,
+                    reason: 'إجابة صحيحة على سؤال اليوم',
+                    timestamp: new Date().toISOString()
+                })
+            });
         } else {
             toast.error('إجابة خاطئة 😔');
             await updateDoc(userRef, updatePayload);
@@ -212,7 +292,13 @@ const LandingPage = () => {
             setFavouriteVerses(newFavs);
             await updateDoc(userRef, {
                 totalPoints: increment(5),
-                [`favorites.verses.${verseKey}`]: verseData
+                [`favorites.verses.${verseKey}`]: verseData,
+                pointsHistory: arrayUnion({
+                    type: 'favouriteVerse',
+                    points: 5,
+                    reason: 'تظليل آية أعجبتك',
+                    timestamp: new Date().toISOString()
+                })
             });
             toast.success('تمت الإضافة لكنوزك (+5 نقاط)');
         }
@@ -226,6 +312,8 @@ const LandingPage = () => {
         { name: 'المسابقات', icon: <Trophy />, path: user ? '/competitions' : '/intro', color: '#8b5cf6' },
         { name: 'المفضلة', icon: <Heart />, path: user ? '/favourites' : '/intro', color: '#ef4444' },
     ];
+
+    const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);
 
     return (
         <main className={`${styles.hubContainer} ${styles.rtl}`}>
@@ -262,6 +350,60 @@ const LandingPage = () => {
                     </div>
                 )}
             </header>
+
+            {remoteNews && showNews && (
+                <section className={styles.newsBanner} style={{ backgroundColor: remoteNews.bgColor || '#eff6ff' }}>
+                    <div className={styles.newsIcon}>
+                        <Bell size={20} color={remoteNews.accentColor || '#3b82f6'} />
+                    </div>
+                    <div className={styles.newsContent}>
+                        <h3 style={{ color: remoteNews.accentColor || '#1e40af' }}>{remoteNews.title}</h3>
+                        <p>{remoteNews.message}</p>
+                        {remoteNews.buttonText && (
+                            <button
+                                onClick={() => remoteNews.link ? router.push(remoteNews.link) : setShowNews(false)}
+                                className={styles.newsActionBtn}
+                                style={{ backgroundColor: remoteNews.accentColor || '#3b82f6' }}
+                            >
+                                {remoteNews.buttonText}
+                            </button>
+                        )}
+                    </div>
+                    <button className={styles.closeNews} onClick={() => setShowNews(false)}>
+                        <X size={16} />
+                    </button>
+                </section>
+            )}
+
+            {user && (
+                <section className={styles.dailyGoalsSummary}>
+                    <div className={styles.goalsHeader}>
+                        <div className={styles.goalsTitle}>
+                            <Award size={18} color="#f59e0b" />
+                            <span>مهام اليوم</span>
+                        </div>
+                        <Link href="/points" className={styles.viewMoreLink}>
+                            التفاصيل <ArrowUpRight size={14} />
+                        </Link>
+                    </div>
+                    <div className={styles.goalsProgressWrapper}>
+                        <div className={styles.goalsProgressText}>
+                            أنجزت {convertToArabicNumber(completedGoalsCount)} من {convertToArabicNumber(dailyGoals.length)} مهام
+                        </div>
+                        <div className={styles.miniProgressBar}>
+                            <div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / dailyGoals.length) * 100}%` }} />
+                        </div>
+                    </div>
+                    <div className={styles.goalsMiniList}>
+                        {dailyGoals.map(goal => (
+                            <div key={goal.id} className={`${styles.miniGoalItem} ${goal.completed ? styles.goalDone : ''}`}>
+                                {goal.completed ? <CheckCircle size={14} color="#10b981" /> : <Circle size={14} color="#94a3b8" />}
+                                <span>{goal.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <section className={styles.quickGrid}>
                 {quickLinks.map((link, i) => (

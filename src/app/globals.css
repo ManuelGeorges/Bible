@@ -1,17 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap');
 
-/* الألوان المشتركة */
 :root {
+ color-scheme: light dark;
   --main-font-size: 18px;
   --bible-font-size: 18px;
   --safe-top: env(safe-area-inset-top, 0px);
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 
-/* ألوان الوضع الفاتح - يتم تفعيلها إما كوضع افتراضي أو عند اختيار light */
-:root, [data-theme='light'] {
+  /* ألوان الوضع الفاتح الافتراضية */
   --color-bg-start: #f0f4f8;
   --color-bg-end: #dbeafe;
   --color-text-primary: #0f172a;
@@ -25,7 +23,20 @@
   --color-shadow-medium: rgba(0, 0, 0, 0.1);
 }
 
-/* ألوان الوضع الداكن - يتم تفعيلها فقط عند اختيار dark أو عندما يكون النظام dark في وضع التلقائي */
+/* تفعيل الوضع الداكن تلقائياً بناءً على السيستم أو الكلاس */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg-start: #020617;
+    --color-bg-end: #0f172a;
+    --color-card-bg: rgba(255, 255, 255, 0.05);
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cbd5e1;
+    --color-accent: #38bdf8;
+    --color-shadow-medium: rgba(0, 0, 0, 0.6);
+  }
+}
+
 [data-theme='dark'] {
   --color-bg-start: #020617;
   --color-bg-end: #0f172a;
@@ -36,7 +47,7 @@
   --color-accent: #38bdf8;
   --color-shadow-medium: rgba(0, 0, 0, 0.6);
 }
-
+/* ... باقي كود الـ CSS يظل كما هو ... */
 * {
   box-sizing: border-box;
   margin: 0;

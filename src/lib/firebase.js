@@ -5,7 +5,6 @@ import {
   persistentLocalCache, 
   persistentMultipleTabManager 
 } from "firebase/firestore";
-// 1. استيراد دوال الـ Remote Config
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
 
 const firebaseConfig = {
@@ -26,21 +25,20 @@ const db = initializeFirestore(app, {
   })
 });
 
-// 2. إعداد الـ Remote Config مع التحقق من دعم المتصفح (مهم لـ Next.js SSR)
-let remoteConfig = null;
-
-if (typeof window !== "undefined") {
-  isSupported().then((supported) => {
-    if (supported) {
-      remoteConfig = getRemoteConfig(app);
-      // إعدادات اختيارية: مدة الكاش (مثلاً ساعة واحدة)
-      remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
-      // قيم افتراضية (مفيدة جداً عشان الكود ميعطلش لو مفيش نت)
-      remoteConfig.defaultConfig = {
-        min_required_version: 0,
-      };
+// دالة لجلب الـ Remote Config بشكل آمن
+const getFirebaseRemoteConfig = async () => {
+    if (typeof window !== "undefined") {
+        const supported = await isSupported();
+        if (supported) {
+            const remoteConfig = getRemoteConfig(app);
+            remoteConfig.settings.minimumFetchIntervalMillis = 3600000; // ساعة واحدة كاش
+            remoteConfig.defaultConfig = {
+                app_news: JSON.stringify({ active: false })
+            };
+            return remoteConfig;
+        }
     }
-  });
-}
+    return null;
+};
 
-export { app, auth, db, remoteConfig };
+export { app, auth, db, getFirebaseRemoteConfig };

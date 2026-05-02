@@ -67,66 +67,81 @@ export default function RootLayout({ children }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var savedSize = localStorage.getItem('bibleFontSize');
-                  if (savedSize) {
-                    document.documentElement.style.setProperty('--bible-font-size', savedSize + 'px');
-                  }
-                } catch (e) {}
-              })();
-            `,
+             __html: `
+               (function() {
+                 try {
+                   var savedTheme = localStorage.getItem('theme');
+                   var savedSize = localStorage.getItem('bibleFontSize');
+
+                   if (savedSize) {
+                     document.documentElement.style.setProperty('--bible-font-size', savedSize + 'px');
+                   }
+
+                   // إذا كانت القيمة "undefined" أو غير موجودة، اجعلها تتبع النظام
+                   if (!savedTheme || savedTheme === 'undefined') {
+                     localStorage.setItem('theme', 'system');
+                   }
+
+                   // تطبيق الثيم فوراً لتجنب الـ Flash
+                   const theme = savedTheme === 'system' || !savedTheme
+                     ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                     : savedTheme;
+                   document.documentElement.setAttribute('data-theme', theme);
+                 } catch (e) {}
+               })();
+             `,
           }}
         />
         <style dangerouslySetInnerHTML={{ __html: `
-          html, body { 
-            background-color: #f0f4f8;
+          /* إجبار الخلفية البيضاء كحالة افتراضية */
+          html, body {
+            background-color: #f0f4f8 !important;
             margin: 0; 
             padding: 0;
           }
-          [data-theme='dark'] body {
-            background-color: #020617;
+          /* تطبيق الداكن فقط إذا كان النظام يطلب ذلك أو المستخدم اختاره */
+          @media (prefers-color-scheme: dark) {
+            html:not([data-theme='light']) body {
+              background-color: #020617 !important;
+            }
+          }
+          html[data-theme='dark'] body {
+            background-color: #020617 !important;
           }
         `}} />
       </head>
       <body>
         <StatsWatcher />
-        <ThemeProvider 
-          attribute="data-theme" 
-          defaultTheme="system" 
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="system"
           enableSystem={true}
-          enableColorScheme={false}
         >
-          <Toaster position="top-center" reverseOrder={false} />
-          
+          <Toaster position="top-center" />
           <UserTracker />
+          <BibleNavbar />
 
           <SplashHandler>
-            <BibleNavbar />
-            
             <main className={styles.mainContent}>
               <div className={styles.container}>{children}</div>
             </main>
-
             <Footer />
-
             <CapacitorFeatures />
             <SEOlinks />
-
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-              strategy="lazyOnload" 
-            />
-            <Script id="google-analytics" strategy="lazyOnload">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'G-J90H6JXHNG');
-              `}
-            </Script>
           </SplashHandler>
+
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+            strategy="lazyOnload"
+          />
+          <Script id="google-analytics" strategy="lazyOnload">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-J90H6JXHNG');
+            `}
+          </Script>
         </ThemeProvider>
       </body>
     </html>

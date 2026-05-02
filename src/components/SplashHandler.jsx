@@ -1,42 +1,26 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';
-import styles from './SplashHandler.module.css';
 
 const SplashHandler = ({ children }) => {
-  const [isReady, setIsReady] = useState(false);
-
   useEffect(() => {
-    const initApp = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 50)); 
-        
-        setIsReady(true);
-      } catch (error) {
-        setIsReady(true);
+    // إخفاء الشاشة الأصلية (Native) فور تحميل الجافا سكريبت وبدء التطبيق
+    const hideNativeSplash = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await SplashScreen.hide();
+        } catch (error) {
+          console.warn('Native splash hide error:', error);
+        }
       }
     };
-    initApp();
+
+    hideNativeSplash();
   }, []);
 
-  useEffect(() => {
-    if (isReady && Capacitor.isNativePlatform()) {
-      SplashScreen.hide();
-    }
-  }, [isReady]);
-
-  if (!isReady) {
-    return (
-      <div className={styles.splashWrapper}>
-        <div className={styles.logoContainer}>
-          <img src="/logo.png" alt="Logo" className={styles.mainLogo} />
-        </div>
-      </div>
-    );
-  }
-
+  // نعرض المحتوى فوراً دون أي واجهة سبلاش ويب
   return <>{children}</>;
 };
 

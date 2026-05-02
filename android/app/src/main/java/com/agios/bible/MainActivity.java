@@ -47,8 +47,16 @@ public class MainActivity extends BridgeActivity {
                     .putString("_cap_masterNotifications", String.valueOf(masterEnabled))
                     .apply();
                 
-                // Refresh alarms immediately with new settings
                 refreshAllAlarms();
+            }
+
+            @JavascriptInterface
+            public void updateStudySummary(String json) {
+                SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+                prefs.edit()
+                    .putString("studyPlansSummary", json)
+                    .putString("_cap_studyPlansSummary", json)
+                    .apply();
             }
         }, "AgiosScannerNative");
     }

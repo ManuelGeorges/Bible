@@ -12,23 +12,16 @@ import { Home, Book, Map as MapIcon, Search, Menu } from 'lucide-react';
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const pathname = usePathname();
 
     useEffect(() => {
-        if (!auth) {
-            setLoading(false);
-            return;
-        }
+        if (!auth) return;
         const unsubscribe = onAuthStateChanged(auth, (authUser) => {
             setUser(authUser);
-            setLoading(false);
         });
         return () => unsubscribe();
     }, []);
-
-    if (loading) return null;
 
     return (
         <>

@@ -20,19 +20,20 @@
   text-align: right;
 }
 
-/* 3- "صمم خطة ذكية" styling as a button */
+/* 3- "صمم خطة ذكية" styling to match "ابدأ الآن" */
 .aiCreateButton {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white !important;
-  padding: 16px 24px;
-  border-radius: 16px;
+  padding: 14px 24px;
+  border-radius: 12px;
   font-weight: 800;
   text-decoration: none;
   display: block;
   text-align: center;
-  box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2);
-  border-bottom: 4px solid #00000033;
-  transition: all 0.2s;
+  box-shadow: 0 8px 15px rgba(30, 58, 138, 0.2);
+  border-bottom: 4px solid rgba(0, 0, 0, 0.3); /* Button-like bottom border */
+  transition: all 0.2s ease;
+  margin-top: 10px;
 }
 
 .aiCreateButton:active {
@@ -44,7 +45,7 @@
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding: 4px 4px 20px 4px;
+  padding: 10px 4px 20px 4px;
   margin-bottom: 10px;
   scrollbar-width: none;
 }
@@ -58,13 +59,13 @@
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
-/* 4- Filter buttons active state: Blue bg, White text */
+/* 4- Filter buttons active state: Blue background, White text */
 .activeFilter {
   background: #2196F3 !important;
   color: white !important;
@@ -86,8 +87,6 @@
   position: relative;
   transition: transform 0.2s;
 }
-
-.card:active { transform: scale(0.98); }
 
 .cardTitle {
   font-size: 18px;
@@ -127,6 +126,7 @@
   color: #2196F3;
 }
 
+/* 3- "ابدأ الآن" button style */
 .cardButton {
   background: var(--btn-bg);
   color: white !important;
@@ -135,7 +135,9 @@
   font-weight: 800;
   text-decoration: none;
   display: inline-block;
-  border-bottom: 3px solid #00000033;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.3);
+  text-align: center;
+  transition: all 0.2s ease;
 }
 
 .cardButton:active {

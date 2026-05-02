@@ -22,16 +22,16 @@ const Badge = ({ badge, familyName, isUnlocked = false }) => {
 
   return (
     <div className={styles.wholeBadgeWrapper}>
-      {/* كونتينر البادج المربع */}
       <div className={badgeClasses}>
         <div className={styles.innerContent}>
           <IconComponent className={styles.badgeIcon} strokeWidth={1.5} />
           <span className={styles.badgeNameInside}>{badge.name}</span>
         </div>
+        {isUnlocked && <div className={styles.unlockedGlow} />}
       </div>
-<p className={`${styles.rarity} ${styles[`rarity_${badge.rarity}`]}`}>
-  {badge.rarity}
-</p>
+      <p className={`${styles.rarity} ${styles[`rarity_${badge.rarity}`]}`}>
+        {badge.rarity}
+      </p>
       <p className={styles.externalRequirement}>
         {badge.requirement}
       </p>
