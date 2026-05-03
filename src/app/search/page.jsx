@@ -7,7 +7,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import styles from './search.module.css';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import _ from 'lodash';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
@@ -410,7 +410,6 @@ export default function BibleSearchPage() {
 
   return (
     <div className={styles.container} dir="rtl">
-      <Toaster position="bottom-center" />
       <div className={styles.card}>
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
         <form onSubmit={(e) => { e.preventDefault(); performSearch(); }} className={styles.controls}>

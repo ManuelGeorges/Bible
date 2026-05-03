@@ -77,12 +77,10 @@ export default function RootLayout({ children }) {
                      document.documentElement.style.setProperty('--bible-font-size', savedSize + 'px');
                    }
 
-                   // إذا كانت القيمة "undefined" أو غير موجودة، اجعلها تتبع النظام
                    if (!savedTheme || savedTheme === 'undefined') {
                      localStorage.setItem('theme', 'system');
                    }
 
-                   // تطبيق الثيم فوراً لتجنب الـ Flash
                    const theme = savedTheme === 'system' || !savedTheme
                      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                      : savedTheme;
@@ -93,13 +91,11 @@ export default function RootLayout({ children }) {
           }}
         />
         <style dangerouslySetInnerHTML={{ __html: `
-          /* إجبار الخلفية البيضاء كحالة افتراضية */
           html, body {
             background-color: #f0f4f8 !important;
             margin: 0; 
             padding: 0;
           }
-          /* تطبيق الداكن فقط إذا كان النظام يطلب ذلك أو المستخدم اختاره */
           @media (prefers-color-scheme: dark) {
             html:not([data-theme='light']) body {
               background-color: #020617 !important;
@@ -117,7 +113,7 @@ export default function RootLayout({ children }) {
           defaultTheme="system"
           enableSystem={true}
         >
-          <Toaster position="top-center" />
+          <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
           <UserTracker />
           <BibleNavbar />
 

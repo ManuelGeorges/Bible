@@ -1,28 +1,49 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, setDoc, onSnapshot, updateDoc, increment, arrayUnion, deleteField } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc, increment, arrayUnion, deleteField } from "firebase/firestore";
 import { db, getFirebaseRemoteConfig } from '../lib/firebase';
 import { fetchAndActivate, getValue } from "firebase/remote-config";
 import { Capacitor } from '@capacitor/core';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import {
     Book, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
     ChevronLeft, Award, Flame, LogIn, ArrowRight,
-    CheckCircle, Circle, ArrowUpRight, Bell, X
+    CheckCircle, Circle, ArrowUpRight, Bell, 
+    Image as ImageIcon, Info, Star, Gift, Megaphone,
+    MessageCircle, Zap, Globe, Shield, Calendar,
+    Bot, Brain, Cpu, Wand2, Lightbulb, Rocket,
+    RefreshCw, History, Share2, ThumbsUp, Users,
+    Lock, Unlock, Camera, Mail, Link as LinkIcon,
+    ExternalLink, ShieldCheck, QrCode, BookOpen,
+    Scroll, Languages, PartyPopper, Mic, Headphones,
+    Video, Music, Church, Sun, Moon, Cloud
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
+
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const staticPlans = studyPlansData.plans;
+
+const LUCIDE_ICONS = {
+    'Trophy': Trophy, 'Award': Award, 'Medal': Award, 'Gift': Gift, 'Star': Star, 'Heart': Heart,
+    'Bell': Bell, 'Info': Info, 'Megaphone': Megaphone, 'Message': MessageCircle, 'Announcement': Megaphone,
+    'Bot': Bot, 'AI': Sparkles, 'Brain': Brain, 'Cpu': Cpu, 'Wand': Wand2, 'Magic': Wand2, 'Lightbulb': Lightbulb, 'Idea': Lightbulb,
+    'Rocket': Rocket, 'Update': RefreshCw, 'New': Sparkles, 'History': History, 'Zap': Zap, 'Flash': Zap, 'Party': PartyPopper,
+    'Book': Book, 'Bible': BookOpen, 'BookOpen': BookOpen, 'Scroll': Scroll, 'Church': Church, 'Pray': Heart,
+    'Map': Map, 'Search': Search, 'Settings': Settings, 'Globe': Globe, 'Shield': Shield, 'Verified': ShieldCheck,
+    'Calendar': Calendar, 'Camera': Camera, 'Mail': Mail, 'Link': LinkIcon, 'External': ExternalLink,
+    'Lock': Lock, 'Unlock': Unlock, 'QrCode': QrCode, 'Translate': Languages, 'Mic': Mic,
+    'Users': Users, 'People': Users, 'Like': ThumbsUp, 'Share': Share2, 'Music': Music, 'Video': Video, 'Headphones': Headphones,
+    'Sun': Sun, 'Moon': Moon, 'Cloud': Cloud, 'Flame': Flame, 'Fire': Flame
+};
 
 const convertToArabicNumber = (num) => {
     const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -31,7 +52,6 @@ const convertToArabicNumber = (num) => {
 
 const LandingPage = () => {
     const router = useRouter();
-    const [activePlanIndex, setActivePlanIndex] = useState(0);
     const [dailyVerse, setDailyVerse] = useState(null);
     const [dailyQuestion, setDailyQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -44,38 +64,11 @@ const LandingPage = () => {
     const [favouriteVerses, setFavouriteVerses] = useState({});
     const [lastRead, setLastRead] = useState(null);
     const [dailyGoals, setDailyGoals] = useState([]);
-    const [remoteNews, setRemoteNews] = useState(null);
-    const [showNews, setShowNews] = useState(true);
+    const [remoteNews, setRemoteNews] = useState([]);
+    const [activeNewsIndex, setActiveNewsIndex] = useState(0);
 
-    // جلب بيانات Remote Config مع محاولة متكررة
-    useEffect(() => {
-        let retries = 0;
-        const maxRetries = 5;
-
-        const fetchRemoteConfig = async () => {
-            const config = await getFirebaseRemoteConfig();
-            if (config) {
-                try {
-                    await fetchAndActivate(config);
-                    const newsJson = getValue(config, 'app_news').asString();
-                    if (newsJson && newsJson !== '{"active":false}') {
-                        const parsedNews = JSON.parse(newsJson);
-                        if (parsedNews && parsedNews.active) {
-                            setRemoteNews(parsedNews);
-                        }
-                    }
-                } catch (err) {
-                    console.error("Remote Config error:", err);
-                }
-            } else if (retries < maxRetries) {
-                retries++;
-                setTimeout(fetchRemoteConfig, 1000);
-            }
-        };
-        fetchRemoteConfig();
-    }, []);
-
-    const calculatePlanStats = useCallback((planId, isCustom, customPlanData, serverCompletion) => {
+    // تحسين حساب الإحصائيات لتجنب البحث المتكرر O(N^2)
+    const calculatePlanStats = useCallback((planOrId, isCustom, customPlanData, serverCompletion) => {
         let completedDays = {};
         let totalDays = 0;
 
@@ -83,8 +76,9 @@ const LandingPage = () => {
             completedDays = customPlanData.completedDays || {};
             totalDays = customPlanData.readings?.length || 0;
         } else {
-            const plan = staticPlans.find(p => p.id === planId);
+            const plan = typeof planOrId === 'object' ? planOrId : staticPlans.find(p => p.id === planOrId);
             totalDays = plan?.readings?.length || 0;
+            const planId = plan?.id || planOrId;
             completedDays = serverCompletion?.[planId]?.completedDays || {};
         }
 
@@ -126,34 +120,83 @@ const LandingPage = () => {
     }, []);
 
     useEffect(() => {
+        const fetchRemoteConfig = async () => {
+            try {
+                const config = await getFirebaseRemoteConfig();
+                if (config) {
+                    config.settings.minimumFetchIntervalMillis = 3600000; // ساعة واحدة لتجنب ضغط الطلبات
+                    await fetchAndActivate(config);
+
+                    const newsJson = getValue(config, 'app_news').asString();
+                    if (newsJson && newsJson.trim() !== "") {
+                        const parsed = JSON.parse(newsJson);
+                        if (Array.isArray(parsed)) {
+                            setRemoteNews(parsed.filter(n => n.active));
+                        } else if (parsed && parsed.active) {
+                            setRemoteNews([parsed]);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Remote Config Fetch Failed.");
+            }
+        };
+        fetchRemoteConfig();
+    }, []);
+
+    const handleNewsScroll = (e) => {
+        const scrollLeft = Math.abs(e.target.scrollLeft);
+        const itemWidth = e.target.offsetWidth * 0.9;
+        if (itemWidth <= 0) return;
+        const index = Math.round(scrollLeft / itemWidth);
+        if (!isNaN(index) && index !== activeNewsIndex) {
+            setActiveNewsIndex(index);
+        }
+    };
+
+    // الإصلاح الأساسي: إدارة اشتراكات Firebase بشكل صحيح لمنع التهنيج
+    useEffect(() => {
         if (Capacitor.isNativePlatform()) CapacitorUpdater.notifyAppReady();
 
+        let unsubSnap = null;
         const unsubAuth = auth?.onAuthStateChanged((u) => {
             setUser(u);
             fetchDailyContent(u);
+
+            // تنظيف المستمع القديم قبل إنشاء واحد جديد
+            if (unsubSnap) {
+                unsubSnap();
+                unsubSnap = null;
+            }
+
             if (u) {
-                const unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
+                unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
                         setUserStats({ points: data.totalPoints || 0, streak: data.streak || 0 });
                         setUserBadges(data.badges || []);
                         setFavouriteVerses(data.favorites?.verses || {});
-                        setLastRead(data.lastRead || JSON.parse(localStorage.getItem('lastReadLocation')));
+
+                        const lastReadData = data.lastRead || JSON.parse(localStorage.getItem('lastReadLocation'));
+                        setLastRead(lastReadData);
 
                         const serverComp = data.completedPlans || {};
                         const customPlans = data.customPlans || {};
 
+                        // تحسين: تمرير الكائن مباشرة لتجنب البحث المتكرر
                         const activeStatic = staticPlans
-                            .filter(plan => serverComp[plan.id])
                             .map(plan => {
-                                const stats = calculatePlanStats(plan.id, false, null, serverComp);
+                                const stats = calculatePlanStats(plan, false, null, serverComp);
                                 return { ...plan, stats };
-                            }).filter(p => p.stats.percent < 100);
+                            })
+                            .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                        const activeCustom = Object.values(customPlans).map(plan => {
-                            const stats = calculatePlanStats(plan.id, true, plan, null);
-                            return { ...plan, isCustom: true, stats };
-                        }).filter(p => p.stats.percent < 100);
+                        const activeCustom = Object.values(customPlans)
+                            .map(plan => {
+                                const stats = calculatePlanStats(plan, true, plan, null);
+                                return { ...plan, isCustom: true, stats };
+                            })
+                            .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
                         setStartedPlans([...activeCustom, ...activeStatic]);
 
@@ -161,34 +204,38 @@ const LandingPage = () => {
                         const historyRaw = data.pointsHistory || [];
                         const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
 
-                        const checkGoal = (type) => history.some(h => {
-                            if (!h.timestamp) return false;
-                            const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
-                            return h.type === type && ts.toISOString().split('T')[0] === today;
-                        });
+                        // تحسين: فحص المهام في دورة واحدة بدلاً من دورات متعددة
+                        const completedTodayTypes = new Set(
+                            history.filter(h => {
+                                if (!h.timestamp) return false;
+                                const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
+                                return ts.toISOString().split('T')[0] === today;
+                            }).map(h => h.type)
+                        );
 
                         const goals = [
                             { id: 'dailyLogin', label: 'تسجيل الدخول', completed: data.lastActiveDate === today },
                             { id: 'dailyQuestion', label: 'سؤال التحدي', completed: !!data.answeredQuestions?.[today]?.answered },
-                            { id: 'mapExploration', label: 'استكشاف الخريطة', completed: checkGoal('mapExploration') },
-                            { id: 'share', label: 'المشاركة اليومية', completed: checkGoal('share') },
-                            { id: 'completedChapter', label: 'قراءة أصحاح', completed: checkGoal('completedChapter') },
-                            { id: 'favouriteVerse', label: 'تظليل آية', completed: checkGoal('favouriteVerse') },
+                            { id: 'mapExploration', label: 'استكشاف الخريطة', completed: completedTodayTypes.has('mapExploration') },
+                            { id: 'share', label: 'المشاركة اليومية', completed: completedTodayTypes.has('share') },
+                            { id: 'completedChapter', label: 'قراءة أصحاح', completed: completedTodayTypes.has('completedChapter') },
+                            { id: 'favouriteVerse', label: 'تظليل آية', completed: completedTodayTypes.has('favouriteVerse') },
                         ];
                         setDailyGoals(goals);
                     }
-                });
-                return () => unsubSnap();
+                }, (error) => console.error("Snapshot error:", error));
             } else {
                 setStartedPlans([]);
                 setDailyGoals([]);
             }
         });
 
-        return () => unsubAuth?.();
+        return () => {
+            unsubAuth?.();
+            if (unsubSnap) unsubSnap();
+        };
     }, [fetchDailyContent, calculatePlanStats]);
 
-    // مزامنة البيانات مع كود الأندرويد الأصلي
     useEffect(() => {
         if (user && startedPlans.length > 0) {
             const summary = {
@@ -196,44 +243,41 @@ const LandingPage = () => {
                 mainPlanTitle: startedPlans[0].title,
                 remainingDays: startedPlans[0].stats.totalDays - startedPlans[0].stats.daysDone
             };
-
             localStorage.setItem('studyPlansSummary', JSON.stringify(summary));
-
             if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateStudySummary) {
                 window.AgiosScannerNative.updateStudySummary(JSON.stringify(summary));
-            }
-
-            if (Capacitor.isNativePlatform()) {
-                import('../lib/notificationService').then(m => m.syncNotifications());
-            }
-        } else {
-            localStorage.removeItem('studyPlansSummary');
-            if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateStudySummary) {
-                window.AgiosScannerNative.updateStudySummary("");
             }
         }
     }, [startedPlans, user]);
 
-    const handleOptionClick = async (index) => {
-        if (!user) {
-            router.push('/intro');
-            return;
-        }
-        if (hasAnswered || !dailyQuestion) return;
+    const handleShareSuccess = async () => {
+        if (!user) return;
+        const userRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+            totalPoints: increment(10),
+            pointsHistory: arrayUnion({
+                type: 'share',
+                points: 10,
+                reason: 'مشاركة آية اليوم من الصفحة الرئيسية',
+                timestamp: new Date().toISOString()
+            })
+        });
+        toast.success('أحسنت! تم تسجيل المشاركة اليومية +10 نقاط 📢');
+    };
 
+    const handleOptionClick = async (index) => {
+        if (!user) { router.push('/intro'); return; }
+        if (hasAnswered || !dailyQuestion) return;
         const now = new Date();
         const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
         setSelectedAnswer(index);
         setHasAnswered(true);
         localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
         const isCorrect = index === dailyQuestion.answerIndex;
-
         const userRef = doc(firestore, 'users', user.uid);
         const updatePayload = {
             [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: new Date().toISOString() }
         };
-
         if (isCorrect) {
             toast.success('إجابة صحيحة! 🎉');
             await updateDoc(userRef, {
@@ -254,16 +298,11 @@ const LandingPage = () => {
     };
 
     const toggleFavorite = async () => {
-        if (!user) {
-            router.push('/intro');
-            return;
-        }
+        if (!user) { router.push('/intro'); return; }
         if (!dailyVerse) return;
-
         const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
         const userRef = doc(db, 'users', user.uid);
         let newFavs = { ...favouriteVerses };
-
         if (newFavs[verseKey]) {
             delete newFavs[verseKey];
             setFavouriteVerses(newFavs);
@@ -271,14 +310,12 @@ const LandingPage = () => {
             toast.error('تم الحذف من كنوزك');
         } else {
             const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
-            const convertNumbers = (str) => {
-                if (!str) return "";
-                return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '');
-            };
             const parts = cleanRef.split(' ');
             const rawNumbers = parts[parts.length - 1];
             const bookName = parts.slice(0, -1).join(' ');
             const [rawCh, rawV] = rawNumbers.split(':');
+            const convertNumbers = (str) => str?.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '') || "";
+
             const verseData = {
                 text: dailyVerse.verse,
                 reference: cleanRef,
@@ -296,29 +333,27 @@ const LandingPage = () => {
                 pointsHistory: arrayUnion({
                     type: 'favouriteVerse',
                     points: 5,
-                    reason: 'تظليل آية أعجبتك',
+                    reason: 'تظليل آية اليوم من الصفحة الرئيسية',
                     timestamp: new Date().toISOString()
                 })
             });
-            toast.success('تمت الإضافة لكنوزك (+5 نقاط)');
+            toast.success('رائع! تمت الإضافة لكنوزك +5 نقاط ⭐');
         }
     };
 
     const quickLinks = [
-        { name: 'الكتاب المقدس', icon: <Book />, path: '/bible', color: '#6366f1' },
-        { name: 'الخرائط', icon: <Map />, path: user ? '/maps' : '/intro', color: '#10b981' },
-        { name: 'البحث', icon: <Search />, path: user ? '/search' : '/intro', color: '#f59e0b' },
-        { name: 'الخطط الدراسية', icon: <BookMarked />, path: user ? '/studyPlans' : '/intro', color: '#ec4899' },
-        { name: 'المسابقات', icon: <Trophy />, path: user ? '/competitions' : '/intro', color: '#8b5cf6' },
-        { name: 'المفضلة', icon: <Heart />, path: user ? '/favourites' : '/intro', color: '#ef4444' },
+        { name: 'الكتاب المقدس', icon: <Book size={24} />, path: '/bible', color: '#6366f1' },
+        { name: 'الخرائط', icon: <Map size={24} />, path: user ? '/maps' : '/intro', color: '#10b981' },
+        { name: 'البحث', icon: <Search size={24} />, path: user ? '/search' : '/intro', color: '#f59e0b' },
+        { name: 'الخطط الدراسية', icon: <BookMarked size={24} />, path: user ? '/studyPlans' : '/intro', color: '#ec4899' },
+        { name: 'المسابقات', icon: <Trophy size={24} />, path: user ? '/competitions' : '/intro', color: '#8b5cf6' },
+        { name: 'المفضلة', icon: <Heart size={24} />, path: user ? '/favourites' : '/intro', color: '#ef4444' },
     ];
 
     const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);
 
     return (
         <main className={`${styles.hubContainer} ${styles.rtl}`}>
-            <Toaster position="bottom-center" />
-
             <header className={styles.header}>
                 <div className={styles.topBar}>
                     <div className={styles.welcomeInfo}>
@@ -351,48 +386,67 @@ const LandingPage = () => {
                 )}
             </header>
 
-            {remoteNews && showNews && (
-                <section className={styles.newsBanner} style={{ backgroundColor: remoteNews.bgColor || '#eff6ff' }}>
-                    <div className={styles.newsIcon}>
-                        <Bell size={20} color={remoteNews.accentColor || '#3b82f6'} />
+            {remoteNews.length > 0 && (
+                <div className={styles.newsSliderWrapper}>
+                    <div className={styles.newsContainer} onScroll={handleNewsScroll}>
+                        {remoteNews.map((news, idx) => {
+                            const IconComponent = LUCIDE_ICONS[news.iconName] || Bell;
+                            return (
+                                <section 
+                                    key={news.id || idx} 
+                                    className={styles.newsBanner} 
+                                    style={{ 
+                                        backgroundColor: news.bgColor || '#eff6ff',
+                                        '--accent-color': news.accentColor || '#3b82f6'
+                                    }}
+                                    onClick={() => news.link && router.push(news.link)}
+                                >
+                                    <div className={styles.newsMainRow}>
+                                        <div className={styles.newsContent}>
+                                            <div className={styles.newsHeaderLine}>
+                                                <IconComponent size={16} color={news.accentColor || '#3b82f6'} />
+                                                <h3 style={{ color: news.accentColor || '#1e40af' }}>{news.title}</h3>
+                                            </div>
+                                            <p>{news.message}</p>
+                                            {news.buttonText && (
+                                                <span className={styles.newsActionBadge} style={{ backgroundColor: news.accentColor || '#3b82f6' }}>
+                                                    {news.buttonText} <ArrowRight size={12} />
+                                                </span>
+                                            )}
+                                        </div>
+                                        {news.imageUrl ? (
+                                            <div className={styles.newsImageBox}>
+                                                <img src={news.imageUrl} alt={news.title} className={styles.newsImage} />
+                                            </div>
+                                        ) : (
+                                            <div className={styles.newsIconBox} style={{ backgroundColor: `${news.accentColor}15` }}>
+                                                <IconComponent size={28} color={news.accentColor || '#3b82f6'} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </section>
+                            );
+                        })}
                     </div>
-                    <div className={styles.newsContent}>
-                        <h3 style={{ color: remoteNews.accentColor || '#1e40af' }}>{remoteNews.title}</h3>
-                        <p>{remoteNews.message}</p>
-                        {remoteNews.buttonText && (
-                            <button
-                                onClick={() => remoteNews.link ? router.push(remoteNews.link) : setShowNews(false)}
-                                className={styles.newsActionBtn}
-                                style={{ backgroundColor: remoteNews.accentColor || '#3b82f6' }}
-                            >
-                                {remoteNews.buttonText}
-                            </button>
-                        )}
-                    </div>
-                    <button className={styles.closeNews} onClick={() => setShowNews(false)}>
-                        <X size={16} />
-                    </button>
-                </section>
+                    {remoteNews.length > 1 && (
+                        <div className={styles.newsDots}>
+                            {remoteNews.map((_, i) => (
+                                <div key={i} className={`${styles.dot} ${activeNewsIndex === i ? styles.activeDot : ''}`} />
+                            ))}
+                        </div>
+                    )}
+                </div>
             )}
 
             {user && (
                 <section className={styles.dailyGoalsSummary}>
                     <div className={styles.goalsHeader}>
-                        <div className={styles.goalsTitle}>
-                            <Award size={18} color="#f59e0b" />
-                            <span>مهام اليوم</span>
-                        </div>
-                        <Link href="/points" className={styles.viewMoreLink}>
-                            التفاصيل <ArrowUpRight size={14} />
-                        </Link>
+                        <div className={styles.goalsTitle}><Award size={18} color="#f59e0b" /><span>مهام اليوم</span></div>
+                        <Link href="/points" className={styles.viewMoreLink}>التفاصيل <ArrowUpRight size={14} /></Link>
                     </div>
                     <div className={styles.goalsProgressWrapper}>
-                        <div className={styles.goalsProgressText}>
-                            أنجزت {convertToArabicNumber(completedGoalsCount)} من {convertToArabicNumber(dailyGoals.length)} مهام
-                        </div>
-                        <div className={styles.miniProgressBar}>
-                            <div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / dailyGoals.length) * 100}%` }} />
-                        </div>
+                        <div className={styles.goalsProgressText}>أنجزت {convertToArabicNumber(completedGoalsCount)} من {convertToArabicNumber(dailyGoals.length)} مهام</div>
+                        <div className={styles.miniProgressBar}><div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / dailyGoals.length) * 100}%` }} /></div>
                     </div>
                     <div className={styles.goalsMiniList}>
                         {dailyGoals.map(goal => (
@@ -408,9 +462,7 @@ const LandingPage = () => {
             <section className={styles.quickGrid}>
                 {quickLinks.map((link, i) => (
                     <Link href={link.path} key={i} className={styles.hubCard}>
-                        <div className={styles.hubIcon} style={{ color: link.color, backgroundColor: `${link.color}15` }}>
-                            {link.icon}
-                        </div>
+                        <div className={styles.hubIcon} style={{ color: link.color, backgroundColor: `${link.color}15` }}>{link.icon}</div>
                         <span className={styles.hubName}>{link.name}</span>
                     </Link>
                 ))}
@@ -419,10 +471,7 @@ const LandingPage = () => {
             {lastRead && (
                 <button
                     onClick={() => {
-                        if (!user) {
-                            router.push('/intro');
-                            return;
-                        }
+                        if (!user) { router.push('/intro'); return; }
                         router.push(`/bible?book=${encodeURIComponent(lastRead.bookName)}&chapter=${lastRead.chapterIndex + 1}`)
                     }}
                     className={styles.lastReadBar}
@@ -440,10 +489,7 @@ const LandingPage = () => {
 
             <section className={styles.dailyHighlight}>
                 <div className={styles.verseGlass}>
-                    <div className={styles.glassHeader}>
-                        <Sparkles size={18} color="#ffd700" />
-                        <span>آية اليوم</span>
-                    </div>
+                    <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>آية اليوم</span></div>
                     {isLoading ? <div className={styles.skeletonText} /> : (
                         <>
                             <p className={styles.verseText}>"{dailyVerse?.verse}"</p>
@@ -460,31 +506,19 @@ const LandingPage = () => {
                                 <ShareVerseCard
                                     verse={dailyVerse?.verse}
                                     reference={dailyVerse?.reference}
-                                    book={dailyVerse?.book}
+                                    onShareSuccess={handleShareSuccess}
                                 />
                             </div>
                         </>
                     )}
-
                     <div className={styles.bottomDivider} style={{margin: '20px 0', opacity: 0.1, height: '1px', background: 'var(--color-text-primary)'}} />
-
                     {dailyQuestion && (
                         <div className={styles.questionSection}>
-                            <div className={styles.glassHeader}>
-                                <Trophy size={18} color="#f59e0b" />
-                                <span>تحدي اليوم</span>
-                            </div>
+                            <div className={styles.glassHeader}><Trophy size={18} color="#f59e0b" /><span>تحدي اليوم</span></div>
                             <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
                             <div className={styles.optionsList}>
                                 {dailyQuestion.options.map((opt, i) => (
-                                    <button
-                                        key={i}
-                                        disabled={hasAnswered}
-                                        onClick={() => handleOptionClick(i)}
-                                        className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}
-                                    >
-                                        {opt}
-                                    </button>
+                                    <button key={i} disabled={hasAnswered} onClick={() => handleOptionClick(i)} className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}>{opt}</button>
                                 ))}
                             </div>
                         </div>
@@ -497,27 +531,11 @@ const LandingPage = () => {
                     <h2 className={styles.sectionTitle}>خططك الجارية</h2>
                     <div className={styles.plansVerticalList}>
                         {startedPlans.map((plan) => (
-                            <button
-                                key={plan.id}
-                                onClick={() => router.push(`/studyPlans/details?id=${plan.id}${plan.isCustom ? '&type=custom' : ''}`)}
-                                className={styles.planProgressCardVertical}
-                            >
+                            <button key={plan.id} onClick={() => router.push(`/studyPlans/details?id=${plan.id}${plan.isCustom ? '&type=custom' : ''}`)} className={styles.planProgressCardVertical}>
                                 <div className={styles.planInfo}>
-                                    <div className={styles.planNameRow}>
-                                        <span className={styles.planTitle}>{plan.title}</span>
-                                        <span className={styles.planPercent}>{plan.stats?.percent}%</span>
-                                    </div>
-
-                                    <div className={styles.progressBar}>
-                                        <div className={styles.progressFill} style={{ width: `${plan.stats?.percent}%` }} />
-                                    </div>
-
-                                    <div className={styles.planMeta}>
-                                        <span>يوم {plan.stats?.daysDone} من {plan.stats?.totalDays}</span>
-                                        <div className={styles.planActionText}>
-                                            واصل القراءة <ArrowRight size={14} />
-                                        </div>
-                                    </div>
+                                    <div className={styles.planNameRow}><span className={styles.planTitle}>{plan.title}</span><span className={styles.planPercent}>{plan.stats?.percent}%</span></div>
+                                    <div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${plan.stats?.percent}%` }} /></div>
+                                    <div className={styles.planMeta}><span>يوم {plan.stats?.daysDone} من {plan.stats?.totalDays}</span><div className={styles.planActionText}>واصل القراءة <ArrowRight size={14} /></div></div>
                                 </div>
                             </button>
                         ))}
@@ -528,10 +546,7 @@ const LandingPage = () => {
             {!user && (
                 <div className={styles.guestBanner}>
                     <LogIn size={24} />
-                    <div className={styles.guestText}>
-                        <h3>سجل الآن</h3>
-                        <p>احفظ تقدمك ونافس أصدقاءك</p>
-                    </div>
+                    <div className={styles.guestText}><h3>سجل الآن</h3><p>احفظ تقدمك ونافس أصدقاءك</p></div>
                     <Link href="/intro" className={styles.loginLink}>دخول</Link>
                 </div>
             )}

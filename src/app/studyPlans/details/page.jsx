@@ -8,7 +8,7 @@ import studyPlansData from '../studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from '../../../lib/firebase';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const allPlans = studyPlansData.plans;
 
@@ -128,7 +128,6 @@ function PlanDetailsContent() {
 
   return (
     <div className={styles.container}>
-      <Toaster position="top-center" />
       <h1 className={styles.title}>{plan.title}</h1>
       
       <div className={styles.progressWrapper}>

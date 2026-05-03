@@ -8,7 +8,7 @@ import styles from './maps.module.css';
 import { getAuth } from "firebase/auth";
 import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
 import { db } from '../../lib/firebase';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 if (typeof window !== 'undefined') {
   maplibregl.setRTLTextPlugin(
@@ -227,7 +227,6 @@ export default function MapsPage() {
 
   return (
     <div dir="rtl" className={styles.container}>
-      <Toaster position="bottom-center" />
       <h1 className={styles.heading}>خرائط الكتاب المقدس</h1>
       <div className={styles.controls}>
         <div className={styles.customSelectWrapper} ref={eraRef}>

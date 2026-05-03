@@ -9,7 +9,7 @@ import { Capacitor } from '@capacitor/core';
 import { Share2, Download, Loader2 } from 'lucide-react';
 import styles from './ShareVerseCard.module.css';
 
-const ShareVerseCard = ({ verse, reference }) => {
+const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
   const templateRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -38,7 +38,7 @@ const ShareVerseCard = ({ verse, reference }) => {
     if (Capacitor.isNativePlatform()) {
       await Toast.show({ text, duration: 'short', position: 'bottom' });
     } else {
-      alert(text);
+      console.log(text);
     }
   };
 
@@ -48,7 +48,6 @@ const ShareVerseCard = ({ verse, reference }) => {
       return await toPng(templateRef.current, { 
         cacheBust: true,
         pixelRatio: 2,
-        skipFonts: false,
       });
     } catch (err) {
       console.error(err);
@@ -79,6 +78,7 @@ const ShareVerseCard = ({ verse, reference }) => {
             dialogTitle: 'مشاركة كصورة',
           });
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
+          if (onShareSuccess) onShareSuccess();
         } else {
           const permanentFile = await Filesystem.writeFile({
             path: `Pictures/${fileName}`,
@@ -86,26 +86,24 @@ const ShareVerseCard = ({ verse, reference }) => {
             directory: Directory.ExternalStorage,
             recursive: true
           });
-
-          const cleanPath = permanentFile.uri.replace('file://', '');
-          const decodedPath = decodeURI(cleanPath);
-          
           if (window.AgiosScannerNative) {
-            window.AgiosScannerNative.scanFile(decodedPath);
+            window.AgiosScannerNative.scanFile(decodeURI(permanentFile.uri.replace('file://', '')));
           }
-          
           await showToast('تم حفظ الآية في المعرض بنجاح');
+          if (onShareSuccess) onShareSuccess();
         }
       } else {
         if (type === 'share' && navigator.share) {
           const blob = await fetch(dataUrl).then(res => res.blob());
           const file = new File([blob], 'verse.png', { type: 'image/png' });
           await navigator.share({ files: [file], title: 'آية اليوم' });
+          if (onShareSuccess) onShareSuccess();
         } else {
           const link = document.createElement('a');
           link.download = fileName;
           link.href = dataUrl;
           link.click();
+          if (onShareSuccess) onShareSuccess();
         }
       }
     } catch (err) {
@@ -119,21 +117,11 @@ const ShareVerseCard = ({ verse, reference }) => {
   return (
     <div className={styles.container}>
       <div className={styles.offscreen} aria-hidden="true">
-        <div 
-          ref={templateRef} 
-          className={styles.cardTemplate}
-          style={{ background: themeColors.bg }}
-        >
+        <div ref={templateRef} className={styles.cardTemplate} style={{ background: themeColors.bg }}>
            <div className={styles.innerContent} style={{ backgroundColor: themeColors.card, borderColor: themeColors.border }}>
-             <div className={styles.header}>
-               <h2 className={styles.appLogo} style={{ color: themeColors.accent }}>AGIOS BIBLE</h2>
-             </div>
-             <div className={styles.body}>
-               <p className={styles.mainVerse} style={{ color: themeColors.text }}>"{verse}"</p>
-             </div>
-             <div className={styles.footer}>
-               <p className={styles.mainRef} style={{ color: themeColors.secondary }}>({reference})</p>
-             </div>
+             <div className={styles.header}><h2 className={styles.appLogo} style={{ color: themeColors.accent }}>AGIOS BIBLE</h2></div>
+             <div className={styles.body}><p className={styles.mainVerse} style={{ color: themeColors.text }}>"{verse}"</p></div>
+             <div className={styles.footer}><p className={styles.mainRef} style={{ color: themeColors.secondary }}>({reference})</p></div>
            </div>
         </div>
       </div>
@@ -143,7 +131,6 @@ const ShareVerseCard = ({ verse, reference }) => {
           {isProcessing ? <Loader2 className={styles.spin} size={18} /> : <Share2 size={18} />}
           <span>مشاركة الآية</span>
         </button>
-
         <button onClick={() => handleAction('download')} className={`${styles.actionBtn} ${styles.downloadBtn}`} disabled={isProcessing}>
           {isProcessing ? <Loader2 className={styles.spin} size={18} /> : <Download size={18} />}
           <span>حفظ الصورة</span>

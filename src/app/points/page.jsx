@@ -4,14 +4,14 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './points.module.css';
 import { db } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc, arrayUnion, increment, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { 
   FaBookOpen, FaFeatherAlt, FaHeart, FaChevronDown, FaEye, FaEyeSlash,
   FaTrophy, FaChartLine, FaHistory, FaMapMarkedAlt, FaSearch,
   FaShareAlt, FaFire, FaSignInAlt, FaCheckCircle, FaStar
 } from 'react-icons/fa';
 import Badge from '../../components/Badge/Badge';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const convertToArabicNumber = (num) => {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -31,7 +31,6 @@ const calculateLevel = (points) => {
   };
 };
 
-// وظيفة لإضافة النقاط إلى Firebase
 const awardPoints = async (userId, type, points, reason) => {
   const userRef = doc(db, 'users', userId);
   try {
@@ -68,7 +67,6 @@ const calculatePointsFromData = (data) => {
     studyPlanDay: 30
   };
 
-  // معالجة التاريخ والسجل
   if (data.pointsHistory) {
     const historyArray = Array.isArray(data.pointsHistory) ? data.pointsHistory : Object.values(data.pointsHistory);
     historyArray.forEach(item => {
@@ -83,10 +81,9 @@ const calculatePointsFromData = (data) => {
     });
   }
 
-  // دمج الأسئلة المجابة (لو مش موجودة في الـ history)
   if (data.answeredQuestions) {
     Object.entries(data.answeredQuestions).forEach(([dateKey, q]) => {
-      if (q && (q.answered)) {
+      if (q && q.answered) {
         const qTime = q.timestamp || dateKey;
         const exists = history.some(h => {
            const hTime = h.timestamp?.toISOString ? h.timestamp.toISOString() : h.timestamp;
@@ -106,50 +103,13 @@ const calculatePointsFromData = (data) => {
     });
   }
 
-  // المهام اليومية المحسنة
   const dailyGoals = [
-    {
-      id: 'dailyLogin',
-      label: 'تسجيل الدخول اليومي',
-      points: 10,
-      icon: <FaSignInAlt />,
-      completed: data.lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today)
-    },
-    {
-      id: 'dailyQuestion',
-      label: 'حل سؤال التحدي',
-      points: 20,
-      icon: <FaFeatherAlt />,
-      completed: !!data.answeredQuestions?.[today]?.answered
-    },
-    {
-      id: 'mapExploration',
-      label: 'استكشاف معلم في الخريطة',
-      points: 40,
-      icon: <FaMapMarkedAlt />,
-      completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today)
-    },
-    {
-      id: 'share',
-      label: 'مشاركة آية أو محتوى',
-      points: 15,
-      icon: <FaShareAlt />,
-      completed: history.some(h => h.activity === 'share' && h.dateStr === today)
-    },
-    {
-      id: 'completedChapter',
-      label: 'قراءة أصحاح كامل',
-      points: 20,
-      icon: <FaBookOpen />,
-      completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today)
-    },
-    {
-      id: 'favouriteVerse',
-      label: 'تظليل آية أعجبتك',
-      points: 5,
-      icon: <FaHeart />,
-      completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today)
-    }
+    { id: 'dailyLogin', label: 'تسجيل الدخول اليومي', points: 10, icon: <FaSignInAlt />, completed: data.lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
+    { id: 'dailyQuestion', label: 'حل سؤال التحدي', points: 20, icon: <FaFeatherAlt />, completed: !!data.answeredQuestions?.[today]?.answered },
+    { id: 'mapExploration', label: 'استكشاف معلم في الخريطة', points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
+    { id: 'share', label: 'مشاركة آية أو محتوى', points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
+    { id: 'completedChapter', label: 'قراءة أصحاح كامل', points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
+    { id: 'favouriteVerse', label: 'تظليل آية أعجبتك', points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
   ];
 
   return { 
@@ -214,7 +174,7 @@ export default function Points() {
   const [pointsData, setPointsData] = useState(null);
   const [badgesData, setBadgesData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('points');
   const [searchTerm, setSearchTerm] = useState('');
   const [rarityFilter, setRarityFilter] = useState('all');
   const [familyFilter, setFamilyFilter] = useState('all');
@@ -224,27 +184,52 @@ export default function Points() {
   const pointsSectionRef = useRef(null);
   const badgesSectionRef = useRef(null);
   const historySectionRef = useRef(null);
-  const rarityRef = useRef(null);
-  const familyRef = useRef(null);
+  const isManualScrolling = useRef(false);
 
   const [isRarityOpen, setIsRarityOpen] = useState(false);
   const [isFamilyOpen, setIsFamilyOpen] = useState(false);
+  const rarityRef = useRef(null);
+  const familyRef = useRef(null);
 
   const rarities = [
     { id: 'all', name: 'كل الندرة' }, { id: 'عادي', name: 'عادي' }, { id: 'مميز', name: 'مميز' },
     { id: 'نادر', name: 'نادر' }, { id: 'أسطوري', name: 'أسطوري' }, { id: 'خرافي', name: 'خرافي' }
   ];
 
-  const scrollToSection = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollToSection = (ref, tabId) => {
+    if (ref.current) {
+      isManualScrolling.current = true;
+      setActiveTab(tabId);
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Reset manual flag after scroll animation
+      setTimeout(() => { isManualScrolling.current = false; }, 1000);
+    }
+  };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (rarityRef.current && !rarityRef.current.contains(event.target)) setIsRarityOpen(false);
-      if (familyRef.current && !familyRef.current.contains(event.target)) setIsFamilyOpen(false);
+    const options = {
+      root: null,
+      rootMargin: '-150px 0px -40% 0px', // Adjust margin for the sticky header
+      threshold: 0
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+
+    const observer = new IntersectionObserver((entries) => {
+      if (isManualScrolling.current) return;
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (entry.target === pointsSectionRef.current) setActiveTab('points');
+          else if (entry.target === badgesSectionRef.current) setActiveTab('badges');
+          else if (entry.target === historySectionRef.current) setActiveTab('history');
+        }
+      });
+    }, options);
+
+    if (pointsSectionRef.current) observer.observe(pointsSectionRef.current);
+    if (badgesSectionRef.current) observer.observe(badgesSectionRef.current);
+    if (historySectionRef.current) observer.observe(historySectionRef.current);
+
+    return () => observer.disconnect();
+  }, [loading, badgesData]);
 
   useEffect(() => {
     fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
@@ -254,22 +239,15 @@ export default function Points() {
     const auth = getAuth();
     return onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser);
         const userDocRef = doc(db, 'users', currentUser.uid);
         const unsubFirestore = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             const newData = calculatePointsFromData(data);
-
-            // لوجيك تسجيل الدخول اليومي التلقائي
             const today = new Date().toISOString().split('T')[0];
             if (data.lastActiveDate !== today) {
               awardPoints(currentUser.uid, 'dailyLogin', 10, 'تسجيل دخول يومي');
               toast.success('حصلت على ١٠ نقاط لتفاعلك اليوم! 🔥', { icon: '✨' });
-            }
-
-            if (pointsData && newData.unlockedFromFirestore.length > pointsData.unlockedFromFirestore.length) {
-              toast.success('تهانينا! لقد فتحت وساماً جديداً 🏅', { duration: 5000, icon: '🎉' });
             }
             setPointsData(newData);
           }
@@ -280,7 +258,7 @@ export default function Points() {
         setLoading(false);
       }
     });
-  }, [pointsData === null]);
+  }, []);
 
   const activitiesSummary = useMemo(() => pointsData ? categorizeActivities(pointsData.history) : null, [pointsData]);
   const userUnlockedBadges = useMemo(() => pointsData?.unlockedFromFirestore || [], [pointsData]);
@@ -323,13 +301,27 @@ export default function Points() {
 
   return (
     <div className={styles.container} dir="rtl">
-      <Toaster position="top-center" />
       <h1 className={styles.header}>النقاط والإنجازات</h1>
 
       <nav className={styles.topNav}>
-        <button onClick={() => scrollToSection(pointsSectionRef)}><FaChartLine /> النقاط</button>
-        <button onClick={() => scrollToSection(badgesSectionRef)}><FaTrophy /> الأوسمة</button>
-        <button onClick={() => scrollToSection(historySectionRef)}><FaHistory /> السجل</button>
+        <button
+          className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`}
+          onClick={() => scrollToSection(pointsSectionRef, 'points')}
+        >
+          <FaChartLine /> النقاط
+        </button>
+        <button
+          className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`}
+          onClick={() => scrollToSection(badgesSectionRef, 'badges')}
+        >
+          <FaTrophy /> الأوسمة
+        </button>
+        <button
+          className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`}
+          onClick={() => scrollToSection(historySectionRef, 'history')}
+        >
+          <FaHistory /> السجل
+        </button>
       </nav>
 
       <section ref={pointsSectionRef} className={styles.sectionWrapper}>
@@ -344,17 +336,14 @@ export default function Points() {
             </div>
             <p className={styles.nextLevelText}>تبقّى {convertToArabicNumber(pointsData?.levelInfo.nextXP || 0)} نقطة للمستوى التالي</p>
           </div>
-
           <div className={styles.pointsTotal}>
             <span className={styles.pointsNumber}>{convertToArabicNumber(pointsData?.totalPoints || 0)}</span>
             <span className={styles.pointsLabel}>نقطة إجمالية</span>
           </div>
-
           <div className={styles.streakBadge}>
             <FaFire className={styles.fireIcon} />
             <span>سلسلة تفاعل: {convertToArabicNumber(pointsData?.streak || 0)} يوم</span>
           </div>
-
           <div className={styles.dailyGoalsSection}>
             <h3 className={styles.subTitle}>أهداف اليوم</h3>
             <div className={styles.goalsGrid}>
@@ -369,7 +358,6 @@ export default function Points() {
                 ))}
             </div>
           </div>
-
           <div className={styles.activityChartSection}>
             <h3 className={styles.subTitle}>نشاطك الأخير</h3>
             <div className={styles.chartWrapper}>

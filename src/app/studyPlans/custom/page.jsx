@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 
@@ -189,8 +189,6 @@ export default function CustomPlanForm() {
 
     return (
         <div className={styles.container}>
-            <Toaster position="top-center" />
-            
             {loading && (
                 <div className={styles.loadingOverlay}>
                     <div className={styles.spinner}></div>

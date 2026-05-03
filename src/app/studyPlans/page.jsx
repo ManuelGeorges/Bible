@@ -8,7 +8,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const staticPlans = studyPlansData.plans;
 
@@ -148,7 +148,6 @@ export default function StudyPlans() {
 
   return (
     <div className={styles.container}>
-      <Toaster />
       <div className={styles.heroSection}>
         <h1 className={styles.title}>خطط القراءة</h1>
         <Link href="/studyPlans/custom" className={styles.aiCreateButton}>

@@ -25,20 +25,36 @@ const db = initializeFirestore(app, {
   })
 });
 
-// دالة لجلب الـ Remote Config بشكل آمن
-const getFirebaseRemoteConfig = async () => {
-    if (typeof window !== "undefined") {
+// متغير لحفظ النسخة لضمان عدم تكرار التهيئة
+let remoteConfigInstance = null;
+
+export const getFirebaseRemoteConfig = async () => {
+    if (typeof window === "undefined") return null;
+
+    if (remoteConfigInstance) return remoteConfigInstance;
+
+    try {
         const supported = await isSupported();
         if (supported) {
-            const remoteConfig = getRemoteConfig(app);
-            remoteConfig.settings.minimumFetchIntervalMillis = 3600000; // ساعة واحدة كاش
-            remoteConfig.defaultConfig = {
-                app_news: JSON.stringify({ active: false })
+            remoteConfigInstance = getRemoteConfig(app);
+            // ضبط قيم افتراضية للحقول
+            remoteConfigInstance.defaultConfig = {
+                'app_news': JSON.stringify({
+                    active: false,
+                    title: "",
+                    message: "",
+                    buttonText: "",
+                    link: "",
+                    accentColor: "#3b82f6",
+                    bgColor: "#eff6ff"
+                })
             };
-            return remoteConfig;
+            return remoteConfigInstance;
         }
+    } catch (e) {
+        console.error("Remote Config Support Check Error:", e);
     }
     return null;
 };
 
-export { app, auth, db, getFirebaseRemoteConfig };
+export { app, auth, db };

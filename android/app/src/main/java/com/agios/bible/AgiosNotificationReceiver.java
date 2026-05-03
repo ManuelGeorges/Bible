@@ -17,6 +17,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONArray;
 
+// استيراد مكتبات Play Store للتحقق من التحديثات
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.gms.tasks.Task;
+
 public class AgiosNotificationReceiver extends BroadcastReceiver {
     private static final String TAG = "AgiosDebug";
     private final String[] agiosTips = {
@@ -37,7 +44,6 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
 
         Log.d(TAG, "onReceive: action=" + action + ", type=" + type);
 
-        // إعادة جدولة المنبهات عند إعادة تشغيل الهاتف لضمان عدم ضياع المواعيد
         if (Intent.ACTION_BOOT_COMPLETED.equals(action) || 
             "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
             refreshAllAlarms(context);
@@ -47,6 +53,15 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (type == null) return;
 
         String norm = normalizeType(type);
+
+        // إذا كان نوع الإشعار هو تحديث، نفحص المتجر أولاً
+        if (norm.equals("update")) {
+            checkForUpdateAndNotify(context);
+            // جدولة الفحص التالي ليوم غد
+            scheduleAlarm(context, type, getDefaultHour(type), 0);
+            return;
+        }
+
         switch (norm) {
             case "verse":
                 handleVerseNotification(context);
@@ -55,7 +70,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 handleQuestionNotification(context);
                 break;
             case "streak":
-                showNotification(context, "حافظ على حماسك", "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك!", 103);
+                handleStreakNotification(context);
                 break;
             case "studyPlans":
                 handleStudyPlansNotification(context);
@@ -63,16 +78,34 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             case "tip":
                 handleTipNotification(context);
                 break;
-            case "update":
-                showNotification(context, "تحديث جديد", "تتوفر نسخة جديدة من أجيوس بمزايا رائعة، تفقدها الآن!", 106);
-                break;
             default:
                 showNotification(context, "أجيوس", "لديك محتوى روحي جديد في انتظارك", 107);
                 break;
         }
 
-        // جدولة الإشعار لليوم التالي تلقائياً لضمان الدورية
         scheduleAlarm(context, type, getDefaultHour(type), 0);
+    }
+
+    /**
+     * التحقق من وجود تحديث في متجر Google Play وإرسال إشعار فقط في حالة توفره
+     */
+    private void checkForUpdateAndNotify(Context context) {
+        try {
+            AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(context);
+            Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+            appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    Log.d(TAG, "Update detected on Play Store!");
+                    showNotification(context, "تحديث جديد متاح ",
+                        "تتوفر نسخة جديدة من أجيوس بمزايا رائعة، حملها الآن من المتجر!", 106);
+                } else {
+                    Log.d(TAG, "No update available on Play Store.");
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking for updates", e);
+        }
     }
 
     private void handleVerseNotification(Context context) {
@@ -102,6 +135,37 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         } catch (Exception e) {
             Log.e(TAG, "Question Notify Error", e);
         }
+    }
+
+    private void handleStreakNotification(Context context) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+            int streak = prefs.getInt("_cap_userStreak", prefs.getInt("userStreak", 0));
+            
+            String msg;
+            if (streak > 0) {
+                msg = "أنت في سلسلة تفاعل مدتها " + toArabicNumbers(streak) + " يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥";
+            } else {
+                msg = "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.";
+            }
+            showNotification(context, "حافظ على حماسك", msg, 103);
+        } catch (Exception e) {
+            Log.e(TAG, "Streak Notify Error", e);
+        }
+    }
+
+    private String toArabicNumbers(int number) {
+        String n = String.valueOf(number);
+        char[] arabicChars = {'٠','١','٢','٣','٤','٥','٦','٧','٨','٩'};
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < n.length(); i++) {
+            if (Character.isDigit(n.charAt(i))) {
+                builder.append(arabicChars[n.charAt(i) - '0']);
+            } else {
+                builder.append(n.charAt(i));
+            }
+        }
+        return builder.toString();
     }
 
     private void handleStudyPlansNotification(Context context) {
@@ -197,6 +261,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         scheduleAlarm(context, "studyPlans", 10, 0);
         scheduleAlarm(context, "streakReminder", 21, 0);
         scheduleAlarm(context, "tip", 15, 0);
+        // إعادة تفعيل فحص التحديثات يومياً الساعة 12 ظهراً
         scheduleAlarm(context, "updateAlerts", 12, 0);
     }
 

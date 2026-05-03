@@ -58,6 +58,15 @@ public class MainActivity extends BridgeActivity {
                     .putString("_cap_studyPlansSummary", json)
                     .apply();
             }
+
+            @JavascriptInterface
+            public void updateUserStats(int streak) {
+                SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+                prefs.edit()
+                    .putInt("userStreak", streak)
+                    .putInt("_cap_userStreak", streak)
+                    .apply();
+            }
         }, "AgiosScannerNative");
     }
 

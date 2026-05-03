@@ -79,7 +79,7 @@
   outline: none;
   border-color: var(--color-accent);
   background: var(--color-bg-start);
-  box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.15);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .searchButton {
@@ -98,7 +98,6 @@
 .searchButton:hover:not(:disabled) {
   transform: translateY(-3px) scale(1.02);
   filter: brightness(1.1);
-  box-shadow: 0 12px 30px rgba(var(--color-accent-rgb), 0.3);
 }
 
 .searchTypeSelector {
@@ -135,7 +134,7 @@
   background: var(--color-accent);
   color: var(--btn-text);
   transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(var(--color-accent-rgb), 0.4);
+  box-shadow: 0 4px 15px var(--color-shadow-medium);
 }
 
 .filterGrid {
@@ -244,7 +243,7 @@
 }
 
 .dropdownItem.selected {
-  background: rgba(var(--color-accent-rgb), 0.2);
+  background: var(--color-border);
   color: var(--color-accent);
   font-weight: bold;
 }
@@ -285,7 +284,7 @@
 }
 
 .searchInfoBox {
-  background: rgba(var(--color-accent-rgb), 0.1);
+  background: var(--color-card-bg);
   border: 1px dashed var(--color-accent);
   border-radius: 16px;
   padding: 1.5rem;
@@ -293,6 +292,7 @@
   max-width: 800px;
   animation: slideDown 0.4s var(--transition-bounce);
   font-size: 0.95em;
+  color: var(--color-text-primary);
 }
 
 .derivativesWrapper {
@@ -397,7 +397,7 @@
 }
 
 .highlight {
-  background: linear-gradient(to bottom, transparent 60%, rgba(var(--color-accent-rgb), 0.3) 100%);
+  background: linear-gradient(to bottom, transparent 60%, var(--color-border) 100%);
   color: var(--color-accent);
   font-weight: 900;
   padding: 0 4px;
@@ -499,8 +499,8 @@
 }
 /* لوحة الألوان والتحكم */
 .actionPanel {
-  background-color: #f9f9f9;
-  border-top: 1px solid #eee;
+  background-color: var(--color-card-bg);
+  border-top: 1px solid var(--color-border);
   padding: 15px;
   border-radius: 0 0 12px 12px;
   animation: slideDown 0.3s ease-out;
@@ -528,7 +528,7 @@
 }
 
 .activeColor {
-  border-color: #333;
+  border-color: var(--color-text-primary);
   transform: scale(1.1);
 }
 
@@ -538,11 +538,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eee;
+  background: var(--color-border);
   border-radius: 50%;
   cursor: pointer;
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* منطقة الملحوظات */
@@ -556,17 +556,19 @@
   width: 100%;
   min-height: 80px;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-family: inherit;
   font-size: 14px;
   resize: vertical;
+  background: var(--color-card-bg);
+  color: var(--color-text-primary);
 }
 
 .saveNoteBtn {
   align-self: flex-end;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-accent);
+  color: var(--btn-text);
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -576,13 +578,13 @@
 }
 
 .saveNoteBtn:hover {
-  background-color: #0056b3;
+  filter: brightness(1.2);
 }
 
 /* عرض الملحوظة المحفوظة */
 .noteDisplay {
-  background-color: rgba(0, 0, 0, 0.03);
-  border-right: 3px solid #007bff;
+  background-color: var(--color-border);
+  border-right: 3px solid var(--color-accent);
   padding: 10px;
   margin: 10px 0;
   border-radius: 4px;
@@ -594,7 +596,7 @@
 .noteDisplay p {
   margin: 0;
   font-size: 13px;
-  color: #444;
+  color: var(--color-text-primary);
   font-style: italic;
 }
 
@@ -613,7 +615,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .referenceLink {
-    color: #007bff; /* لون أزرق خفيف */
+    color: var(--color-accent);
     text-decoration: none;
     font-weight: bold;
     cursor: pointer;
@@ -621,7 +623,7 @@
 }
 
 .referenceLink:hover {
-    color: #0056b3; /* يغمق شوية عند الـ hover */
+    filter: brightness(1.2);
     text-decoration: underline; /* شد خط تحتيه عشان يحس إنه لينك */
 }
 .resultsHeader {
@@ -630,12 +632,13 @@
   align-items: center;
   margin-bottom: 15px;
   padding: 10px;
-  background: #f8f9fa;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px var(--color-shadow-medium);
 }
 
 .selectionActions {
@@ -644,7 +647,7 @@
 }
 
 .multiCopyBtn {
-  background-color: #28a745;
+  background-color: #10b981;
   color: white;
   border: none;
   padding: 6px 15px;
@@ -656,11 +659,11 @@
 }
 
 .multiCopyBtn:hover {
-  background-color: #218838;
+  filter: brightness(1.1);
 }
 
 .clearSelectionBtn {
-  background-color: #6c757d;
+  background-color: var(--color-text-secondary);
   color: white;
   border: none;
   padding: 6px 15px;
@@ -671,8 +674,8 @@
 
 /* حالة اختيار الكارت */
 .selectedCard {
-  background-color: #e3f2fd !important; /* لون أزرق خفيف جداً */
-  border: 1px solid #2196f3 !important;
+  background-color: var(--color-border) !important;
+  border: 1px solid var(--color-accent) !important;
   transform: scale(1.01);
   transition: all 0.2s ease;
 }
@@ -683,7 +686,7 @@
 }
 
 .verseCard:hover {
-  background-color: #fcfcfc;
+  background-color: var(--color-border);
 }
 
 /* تعديل بسيط لضمان أن الأزرار داخل الكارت لا تمنع الضغط */
@@ -704,19 +707,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f1f3f5;
+  background: var(--color-border);
   padding: 5px 12px;
   border-radius: 15px;
   cursor: pointer;
   font-size: 0.85rem;
   transition: 0.2s;
   border: 1px solid transparent;
+  color: var(--color-text-primary);
 }
 
 .activeItem {
-  background: #e7f3ff;
-  border-color: #007bff;
-  color: #007bff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--btn-text);
 }
 
 .selectionActionsSmall {
@@ -727,7 +731,7 @@
 .selectionActionsSmall button {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--color-accent);
   font-size: 0.75rem;
   cursor: pointer;
   text-decoration: underline;
@@ -741,7 +745,7 @@
   flex-direction: row; /* يضمن ترتيب العناصر بجانب بعضها */
   align-items: center;
   gap: 4px;
-  color: #007bff;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: bold;
   direction: rtl; /* اتجاه الحاوية الكبير يمين لليسار */

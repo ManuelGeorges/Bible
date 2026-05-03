@@ -49,35 +49,45 @@ export default function HomePage() {
   const categoryRef = useRef(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    let unsubSnap = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
         router.push('/intro');
+        setAuthLoading(false);
       } else {
         setUser(currentUser);
-        // استخدام onSnapshot للمزامنة الفورية
         const userRef = doc(db, "users", currentUser.uid);
-        const unsubSnap = onSnapshot(userRef, (docSnap) => {
+        unsubSnap = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setCompletedQuizzes(data.completedQuizzes || []);
-            setUserBadges(data.badges || []); // توحيد مكان الأوسمة
+            setUserBadges(data.badges || []);
           }
+          setAuthLoading(false); // نضمن تغيير حالة التحميل بعد أول جلب للبيانات
+        }, (error) => {
+          console.error("Error in onSnapshot:", error);
+          setAuthLoading(false);
         });
-        return () => unsubSnap();
       }
-      setAuthLoading(false);
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubSnap) unsubSnap();
+    };
   }, [router]);
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const res = await fetch('/data/bookNames.json');
+        if (!res.ok) throw new Error('Failed to fetch book names');
         const data = await res.json();
         setBookNamesData((data.ar || []).map(b => ({ ...b, name: b.name.trim() })));
-        setIsLoading(false);
       } catch (e) {
+        console.error("Error loading book names:", e);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -95,7 +105,7 @@ export default function HomePage() {
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
-        badges: arrayUnion(badgeId) // توحيد الحقل إلى badges
+        badges: arrayUnion(badgeId)
       });
       showBadgeToast(`🎉 وسام جديد: ${badgeName}`);
     } catch (e) {
