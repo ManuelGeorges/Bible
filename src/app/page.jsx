@@ -13,7 +13,7 @@ import { Capacitor } from '@capacitor/core';
 import { toast } from 'react-hot-toast';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import {
-    BookPlus, Map, Search, User, Trophy,
+    BookOpenText, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
     ChevronLeft, Award, Flame, LogIn, ArrowRight,
     CheckCircle, Circle, ArrowUpRight, Bell, 
@@ -38,7 +38,7 @@ const LUCIDE_ICONS = {
     'Bell': Bell, 'Info': Info, 'Megaphone': Megaphone, 'Message': MessageCircle, 'Announcement': Megaphone,
     'Bot': Bot, 'AI': Sparkles, 'Brain': Brain, 'Cpu': Cpu, 'Wand': Wand2, 'Magic': Wand2, 'Lightbulb': Lightbulb, 'Idea': Lightbulb,
     'Rocket': Rocket, 'Update': RefreshCw, 'New': Sparkles, 'History': History, 'Zap': Zap, 'Flash': Zap, 'Party': PartyPopper,
-    'BookPlus': BookPlus, 'Bible': BookOpen, 'BookOpen': BookOpen, 'Scroll': Scroll, 'Church': Church, 'Pray': Heart,
+    'BookOpenText': BookOpenText, 'Bible': BookOpen, 'BookOpen': BookOpen, 'Scroll': Scroll, 'Church': Church, 'Pray': Heart,
     'Map': Map, 'Search': Search, 'Settings': Settings, 'Globe': Globe, 'Shield': Shield, 'Verified': ShieldCheck,
     'Calendar': Calendar, 'Camera': Camera, 'Mail': Mail, 'Link': LinkIcon, 'External': ExternalLink,
     'Lock': Lock, 'Unlock': Unlock, 'QrCode': QrCode, 'Translate': Languages, 'Mic': Mic,
@@ -376,7 +376,7 @@ const LandingPage = () => {
     };
 
     const quickLinks = [
-        { name: 'الكتاب المقدس', icon: <BookPlus size={24} />, path: '/bible', color: '#6366f1' },
+        { name: 'الكتاب المقدس', icon: <BookOpenText size={24} />, path: '/bible', color: '#6366f1' },
         { name: 'الخرائط', icon: <Map size={24} />, path: user ? '/maps' : '/intro', color: '#10b981' },
         { name: 'البحث', icon: <Search size={24} />, path: user ? '/search' : '/intro', color: '#f59e0b' },
         { name: 'الخطط الدراسية', icon: <BookMarked size={24} />, path: user ? '/studyPlans' : '/intro', color: '#ec4899' },
@@ -514,7 +514,7 @@ const LandingPage = () => {
                             <strong>{lastRead.bookName} - إصحاح {lastRead.chapterIndex + 1}</strong>
                         </div>
                     </div>
-                    <div className={styles.lastReadIcon}><BookPlus size={20} /></div>
+                    <div className={styles.lastReadIcon}><BookOpenText size={20} /></div>
                 </button>
             )}
 

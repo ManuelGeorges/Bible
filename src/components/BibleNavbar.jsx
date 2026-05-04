@@ -8,7 +8,7 @@ import { auth } from '../lib/firebase';
 import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
 import { toast } from 'react-hot-toast';
-import { Home, BookPlus, Map as MapIcon, Search, Menu } from 'lucide-react';
+import { Home, BookOpenText, Map as MapIcon, Search, Menu } from 'lucide-react';
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
@@ -32,7 +32,7 @@ export default function BibleNavbar() {
                     </Link>
 
                     <Link href="/bible" className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`} aria-label="Read">
-                        <BookPlus size={24} />
+                        <BookOpenText size={24} />
                     </Link>
 
                     <Link 
