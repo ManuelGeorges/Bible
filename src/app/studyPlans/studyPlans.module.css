@@ -20,7 +20,6 @@
   text-align: right;
 }
 
-/* 3- "صمم خطة ذكية" styling to match "ابدأ الآن" */
 .aiCreateButton {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white !important;
@@ -31,7 +30,7 @@
   display: block;
   text-align: center;
   box-shadow: 0 8px 15px rgba(30, 58, 138, 0.2);
-  border-bottom: 4px solid rgba(0, 0, 0, 0.3); /* Button-like bottom border */
+  border-bottom: 4px solid rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
   margin-top: 10px;
 }
@@ -41,13 +40,23 @@
   border-bottom-width: 1px;
 }
 
+/* Container for filters with a relative position for the floating arrow */
+.filterWrapper {
+  position: relative;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
 .filterSection {
   display: flex;
   gap: 10px;
   overflow-x: auto;
   padding: 10px 4px 20px 4px;
-  margin-bottom: 10px;
   scrollbar-width: none;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent, black 40px); /* Soft fade for edge */
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px);
 }
 
 .filterSection::-webkit-scrollbar { display: none; }
@@ -65,12 +74,63 @@
   transition: all 0.3s;
 }
 
-/* 4- Filter buttons active state: Blue background, White text */
 .activeFilter {
   background: #2196F3 !important;
   color: white !important;
   border-color: #2196F3 !important;
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+/* The Arrow/Hint Style - PROMINENT CLICKABLE BUTTON */
+.scrollHint {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  background: var(--color-card-bg);
+  border: 2px solid #2196F3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer; /* جعل السهم قابل للضغط */
+  color: #2196F3;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  padding: 0;
+  outline: none;
+  transition: all 0.2s ease;
+  animation: bounceArrow 1.2s infinite ease-in-out;
+}
+
+.scrollHint:hover {
+  background: #2196F3;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.scrollHint:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+@keyframes bounceArrow {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50% { transform: translateY(-50%) translateX(-6px); }
+}
+
+/* Subtle fade gradient behind the button for extra depth */
+.filterWrapper::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 10px;
+  width: 60px;
+  background: linear-gradient(to right, var(--color-bg-start), transparent);
+  pointer-events: none;
+  z-index: 5;
 }
 
 .plansGrid {
@@ -126,7 +186,6 @@
   color: #2196F3;
 }
 
-/* 3- "ابدأ الآن" button style */
 .cardButton {
   background: var(--btn-bg);
   color: white !important;
@@ -178,4 +237,10 @@
   padding: 50px;
   font-weight: 700;
   color: var(--color-accent);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
 }

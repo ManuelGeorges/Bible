@@ -98,8 +98,8 @@
   justify-content: center;
   gap: 8px;
   padding: 16px 10px;
-  background: #1e3a8a;
-  color: white;
+  background: var(--btn-bg);
+  color: var(--btn-text);
   border: none;
   border-radius: 14px;
   font-weight: 600;
@@ -117,9 +117,9 @@
 }
 
 .downloadBtn {
-  background: transparent;
-  color: #1e3a8a;
-  border: 2px solid #1e3a8a;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: 2px solid var(--btn-bg);
 }
 
 .spin {

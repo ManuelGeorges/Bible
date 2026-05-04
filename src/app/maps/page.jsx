@@ -9,6 +9,7 @@ import { getAuth } from "firebase/auth";
 import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { toast } from 'react-hot-toast';
+import { useBadge } from '../context/BadgeContext';
 
 if (typeof window !== 'undefined') {
   maplibregl.setRTLTextPlugin(
@@ -37,6 +38,7 @@ const INITIAL_VIEW_STATE = {
 
 export default function MapsPage() {
   const router = useRouter(); 
+  const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
   const [selectedEra, setSelectedEra] = useState("الحقب الزمنية");
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES.streets);
@@ -82,7 +84,7 @@ export default function MapsPage() {
     }
   };
 
-  const checkAndAwardBadge = async (badgeId, badgeName) => {
+  const checkAndAwardBadge = async (badgeId) => {
     if (!user) return;
     try {
       const userRef = doc(firestore, 'users', user.uid);
@@ -92,7 +94,7 @@ export default function MapsPage() {
         await updateDoc(userRef, {
           badges: arrayUnion(badgeId)
         });
-        toast.success(`🎉 مبروك! حصلت على بادج: ${badgeName}`, { icon: '🏅' });
+        triggerBadgeUnlock(badgeId);
       }
     } catch (e) {
       console.error(e);
@@ -139,6 +141,25 @@ export default function MapsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (user && selectedEra !== "الحقب الزمنية") {
+      const visitedEras = JSON.parse(localStorage.getItem('visited_eras') || '[]');
+      if (!visitedEras.includes(selectedEra)) {
+        const nextEras = [...visitedEras, selectedEra];
+        localStorage.setItem('visited_eras', JSON.stringify(nextEras));
+        if (nextEras.length === eras.length) {
+          checkAndAwardBadge('era_traveler');
+        }
+      }
+    }
+  }, [selectedEra, user]);
+
+  useEffect(() => {
+    if (viewState.zoom <= 1.5) {
+      checkAndAwardBadge('explorer_infinite');
+    }
+  }, [viewState.zoom]);
+
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',
     features: allPlaces
@@ -165,6 +186,14 @@ export default function MapsPage() {
     setSelectedPoint(point);
     if (point && user) {
       const pointId = point.id || point.name;
+
+      const readInfos = JSON.parse(localStorage.getItem('read_infos') || '[]');
+      if (!readInfos.includes(pointId)) {
+        const nextRead = [...readInfos, pointId];
+        localStorage.setItem('read_infos', JSON.stringify(nextRead));
+        if (nextRead.length === 50) checkAndAwardBadge('info_addict');
+      }
+
       if (!visitedPoints.has(pointId)) {
         setVisitedPoints(prev => new Set(prev).add(pointId));
         await updateUserPoints(40, `اكتشاف معلم: ${point.name}`);
@@ -174,8 +203,14 @@ export default function MapsPage() {
         });
         
         const newVisitedSize = visitedPoints.size + 1;
-        if (newVisitedSize === 5) await checkAndAwardBadge('map_pioneer', 'رائد الخرائط');
-        if (newVisitedSize === 20) await checkAndAwardBadge('ancient_navigator', 'الملاح القديم');
+        if (newVisitedSize === 5) await checkAndAwardBadge('map_pioneer');
+        if (newVisitedSize === 20) await checkAndAwardBadge('ancient_navigator');
+
+        const holyLandKeywords = ["أريحا", "أورشليم", "بيت لحم", "الناصرة", "كفرناحوم", "قانا الجليل", "مجدل", "بيت صيدا", "كورزين", "عين نون"];
+        const holyLandVisited = Array.from(visitedPoints).filter(pid => holyLandKeywords.some(k => pid.includes(k)));
+        if (holyLandVisited.length >= holyLandKeywords.length) {
+            checkAndAwardBadge('holy_land_pro');
+        }
       }
     }
   };

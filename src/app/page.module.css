@@ -4,16 +4,26 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 600px;
+  max-width: 100vw; /* ضمان عدم الخروج عن عرض الشاشة */
   margin: 0 auto;
+  overflow-x: hidden; /* منع السكرول الجانبي نهائياً */
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0); /* تسريع الرندرة بدون تشويه */
+  backface-visibility: hidden;
 }
+
+/* تعديل مهم للـ newsContainer عشان ميبوظش الصفحة */
+
 
 .rtl {
   direction: rtl;
 }
-.hubCard{
-  color: var(--color-text-primary)
+
+.hubCard {
+  color: var(--color-text-primary);
 }
+
 .header {
   display: flex;
   flex-direction: column;
@@ -38,9 +48,9 @@
 
 [data-theme='dark'] .siteTitle,
 [data-theme='system'] .siteTitle {
-  background: none ;
-  -webkit-text-fill-color: #ffffff ;
-  color: var(--color-text-primary) ;
+  background: linear-gradient(90deg, #ffffff, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .userGreeting {
@@ -64,7 +74,7 @@
   align-items: center;
   justify-content: center;
   color: var(--color-text-primary);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(4px);
   transition: all 0.3s var(--transition-bounce);
   text-decoration: none;
 }
@@ -107,7 +117,6 @@
   filter: drop-shadow(0 2px 4px var(--color-shadow-medium));
 }
 
-/* --- News Slider Premium (Light & Dark Mode) --- */
 .newsSliderWrapper {
   width: 100%;
   margin-bottom: 8px;
@@ -125,6 +134,8 @@
   -ms-overflow-style: none;
   margin: 0 -4px;
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  width: 100%; /* تأكيد العرض */
 }
 
 .newsContainer::-webkit-scrollbar {
@@ -144,6 +155,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: hidden;
+  transform: translateZ(0);
 }
 
 [data-theme='dark'] .newsBanner,
@@ -153,7 +165,6 @@
   box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
-/* Navigation Buttons Adaptive */
 .navBtn {
   position: absolute;
   top: 50%;
@@ -183,10 +194,6 @@
 
 .newsSliderWrapper:hover .navBtn {
   opacity: 1;
-}
-
-.navBtn:disabled {
-  opacity: 0 ;
 }
 
 .prevBtn { right: -10px; }
@@ -222,7 +229,7 @@
 
 [data-theme='dark'] .newsHeaderLine h3,
 [data-theme='system'] .newsHeaderLine h3 {
-  color: #f8fafc ; /* Ensure title is white in dark mode */
+  color: #f8fafc;
 }
 
 .newsContent p {
@@ -230,11 +237,6 @@
   color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
-}
-
-[data-theme='dark'] .newsContent p,
-[data-theme='system'] .newsContent p {
-  color: #94a3b8;
 }
 
 .newsActionBadge {
@@ -281,41 +283,43 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Pagination Dots Adaptive */
 .newsDots {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 5px;
+  margin-top: 12px;
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background: var(--color-border);
-  transition: all 0.3s ease;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--color-text-secondary);
+  transition: all 0.3s var(--transition-bounce);
   opacity: 0.4;
   cursor: pointer;
 }
 
 .activeDot {
-  width: 24px;
+  width: 32px;
   background: var(--color-accent);
   opacity: 1;
+  box-shadow: 0 4px 12px var(--color-shadow-medium);
 }
 
 [data-theme='dark'] .dot,
 [data-theme='system'] .dot {
-  background: #334155;
+  background: #475569;
+  opacity: 0.5;
 }
 
 [data-theme='dark'] .activeDot,
 [data-theme='system'] .activeDot {
-  background: #60a5fa; /* Vibrant blue in dark mode */
+  background: var(--color-accent);
+  opacity: 1;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
 
-/* Existing styles... */
 .dailyGoalsSummary {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
@@ -448,7 +452,7 @@
 }
 
 .verseText {
-  font-size: 20px ;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.6;
   margin-bottom: 12px;
@@ -475,8 +479,8 @@
   gap: 8px;
   padding: 14px 10px;
   border-radius: 14px;
-  background: #1e3a8a;
-  color: white;
+  background: var(--btn-bg);
+  color: var(--btn-text);
   border: none;
   font-size: 15px;
   font-weight: 700;
@@ -487,20 +491,21 @@
 
 [data-theme='dark'] .glassBtn,
 [data-theme='system'] .glassBtn {
-  background: #ffffff ;
-  color: #003366 ;
-  border-bottom: 3px solid #dddddd ;
+  background: #2d3748;
+  color: #f8fafc;
+  border: 1px solid #4a5568;
+  border-bottom: 3px solid #1a202c;
 }
 
 .copyBtn { background: #f1f5f9; color: #1e3a8a; border: 1px solid #e2e8f0; }
 
 [data-theme='dark'] .copyBtn,
-[data-theme='system'] .copyBtn { background: #ffffff ; color: #003366 ; }
+[data-theme='system'] .copyBtn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
 
-.activeFav { background: #1e3a8a ; color: white ; }
+.activeFav { background: #1e3a8a; color: white; }
 
 [data-theme='dark'] .activeFav,
-[data-theme='system'] .activeFav { background: #003366 ; color: #ffffff ; }
+[data-theme='system'] .activeFav { background: #3b82f6 !important; color: white !important; }
 
 .lastReadBar {
   display: flex;
@@ -517,9 +522,10 @@
 
 [data-theme='dark'] .lastReadBar,
 [data-theme='system'] .lastReadBar {
-  background: #ffffff ;
-  color: #003366 ;
-  border-bottom: 4px solid #dddddd ;
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-bottom: 4px solid #0f172a;
 }
 
 .lastReadContent { display: flex; align-items: center; gap: 12px; }
@@ -537,11 +543,11 @@
   background: var(--color-card-bg);
   text-align: right;
   font-weight: 600;
-  color: var(--color-text-primary)
+  color: var(--color-text-primary);
 }
 
-.correct { background: #10b981 ; color: white ; }
-.wrong { background: #ef4444 ; color: white ; }
+.correct { background: #10b981; color: white; }
+.wrong { background: #ef4444; color: white; }
 
 .startedPlansSection { margin-top: 8px; }
 .sectionTitle { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
@@ -558,7 +564,7 @@
 }
 
 .planNameRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.planTitle { font-weight: 800; font-size: 15px; color: var(--color-text-primary)}
+.planTitle { font-weight: 800; font-size: 15px; color: var(--color-text-primary); }
 .planPercent { font-size: 12px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 8px; }
 
 .progressBar { width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }

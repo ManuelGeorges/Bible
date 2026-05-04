@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db, auth } from '../../lib/firebase'; 
 import { doc, getDoc, updateDoc, arrayUnion, increment, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useBadge } from '../context/BadgeContext';
 
 const normalizeArabic = (text) => {
   if (typeof text !== 'string') return '';
@@ -26,6 +27,7 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const router = useRouter();
+  const { triggerBadgeUnlock } = useBadge();
 
   const [quizState, setQuizState] = useState({
     category: null,
@@ -64,7 +66,7 @@ export default function HomePage() {
             setCompletedQuizzes(data.completedQuizzes || []);
             setUserBadges(data.badges || []);
           }
-          setAuthLoading(false); // نضمن تغيير حالة التحميل بعد أول جلب للبيانات
+          setAuthLoading(false);
         }, (error) => {
           console.error("Error in onSnapshot:", error);
           setAuthLoading(false);
@@ -94,20 +96,15 @@ export default function HomePage() {
     loadInitialData();
   }, []);
 
-  const showBadgeToast = (message) => {
-    setCopiedMessage(message);
-    setTimeout(() => setCopiedMessage(''), 4000);
-    if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
-  };
-
-  const unlockBadge = async (badgeId, badgeName, rarity) => {
+  const unlockBadge = async (badgeId) => {
     if (!user || (userBadges && userBadges.includes(badgeId))) return;
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
         badges: arrayUnion(badgeId)
       });
-      showBadgeToast(`🎉 وسام جديد: ${badgeName}`);
+      triggerBadgeUnlock(badgeId);
+      setUserBadges(prev => [...prev, badgeId]);
     } catch (e) {
       console.error(e);
     }
@@ -153,7 +150,7 @@ export default function HomePage() {
       streak: newStreak
     }));
 
-    if (newStreak === 10) await unlockBadge('rapid_10', 'سريع الاشتعال', 'مميز');
+    if (newStreak === 10) await unlockBadge('rapid_10');
   };
 
   const nextQuestion = async () => {
@@ -204,8 +201,23 @@ export default function HomePage() {
         })
       });
 
-      if (updatedHistory.length >= 1) await unlockBadge('quiz_first', 'أول خطوة', 'عادي');
-      if (updatedHistory.length >= 10) await unlockBadge('scholar_10', 'المتفرغ', 'مميز');
+      if (updatedHistory.length >= 1) await unlockBadge('quiz_first');
+      if (updatedHistory.length >= 3) await unlockBadge('scholar_3');
+      if (updatedHistory.length >= 10) await unlockBadge('scholar_10');
+      if (updatedHistory.length >= 30) await unlockBadge('scholar_30');
+      if (updatedHistory.length >= 50) await unlockBadge('scholar_50');
+      if (updatedHistory.length >= 73) await unlockBadge('bible_master');
+
+      const perfectCount = updatedHistory.filter(q => q.score === q.total).length;
+      if (isPerfect) await unlockBadge('perfect_1');
+      if (perfectCount >= 10) await unlockBadge('perfect_10');
+      if (perfectCount >= 73) await unlockBadge('perfect_all');
+
+      const duration = (Date.now() - quizState.startTime) / 1000;
+      if (isPerfect && duration < 30) {
+        await unlockBadge('speed_demon');
+      }
+
     } catch (e) {
       console.error(e);
     }

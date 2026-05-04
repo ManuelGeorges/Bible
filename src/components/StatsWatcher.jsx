@@ -4,10 +4,12 @@ import { usePathname } from 'next/navigation';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, getCountFromServer, deleteField } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useBadge } from '../app/context/BadgeContext';
 
 export default function StatsWatcher() {
   const pathname = usePathname();
   const isInitialMount = useRef(true);
+  const { triggerBadgeUnlock } = useBadge();
 
   const checkConsistencyBadges = (streak) => {
     const badges = [];
@@ -30,6 +32,7 @@ export default function StatsWatcher() {
       const unlocked = docSnap.data()?.badges || [];
       if (!unlocked.includes(badgeId)) {
         await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+        triggerBadgeUnlock(badgeId);
       }
     } catch (e) { console.error(e); }
   };
@@ -53,7 +56,7 @@ export default function StatsWatcher() {
         await setDoc(userRef, {
             email: user.email,
             displayName: user.displayName,
-            totalPoints: 10, // هدية التسجيل
+            totalPoints: 10,
             streak: 1,
             lastActiveDate: today,
             badges: loyaltyBadges,
@@ -62,9 +65,7 @@ export default function StatsWatcher() {
       } else {
         let data = docSnap.data();
 
-        // 0. كود الهجرة (Migration): نقل البيانات من كائن stats القديم إلى المستوى الأول
         if (data.stats) {
-          console.log("Migrating legacy stats for user:", user.uid);
           const legacy = data.stats;
           const migrationUpdates = {
             totalPoints: data.totalPoints || legacy.total_points || 0,
@@ -74,18 +75,13 @@ export default function StatsWatcher() {
             stats: deleteField()
           };
           await updateDoc(userRef, migrationUpdates);
-
-          // تحديث الكائن المحلي لمتابعة العمليات القادمة بشكل صحيح
           data = { ...data, ...migrationUpdates };
-          delete data.stats;
         }
 
-        // 1. تحديث الإيميل إذا كان ناقصاً
         if (!data.email && user.email) {
           await updateDoc(userRef, { email: user.email });
         }
 
-        // 2. تحديث الستريك (Streak)
         const lastActive = data.lastActiveDate;
         let currentStreak = data.streak || 0;
 
@@ -101,17 +97,34 @@ export default function StatsWatcher() {
             lastActiveDate: today
           });
 
-          // 3. فحص أوسمة الاستمرارية
           const consistencyBadges = checkConsistencyBadges(newStreak);
           const currentBadges = data.badges || [];
           for (const id of consistencyBadges) {
-            if (!currentBadges.includes(id)) { await unlockBadge(id); }
+            if (!currentBadges.includes(id)) {
+                await unlockBadge(id);
+            }
           }
         }
 
-        // 4. أوسمة الوقت
         if (now.getHours() < 7) await unlockBadge('early_bird');
         if (now.getHours() >= 0 && now.getHours() < 3) await unlockBadge('night_owl');
+
+        if (now.getHours() === 3 && now.getMinutes() === 0) {
+            await unlockBadge('ghost_user');
+        }
+
+        const isDark = localStorage.getItem('theme') !== 'light';
+        if (isDark) {
+            const darkStart = localStorage.getItem('dark_mode_start');
+            if (!darkStart) {
+                localStorage.setItem('dark_mode_start', today);
+            } else {
+                const days = (new Date() - new Date(darkStart)) / (1000 * 60 * 60 * 24);
+                if (days >= 30) await unlockBadge('shadow_reader');
+            }
+        } else {
+            localStorage.removeItem('dark_mode_start');
+        }
       }
     } catch (error) { console.error("StatsWatcher Sync Error:", error); }
   };
@@ -125,7 +138,7 @@ export default function StatsWatcher() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [triggerBadgeUnlock]);
 
   return null;
 }

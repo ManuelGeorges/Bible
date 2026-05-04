@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './points.module.css';
 import { db } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, arrayUnion, increment, getDoc } from 'firebase/firestore';
 import { 
   FaBookOpen, FaFeatherAlt, FaHeart, FaChevronDown, FaEye, FaEyeSlash,
   FaTrophy, FaChartLine, FaHistory, FaMapMarkedAlt, FaSearch,
@@ -122,7 +122,11 @@ const calculatePointsFromData = (data) => {
     rawStats: {
       questions: Object.keys(data.answeredQuestions || {}).length,
       maps: (data.visitedMapPoints || []).length,
-      favorites: Object.keys(data.favorites?.verses || {}).length
+      favorites: Object.keys(data.favorites?.verses || {}).length,
+      chapters: Object.keys(data.completedChapters || {}).filter(k => data.completedChapters[k]).length,
+      quizzes: (data.completedQuizzes || []).length,
+      perfectQuizzes: (data.completedQuizzes || []).filter(q => q.score === q.total).length,
+      shares: history.filter(h => h.activity === 'share').length
     }
   };
 };
@@ -196,20 +200,37 @@ export default function Points() {
     { id: 'نادر', name: 'نادر' }, { id: 'أسطوري', name: 'أسطوري' }, { id: 'خرافي', name: 'خرافي' }
   ];
 
+  const unlockBadge = async (badgeId, badgeName) => {
+    const auth = getAuth();
+    if (!auth.currentUser) return;
+    try {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      const currentBadges = userSnap.data()?.badges || [];
+      if (!currentBadges.includes(badgeId)) {
+        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+        toast.success(`🎉 وسام جديد: ${badgeName}`, { icon: '🏅' });
+      }
+    } catch (e) { console.error(e); }
+  };
+
   const scrollToSection = (ref, tabId) => {
     if (ref.current) {
       isManualScrolling.current = true;
       setActiveTab(tabId);
       ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Reset manual flag after scroll animation
-      setTimeout(() => { isManualScrolling.current = false; }, 1000);
+      setTimeout(() => {
+        isManualScrolling.current = false;
+      }, 1200);
     }
   };
 
   useEffect(() => {
+    if (loading || !badgesData) return;
+
     const options = {
       root: null,
-      rootMargin: '-150px 0px -40% 0px', // Adjust margin for the sticky header
+      rootMargin: '-20% 0px -70% 0px',
       threshold: 0
     };
 
@@ -260,6 +281,16 @@ export default function Points() {
     });
   }, []);
 
+  // الفئة السرية: المغرور القديس (١٠ دقائق في صفحة النقاط)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === 'points') {
+        unlockBadge('deep_diver', 'المغرور القديس');
+      }
+    }, 600000); // 10 mins
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+
   const activitiesSummary = useMemo(() => pointsData ? categorizeActivities(pointsData.history) : null, [pointsData]);
   const userUnlockedBadges = useMemo(() => pointsData?.unlockedFromFirestore || [], [pointsData]);
 
@@ -275,6 +306,28 @@ export default function Points() {
             } else if (badge.id.startsWith('map_') || badge.id === 'ancient_navigator') {
                 const target = badge.id === 'map_pioneer' ? 5 : 20;
                 progress = { current: pointsData?.rawStats.maps || 0, target };
+            } else if (badge.id.startsWith('reader_')) {
+                const target = parseInt(badge.id.split('_')[1]);
+                progress = { current: pointsData?.rawStats.chapters || 0, target };
+            } else if (badge.id === 'bible_finisher') {
+                progress = { current: pointsData?.rawStats.chapters || 0, target: 1189 };
+            } else if (badge.id === 'reader_594') {
+                progress = { current: pointsData?.rawStats.chapters || 0, target: 594 };
+            } else if (badge.id.startsWith('scholar_')) {
+                const target = parseInt(badge.id.split('_')[1]);
+                progress = { current: pointsData?.rawStats.quizzes || 0, target };
+            } else if (badge.id === 'bible_master') {
+                progress = { current: pointsData?.rawStats.quizzes || 0, target: 73 };
+            } else if (badge.id.startsWith('perfect_')) {
+                const target = badge.id === 'perfect_all' ? 73 : parseInt(badge.id.split('_')[1]);
+                progress = { current: pointsData?.rawStats.perfectQuizzes || 0, target };
+            } else if (badge.id.startsWith('fav_')) {
+                const target = parseInt(badge.id.split('_')[1]);
+                progress = { current: pointsData?.rawStats.favorites || 0, target };
+            } else if (badge.id === 'share_1') {
+                progress = { current: pointsData?.rawStats.shares || 0, target: 1 };
+            } else if (badge.id === 'social_influencer') {
+                progress = { current: pointsData?.rawStats.shares || 0, target: 50 };
             }
         }
         return { ...badge, progress };

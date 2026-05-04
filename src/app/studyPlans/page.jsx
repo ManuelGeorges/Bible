@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import styles from './studyPlans.module.css';
 import studyPlansData from './studyPlansData.json';
@@ -9,8 +9,11 @@ import { doc, onSnapshot, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { ChevronLeft } from 'lucide-react';
 
 const staticPlans = studyPlansData.plans;
+// نقل التعريف للخارج لتجنب ReferenceError وضمان التوفر في كل مكان
+const filtersList = ['الكل', 'مخصصة', ...new Set(staticPlans.map(plan => plan.type))];
 
 export default function StudyPlans() {
   const router = useRouter();
@@ -19,6 +22,9 @@ export default function StudyPlans() {
   const [customPlans, setCustomPlans] = useState({});
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  const filterRef = useRef(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -61,6 +67,37 @@ export default function StudyPlans() {
       unsubFirestore();
     };
   }, [router]);
+
+  const checkScroll = () => {
+    if (filterRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = filterRef.current;
+      // في نظام RTL: التمرير يبدأ من 0 ويتجه للسالب.
+      // نتحقق مما إذا كان هناك محتوى متبقي جهة اليسار
+      const canScrollFurther = Math.abs(scrollLeft) < (scrollWidth - clientWidth - 15);
+      setShowScrollHint(canScrollFurther);
+    }
+  };
+
+  useEffect(() => {
+    const el = filterRef.current;
+    if (el && !loading) {
+      const timer = setTimeout(checkScroll, 500);
+      el.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      return () => {
+        clearTimeout(timer);
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, [loading]);
+
+  const handleScrollClick = () => {
+    if (filterRef.current) {
+      // تحريك القائمة بمقدار 200 بكسل لليسار عند الضغط
+      filterRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
 
   const handleDeletePlan = async (e, planId) => {
     e.preventDefault();
@@ -138,8 +175,6 @@ export default function StudyPlans() {
     activeFilter === 'الكل' ? true : (plan.isCustom ? activeFilter === 'مخصصة' : plan.type === activeFilter)
   );
 
-  const filters = ['الكل', 'مخصصة', ...new Set(staticPlans.map(plan => plan.type))];
-
   if (loading) return (
     <div className={styles.container}>
       <div className={styles.loading}>جاري التحميل...</div>
@@ -155,16 +190,31 @@ export default function StudyPlans() {
         </Link>
       </div>
 
-      <div className={styles.filterSection}>
-        {filters.map(filter => (
+      <div className={styles.filterWrapper}>
+        <div
+          className={styles.filterSection}
+          ref={filterRef}
+        >
+          {filtersList.map(filter => (
+            <button
+              key={filter}
+              className={`${styles.filterButton} ${activeFilter === filter ? styles.activeFilter : ''}`}
+              onClick={() => setActiveFilter(filter)}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+        {showScrollHint && (
           <button
-            key={filter}
-            className={`${styles.filterButton} ${activeFilter === filter ? styles.activeFilter : ''}`}
-            onClick={() => setActiveFilter(filter)}
+            className={styles.scrollHint}
+            onClick={handleScrollClick}
+            type="button"
+            aria-label="عرض المزيد من الأقسام"
           >
-            {filter}
+            <ChevronLeft size={22} />
           </button>
-        ))}
+        )}
       </div>
 
       <div className={styles.plansGrid}>
@@ -182,8 +232,7 @@ export default function StudyPlans() {
 
             const hasStarted = progress.done > 0;
 
-            // بناء الرابط الصحيح بناءً على نوع الخطة
-            const planUrl = plan.isCustom 
+            const planUrl = plan.isCustom
               ? `/studyPlans/details?id=${plan.id}&type=custom`
               : `/studyPlans/details?id=${plan.id}`;
 

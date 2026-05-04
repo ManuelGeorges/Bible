@@ -1,0 +1,163 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 1000001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--color-card-bg);
+  width: 100%;
+  max-width: 400px;
+  border-radius: 40px;
+  position: relative;
+  padding: 40px 25px;
+  text-align: center;
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 0 50px rgba(var(--color-accent-rgb), 0.3);
+  animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--color-border);
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.celebrationText {
+  color: var(--color-accent);
+  font-weight: 900;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.badgeDisplay {
+  margin: 30px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.iconWrapper {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #3b82f6 100%);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 15px 30px rgba(var(--color-accent-rgb), 0.4);
+  position: relative;
+}
+
+.glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(20px);
+  opacity: 0.5;
+  z-index: -1;
+  animation: rotateGlow 4s infinite linear;
+}
+
+@keyframes rotateGlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.badgeName {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.rarityTag {
+  padding: 4px 15px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+  display: inline-block;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.primaryBtn {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform 0.2s;
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  padding: 14px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.primaryBtn:active, .secondaryBtn:active {
+  transform: scale(0.95);
+}
+
+/* Rarity Colors */
+.rarity_عادي { background: #94a3b8; color: white; }
+.rarity_مميز { background: #3b82f6; color: white; }
+.rarity_نادر { background: #8b5cf6; color: white; }
+.rarity_أسطوري { background: #f59e0b; color: white; }
+.rarity_خرافي { background: #ef4444; color: white; }
+.rarity_سري { background: #1e293b; color: #f8fafc; border: 1px solid #334155; }

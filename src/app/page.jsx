@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import studyPlansData from './studyPlans/studyPlansData.json';
@@ -13,7 +13,7 @@ import { Capacitor } from '@capacitor/core';
 import { toast } from 'react-hot-toast';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import {
-    Book, Map, Search, User, Trophy,
+    BookPlus, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
     ChevronLeft, Award, Flame, LogIn, ArrowRight,
     CheckCircle, Circle, ArrowUpRight, Bell, 
@@ -27,6 +27,7 @@ import {
     Video, Music, Church, Sun, Moon, Cloud
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
+import { useBadge } from './context/BadgeContext';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -37,7 +38,7 @@ const LUCIDE_ICONS = {
     'Bell': Bell, 'Info': Info, 'Megaphone': Megaphone, 'Message': MessageCircle, 'Announcement': Megaphone,
     'Bot': Bot, 'AI': Sparkles, 'Brain': Brain, 'Cpu': Cpu, 'Wand': Wand2, 'Magic': Wand2, 'Lightbulb': Lightbulb, 'Idea': Lightbulb,
     'Rocket': Rocket, 'Update': RefreshCw, 'New': Sparkles, 'History': History, 'Zap': Zap, 'Flash': Zap, 'Party': PartyPopper,
-    'Book': Book, 'Bible': BookOpen, 'BookOpen': BookOpen, 'Scroll': Scroll, 'Church': Church, 'Pray': Heart,
+    'BookPlus': BookPlus, 'Bible': BookOpen, 'BookOpen': BookOpen, 'Scroll': Scroll, 'Church': Church, 'Pray': Heart,
     'Map': Map, 'Search': Search, 'Settings': Settings, 'Globe': Globe, 'Shield': Shield, 'Verified': ShieldCheck,
     'Calendar': Calendar, 'Camera': Camera, 'Mail': Mail, 'Link': LinkIcon, 'External': ExternalLink,
     'Lock': Lock, 'Unlock': Unlock, 'QrCode': QrCode, 'Translate': Languages, 'Mic': Mic,
@@ -52,6 +53,7 @@ const convertToArabicNumber = (num) => {
 
 const LandingPage = () => {
     const router = useRouter();
+    const { triggerBadgeUnlock } = useBadge();
     const [dailyVerse, setDailyVerse] = useState(null);
     const [dailyQuestion, setDailyQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -67,7 +69,19 @@ const LandingPage = () => {
     const [remoteNews, setRemoteNews] = useState([]);
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
 
-    // تحسين حساب الإحصائيات لتجنب البحث المتكرر O(N^2)
+    const unlockBadge = async (badgeId) => {
+        if (!user) return;
+        try {
+          const userRef = doc(firestore, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          const currentBadges = userSnap.data()?.badges || [];
+          if (!currentBadges.includes(badgeId)) {
+            await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+            triggerBadgeUnlock(badgeId);
+          }
+        } catch (e) { console.error(e); }
+    };
+
     const calculatePlanStats = useCallback((planOrId, isCustom, customPlanData, serverCompletion) => {
         let completedDays = {};
         let totalDays = 0;
@@ -124,7 +138,7 @@ const LandingPage = () => {
             try {
                 const config = await getFirebaseRemoteConfig();
                 if (config) {
-                    config.settings.minimumFetchIntervalMillis = 3600000; // ساعة واحدة لتجنب ضغط الطلبات
+                    config.settings.minimumFetchIntervalMillis = 3600000;
                     await fetchAndActivate(config);
 
                     const newsJson = getValue(config, 'app_news').asString();
@@ -154,7 +168,6 @@ const LandingPage = () => {
         }
     };
 
-    // الإصلاح الأساسي: إدارة اشتراكات Firebase بشكل صحيح لمنع التهنيج
     useEffect(() => {
         if (Capacitor.isNativePlatform()) CapacitorUpdater.notifyAppReady();
 
@@ -163,7 +176,6 @@ const LandingPage = () => {
             setUser(u);
             fetchDailyContent(u);
 
-            // تنظيف المستمع القديم قبل إنشاء واحد جديد
             if (unsubSnap) {
                 unsubSnap();
                 unsubSnap = null;
@@ -183,7 +195,6 @@ const LandingPage = () => {
                         const serverComp = data.completedPlans || {};
                         const customPlans = data.customPlans || {};
 
-                        // تحسين: تمرير الكائن مباشرة لتجنب البحث المتكرر
                         const activeStatic = staticPlans
                             .map(plan => {
                                 const stats = calculatePlanStats(plan, false, null, serverComp);
@@ -204,7 +215,6 @@ const LandingPage = () => {
                         const historyRaw = data.pointsHistory || [];
                         const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
 
-                        // تحسين: فحص المهام في دورة واحدة بدلاً من دورات متعددة
                         const completedTodayTypes = new Set(
                             history.filter(h => {
                                 if (!h.timestamp) return false;
@@ -270,14 +280,34 @@ const LandingPage = () => {
         if (hasAnswered || !dailyQuestion) return;
         const now = new Date();
         const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
         setSelectedAnswer(index);
         setHasAnswered(true);
         localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
         const isCorrect = index === dailyQuestion.answerIndex;
         const userRef = doc(firestore, 'users', user.uid);
+
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data() || {};
+        let qStreak = userData.questionStreak || 0;
+        const lastQDate = userData.lastQuestionDate;
+
+        if (lastQDate === yesterdayStr) {
+            qStreak += 1;
+        } else if (lastQDate !== dateKey) {
+            qStreak = 1;
+        }
+
         const updatePayload = {
-            [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: new Date().toISOString() }
+            [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: new Date().toISOString() },
+            questionStreak: qStreak,
+            lastQuestionDate: dateKey
         };
+
         if (isCorrect) {
             toast.success('إجابة صحيحة! 🎉');
             await updateDoc(userRef, {
@@ -294,6 +324,10 @@ const LandingPage = () => {
         } else {
             toast.error('إجابة خاطئة 😔');
             await updateDoc(userRef, updatePayload);
+        }
+
+        if (qStreak >= 30) {
+            await unlockBadge('verse_sync');
         }
     };
 
@@ -342,7 +376,7 @@ const LandingPage = () => {
     };
 
     const quickLinks = [
-        { name: 'الكتاب المقدس', icon: <Book size={24} />, path: '/bible', color: '#6366f1' },
+        { name: 'الكتاب المقدس', icon: <BookPlus size={24} />, path: '/bible', color: '#6366f1' },
         { name: 'الخرائط', icon: <Map size={24} />, path: user ? '/maps' : '/intro', color: '#10b981' },
         { name: 'البحث', icon: <Search size={24} />, path: user ? '/search' : '/intro', color: '#f59e0b' },
         { name: 'الخطط الدراسية', icon: <BookMarked size={24} />, path: user ? '/studyPlans' : '/intro', color: '#ec4899' },
@@ -378,9 +412,6 @@ const LandingPage = () => {
                         <div className={styles.statPill}>
                             <Flame size={16} color="#ff4500" />
                             <span>{userStats.streak} يوم</span>
-                        </div>
-                        <div className={styles.badgeList}>
-                            {userBadges.slice(0, 3).map((b, i) => <span key={i} className={styles.miniBadge}>🏅</span>)}
                         </div>
                     </div>
                 )}
@@ -483,7 +514,7 @@ const LandingPage = () => {
                             <strong>{lastRead.bookName} - إصحاح {lastRead.chapterIndex + 1}</strong>
                         </div>
                     </div>
-                    <div className={styles.lastReadIcon}><Book size={20} /></div>
+                    <div className={styles.lastReadIcon}><BookPlus size={20} /></div>
                 </button>
             )}
 

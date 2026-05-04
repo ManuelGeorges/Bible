@@ -10,6 +10,7 @@ import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'react-hot-toast';
 import UserTracker from '../components/UserTracker';
 import StatsWatcher from '../components/StatsWatcher';
+import { BadgeProvider } from './context/BadgeContext';
 
 export const viewport = {
   width: 'device-width',
@@ -44,7 +45,7 @@ export const metadata = {
     locale: 'ar_AR',
     images: [
       {
-        url: 'https://agios-bible.vercel.app/web-app-manifest-512x512-v2.png',
+        url: 'https://agios-bible.vercel.app/agios.png',
         width: 1200,
         height: 630,
         type: 'image/png',
@@ -52,9 +53,9 @@ export const metadata = {
     ],
   },
   icons: {
-    icon: '/web-app-manifest-192x192-v2.png',
-    shortcut: '/web-app-manifest-192x192-v2.png',
-    apple: '/web-app-manifest-192x192-v2.png',
+    icon: '/agios.png',
+    shortcut: '/agios.png',
+    apple: '/agios.png',
   },
   verification: {
     google: 'JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY',
@@ -107,38 +108,40 @@ export default function RootLayout({ children }) {
         `}} />
       </head>
       <body>
-        <StatsWatcher />
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="system"
-          enableSystem={true}
-        >
-          <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
-          <UserTracker />
-          <BibleNavbar />
+        <BadgeProvider>
+          <StatsWatcher />
+          <ThemeProvider
+            attribute="data-theme"
+            defaultTheme="system"
+            enableSystem={true}
+          >
+            <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
+            <UserTracker />
+            <BibleNavbar />
 
-          <SplashHandler>
-            <main className={styles.mainContent}>
-              <div className={styles.container}>{children}</div>
-            </main>
-            <Footer />
-            <CapacitorFeatures />
-            <SEOlinks />
-          </SplashHandler>
+            <SplashHandler>
+              <main className={styles.mainContent}>
+                <div className={styles.container}>{children}</div>
+              </main>
+              <Footer />
+              <CapacitorFeatures />
+              <SEOlinks />
+            </SplashHandler>
 
-          <Script
-            src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-            strategy="lazyOnload"
-          />
-          <Script id="google-analytics" strategy="lazyOnload">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-J90H6JXHNG');
-            `}
-          </Script>
-        </ThemeProvider>
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+              strategy="lazyOnload"
+            />
+            <Script id="google-analytics" strategy="lazyOnload">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-J90H6JXHNG');
+              `}
+            </Script>
+          </ThemeProvider>
+        </BadgeProvider>
       </body>
     </html>
   );

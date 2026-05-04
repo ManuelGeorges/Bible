@@ -9,6 +9,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import { useBadge } from '../context/BadgeContext';
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 const geminiCache = {};
@@ -27,7 +28,7 @@ const highlightColors = [
 
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num.toString().split('').map(d => arabicNums[+d]).join('');
+  return num.toString().split('').map(d => arabicNums[+d] || d).join('');
 }
 
 function normalizeArabicText(text) {
@@ -74,6 +75,7 @@ function CustomSelect({ label, options, value, onChange, dir }) {
 
 export default function BibleSearchPage() {
   const [user, setUser] = useState(null);
+  const { triggerBadgeUnlock } = useBadge();
   const [inputTerm, setInputTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('literal');
@@ -164,14 +166,27 @@ export default function BibleSearchPage() {
     }
   }, [selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
 
+  const unlockBadge = async (badgeId) => {
+    if (!user) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const currentBadges = userSnap.data()?.badges || [];
+      if (!currentBadges.includes(badgeId)) {
+        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+        triggerBadgeUnlock(badgeId);
+      }
+    } catch (e) { console.error(e); }
+  };
+
   const updateUserPoints = async (amount, reason) => {
     if (!user) return;
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
-        totalPoints: increment(amount), // توحيد الحقل إلى totalPoints
+        totalPoints: increment(amount),
         pointsHistory: arrayUnion({
-          points: amount, // توحيد الحقل إلى points
+          points: amount,
           reason,
           timestamp: new Date().toISOString()
         })
@@ -267,6 +282,14 @@ export default function BibleSearchPage() {
       }
 
       geminiCache[term] = currentInfo;
+
+      // بادجة سرية: كاسر المنطق (استخدام NLP للبحث ٣ مرات)
+      const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
+      localStorage.setItem('nlp_search_count', nlpCount.toString());
+      if (nlpCount >= 3) {
+        await unlockBadge('logic_breaker');
+      }
+
       return currentInfo;
 
     } catch (e) {

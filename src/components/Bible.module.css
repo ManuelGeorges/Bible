@@ -49,7 +49,7 @@
 .tabBtn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--color-text-secondary);
   font-size: 1.1rem;
   padding: 8px 15px;
   opacity: 0.5;
@@ -113,8 +113,8 @@
 }
 
 .activeTab {
-  background: #2196F3 !important;
-  color: white !important;
+  background: #2196F3 ;
+  color: white ;
 }
 
 .searchWrapper {
@@ -159,9 +159,9 @@
 }
 
 .selectedBook {
-  background: rgba(33, 150, 243, 0.2) !important;
-  border-color: #2196F3 !important;
-  color: #2196F3 !important;
+  background: rgba(33, 150, 243, 0.2) ;
+  border-color: #2196F3 ;
+  color: #2196F3 ;
 }
 
 .chaptersGrid {
@@ -184,7 +184,7 @@
 }
 
 .selectedChapter {
-  background: #2196F3 !important;
+  background: #2196F3 ;
 }
 
 .modalContentArea::-webkit-scrollbar {
