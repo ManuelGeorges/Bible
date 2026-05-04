@@ -62,7 +62,7 @@
 
 .navigationDisplay:hover {
   background-color: var(--btn-text) ;
-  color: var(--btn-bg) ;
+  color:  #1e3a8a ;
   transform: translateY(-2px) ;
   box-shadow: 0 6px 15px rgba(0, 71, 171, 0.15) ;
 }
