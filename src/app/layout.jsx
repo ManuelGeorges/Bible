@@ -11,6 +11,8 @@ import { Toaster } from 'react-hot-toast';
 import UserTracker from '../components/UserTracker';
 import StatsWatcher from '../components/StatsWatcher';
 import { BadgeProvider } from './context/BadgeContext';
+import { AudioProvider } from './context/AudioContext';
+import GlobalAudioPlayer from '../components/GlobalAudioPlayer';
 
 export const viewport = {
   width: 'device-width',
@@ -109,38 +111,41 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <BadgeProvider>
-          <StatsWatcher />
-          <ThemeProvider
-            attribute="data-theme"
-            defaultTheme="system"
-            enableSystem={true}
-          >
-            <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
-            <UserTracker />
-            <BibleNavbar />
+          <AudioProvider>
+            <StatsWatcher />
+            <ThemeProvider
+              attribute="data-theme"
+              defaultTheme="system"
+              enableSystem={true}
+            >
+              <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
+              <UserTracker />
+              <BibleNavbar />
 
-            <SplashHandler>
-              <main className={styles.mainContent}>
-                <div className={styles.container}>{children}</div>
-              </main>
-              <Footer />
-              <CapacitorFeatures />
-              <SEOlinks />
-            </SplashHandler>
+              <SplashHandler>
+                <main className={styles.mainContent}>
+                  <div className={styles.container}>{children}</div>
+                </main>
+                <GlobalAudioPlayer />
+                <Footer />
+                <CapacitorFeatures />
+                <SEOlinks />
+              </SplashHandler>
 
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-              strategy="lazyOnload"
-            />
-            <Script id="google-analytics" strategy="lazyOnload">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'G-J90H6JXHNG');
-              `}
-            </Script>
-          </ThemeProvider>
+              <Script
+                src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+                strategy="lazyOnload"
+              />
+              <Script id="google-analytics" strategy="lazyOnload">
+                {`
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', 'G-J90H6JXHNG');
+                `}
+              </Script>
+            </ThemeProvider>
+          </AudioProvider>
         </BadgeProvider>
       </body>
     </html>

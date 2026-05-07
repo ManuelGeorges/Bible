@@ -27,7 +27,10 @@
   border-radius: 12px;
   font-weight: 800;
   text-decoration: none;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   text-align: center;
   box-shadow: 0 8px 15px rgba(30, 58, 138, 0.2);
   border-bottom: 4px solid rgba(0, 0, 0, 0.3);
@@ -40,23 +43,21 @@
   border-bottom-width: 1px;
 }
 
-/* Container for filters with a relative position for the floating arrow */
+/* Container for filters */
 .filterWrapper {
   position: relative;
-  margin-bottom: 10px;
+  margin-bottom: 25px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
 }
 
 .filterSection {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding: 10px 4px 20px 4px;
+  padding: 10px 4px 8px 4px;
   scrollbar-width: none;
   width: 100%;
-  mask-image: linear-gradient(to right, transparent, black 40px); /* Soft fade for edge */
-  -webkit-mask-image: linear-gradient(to right, transparent, black 40px);
 }
 
 .filterSection::-webkit-scrollbar { display: none; }
@@ -81,56 +82,34 @@
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 }
 
-/* The Arrow/Hint Style - PROMINENT CLICKABLE BUTTON */
+/* Arrow Hint - Small grey button on the left under the categories */
 .scrollHint {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
-  background: var(--color-card-bg);
-  border: 2px solid #2196F3;
-  border-radius: 50%;
+  align-self: flex-end; /* Left side in RTL */
+  background: none;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer; /* جعل السهم قابل للضغط */
-  color: #2196F3;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-  z-index: 10;
-  padding: 0;
+  cursor: pointer;
+  /* Dark shade in light mode, Light shade in dark mode */
+  color: var(--color-text-primary);
+  opacity: 1;
+  z-index: 2;
+  padding: 6px;
+  margin-top: -4px;
+  margin-left: 4px;
   outline: none;
   transition: all 0.2s ease;
-  animation: bounceArrow 1.2s infinite ease-in-out;
 }
 
 .scrollHint:hover {
-  background: #2196F3;
-  color: white;
-  transform: translateY(-50%) scale(1.1);
+  color: var(--color-text-primary);
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .scrollHint:active {
-  transform: translateY(-50%) scale(0.9);
-}
-
-@keyframes bounceArrow {
-  0%, 100% { transform: translateY(-50%) translateX(0); }
-  50% { transform: translateY(-50%) translateX(-6px); }
-}
-
-/* Subtle fade gradient behind the button for extra depth */
-.filterWrapper::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 10px;
-  width: 60px;
-  background: linear-gradient(to right, var(--color-bg-start), transparent);
-  pointer-events: none;
-  z-index: 5;
+  transform: scale(0.9);
 }
 
 .plansGrid {
@@ -209,10 +188,13 @@
   font-weight: 800;
   color: #8b5cf6;
   background: rgba(139, 92, 246, 0.1);
-  padding: 4px 12px;
+  padding: 6px 12px;
   border-radius: 10px;
-  display: inline-block;
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-bottom: 12px;
 }
 
 .deleteBtn {

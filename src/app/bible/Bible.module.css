@@ -127,6 +127,13 @@
   text-decoration-thickness: 2px ;
 }
 
+.readingHighlight {
+  background-color: rgb(255, 193, 7) !important;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
+  transition: all 0.3s ease;
+}
+
 .selectionBar {
   position: fixed ;
   bottom: 85px ;
@@ -219,6 +226,7 @@
   border-radius: 20px ;
   display: flex ;
   justify-content: space-around ;
+  align-items: center ;
   padding: 8px ;
   z-index: 1000 ;
   border: 1px solid var(--color-border) ;
@@ -232,6 +240,9 @@
   font-size: 1.5rem ;
   padding: 10px ;
   cursor: pointer ;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navigation button:disabled { opacity: 0.3 ; }
@@ -310,3 +321,11 @@
 .modalActions { display: flex ; gap: 10px ; }
 .saveBtn { background: #4CAF50 ; color: white ; padding: 10px ; flex: 1 ; border-radius: 8px ; border: none ; }
 .cancelBtn { background: #f44336 ; color: white ; padding: 10px ; flex: 1 ; border-radius: 8px ; border: none ; }
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

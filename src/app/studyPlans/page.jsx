@@ -9,7 +9,7 @@ import { doc, onSnapshot, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Sparkles } from 'lucide-react';
 
 const staticPlans = studyPlansData.plans;
 // نقل التعريف للخارج لتجنب ReferenceError وضمان التوفر في كل مكان
@@ -186,7 +186,7 @@ export default function StudyPlans() {
       <div className={styles.heroSection}>
         <h1 className={styles.title}>خطط القراءة</h1>
         <Link href="/studyPlans/custom" className={styles.aiCreateButton}>
-          ✨ صمم خطة ذكية الآن
+          <Sparkles size={18} /> صمم خطة ذكية الآن
         </Link>
       </div>
 
@@ -249,7 +249,7 @@ export default function StudyPlans() {
                 )}
                 
                 <div className={styles.cardContent}>
-                  {plan.isCustom && <span className={styles.aiBadge}>مساعد آجيوس الذكي✨</span>}
+                  {plan.isCustom && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
                   <h3 className={styles.cardTitle}>{plan.title}</h3>
                   <p className={styles.cardType}>{plan.isCustom ? 'خطة شخصية' : plan.type}</p>
                   

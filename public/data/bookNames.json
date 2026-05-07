@@ -4,6 +4,7 @@
       "name": "التكوين",
       "testament": "OT",
       "id": "Sefr-El-Takween",
+      "book_id": "GEN",
       "type": "old",
       "chapters": 50,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/01-Sefr-El-Takween"
@@ -12,6 +13,7 @@
       "name": "الخروج",
       "testament": "OT",
       "id": "Sefr-El-Khoroug",
+      "book_id": "EXO",
       "type": "old",
       "chapters": 40,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/02-Sefr-El-Khoroug"
@@ -20,6 +22,7 @@
       "name": "اللاويين",
       "testament": "OT",
       "id": "Sefr-El-Laweyeen",
+      "book_id": "LEV",
       "type": "old",
       "chapters": 27,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/03-Sefr-El-Laweyeen"
@@ -28,6 +31,7 @@
       "name": "العدد",
       "testament": "OT",
       "id": "Sefr-El-Adad",
+      "book_id": "NUM",
       "type": "old",
       "chapters": 36,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/04-Sefr-El-Adad"
@@ -36,6 +40,7 @@
       "name": "التثنية",
       "testament": "OT",
       "id": "Sefr-El-Tathneya",
+      "book_id": "DEU",
       "type": "old",
       "chapters": 34,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/05-Sefr-El-Tathneya"
@@ -44,6 +49,7 @@
       "name": "يشوع",
       "testament": "OT",
       "id": "Sefr-Yassoua",
+      "book_id": "JOS",
       "type": "old",
       "chapters": 24,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/06-Sefr-Yassoua"
@@ -52,6 +58,7 @@
       "name": "القضاة",
       "testament": "OT",
       "id": "Sefr-El-Qodah",
+      "book_id": "JDG",
       "type": "old",
       "chapters": 21,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/07-Sefr-El-Qodah"
@@ -60,6 +67,7 @@
       "name": "راعوث",
       "testament": "OT",
       "id": "Sefr-Raaooth",
+      "book_id": "RUT",
       "type": "old",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/08-Sefr-Raaooth"
@@ -68,6 +76,7 @@
       "name": "صموئيل الأول",
       "testament": "OT",
       "id": "Sefr-Samouel-Al-Awal",
+      "book_id": "1SA",
       "type": "old",
       "chapters": 31,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/09-Sefr-Samouel-Al-Awal"
@@ -76,6 +85,7 @@
       "name": "صموئيل الثاني",
       "testament": "OT",
       "id": "Sefr-Samouel-Al-Thany",
+      "book_id": "2SA",
       "type": "old",
       "chapters": 24,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/10-Sefr-Samouel-Al-Thany"
@@ -84,6 +94,7 @@
       "name": "الملوك الأول",
       "testament": "OT",
       "id": "Sefr-El-Molouk-Al-Awal",
+      "book_id": "1KI",
       "type": "old",
       "chapters": 22,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/11-Sefr-El-Molouk-Al-Awal"
@@ -92,6 +103,7 @@
       "name": "الملوك الثاني",
       "testament": "OT",
       "id": "Sefr-El-Molouk-Al-Thany",
+      "book_id": "2KI",
       "type": "old",
       "chapters": 25,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/12-Sefr-El-Molouk-Al-Thany"
@@ -100,6 +112,7 @@
       "name": "أخبار الأيام الأول",
       "testament": "OT",
       "id": "Sefr-A5bar-AlAyam-Al-Awal",
+      "book_id": "1CH",
       "type": "old",
       "chapters": 29,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/13-Sefr-A5bar-AlAyam-Al-Awal"
@@ -108,6 +121,7 @@
       "name": "أخبار الأيام الثاني",
       "testament": "OT",
       "id": "Sefr-A5bar-AlAyam-Al-Thany",
+      "book_id": "2CH",
       "type": "old",
       "chapters": 36,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/14-Sefr-Akhbaar-Al-Aiam-El-Thane"
@@ -116,6 +130,7 @@
       "name": "عزرا",
       "testament": "OT",
       "id": "Sefr-Azra",
+      "book_id": "EZR",
       "type": "old",
       "chapters": 10,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/15-Sefr-Azra"
@@ -124,22 +139,25 @@
       "name": "نحميا",
       "testament": "OT",
       "id": "Sefr-Nehemiah",
+      "book_id": "NEH",
       "type": "old",
       "chapters": 13,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/16-Sefr-Nehemiah"
     },
-        {
+    {
       "name": "طوبيا",
       "testament": "OT",
       "id": "Sefr-Tubia",
+      "book_id": "TOB",
       "type": "old",
       "chapters": 14,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/16-Sefr-Tubia"
     },
-            {
+    {
       "name": "يهوديت",
       "testament": "OT",
       "id": "Sefr-Judith",
+      "book_id": "JDT",
       "type": "old",
       "chapters": 14,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/16-Sefr-Judith"
@@ -148,6 +166,7 @@
       "name": "أستير",
       "testament": "OT",
       "id": "Sefr-Esther",
+      "book_id": "EST",
       "type": "old",
       "chapters": 10,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/17-Sefr-Esther"
@@ -156,6 +175,7 @@
       "name": "أيوب",
       "testament": "OT",
       "id": "Sefr-Ayob",
+      "book_id": "JOB",
       "type": "old",
       "chapters": 42,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/20-Sefr-Ayoub"
@@ -164,6 +184,7 @@
       "name": "المزامير",
       "testament": "OT",
       "id": "Sefr-El-Mazameer",
+      "book_id": "PSA",
       "type": "old",
       "chapters": 150,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/19-Sefr-El-Mazameer"
@@ -172,6 +193,7 @@
       "name": "الأمثال",
       "testament": "OT",
       "id": "Sefr-El-Amthal",
+      "book_id": "PRO",
       "type": "old",
       "chapters": 31,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/20-Sefr-El-Amthal"
@@ -180,6 +202,7 @@
       "name": "الجامعة",
       "testament": "OT",
       "id": "Sefr-El-Gam3a",
+      "book_id": "ECC",
       "type": "old",
       "chapters": 12,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/21-Sefr-El-Gam3a"
@@ -188,22 +211,25 @@
       "name": "نشيد الأنشاد",
       "testament": "OT",
       "id": "Sefr-Nasheed-Al-Anshad",
+      "book_id": "SNG",
       "type": "old",
       "chapters": 8,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Nasheed-Al-Anshad"
     },
-        {
+    {
       "name": "الحكمة",
       "testament": "OT",
       "id": "Sefr-Hikma",
+      "book_id": "WIS",
       "type": "old",
       "chapters": 19,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Hikma"
     },
-          {
+    {
       "name": "يشوع بن سيراخ",
       "testament": "OT",
       "id": "Sefr-Yassoua-bin-Siraakh",
+      "book_id": "SIR",
       "type": "old",
       "chapters": 51,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/22-Sefr-Yassoua-bin-Siraakh"
@@ -212,6 +238,7 @@
       "name": "إشعياء",
       "testament": "OT",
       "id": "Sefr-Ashaaia",
+      "book_id": "ISA",
       "type": "old",
       "chapters": 66,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/23-Sefr-Ashaaia"
@@ -220,6 +247,7 @@
       "name": "إرميا",
       "testament": "OT",
       "id": "Sefr-Ermia",
+      "book_id": "JER",
       "type": "old",
       "chapters": 52,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/24-Sefr-Ermia"
@@ -228,14 +256,16 @@
       "name": "مراثي إرميا",
       "testament": "OT",
       "id": "Sefr-Marathy-Ermia",
+      "book_id": "LAM",
       "type": "old",
       "chapters": 5,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/25-Sefr-Marathy-Ermia"
     },
-        {
+    {
       "name": "باروخ",
       "testament": "OT",
       "id": "Sefr-Barukh",
+      "book_id": "BAR",
       "type": "old",
       "chapters": 6,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/25-Sefr-Barukh"
@@ -244,6 +274,7 @@
       "name": "حزقيال",
       "testament": "OT",
       "id": "Sefr-Hezkeyal",
+      "book_id": "EZK",
       "type": "old",
       "chapters": 48,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/26-Sefr-Hezkeyal"
@@ -252,6 +283,7 @@
       "name": "دانيال",
       "testament": "OT",
       "id": "Sefr-Danial",
+      "book_id": "DAN",
       "type": "old",
       "chapters": 12,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/27-Sefr-Danial"
@@ -260,6 +292,7 @@
       "name": "هوشع",
       "testament": "OT",
       "id": "Sefr-Hosha3",
+      "book_id": "HOS",
       "type": "old",
       "chapters": 14,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/28-Sefr-Hosha3"
@@ -268,6 +301,7 @@
       "name": "يوئيل",
       "testament": "OT",
       "id": "Sefr-Youel",
+      "book_id": "JOL",
       "type": "old",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/29-Sefr-Youel"
@@ -276,6 +310,7 @@
       "name": "عاموس",
       "testament": "OT",
       "id": "Sefr-Amous",
+      "book_id": "AMO",
       "type": "old",
       "chapters": 9,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/30-Sefr-Amous"
@@ -284,6 +319,7 @@
       "name": "عوبديا",
       "testament": "OT",
       "id": "Sefr-Oobadia",
+      "book_id": "OBA",
       "type": "old",
       "chapters": 1,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/31-Sefr-Oobadia"
@@ -292,6 +328,7 @@
       "name": "يونان",
       "testament": "OT",
       "id": "Sefr-Younan",
+      "book_id": "JON",
       "type": "old",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/32-Sefr-Younan"
@@ -300,6 +337,7 @@
       "name": "ميخا",
       "testament": "OT",
       "id": "Sefr-Micha",
+      "book_id": "MIC",
       "type": "old",
       "chapters": 7,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/33-Sefr-Micha"
@@ -308,6 +346,7 @@
       "name": "ناحوم",
       "testament": "OT",
       "id": "Sefr-Nahoum",
+      "book_id": "NAM",
       "type": "old",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/34-Sefr-Nahoum"
@@ -316,6 +355,7 @@
       "name": "حبقوق",
       "testament": "OT",
       "id": "Sefr-Habakkok",
+      "book_id": "HAB",
       "type": "old",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/35-Sefr-Habakkok"
@@ -324,6 +364,7 @@
       "name": "صفنيا",
       "testament": "OT",
       "id": "Sefr-Safania",
+      "book_id": "ZEP",
       "type": "old",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/36-Sefr-Safania"
@@ -332,6 +373,7 @@
       "name": "حجي",
       "testament": "OT",
       "id": "Sefr-Haggay",
+      "book_id": "HAG",
       "type": "old",
       "chapters": 2,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/37-Sefr-Haggay"
@@ -340,6 +382,7 @@
       "name": "زكريا",
       "testament": "OT",
       "id": "Sefr-Zakaraya",
+      "book_id": "ZEC",
       "type": "old",
       "chapters": 14,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/38-Sefr-Zakaraya"
@@ -348,22 +391,25 @@
       "name": "ملاخي",
       "testament": "OT",
       "id": "Sefr-Malakhy",
+      "book_id": "MAL",
       "type": "old",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/39-Sefr-Malakhy"
     },
-        {
+    {
       "name": "مكابيين أول",
       "testament": "OT",
       "id": "Sefr-Makabyeen-Al-Awal",
+      "book_id": "1MA",
       "type": "old",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/39-Sefr-Makabyeen-Al-Awal"
     },
-            {
+    {
       "name": "مكابيين ثاني",
       "testament": "OT",
       "id": "Sefr-Makabyeen-Al-Thani",
+      "book_id": "2MA",
       "type": "old",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/39-Sefr-Makabyeen-Al-Thani"
@@ -372,6 +418,7 @@
       "name": "متى",
       "testament": "NT",
       "id": "Engil-Matta",
+      "book_id": "MAT",
       "type": "new",
       "chapters": 28,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/40-Engil-Matta"
@@ -380,6 +427,7 @@
       "name": "مرقس",
       "testament": "NT",
       "id": "Engil-Morqos",
+      "book_id": "MRK",
       "type": "new",
       "chapters": 16,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/41-Engil-Morqos"
@@ -388,6 +436,7 @@
       "name": "لوقا",
       "testament": "NT",
       "id": "Engil-Lowqa",
+      "book_id": "LUK",
       "type": "new",
       "chapters": 24,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/42-Engil-Lowqa"
@@ -396,6 +445,7 @@
       "name": "يوحنا",
       "testament": "NT",
       "id": "Engil-Youhanna",
+      "book_id": "JHN",
       "type": "new",
       "chapters": 21,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/43-Engil-Youhanna"
@@ -404,6 +454,7 @@
       "name": "أعمال الرسل",
       "testament": "NT",
       "id": "Sefr-A3mal-Al-Rosol",
+      "book_id": "ACT",
       "type": "new",
       "chapters": 28,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/44-Sefr-A3mal-Al-Rosol"
@@ -412,6 +463,7 @@
       "name": "رسالة رومية",
       "testament": "NT",
       "id": "Resalet-Romya",
+      "book_id": "ROM",
       "type": "new",
       "chapters": 16,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/45-Resalet-Romya"
@@ -420,6 +472,7 @@
       "name": "رسالة كورنثوس الأولى",
       "testament": "NT",
       "id": "Resalet-Korinthos-Al-Oola",
+      "book_id": "1CO",
       "type": "new",
       "chapters": 16,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/46-Resalet-Korinthos-Al-Oola"
@@ -428,6 +481,7 @@
       "name": "رسالة كورنثوس الثانية",
       "testament": "NT",
       "id": "Resalet-Korinthos-Al-Thania",
+      "book_id": "2CO",
       "type": "new",
       "chapters": 13,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/47-Resalet-Korinthos-Al-Thania"
@@ -436,6 +490,7 @@
       "name": "رسالة غلاطية",
       "testament": "NT",
       "id": "Resalet-Galatia",
+      "book_id": "GAL",
       "type": "new",
       "chapters": 6,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/48-Resalet-Galatia"
@@ -444,6 +499,7 @@
       "name": "رسالة أفسس",
       "testament": "NT",
       "id": "Resalet-Efessos",
+      "book_id": "EPH",
       "type": "new",
       "chapters": 6,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/49-Resalet-Efessos"
@@ -452,6 +508,7 @@
       "name": "رسالة فيلبي",
       "testament": "NT",
       "id": "Resalet-Philipy",
+      "book_id": "PHP",
       "type": "new",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/50-Resalet-Philipy"
@@ -460,6 +517,7 @@
       "name": "رسالة كولوسي",
       "testament": "NT",
       "id": "Resalet-Colossi",
+      "book_id": "COL",
       "type": "new",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/51-Resalet-Colossi"
@@ -468,6 +526,7 @@
       "name": "رسالة تسالونيكي الأولى",
       "testament": "NT",
       "id": "Resalet-Thessaloniki-Al-Oola",
+      "book_id": "1TH",
       "type": "new",
       "chapters": 5,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/52-Resalet-Thessaloniki-Al-Oola"
@@ -476,6 +535,7 @@
       "name": "رسالة تسالونيكي الثانية",
       "testament": "NT",
       "id": "Resalet-Thessaloniki-Al-Thania",
+      "book_id": "2TH",
       "type": "new",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/53-Resalet-Thessaloniki-Al-Thania"
@@ -484,6 +544,7 @@
       "name": "رسالة تيموثاوس الأولى",
       "testament": "NT",
       "id": "Resalet-Timothaous-Al-Oola",
+      "book_id": "1TI",
       "type": "new",
       "chapters": 6,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/54-Resalet-Timothaous-Al-Oola"
@@ -492,6 +553,7 @@
       "name": "رسالة تيموثاوس الثانية",
       "testament": "NT",
       "id": "Resalet-Timothaous-Al-Thania",
+      "book_id": "2TI",
       "type": "new",
       "chapters": 4,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/55-Resalet-Timothaous-Al-Thania"
@@ -500,6 +562,7 @@
       "name": "رسالة تيطس",
       "testament": "NT",
       "id": "Resalet-Titus",
+      "book_id": "TIT",
       "type": "new",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/56-Resalet-Titus"
@@ -508,6 +571,7 @@
       "name": "رسالة فليمون",
       "testament": "NT",
       "id": "Resalet-Philemon",
+      "book_id": "PHM",
       "type": "new",
       "chapters": 1,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/57-Resalet-Philemon"
@@ -516,6 +580,7 @@
       "name": "رسالة العبرانيين",
       "testament": "NT",
       "id": "Resalet-Al-Ebranyeen",
+      "book_id": "HEB",
       "type": "new",
       "chapters": 13,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/58-Resalet-Al-Ebranyeen"
@@ -524,6 +589,7 @@
       "name": "رسالة يعقوب",
       "testament": "NT",
       "id": "Resalet-Ya3koub",
+      "book_id": "JAS",
       "type": "new",
       "chapters": 5,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/59-Resalet-Ya3koub"
@@ -532,6 +598,7 @@
       "name": "رسالة بطرس الأولى",
       "testament": "NT",
       "id": "Resalet-Botros-Al-Oola",
+      "book_id": "1PE",
       "type": "new",
       "chapters": 5,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/60-Resalet-Botros-Al-Oola"
@@ -540,6 +607,7 @@
       "name": "رسالة بطرس الثانية",
       "testament": "NT",
       "id": "Resalet-Botros-Al-Thania",
+      "book_id": "2PE",
       "type": "new",
       "chapters": 3,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/61-Resalet-Botros-Al-Thania"
@@ -548,6 +616,7 @@
       "name": "رسالة يوحنا الأولى",
       "testament": "NT",
       "id": "Resalet-Youhanna-Al-Oola",
+      "book_id": "1JN",
       "type": "new",
       "chapters": 5,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/62-Resalet-Youhanna-Al-Oola"
@@ -556,6 +625,7 @@
       "name": "رسالة يوحنا الثانية",
       "testament": "NT",
       "id": "Resalet-Youhanna-Al-Thania",
+      "book_id": "2JN",
       "type": "new",
       "chapters": 1,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/63-Resalet-Youhanna-Al-Thania"
@@ -564,6 +634,7 @@
       "name": "رسالة يوحنا الثالثة",
       "testament": "NT",
       "id": "Resalet-Youhanna-Al-Thaletha",
+      "book_id": "3JN",
       "type": "new",
       "chapters": 1,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/64-Resalet-Youhanna-Al-Thaletha"
@@ -572,6 +643,7 @@
       "name": "رسالة يهوذا",
       "testament": "NT",
       "id": "Resalet-Yahouza",
+      "book_id": "JUD",
       "type": "new",
       "chapters": 1,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/65-Resalet-Yahouza"
@@ -580,6 +652,7 @@
       "name": "رؤيا يوحنا اللاهوتي",
       "testament": "NT",
       "id": "Sefr-Al-Rooya",
+      "book_id": "REV",
       "type": "new",
       "chapters": 22,
       "urlBase": "Holy-Bible-Tafsir-02-New-Testament/Father-Tadros-Yacoub-Malaty/66-Sefr-Al-Rooya"
@@ -697,7 +770,7 @@
     { "name": "Marc", "testament": "NT" },
     { "name": "Luc", "testament": "NT" },
     { "name": "Jean", "testament": "NT" },
-    { "name": "Actes des Apôtres", "testament": "NT" },
+    { "name": "Actes des Apótres", "testament": "NT" },
     { "name": "Romains", "testament": "NT" },
     { "name": "1 Corinthiens", "testament": "NT" },
     { "name": "2 Corinthiens", "testament": "NT" },

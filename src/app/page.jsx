@@ -11,7 +11,6 @@ import { db, getFirebaseRemoteConfig } from '../lib/firebase';
 import { fetchAndActivate, getValue } from "firebase/remote-config";
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'react-hot-toast';
-import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import {
     BookOpenText, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
@@ -169,7 +168,6 @@ const LandingPage = () => {
     };
 
     useEffect(() => {
-        if (Capacitor.isNativePlatform()) CapacitorUpdater.notifyAppReady();
 
         let unsubSnap = null;
         const unsubAuth = auth?.onAuthStateChanged((u) => {

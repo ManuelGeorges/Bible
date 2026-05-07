@@ -25,7 +25,6 @@ dependencies {
     implementation project(':capacitor-toast')
     implementation project(':capawesome-capacitor-app-review')
     implementation project(':capawesome-capacitor-app-update')
-    implementation project(':capgo-capacitor-updater')
     implementation project(':capacitor-native-settings')
 
 }

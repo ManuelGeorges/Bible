@@ -28,7 +28,6 @@
     "@capacitor/toast": "^8.0.1",
     "@capawesome/capacitor-app-review": "^8.0.1",
     "@capawesome/capacitor-app-update": "^8.0.3",
-    "@capgo/capacitor-updater": "^8.45.0",
     "@deck.gl/layers": "^9.1.14",
     "@deck.gl/react": "^9.1.14",
     "@google/generative-ai": "^0.24.1",

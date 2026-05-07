@@ -9,10 +9,11 @@ import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import BibleNavModal from '../../components/BibleNavModal';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
+import { useAudio } from '../context/AudioContext';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -29,10 +30,29 @@ function convertToArabicNumber(num) {
   return num.toString().split('').map(d => arabicNums[+d] || d).join('');
 }
 
+const variants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 50 : direction < 0 ? -50 : 0,
+    opacity: 0,
+  }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction) => ({
+    x: direction < 0 ? 50 : direction > 0 ? -50 : 0,
+    opacity: 0,
+  }),
+};
+
 export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
+
+  // Audio Context integration
+  const {
+    playTrack, isPlaying, currentVerseId, setIsPanelOpen,
+    audioUrl: globalAudioUrl, setTimestamps, setNavigationCallback,
+    isAutoNext
+  } = useAudio();
 
   const [user, setUser] = useState(null);
   const [bibleData, setBibleData] = useState(null);
@@ -42,6 +62,7 @@ export default function BibleContent() {
   const [completedChapters, setCompletedChapters] = useState({});
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
 
   const [isNavModalOpen, setIsNavModalOpen] = useState(false);
   const [selectedVerses, setSelectedVerses] = useState([]);
@@ -52,6 +73,7 @@ export default function BibleContent() {
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState('');
   const [targetVerseKey, setTargetVerseKey] = useState(null);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
 
   const lastTap = useRef(0);
   const tapCount = useRef(0);
@@ -77,7 +99,7 @@ export default function BibleContent() {
 
   const saveLastRead = useCallback(async (bookIdx, chapIdx) => {
     if (!bookNamesData[bookIdx]) return;
-    
+
     const lastReadData = {
       bookIndex: bookIdx,
       chapterIndex: chapIdx,
@@ -96,6 +118,130 @@ export default function BibleContent() {
       }
     }
   }, [user, bookNamesData]);
+
+  // Audio: Register navigation callback for Global Player
+  useEffect(() => {
+    const handleChapterNav = (dir) => {
+        const chapters = bibleData?.[selectedBookIndex]?.chapters || [];
+        const nextChapter = selectedChapterIndex + dir;
+
+        if (nextChapter >= 0 && nextChapter < chapters.length) {
+            setDirection(dir);
+            setSelectedChapterIndex(nextChapter);
+            return true;
+        } else if (dir > 0 && selectedBookIndex < bookNamesData.length - 1) {
+            setDirection(1);
+            setSelectedBookIndex(prev => prev + 1);
+            setSelectedChapterIndex(0);
+            return true;
+        } else if (dir < 0 && selectedBookIndex > 0) {
+            setDirection(-1);
+            setSelectedBookIndex(prev => prev - 1);
+            const prevBookChapters = bibleData?.[selectedBookIndex - 1]?.chapters || [];
+            setSelectedChapterIndex(Math.max(0, prevBookChapters.length - 1));
+            return true;
+        }
+        return false;
+    };
+
+    setNavigationCallback(() => handleChapterNav);
+    return () => setNavigationCallback(null);
+  }, [bibleData, selectedBookIndex, selectedChapterIndex, bookNamesData, setNavigationCallback]);
+
+  // Audio: Sync Highlight Scrolling
+  useEffect(() => {
+    if (currentVerseId !== -1) {
+      const element = document.getElementById(`verse-${currentVerseId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentVerseId]);
+
+  const fetchAudioData = useCallback(async (bookIdx, chapIdx) => {
+    const book = bookNamesData[bookIdx];
+    if (!book || !book.book_id || !bibleData) return;
+
+    setIsAudioLoading(true);
+    const chapter = chapIdx + 1;
+    const audioFilesetId = book.type === 'new' ? 'ARZVDVN1DA' : 'ARZVDVO1DA';
+    const timingFilesetId = book.type === 'new' ? 'ARZVDVN1DA' : 'ARZVDVO1DA';
+    const key = '5e4b1535-5f2b-4f13-9032-9db0297664a6';
+
+    const audioUrlRequest = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
+    const timestampUrl = `https://4.dbt.io/api/timestamps/${timingFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
+
+    try {
+      const [audioRes, timeRes] = await Promise.allSettled([
+        fetch(audioUrlRequest),
+        fetch(timestampUrl)
+      ]);
+
+      let url = null;
+      let times = [];
+
+      if (audioRes.status === 'fulfilled' && audioRes.value.ok) {
+        const audioData = await audioRes.value.json();
+        url = audioData.data?.[0]?.path;
+      }
+
+      if (timeRes.status === 'fulfilled' && timeRes.value.ok) {
+        const timeData = await timeRes.value.json();
+        times = timeData.data || (Array.isArray(timeData) ? timeData : []);
+      }
+
+      if (url) {
+        const title = `عادل نصحي - ${book.name} ${convertToArabicNumber(chapter)}`;
+        return { url, title, times };
+      }
+    } catch (error) {
+      console.error("Fetch error", error);
+    } finally {
+      setIsAudioLoading(false);
+    }
+    return null;
+  }, [bookNamesData, bibleData]);
+
+  // Audio: Handle automatic audio update when chapter changes
+  useEffect(() => {
+    const syncAudio = async () => {
+        if (!isLoading && bookNamesData.length > 0) {
+            const book = bookNamesData[selectedBookIndex];
+            const chapter = selectedChapterIndex + 1;
+
+            const isCurrentlyPlayingThis = globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`);
+
+            if (isCurrentlyPlayingThis) {
+                const data = await fetchAudioData(selectedBookIndex, selectedChapterIndex);
+                if (data) setTimestamps(data.times);
+            } else if (isPlaying || isAutoNext) {
+                const data = await fetchAudioData(selectedBookIndex, selectedChapterIndex);
+                if (data) {
+                    playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex);
+                }
+            }
+        }
+    };
+    syncAudio();
+  }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, fetchAudioData, globalAudioUrl, isPlaying, isAutoNext, playTrack, setTimestamps]);
+
+  const handleAudioButtonClick = async () => {
+    if (isAudioLoading) return;
+
+    const book = bookNamesData[selectedBookIndex];
+    const chapter = selectedChapterIndex + 1;
+
+    if (globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`)) {
+      setIsPanelOpen(true);
+    } else {
+      const data = await fetchAudioData(selectedBookIndex, selectedChapterIndex);
+      if (data) {
+        playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex);
+      } else {
+        toast.error("الأوديو غير متوفر لهذا الإصحاح");
+      }
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && bookNamesData.length > 0) {
@@ -126,7 +272,7 @@ export default function BibleContent() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
-      
+
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
       } else {
@@ -164,7 +310,7 @@ export default function BibleContent() {
     const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
     const verseLabel = convertToArabicNumber(index + 1);
     const bookName = getBookName(selectedBookIndex);
-    const rlm = "\u200F"; 
+    const rlm = "\u200F";
     const fullText = `${text} ${rlm}(${bookName} ${verseLabel}:${chapterLabel})`;
 
     try {
@@ -214,7 +360,7 @@ export default function BibleContent() {
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch('/data/bibles/ar_svd.json').then(r => r.json())
         ]);
-        
+
         const names = namesRes.ar || [];
         setBookNamesData(names);
         setBibleData(bibleRes);
@@ -263,7 +409,7 @@ export default function BibleContent() {
   const copyVerse = (text, index) => {
     const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
     const verseLabel = convertToArabicNumber(index + 1);
-    const rlm = "\u200F"; 
+    const rlm = "\u200F";
     const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${verseLabel}:${chapterLabel})`;
     navigator.clipboard.writeText(fullText);
     setCopiedMessage('تم النسخ');
@@ -279,10 +425,10 @@ export default function BibleContent() {
     const bookName = getBookName(selectedBookIndex);
     const sortedVerses = [...selectedVerses].sort((a, b) => a.index - b.index);
     const versesText = sortedVerses.map(sv => sv.text).join(' ');
-    let verseRange = sortedVerses.length === 1 
+    let verseRange = sortedVerses.length === 1
       ? convertToArabicNumber(sortedVerses[0].index + 1)
       : `${convertToArabicNumber(sortedVerses[0].index + 1)} - ${convertToArabicNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
-    
+
     const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
     navigator.clipboard.writeText(fullText);
     setCopiedMessage('تم النسخ بدقة ✨');
@@ -439,6 +585,8 @@ export default function BibleContent() {
         bibleData={bibleData}
         selectedBookIndex={selectedBookIndex}
         onSelectLocation={(bookIdx, chapterIdx) => {
+          const isForward = (bookIdx > selectedBookIndex) || (bookIdx === selectedBookIndex && chapterIdx > selectedChapterIndex);
+          setDirection(isForward ? 1 : -1);
           setSelectedBookIndex(bookIdx);
           setSelectedChapterIndex(chapterIdx);
           setSelectedVerses([]);
@@ -459,7 +607,7 @@ export default function BibleContent() {
       )}
 
       <h1 className={styles.title}>الكتاب المقدس</h1>
-      
+
       <div className={styles.controls}>
         <button className={styles.navigationDisplay} onClick={() => setIsNavModalOpen(true)}>
           <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
@@ -470,39 +618,42 @@ export default function BibleContent() {
 
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" custom={direction}>
         <motion.div 
-          key={`${selectedBookIndex}-${selectedChapterIndex}`} 
-          initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
+          key={`${selectedBookIndex}-${selectedChapterIndex}`}
+          custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
+          transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
           className={styles.verseContainer}
           style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
         >
           <div className={styles.chapterHeader}>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
-
           </div>
-          
+
           <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
             {verses.map((v, i) => {
+              const verseNumber = (i + 1).toString();
               const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
               const annotation = favouriteVerses[key];
               const isSelected = selectedVerses.some(sv => sv.index === i);
+              const isReading = String(currentVerseId) === verseNumber;
               return (
                 <span
-                  key={i} id={`verse-${i}`}
-                  className={`${styles.inlineVerse} ${isSelected ? styles.selectedVerse : ''} ${activeMenu === key ? styles.active : ''}`}
+                  key={i} id={`verse-${verseNumber}`}
+                  className={`${styles.inlineVerse} ${isSelected ? styles.selectedVerse : ''} ${isReading ? styles.readingHighlight : ''} ${activeMenu === key ? styles.active : ''}`}
                   onTouchStart={(e) => handleTouchStart(e, v, i)} onTouchMove={handleTouchMove} onTouchEnd={(e) => handleTouchEnd(e, v, i)}
                   onContextMenu={(e) => e.preventDefault()}
-                  onClick={() => { 
+                  onClick={() => {
                     if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
                         toggleVerseSelection(v, i);
                     }
                   }}
                   style={{
-                    backgroundColor: annotation?.color ? `${annotation.color}66` : 'transparent',
+                    backgroundColor: isReading ? '#ffd54f' : (annotation?.color ? `${annotation.color}66` : 'transparent'),
                     display: versePerLine ? 'block' : 'inline',
                     marginBottom: versePerLine ? '15px' : '0',
-                    padding: '2px 4px', borderRadius: '4px', position: 'relative'
+                    padding: '2px 4px', borderRadius: '4px', position: 'relative',
+                    transition: 'background-color 0.3s ease'
                   }}
                 >
                   <span className={styles.styledVerseNumber}>{convertToArabicNumber(i + 1)}</span>
@@ -516,50 +667,66 @@ export default function BibleContent() {
       </AnimatePresence>
 
       <div className={styles.navigation}>
-        <button disabled={selectedChapterIndex === 0} onClick={() => { setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); }}> « </button>
-        <button onClick={async () => {
-          if (!user) { router.push('/intro'); return; }
-          const key = `${selectedBookIndex}-${selectedChapterIndex}`;
-          if (completedChapters[key]) {
-            const next = { ...completedChapters, [key]: false };
-            setCompletedChapters(next);
-            saveToFirestore(favouriteVerses, next);
-            updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
-            toast.error("تم إلغاء تحديد الإصحاح"); 
-          } else {
-            const next = { ...completedChapters, [key]: true };
-            setCompletedChapters(next);
-            saveToFirestore(favouriteVerses, next);
-            updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
+        <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); }}> « </button>
 
-            const completedCount = Object.keys(next).filter(k => next[k]).length;
-            if (completedCount >= 10) unlockBadge('reader_10');
-            if (completedCount >= 50) unlockBadge('reader_50');
-            if (completedCount >= 100) unlockBadge('reader_100');
-            if (completedCount >= 250) unlockBadge('reader_250');
-            if (completedCount >= 500) unlockBadge('reader_500');
-            if (completedCount >= 594) unlockBadge('reader_594');
-            if (completedCount >= 1189) unlockBadge('bible_finisher');
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <button
+            onClick={handleAudioButtonClick}
+            disabled={isAudioLoading}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {isAudioLoading ? (
+              <Loader2 size={28} className={styles.spinning} />
+            ) : (
+              <Volume2 size={28} color={isPlaying ? "#FFC107" : "var(--color-text-primary)"} />
+            )}
+          </button>
 
-            const otChapters = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + b.chapters, 0);
-            const ntChapters = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + b.chapters, 0);
+          <button onClick={async () => {
+            if (!user) { router.push('/intro'); return; }
+            const key = `${selectedBookIndex}-${selectedChapterIndex}`;
+            if (completedChapters[key]) {
+              const next = { ...completedChapters, [key]: false };
+              setCompletedChapters(next);
+              saveToFirestore(favouriteVerses, next);
+              updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
+              toast.error("تم إلغاء تحديد الإصحاح");
+            } else {
+              const next = { ...completedChapters, [key]: true };
+              setCompletedChapters(next);
+              saveToFirestore(favouriteVerses, next);
+              updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
 
-            const otCompleted = Object.keys(next).filter(k => {
-              const bookIdx = parseInt(k.split('-')[0]);
-              return next[k] && bookNamesData[bookIdx]?.type === 'old';
-            }).length;
-            const ntCompleted = Object.keys(next).filter(k => {
-              const bookIdx = parseInt(k.split('-')[0]);
-              return next[k] && bookNamesData[bookIdx]?.type === 'new';
-            }).length;
+              const completedCount = Object.keys(next).filter(k => next[k]).length;
+              if (completedCount >= 10) unlockBadge('reader_10');
+              if (completedCount >= 50) unlockBadge('reader_50');
+              if (completedCount >= 100) unlockBadge('reader_100');
+              if (completedCount >= 250) unlockBadge('reader_250');
+              if (completedCount >= 500) unlockBadge('reader_500');
+              if (completedCount >= 594) unlockBadge('reader_594');
+              if (completedCount >= 1189) unlockBadge('bible_finisher');
 
-            if (otCompleted === otChapters) unlockBadge('testament_old');
-            if (ntCompleted === ntChapters) unlockBadge('testament_new');
-          }
-        }}>
-          {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? '✅' : '✔️'}
-        </button>
-        <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => { setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
+              const otChapters = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
+              const ntChapters = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
+
+              const otCompleted = Object.keys(next).filter(k => {
+                const bookIdx = parseInt(k.split('-')[0]);
+                return next[k] && bookNamesData[bookIdx]?.type === 'old';
+              }).length;
+              const ntCompleted = Object.keys(next).filter(k => {
+                const bookIdx = parseInt(k.split('-')[0]);
+                return next[k] && bookNamesData[bookIdx]?.type === 'new';
+              }).length;
+
+              if (otCompleted === otChapters && otChapters > 0) unlockBadge('testament_old');
+              if (ntCompleted === ntChapters && ntChapters > 0) unlockBadge('testament_new');
+            }
+          }}>
+            {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? <CircleCheck size={28} color="#4CAF50" /> : <Check size={28} opacity={0.6} />}
+          </button>
+        </div>
+
+        <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
       </div>
     </div>
   );

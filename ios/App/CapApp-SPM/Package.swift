@@ -27,7 +27,6 @@ let package = Package(
         .package(name: "CapacitorToast", path: "..\..\..\node_modules\@capacitor\toast"),
         .package(name: "CapawesomeCapacitorAppReview", path: "..\..\..\node_modules\@capawesome\capacitor-app-review"),
         .package(name: "CapawesomeCapacitorAppUpdate", path: "..\..\..\node_modules\@capawesome\capacitor-app-update"),
-        .package(name: "CapgoCapacitorUpdater", path: "..\..\..\node_modules\@capgo\capacitor-updater"),
         .package(name: "CapacitorNativeSettings", path: "..\..\..\node_modules\capacitor-native-settings")
     ],
     targets: [
@@ -51,7 +50,6 @@ let package = Package(
                 .product(name: "CapacitorToast", package: "CapacitorToast"),
                 .product(name: "CapawesomeCapacitorAppReview", package: "CapawesomeCapacitorAppReview"),
                 .product(name: "CapawesomeCapacitorAppUpdate", package: "CapawesomeCapacitorAppUpdate"),
-                .product(name: "CapgoCapacitorUpdater", package: "CapgoCapacitorUpdater"),
                 .product(name: "CapacitorNativeSettings", package: "CapacitorNativeSettings")
             ]
         )

@@ -1,0 +1,264 @@
+.audioPanel {
+  position: fixed;
+  bottom: 95px;
+  left: 15px;
+  right: 15px;
+  background-color: var(--color-card-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--color-border);
+  padding: 20px 22px;
+  border-radius: 30px;
+  z-index: 100000;
+  box-shadow: 0 15px 50px var(--color-shadow-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  direction: rtl;
+  color: var(--color-text-primary);
+}
+
+.audioPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.audioPanelTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 65%;
+}
+
+.iconBtn {
+  background: var(--color-border);
+  border: none;
+  color: var(--color-text-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.iconBtn:active {
+  transform: scale(0.9);
+}
+
+/* Settings Menu Drawer */
+.settingsMenu {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 0;
+  right: 0;
+  background-color: var(--color-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: 25px;
+  padding: 20px;
+  box-shadow: 0 -10px 40px var(--color-shadow-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 100001;
+}
+
+.settingsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  color: var(--color-accent);
+}
+
+.settingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settingLabel {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+}
+
+.volumeSlider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  background: var(--color-border);
+  border-radius: 10px;
+  outline: none;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.settingBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-border);
+  border: 1px solid transparent;
+  padding: 12px 5px;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activeSetting {
+  background: rgba(var(--color-accent), 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.timerChips {
+  display: flex;
+  gap: 8px;
+}
+
+.timerChip {
+  flex: 1;
+  padding: 8px 0;
+  background: var(--color-border);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.activeChip {
+  background: var(--color-accent);
+  color: white;
+  font-weight: bold;
+}
+
+/* Seek Bar RTL */
+.progressBarContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  background: var(--color-border);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+.progressBar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-text-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid var(--color-accent);
+}
+
+.timeDisplay {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-family: 'Cairo', sans-serif;
+  font-weight: bold;
+}
+
+.elapsedTime { color: var(--color-accent); }
+.totalTime { color: var(--color-text-secondary); opacity: 0.7; }
+
+/* Controls */
+.audioMainControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+.panelBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.panelBtn:active {
+  opacity: 0.5;
+}
+
+.playPauseCircle {
+  width: 65px;
+  height: 65px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+.speedSelector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  background: var(--color-border);
+  padding: 5px;
+  border-radius: 20px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.speedChip {
+  padding: 5px 15px;
+  background: transparent;
+  border: none;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  opacity: 0.6;
+}
+
+.speedChipActive {
+  background: var(--color-accent);
+  color: white;
+  opacity: 1;
+}

@@ -9,13 +9,13 @@
         "google.com"
       ]
     },
-"SplashScreen": {
-    "launchShowDuration": 1000, 
-    "launchAutoHide": false, 
-    "backgroundColor": "#0f172a",
-    "androidScaleType": "CENTER_CROP",
-    "showSpinner": false
-  },
+    "SplashScreen": {
+      "launchShowDuration": 1000,
+      "launchAutoHide": false,
+      "backgroundColor": "#f0f4f8",
+      "androidScaleType": "CENTER",
+      "showSpinner": false
+    },
     "CapacitorUpdater": {
       "appId": "com.agios.bible",
       "version": "1.0.3",

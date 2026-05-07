@@ -46,7 +46,11 @@ export const syncNotifications = async () => {
       await Preferences.set({ key: 'studyPlansTime', value: settings.studyPlansTime || '10:00' });
 
       await Preferences.set({ key: 'streakReminder', value: String(settings.streak ?? true) });
+      await Preferences.set({ key: 'streakReminderTime', value: settings.streakTime || '21:00' });
+
       await Preferences.set({ key: 'appSuggestions', value: String(settings.appSuggestions ?? true) });
+      await Preferences.set({ key: 'appSuggestionsTime', value: settings.appSuggestionsTime || '12:00' });
+
       await Preferences.set({ key: 'updateAlerts', value: String(settings.updateAlerts ?? true) });
     }
 

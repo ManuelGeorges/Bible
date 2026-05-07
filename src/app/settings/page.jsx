@@ -27,9 +27,11 @@ const Settings = () => {
     studyPlans: true,
     studyPlansTime: '10:00',
     streak: true,
+    streakTime: '21:00',
     tip: true,
     tipTime: '15:00',
     appSuggestions: true,
+    appSuggestionsTime: '12:00',
     updateAlerts: true
   })
 
@@ -195,9 +197,11 @@ const Settings = () => {
 
         <div className={styles.settingItem}>
           <div className={styles.settingInfo}>
-            <LayoutList size={20} className={styles.iconPrimary} />
             <div className={styles.textContainer}>
-              <span className={styles.settingLabel}>كل آية في سطر مستقل</span>
+              <span className={styles.settingLabel}>
+                <LayoutList size={20} className={styles.iconPrimary} />
+                كل آية في سطر مستقل
+              </span>
               <p className={styles.subText}>عرض النص كقائمة مرتبة بدلاً من فقرة</p>
             </div>
           </div>
@@ -213,8 +217,10 @@ const Settings = () => {
 
         <div className={styles.fontControlGroup}>
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
-            <Type size={20} className={styles.iconPrimary} />
-            <span className={styles.settingLabel}>حجم خط القراءة ({fontSize}px)</span>
+            <span className={styles.settingLabel}>
+              <Type size={20} className={styles.iconPrimary} />
+              حجم خط القراءة ({fontSize}px)
+            </span>
           </div>
 
           <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px` }}>
@@ -269,9 +275,11 @@ const Settings = () => {
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <Bell size={18} />
                   <div className={styles.textContainer}>
-                    <span>آية اليوم</span>
+                    <span className={styles.settingLabel}>
+                      <Bell size={18} />
+                      آية اليوم
+                    </span>
                     <p className={styles.subText}>استلام آية مشجعة يومياً</p>
                   </div>
                 </div>
@@ -301,9 +309,11 @@ const Settings = () => {
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <HelpCircle size={18} />
                   <div className={styles.textContainer}>
-                    <span>سؤال اليوم</span>
+                    <span className={styles.settingLabel}>
+                      <HelpCircle size={18} />
+                      سؤال اليوم
+                    </span>
                     <p className={styles.subText}>تحديات ومسابقات يومية</p>
                   </div>
                 </div>
@@ -333,9 +343,11 @@ const Settings = () => {
             <div className={styles.notificationGroup}>
               <div className={styles.notificationItem}>
                 <div className={styles.notificationInfo}>
-                  <BookOpen size={18} />
                   <div className={styles.textContainer}>
-                    <span>تذكير الخطط الدراسية</span>
+                    <span className={styles.settingLabel}>
+                      <BookOpen size={18} />
+                      تذكير الخطط الدراسية
+                    </span>
                     <p className={styles.subText}>تنبيه بمتابعة ورد القراءة المتبقي</p>
                   </div>
                 </div>
@@ -362,49 +374,81 @@ const Settings = () => {
               </div>
             </div>
 
-            <div className={styles.notificationItem}>
-              <div className={styles.notificationInfo}>
-                <Flame size={18} className={styles.notifIcon} />
-                <div className={styles.textContainer}>
-                  <span>تنبيه حماية الستريك</span>
-                  <p className={styles.subText}>تذكيرك قبل انتهاء اليوم للحفاظ على أيامك</p>
+            <div className={styles.notificationGroup}>
+              <div className={styles.notificationItem}>
+                <div className={styles.notificationInfo}>
+                  <div className={styles.textContainer}>
+                    <span className={styles.settingLabel}>
+                      <Flame size={18} className={styles.notifIcon} />
+                      تنبيه حماية الستريك
+                    </span>
+                    <p className={styles.subText}>تذكيرك قبل انتهاء اليوم للحفاظ على أيامك</p>
+                  </div>
                 </div>
+                <label className={styles.switch}>
+                  <input
+                    type="checkbox"
+                    checked={notifications.streak}
+                    onChange={() => updateSubSetting('streak', !notifications.streak)}
+                    disabled={!masterNotifications}
+                  />
+                  <span className={styles.sliderRound}></span>
+                </label>
               </div>
-              <label className={styles.switch}>
+              <div className={`${styles.timePickerRow} ${!notifications.streak ? styles.dimmed : ''}`}>
+                <Clock size={16} />
+                <span>وقت التنبيه:</span>
                 <input
-                  type="checkbox"
-                  checked={notifications.streak}
-                  onChange={() => updateSubSetting('streak', !notifications.streak)}
-                  disabled={!masterNotifications}
+                  type="time"
+                  value={notifications.streakTime}
+                  onChange={(e) => updateSubSetting('streakTime', e.target.value)}
+                  className={styles.timeInput}
+                  disabled={!notifications.streak}
                 />
-                <span className={styles.sliderRound}></span>
-              </label>
+              </div>
+            </div>
+
+            <div className={styles.notificationGroup}>
+              <div className={styles.notificationItem}>
+                <div className={styles.notificationInfo}>
+                  <div className={styles.textContainer}>
+                    <span className={styles.settingLabel}>
+                      <Sparkles size={18} className={styles.notifIcon} />
+                      اقتراحات ومزايا التطبيق
+                    </span>
+                    <p className={styles.subText}>تعرف على خصائص أجيوس الجديدة</p>
+                  </div>
+                </div>
+                <label className={styles.switch}>
+                  <input
+                    type="checkbox"
+                    checked={notifications.appSuggestions}
+                    onChange={() => updateSubSetting('appSuggestions', !notifications.appSuggestions)}
+                    disabled={!masterNotifications}
+                  />
+                  <span className={styles.sliderRound}></span>
+                </label>
+              </div>
+              <div className={`${styles.timePickerRow} ${!notifications.appSuggestions ? styles.dimmed : ''}`}>
+                <Clock size={16} />
+                <span>وقت التنبيه:</span>
+                <input
+                  type="time"
+                  value={notifications.appSuggestionsTime}
+                  onChange={(e) => updateSubSetting('appSuggestionsTime', e.target.value)}
+                  className={styles.timeInput}
+                  disabled={!notifications.appSuggestions}
+                />
+              </div>
             </div>
 
             <div className={styles.notificationItem}>
               <div className={styles.notificationInfo}>
-                <Sparkles size={18} className={styles.notifIcon} />
                 <div className={styles.textContainer}>
-                  <span>اقتراحات ومزايا التطبيق</span>
-                  <p className={styles.subText}>تعرف على خصائص أجيوس الجديدة</p>
-                </div>
-              </div>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={notifications.appSuggestions}
-                  onChange={() => updateSubSetting('appSuggestions', !notifications.appSuggestions)}
-                  disabled={!masterNotifications}
-                />
-                <span className={styles.sliderRound}></span>
-              </label>
-            </div>
-
-            <div className={styles.notificationItem}>
-              <div className={styles.notificationInfo}>
-                <RefreshCw size={18} className={styles.notifIcon} />
-                <div className={styles.textContainer}>
-                  <span>إشعارات التحديثات</span>
+                  <span className={styles.settingLabel}>
+                    <RefreshCw size={18} className={styles.notifIcon} />
+                    إشعارات التحديثات
+                  </span>
                   <p className={styles.subText}>تنبيه فور توفر نسخة جديدة من التطبيق</p>
                 </div>
               </div>

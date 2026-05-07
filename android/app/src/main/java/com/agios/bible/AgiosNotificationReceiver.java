@@ -238,7 +238,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (low.contains("question")) return "question";
         if (low.contains("streak")) return "streak";
         if (low.contains("study") || low.contains("plan")) return "studyPlans";
-        if (low.contains("tip")) return "tip";
+        if (low.contains("tip") || low.contains("suggestion")) return "tip";
         if (low.contains("update")) return "update";
         return type;
     }
@@ -261,6 +261,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         scheduleAlarm(context, "studyPlans", 10, 0);
         scheduleAlarm(context, "streakReminder", 21, 0);
         scheduleAlarm(context, "tip", 15, 0);
+        // إضافة إشعار الاقتراحات باسمه الجديد أيضاً لضمان الدقة
+        scheduleAlarm(context, "appSuggestions", 12, 0);
         // إعادة تفعيل فحص التحديثات يومياً الساعة 12 ظهراً
         scheduleAlarm(context, "updateAlerts", 12, 0);
     }
@@ -283,7 +285,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (!jsonStr.isEmpty()) {
             try {
                 JSONObject json = new JSONObject(jsonStr);
+                // محاولة البحث عن الوقت بالمسمى المختصر (مثل streakTime) أو المسمى الكامل
                 savedTime = json.optString(norm + "Time", json.optString(type + "Time", ""));
+
                 if (json.has(norm)) enabled = json.optBoolean(norm, true);
                 else if (json.has(type)) enabled = json.optBoolean(type, true);
             } catch (Exception e) { e.printStackTrace(); }
