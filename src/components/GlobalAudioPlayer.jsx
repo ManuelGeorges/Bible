@@ -34,28 +34,30 @@ export default function GlobalAudioPlayer() {
         <AnimatePresence>
             <motion.div
                 className={styles.audioPanel}
-                initial={{ y: '100%', opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: '100%', opacity: 0 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                 dir="rtl"
             >
-                {/* Settings Overlay */}
+                {/* Settings Overlay - Opens ON TOP of the controls */}
                 <AnimatePresence>
                     {showSettings && (
                         <motion.div
                             className={styles.settingsMenu}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                         >
                             <div className={styles.settingsHeader}>
                                 <span>إعدادات التشغيل</span>
-                                <button onClick={() => setShowSettings(false)}><X size={18}/></button>
+                                <button className={styles.iconBtn} onClick={() => setShowSettings(false)}>
+                                    <X size={18}/>
+                                </button>
                             </div>
 
                             <div className={styles.settingItem}>
-                                <div className={styles.settingLabel}><Volume2 size={18}/> مستوى الصوت</div>
+                                <div className={styles.settingLabel}><Volume2 size={16}/> مستوى الصوت</div>
                                 <input
                                     type="range" min="0" max="1" step="0.05"
                                     value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))}
@@ -68,26 +70,25 @@ export default function GlobalAudioPlayer() {
                                     className={`${styles.settingBtn} ${isRepeat ? styles.activeSetting : ''}`}
                                     onClick={() => setIsRepeat(!isRepeat)}
                                 >
-                                    <Repeat size={18}/> {isRepeat ? 'التكرار مفعل' : 'تكرار'}
+                                    <Repeat size={18}/> <span>تكرار</span>
                                 </button>
                                 <button
                                     className={`${styles.settingBtn} ${isAutoPlay ? styles.activeSetting : ''}`}
                                     onClick={() => setIsAutoPlay(!isAutoPlay)}
                                 >
-                                    <ListEnd size={18}/> {isAutoPlay ? 'تلقائي مفعل' : 'تشغيل تلقائي'}
+                                    <ListEnd size={18}/> <span>تلقائي</span>
                                 </button>
                                 <button
                                     className={`${styles.settingBtn} ${isHighlightEnabled ? styles.activeSetting : ''}`}
                                     onClick={() => setIsHighlightEnabled(!isHighlightEnabled)}
                                 >
-                                    <Highlighter size={18}/> {isHighlightEnabled ? 'تلوين الآية' : 'بدون تلوين'}
+                                    <Highlighter size={18}/> <span>تلوين</span>
                                 </button>
                             </div>
 
                             <div className={styles.sleepTimerSection}>
-                                <div className={styles.settingLabel}><Clock size={18}/> مؤقت النوم</div>
                                 <div className={styles.timerChips}>
-                                    {[null, 15, 30, 45, 60].map(m => (
+                                    {[null, 15, 30, 60].map(m => (
                                         <button
                                             key={m}
                                             className={`${styles.timerChip} ${sleepTimer === m ? styles.activeChip : ''}`}
@@ -97,20 +98,20 @@ export default function GlobalAudioPlayer() {
                                         </button>
                                     ))}
                                 </div>
-                                {timeLeft && <div className={styles.timeLeft}>سيتوقف خلال: {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}</div>}
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
+                {/* Main Audio Player Content */}
                 <div className={styles.audioPanelHeader}>
                     <span className={styles.audioPanelTitle}>{trackTitle}</span>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button className={styles.iconBtn} onClick={() => setShowSettings(!showSettings)}>
-                            <Settings size={20} color={showSettings ? "var(--color-accent)" : "currentColor"}/>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className={styles.iconBtn} onClick={() => setShowSettings(true)}>
+                            <Settings size={18} />
                         </button>
                         <button className={styles.iconBtn} onClick={() => setIsPanelOpen(false)}>
-                            <X size={20}/>
+                            <X size={18}/>
                         </button>
                     </div>
                 </div>
@@ -120,7 +121,7 @@ export default function GlobalAudioPlayer() {
                         type="range" min="0" max={duration || 0} step="0.1"
                         value={currentTime} onChange={(e) => seek(parseFloat(e.target.value))}
                         className={styles.progressBar}
-                        style={{ background: `linear-gradient(to left, var(--color-accent) ${progressPercent}%, rgba(255,255,255,0.1) ${progressPercent}%)` }}
+                        style={{ background: `linear-gradient(to left, var(--color-accent) ${progressPercent}%, var(--color-border) ${progressPercent}%)` }}
                     />
                     <div className={styles.timeDisplay}>
                         <span className={styles.elapsedTime}>{formatTime(currentTime)}</span>
@@ -129,28 +130,24 @@ export default function GlobalAudioPlayer() {
                 </div>
 
                 <div className={styles.audioMainControls}>
-                    {/* السابق (جهة اليمين) - الأيقونة تشير لليمين (الماضي) */}
-                    <button className={styles.panelBtn} onClick={() => goToChapter(-1)} title="الإصحاح السابق">
-                        <SkipBack size={26} style={{ transform: 'scaleX(-1)' }} />
+                    <button className={styles.panelBtn} onClick={() => goToChapter(-1)}>
+                        <SkipBack size={24} style={{ transform: 'scaleX(-1)' }} />
                     </button>
 
-                    {/* تأخير ١٠ ثواني (جهة اليمين) - السهم يلف لليمين */}
-                    <button className={styles.panelBtn} onClick={() => skip(-10)} title="رجوع ١٠ ثواني">
-                        <RotateCcw size={26} style={{ transform: 'scaleX(-1)' }} />
+                    <button className={styles.panelBtn} onClick={() => skip(-10)}>
+                        <RotateCcw size={24} style={{ transform: 'scaleX(-1)' }} />
                     </button>
 
                     <button className={styles.playPauseCircle} onClick={togglePlay}>
-                        {isPlaying ? <Pause size={35} fill="white"/> : <Play size={35} fill="white" style={{ marginRight: '5px' }}/>}
+                        {isPlaying ? <Pause size={30} fill="white"/> : <Play size={30} fill="white" style={{ marginRight: '4px' }}/>}
                     </button>
 
-                    {/* تقديم ١٠ ثواني (جهة اليسار) - السهم يلف لليسار */}
-                    <button className={styles.panelBtn} onClick={() => skip(10)} title="تقديم ١٠ ثواني">
-                        <RotateCw size={26} style={{ transform: 'scaleX(-1)' }} />
+                    <button className={styles.panelBtn} onClick={() => skip(10)}>
+                        <RotateCw size={24} style={{ transform: 'scaleX(-1)' }} />
                     </button>
 
-                    {/* القادم (جهة اليسار) - الأيقونة تشير لليسار (المستقبل) */}
-                    <button className={styles.panelBtn} onClick={() => goToChapter(1)} title="الإصحاح التالي">
-                        <SkipForward size={26} style={{ transform: 'scaleX(-1)' }} />
+                    <button className={styles.panelBtn} onClick={() => goToChapter(1)}>
+                        <SkipForward size={24} style={{ transform: 'scaleX(-1)' }} />
                     </button>
                 </div>
 

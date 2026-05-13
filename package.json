@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@capacitor-community/electron": "^5.0.1",
     "@capacitor-community/firebase-crashlytics": "^3.0.0",
     "@capacitor-community/keep-awake": "^8.0.0",
     "@capacitor-community/media": "^9.1.0",

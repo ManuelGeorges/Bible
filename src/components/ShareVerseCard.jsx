@@ -45,12 +45,14 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
   const generateImage = async () => {
     if (!templateRef.current) return null;
     try {
-      return await toPng(templateRef.current, { 
+      // إعدادات محسنة لـ Electron لضمان التقاط الصور بشكل صحيح
+      return await toPng(templateRef.current, {
         cacheBust: true,
         pixelRatio: 2,
+        skipFonts: false,
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error generating image:", err);
       return null;
     }
   };
@@ -59,12 +61,30 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
     setIsProcessing(true);
     try {
       const dataUrl = await generateImage();
-      if (!dataUrl) throw new Error();
+      if (!dataUrl) throw new Error("Image generation failed");
 
       const fileName = `Agios-${Date.now()}.png`;
       const base64Data = dataUrl.split(',')[1];
+      const platform = Capacitor.getPlatform();
 
-      if (Capacitor.isNativePlatform()) {
+      // التعامل مع Electron كحالة خاصة أو كمتصفح
+      if (platform === 'electron' || platform === 'web') {
+        if (type === 'share' && navigator.share) {
+          const blob = await fetch(dataUrl).then(res => res.blob());
+          const file = new File([blob], fileName, { type: 'image/png' });
+          await navigator.share({ files: [file], title: 'آية اليوم' });
+        } else {
+          // التحميل في Electron يعمل بشكل ممتاز عبر وسم <a>
+          const link = document.createElement('a');
+          link.download = fileName;
+          link.href = dataUrl;
+          link.click();
+          await showToast('بدأ تحميل الصورة...');
+        }
+        if (onShareSuccess) onShareSuccess();
+      }
+      // التعامل مع موبايل (Android/iOS)
+      else {
         const cacheFile = await Filesystem.writeFile({
           path: fileName,
           data: base64Data,
@@ -80,6 +100,7 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
           if (onShareSuccess) onShareSuccess();
         } else {
+          // حفظ دائم في مجلد الصور للموبايل
           const permanentFile = await Filesystem.writeFile({
             path: `Pictures/${fileName}`,
             data: base64Data,
@@ -90,19 +111,6 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
             window.AgiosScannerNative.scanFile(decodeURI(permanentFile.uri.replace('file://', '')));
           }
           await showToast('تم حفظ الآية في المعرض بنجاح');
-          if (onShareSuccess) onShareSuccess();
-        }
-      } else {
-        if (type === 'share' && navigator.share) {
-          const blob = await fetch(dataUrl).then(res => res.blob());
-          const file = new File([blob], 'verse.png', { type: 'image/png' });
-          await navigator.share({ files: [file], title: 'آية اليوم' });
-          if (onShareSuccess) onShareSuccess();
-        } else {
-          const link = document.createElement('a');
-          link.download = fileName;
-          link.href = dataUrl;
-          link.click();
           if (onShareSuccess) onShareSuccess();
         }
       }
@@ -116,12 +124,13 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
 
   return (
     <div className={styles.container}>
+      {/* تأكد أن هذا الجزء غير مخفي بـ display: none بل موجود خارج الشاشة فقط */}
       <div className={styles.offscreen} aria-hidden="true">
         <div ref={templateRef} className={styles.cardTemplate} style={{ background: themeColors.bg }}>
            <div className={styles.innerContent} style={{ backgroundColor: themeColors.card, borderColor: themeColors.border }}>
              <div className={styles.header}><h2 className={styles.appLogo} style={{ color: themeColors.accent }}>AGIOS BIBLE</h2></div>
              <div className={styles.body}><p className={styles.mainVerse} style={{ color: themeColors.text }}>"{verse}"</p></div>
-             <div className={styles.footer}><p className={styles.mainRef} style={{ color: themeColors.secondary }}>({reference})</p></div>
+             <div className={styles.footer}><p className={styles.mainRef} style={{ color: themeColors.secondary }}>{reference}</p></div>
            </div>
         </div>
       </div>

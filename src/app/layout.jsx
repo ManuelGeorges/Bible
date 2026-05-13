@@ -35,7 +35,7 @@ export const metadata = {
   keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس , Bible study, دراسة الكتاب المقدس, آية اليوم, Verse of the day, خرائط الكتاب المقدس, Bible maps, خطط دراسة الكتاب المقدس, Bible study plans, مسابقات الكتاب المقدس, Bible quizzes, البحث في الكتاب المقدس, Bible search, كتب مسيحية, Christian books'],
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default', // Solid like WhatsApp
     title: 'Agios Bible',
   },
   openGraph: {
@@ -62,51 +62,52 @@ export const metadata = {
   verification: {
     google: 'JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY',
   },
+  other: {
+    'Content-Security-Policy': "default-src 'self' capacitor-electron://* 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https://*.googleapis.com https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <meta name="color-scheme" content="light dark" />
         <script
           dangerouslySetInnerHTML={{
-             __html: `
-               (function() {
-                 try {
-                   var savedTheme = localStorage.getItem('theme');
-                   var savedSize = localStorage.getItem('bibleFontSize');
+            __html: `
+(function() {
+  try {
+    var savedTheme = localStorage.getItem('theme');
+    var theme = savedTheme;
+    if (!theme || theme === 'system') {
+      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
 
-                   if (savedSize) {
-                     document.documentElement.style.setProperty('--bible-font-size', savedSize + 'px');
-                   }
+    document.documentElement.setAttribute('data-theme', theme);
+    var bgColor = (theme === 'dark' ? '#020617' : '#f0f4f8');
+    document.documentElement.style.backgroundColor = bgColor;
 
-                   if (!savedTheme || savedTheme === 'undefined') {
-                     localStorage.setItem('theme', 'system');
-                   }
+    // تحديث لون الـ Status Bar فوراً للـ Android و iOS
+    var updateThemeColor = function() {
+      var metas = document.querySelectorAll('meta[name="theme-color"]');
+      metas.forEach(function(m) { m.setAttribute('content', bgColor); });
+    };
 
-                   const theme = savedTheme === 'system' || !savedTheme
-                     ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-                     : savedTheme;
-                   document.documentElement.setAttribute('data-theme', theme);
-                 } catch (e) {}
-               })();
-             `,
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateThemeColor);
+    } else {
+      updateThemeColor();
+    }
+  } catch (e) {}
+})();
+      `,
           }}
         />
-        <style dangerouslySetInnerHTML={{ __html: `
-          html, body {
-            background-color: #f0f4f8 !important;
-            margin: 0; 
-            padding: 0;
-          }
-          @media (prefers-color-scheme: dark) {
-            html:not([data-theme='light']) body {
-              background-color: #020617 !important;
-            }
-          }
-          html[data-theme='dark'] body {
-            background-color: #020617 !important;
-          }
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          html { background-color: #f0f4f8; }
+          html[data-theme='dark'] { background-color: #020617; }
+          body { background-color: transparent !important; margin: 0; padding: 0; }
         `}} />
       </head>
       <body>
@@ -117,6 +118,7 @@ export default function RootLayout({ children }) {
               attribute="data-theme"
               defaultTheme="system"
               enableSystem={true}
+              storageKey="theme"
             >
               <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
               <UserTracker />

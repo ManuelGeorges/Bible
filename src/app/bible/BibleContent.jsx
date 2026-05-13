@@ -14,9 +14,11 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
 import { useAudio } from '../context/AudioContext';
+import studyPlansData from '../studyPlans/studyPlansData.json';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
+const allPlans = studyPlansData.plans;
 
 const HIGHLIGHT_COLORS = [
   '#FFC107', '#FF5722', '#F44336', '#E91E63', '#9C27B0',
@@ -47,11 +49,10 @@ export default function BibleContent() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
 
-  // Audio Context integration
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
     audioUrl: globalAudioUrl, setTimestamps, setNavigationCallback,
-    isAutoNext
+    isAutoNext, fetchAudioData: contextFetchAudio, isAudioLoading: contextAudioLoading
   } = useAudio();
 
   const [user, setUser] = useState(null);
@@ -73,7 +74,6 @@ export default function BibleContent() {
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState('');
   const [targetVerseKey, setTargetVerseKey] = useState(null);
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
 
   const lastTap = useRef(0);
   const tapCount = useRef(0);
@@ -81,6 +81,7 @@ export default function BibleContent() {
   const isMoving = useRef(false);
   const isLongPressActive = useRef(false);
   const touchStartPos = useRef({ x: 0, y: 0 });
+  const lastAudioSyncRef = useRef("");
 
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
@@ -119,7 +120,6 @@ export default function BibleContent() {
     }
   }, [user, bookNamesData]);
 
-  // Audio: Register navigation callback for Global Player
   useEffect(() => {
     const handleChapterNav = (dir) => {
         const chapters = bibleData?.[selectedBookIndex]?.chapters || [];
@@ -148,7 +148,6 @@ export default function BibleContent() {
     return () => setNavigationCallback(null);
   }, [bibleData, selectedBookIndex, selectedChapterIndex, bookNamesData, setNavigationCallback]);
 
-  // Audio: Sync Highlight Scrolling
   useEffect(() => {
     if (currentVerseId !== -1) {
       const element = document.getElementById(`verse-${currentVerseId}`);
@@ -158,75 +157,40 @@ export default function BibleContent() {
     }
   }, [currentVerseId]);
 
-  const fetchAudioData = useCallback(async (bookIdx, chapIdx) => {
-    const book = bookNamesData[bookIdx];
-    if (!book || !book.book_id || !bibleData) return;
-
-    setIsAudioLoading(true);
-    const chapter = chapIdx + 1;
-    const audioFilesetId = book.type === 'new' ? 'ARZVDVN1DA' : 'ARZVDVO1DA';
-    const timingFilesetId = book.type === 'new' ? 'ARZVDVN1DA' : 'ARZVDVO1DA';
-    const key = '5e4b1535-5f2b-4f13-9032-9db0297664a6';
-
-    const audioUrlRequest = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
-    const timestampUrl = `https://4.dbt.io/api/timestamps/${timingFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
-
-    try {
-      const [audioRes, timeRes] = await Promise.allSettled([
-        fetch(audioUrlRequest),
-        fetch(timestampUrl)
-      ]);
-
-      let url = null;
-      let times = [];
-
-      if (audioRes.status === 'fulfilled' && audioRes.value.ok) {
-        const audioData = await audioRes.value.json();
-        url = audioData.data?.[0]?.path;
-      }
-
-      if (timeRes.status === 'fulfilled' && timeRes.value.ok) {
-        const timeData = await timeRes.value.json();
-        times = timeData.data || (Array.isArray(timeData) ? timeData : []);
-      }
-
-      if (url) {
-        const title = `عادل نصحي - ${book.name} ${convertToArabicNumber(chapter)}`;
-        return { url, title, times };
-      }
-    } catch (error) {
-      console.error("Fetch error", error);
-    } finally {
-      setIsAudioLoading(false);
-    }
-    return null;
-  }, [bookNamesData, bibleData]);
-
-  // Audio: Handle automatic audio update when chapter changes
+  // Audio Sync Logic
   useEffect(() => {
     const syncAudio = async () => {
-        if (!isLoading && bookNamesData.length > 0) {
-            const book = bookNamesData[selectedBookIndex];
-            const chapter = selectedChapterIndex + 1;
+        if (isLoading || bookNamesData.length === 0) return;
 
-            const isCurrentlyPlayingThis = globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`);
+        const book = bookNamesData[selectedBookIndex];
+        const chapter = selectedChapterIndex + 1;
+        const currentLocKey = `${book.book_id}-${chapter}`;
 
-            if (isCurrentlyPlayingThis) {
-                const data = await fetchAudioData(selectedBookIndex, selectedChapterIndex);
-                if (data) setTimestamps(data.times);
-            } else if (isPlaying || isAutoNext) {
-                const data = await fetchAudioData(selectedBookIndex, selectedChapterIndex);
-                if (data) {
-                    playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex);
-                }
+        if (lastAudioSyncRef.current === currentLocKey) return;
+
+        const isCurrentlyPlayingThis = globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`);
+
+        if (isCurrentlyPlayingThis) {
+            lastAudioSyncRef.current = currentLocKey;
+        } else if (isPlaying || isAutoNext) {
+            const data = await contextFetchAudio(selectedBookIndex, selectedChapterIndex);
+            if (data) {
+                lastAudioSyncRef.current = currentLocKey;
+                playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex, false);
             }
         }
     };
     syncAudio();
-  }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, fetchAudioData, globalAudioUrl, isPlaying, isAutoNext, playTrack, setTimestamps]);
+  }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, contextFetchAudio, globalAudioUrl, isPlaying, isAutoNext, playTrack]);
+
+  useEffect(() => {
+    if (!globalAudioUrl) {
+        lastAudioSyncRef.current = "";
+    }
+  }, [globalAudioUrl]);
 
   const handleAudioButtonClick = async () => {
-    if (isAudioLoading) return;
+    if (contextAudioLoading) return;
 
     const book = bookNamesData[selectedBookIndex];
     const chapter = selectedChapterIndex + 1;
@@ -234,9 +198,9 @@ export default function BibleContent() {
     if (globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`)) {
       setIsPanelOpen(true);
     } else {
-      const data = await fetchAudioData(selectedBookIndex, selectedChapterIndex);
+      const data = await contextFetchAudio(selectedBookIndex, selectedChapterIndex);
       if (data) {
-        playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex);
+        playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex, true);
       } else {
         toast.error("الأوديو غير متوفر لهذا الإصحاح");
       }
@@ -269,11 +233,14 @@ export default function BibleContent() {
 
   useEffect(() => {
     const syncAppSettings = () => {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
+      // تم تغيير الافتراضي من dark إلى system
+      const savedTheme = localStorage.getItem('theme') || 'system';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
 
-      if (savedTheme === 'light') {
+      const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      if (!isDark) {
         document.body.classList.add('light-theme');
       } else {
         document.body.classList.remove('light-theme');
@@ -283,7 +250,18 @@ export default function BibleContent() {
     };
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);
-    return () => window.removeEventListener('storage', syncAppSettings);
+
+    // إضافة مستمع لتغيير وضع الجهاز
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = () => {
+        if (localStorage.getItem('theme') === 'system') syncAppSettings();
+    };
+    mediaQuery.addEventListener('change', handleThemeChange);
+
+    return () => {
+        window.removeEventListener('storage', syncAppSettings);
+        mediaQuery.removeEventListener('change', handleThemeChange);
+    };
   }, []);
 
   const updateUserPoints = async (amount, reason, type = 'general', isNegative = false) => {
@@ -541,6 +519,109 @@ export default function BibleContent() {
     }
   };
 
+  const updateStudyPlanProgress = async (planId, planType, day) => {
+    if (!user) return;
+    const userRef = doc(firestore, 'users', user.uid);
+    try {
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+      const userData = userSnap.data();
+
+      const fieldPath = planType === 'custom'
+        ? `customPlans.${planId}`
+        : `completedPlans.${planId}`;
+
+      const planData = planType === 'custom'
+        ? userData.customPlans?.[planId]
+        : userData.completedPlans?.[planId] || { completedDays: {} };
+
+      const currentCompletedDays = planData.completedDays || {};
+
+      // إذا كان اليوم مكتملاً بالفعل لا نفعل شيئاً
+      if (currentCompletedDays[day]?.isCompleted) return;
+
+      const newCompletedDays = {
+        ...currentCompletedDays,
+        [day]: {
+          isCompleted: true,
+          dateCompleted: new Date().toISOString()
+        }
+      };
+
+      // حساب النسبة المئوية
+      let totalDays = 0;
+      if (planType === 'custom') {
+        totalDays = planData.readings?.length || 0;
+      } else {
+        const staticPlan = allPlans.find(p => p.id === parseInt(planId));
+        totalDays = staticPlan?.readings?.length || 0;
+      }
+
+      const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
+      const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
+
+      await updateDoc(userRef, {
+        [`${fieldPath}.completedDays`]: newCompletedDays,
+        [`${fieldPath}.completionPercentage`]: percentage
+      });
+
+      toast.success("تم تحديث تقدمك في الخطة الدراسية ✅");
+    } catch (e) {
+      console.error("Error updating study plan:", e);
+    }
+  };
+
+  const toggleChapterCompletion = async () => {
+    if (!user) { router.push('/intro'); return; }
+    const key = `${selectedBookIndex}-${selectedChapterIndex}`;
+
+    if (completedChapters[key]) {
+      const next = { ...completedChapters, [key]: false };
+      setCompletedChapters(next);
+      saveToFirestore(favouriteVerses, next);
+      updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
+      toast.error("تم إلغاء تحديد الإصحاح");
+    } else {
+      const next = { ...completedChapters, [key]: true };
+      setCompletedChapters(next);
+      saveToFirestore(favouriteVerses, next);
+      updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
+
+      // التحقق مما إذا كان المستخدم يقرأ من خطة دراسية
+      const planId = searchParams.get('planId');
+      const planType = searchParams.get('planType');
+      const day = searchParams.get('day');
+
+      if (planId && day) {
+        updateStudyPlanProgress(planId, planType, parseInt(day));
+      }
+
+      const completedCount = Object.keys(next).filter(k => next[k]).length;
+      if (completedCount >= 10) unlockBadge('reader_10');
+      if (completedCount >= 50) unlockBadge('reader_50');
+      if (completedCount >= 100) unlockBadge('reader_100');
+      if (completedCount >= 250) unlockBadge('reader_250');
+      if (completedCount >= 500) unlockBadge('reader_500');
+      if (completedCount >= 594) unlockBadge('reader_594');
+      if (completedCount >= 1189) unlockBadge('bible_finisher');
+
+      const otChapters = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
+      const ntChapters = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
+
+      const otCompleted = Object.keys(next).filter(k => {
+        const bookIdx = parseInt(k.split('-')[0]);
+        return next[k] && bookNamesData[bookIdx]?.type === 'old';
+      }).length;
+      const ntCompleted = Object.keys(next).filter(k => {
+        const bookIdx = parseInt(k.split('-')[0]);
+        return next[k] && bookNamesData[bookIdx]?.type === 'new';
+      }).length;
+
+      if (otCompleted === otChapters && otChapters > 0) unlockBadge('testament_old');
+      if (ntCompleted === ntChapters && ntChapters > 0) unlockBadge('testament_new');
+    }
+  };
+
   if (isLoading || !bibleData || !bookNamesData.length) return <div className={styles.loading}>جاري التحميل...</div>;
 
   const chapters = bibleData[selectedBookIndex]?.chapters || [];
@@ -663,6 +744,16 @@ export default function BibleContent() {
               );
             })}
           </div>
+
+          <div className={styles.completionWrapper}>
+            <button
+              className={`${styles.completionBtn} ${completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? styles.completed : ''}`}
+              onClick={toggleChapterCompletion}
+            >
+              <span>أتممت الإصحاح</span>
+              {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? <CircleCheck size={24} color="#4CAF50" /> : <Check size={24} opacity={0.6} />}
+            </button>
+          </div>
         </motion.div>
       </AnimatePresence>
 
@@ -672,57 +763,14 @@ export default function BibleContent() {
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           <button
             onClick={handleAudioButtonClick}
-            disabled={isAudioLoading}
+            disabled={contextAudioLoading}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            {isAudioLoading ? (
+            {contextAudioLoading ? (
               <Loader2 size={28} className={styles.spinning} />
             ) : (
               <Volume2 size={28} color={isPlaying ? "#FFC107" : "var(--color-text-primary)"} />
             )}
-          </button>
-
-          <button onClick={async () => {
-            if (!user) { router.push('/intro'); return; }
-            const key = `${selectedBookIndex}-${selectedChapterIndex}`;
-            if (completedChapters[key]) {
-              const next = { ...completedChapters, [key]: false };
-              setCompletedChapters(next);
-              saveToFirestore(favouriteVerses, next);
-              updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
-              toast.error("تم إلغاء تحديد الإصحاح");
-            } else {
-              const next = { ...completedChapters, [key]: true };
-              setCompletedChapters(next);
-              saveToFirestore(favouriteVerses, next);
-              updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
-
-              const completedCount = Object.keys(next).filter(k => next[k]).length;
-              if (completedCount >= 10) unlockBadge('reader_10');
-              if (completedCount >= 50) unlockBadge('reader_50');
-              if (completedCount >= 100) unlockBadge('reader_100');
-              if (completedCount >= 250) unlockBadge('reader_250');
-              if (completedCount >= 500) unlockBadge('reader_500');
-              if (completedCount >= 594) unlockBadge('reader_594');
-              if (completedCount >= 1189) unlockBadge('bible_finisher');
-
-              const otChapters = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
-              const ntChapters = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
-
-              const otCompleted = Object.keys(next).filter(k => {
-                const bookIdx = parseInt(k.split('-')[0]);
-                return next[k] && bookNamesData[bookIdx]?.type === 'old';
-              }).length;
-              const ntCompleted = Object.keys(next).filter(k => {
-                const bookIdx = parseInt(k.split('-')[0]);
-                return next[k] && bookNamesData[bookIdx]?.type === 'new';
-              }).length;
-
-              if (otCompleted === otChapters && otChapters > 0) unlockBadge('testament_old');
-              if (ntCompleted === ntChapters && ntChapters > 0) unlockBadge('testament_new');
-            }
-          }}>
-            {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? <CircleCheck size={28} color="#4CAF50" /> : <Check size={28} opacity={0.6} />}
           </button>
         </div>
 

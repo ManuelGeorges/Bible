@@ -27,11 +27,13 @@ export default function CapacitorFeatures() {
   }, [setTheme]);
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
+    // StatusBar works on Android/iOS and some Electron setups, but we guard it
+    const platform = Capacitor.getPlatform();
+    if (platform === 'web' || platform === 'electron') return;
 
     const updateStatusBar = async () => {
       try {
-        if (Capacitor.getPlatform() === 'android') {
+        if (platform === 'android') {
           const isDark = 
             theme === 'dark' || 
             (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -53,7 +55,9 @@ export default function CapacitorFeatures() {
   }, [theme]);
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform() || hasSetup.current) return;
+    const platform = Capacitor.getPlatform();
+    // تعطيل الميزات التي لا تعمل على Electron أو الويب
+    if (platform === 'web' || platform === 'electron' || hasSetup.current) return;
     hasSetup.current = true;
 
     const handleAppUpdate = async () => {

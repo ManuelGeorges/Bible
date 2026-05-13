@@ -21,7 +21,16 @@ function PlanDetailsContent() {
   const [user, setUser] = useState(null);
   const [plan, setPlan] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
+  const [completedChapters, setCompletedChapters] = useState({});
+  const [bookNames, setBookNames] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/data/bookNames.json')
+      .then(res => res.json())
+      .then(data => setBookNames(data.ar || []))
+      .catch(err => console.error("Error loading book names:", err));
+  }, []);
 
   useEffect(() => {
     if (!planId) return;
@@ -32,37 +41,36 @@ function PlanDetailsContent() {
     const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
       setUser(loggedInUser);
       
-      if (planType === 'custom') {
-        if (loggedInUser) {
-          const userRef = doc(db, 'users', loggedInUser.uid);
-          unsubSnap = onSnapshot(userRef, (docSnap) => {
-            if (docSnap.exists()) {
-              const userData = docSnap.data();
+      if (loggedInUser) {
+        const userRef = doc(db, 'users', loggedInUser.uid);
+        unsubSnap = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+
+            // جلب الأصحاحات المكتملة من الكتاب المقدس
+            setCompletedChapters(userData.completedChapters || {});
+
+            if (planType === 'custom') {
               const aiPlan = userData.customPlans?.[planId];
               if (aiPlan) {
                 setPlan(aiPlan);
                 setCompletedDays(aiPlan.completedDays || {});
               }
-            }
-            setLoading(false);
-          });
-        }
-      } else {
-        const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
-        setPlan(staticPlan);
-        
-        if (loggedInUser) {
-          const userRef = doc(db, 'users', loggedInUser.uid);
-          unsubSnap = onSnapshot(userRef, (docSnap) => {
-            if (docSnap.exists()) {
-              const data = docSnap.data().completedPlans?.[planId]?.completedDays || {};
+            } else {
+              const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
+              setPlan(staticPlan);
+              const data = userData.completedPlans?.[planId]?.completedDays || {};
               setCompletedDays(data);
             }
-            setLoading(false);
-          });
-        } else {
+          }
           setLoading(false);
+        });
+      } else {
+        if (planType !== 'custom') {
+          const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
+          setPlan(staticPlan);
         }
+        setLoading(false);
       }
     });
 
@@ -72,34 +80,65 @@ function PlanDetailsContent() {
     };
   }, [planId, planType]);
 
+  const isReadingDone = (readingStr) => {
+    if (!bookNames.length || !completedChapters) return false;
+
+    try {
+      const trimmed = readingStr.trim();
+      const parts = trimmed.split(' ');
+      const chaptersPart = parts.pop();
+      const bookName = parts.join(' ');
+
+      const bookIndex = bookNames.findIndex(b => b.name === bookName);
+      if (bookIndex === -1) return false;
+
+      let chaptersToNodes = [];
+      if (chaptersPart.includes('-')) {
+        const [start, end] = chaptersPart.split('-').map(Number);
+        for (let i = start; i <= end; i++) chaptersToNodes.push(i);
+      } else if (chaptersPart.includes(',')) {
+        chaptersToNodes = chaptersPart.split(',').map(Number);
+      } else {
+        chaptersToNodes.push(Number(chaptersPart));
+      }
+
+      return chaptersToNodes.every(c => completedChapters[`${bookIndex}-${c - 1}`]);
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const isDayAutoCompleted = (reading) => {
+    if (!reading.books || reading.books.length === 0) return false;
+    return reading.books.every(b => isReadingDone(b));
+  };
+
   const handleCheck = async (day) => {
     if (!user) {
       toast.error("يرجى تسجيل الدخول لحفظ تقدمك");
       return;
     }
 
-    const isCurrentlyCompleted = completedDays[day]?.isCompleted;
+    const isCurrentlyManual = completedDays[day]?.isCompleted;
     let newCompletedDays = { ...completedDays };
 
-    if (isCurrentlyCompleted) {
-      Object.keys(newCompletedDays).forEach(key => {
-        if (parseInt(key) >= day) delete newCompletedDays[key];
-      });
-      toast.success("تم تحديث التقدم");
+    if (isCurrentlyManual) {
+      delete newCompletedDays[day];
+      toast.success("تم إلغاء التحديد اليدوي");
     } else {
       newCompletedDays[day] = { 
         isCompleted: true, 
         dateCompleted: new Date().toISOString() 
       };
-      
-      if (day === plan.readings.length) {
-        toast.success("تهانينا! لقد أتممت الخطة بنجاح 🎉", { duration: 5000 });
-      }
+      toast.success("تم التحديد يدوياً");
     }
 
+    // حساب النسبة بناءً على (يدوي OR تلقائي)
     const totalDays = plan.readings.length;
-    const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
-    const percentage = Math.round((daysDone / totalDays) * 100);
+    const daysDoneCount = plan.readings.filter(r => {
+        return newCompletedDays[r.day]?.isCompleted || isDayAutoCompleted(r);
+    }).length;
+    const percentage = Math.round((daysDoneCount / totalDays) * 100);
 
     setCompletedDays(newCompletedDays);
 
@@ -123,7 +162,7 @@ function PlanDetailsContent() {
   if (!plan) return notFound();
 
   const progressPercentage = Math.round(
-    (Object.values(completedDays).filter(d => d.isCompleted).length / plan.readings.length) * 100
+    (plan.readings.filter(r => (completedDays[r.day]?.isCompleted || isDayAutoCompleted(r))).length / plan.readings.length) * 100
   );
 
   return (
@@ -148,9 +187,10 @@ function PlanDetailsContent() {
 
       <ul className={styles.readingsList} ref={readingsListRef}>
         {plan.readings.map((reading) => {
-          const isCompleted = completedDays[reading.day]?.isCompleted;
-          const canCheck = reading.day === 1 || completedDays[reading.day - 1]?.isCompleted;
-          
+          const isManual = completedDays[reading.day]?.isCompleted;
+          const isAuto = isDayAutoCompleted(reading);
+          const isCompleted = isManual || isAuto;
+
           return (
             <li key={reading.day} className={`${styles.readingItem} ${isCompleted ? styles.completed : ''}`}>
               <div className={styles.dayHeader}>
@@ -160,13 +200,14 @@ function PlanDetailsContent() {
                     type="checkbox"
                     id={`day-${reading.day}`}
                     checked={isCompleted || false}
-                    disabled={!canCheck && !isCompleted}
                     onChange={() => handleCheck(reading.day)}
+                    title={isAuto ? "تم الإتمام تلقائياً من قراءات الكتاب" : "تحديد كتم الإنجاز يدوياً"}
                   />
                 </div>
               </div>
               <div className={styles.booksGrid}>
                 {reading.books.map((b, i) => {
+                  const isDone = isReadingDone(b);
                   const parts = b.trim().split(' ');
                   const chapterNum = parts.pop();
                   const bookName = parts.join(' ');
@@ -174,10 +215,11 @@ function PlanDetailsContent() {
                   return (
                     <Link 
                       key={i} 
-                      href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum}`}
-                      className={styles.bookLink}
+                      href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum.split('-')[0]}&planId=${planId}&planType=${planType}&day=${reading.day}`}
+                      className={`${styles.bookLink} ${isDone ? styles.bookDone : ''}`}
+                      style={isDone ? { borderColor: '#10b981', color: '#10b981' } : {}}
                     >
-                      {b}
+                      {b} {isDone && '✓'}
                     </Link>
                   );
                 })}

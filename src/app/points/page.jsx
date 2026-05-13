@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styles from './points.module.css';
+import { useRouter } from 'next/navigation';
 import { db } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, updateDoc, arrayUnion, increment, getDoc } from 'firebase/firestore';
@@ -175,6 +176,7 @@ const categorizeActivities = (history) => {
 };
 
 export default function Points() {
+  const router = useRouter();
   const [pointsData, setPointsData] = useState(null);
   const [badgesData, setBadgesData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -184,11 +186,6 @@ export default function Points() {
   const [familyFilter, setFamilyFilter] = useState('all');
   const [unlockedOnly, setUnlockedOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
-
-  const pointsSectionRef = useRef(null);
-  const badgesSectionRef = useRef(null);
-  const historySectionRef = useRef(null);
-  const isManualScrolling = useRef(false);
 
   const [isRarityOpen, setIsRarityOpen] = useState(false);
   const [isFamilyOpen, setIsFamilyOpen] = useState(false);
@@ -214,43 +211,31 @@ export default function Points() {
     } catch (e) { console.error(e); }
   };
 
-  const scrollToSection = (ref, tabId) => {
-    if (ref.current) {
-      isManualScrolling.current = true;
-      setActiveTab(tabId);
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => {
-        isManualScrolling.current = false;
-      }, 1200);
-    }
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    if (loading || !badgesData) return;
-
-    const options = {
-      root: null,
-      rootMargin: '-20% 0px -70% 0px',
-      threshold: 0
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      if (isManualScrolling.current) return;
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (entry.target === pointsSectionRef.current) setActiveTab('points');
-          else if (entry.target === badgesSectionRef.current) setActiveTab('badges');
-          else if (entry.target === historySectionRef.current) setActiveTab('history');
-        }
-      });
-    }, options);
-
-    if (pointsSectionRef.current) observer.observe(pointsSectionRef.current);
-    if (badgesSectionRef.current) observer.observe(badgesSectionRef.current);
-    if (historySectionRef.current) observer.observe(historySectionRef.current);
-
-    return () => observer.disconnect();
-  }, [loading, badgesData]);
+  const handleGoalClick = (goalId) => {
+    switch (goalId) {
+      case 'dailyQuestion':
+      case 'share':
+        router.push('/');
+        break;
+      case 'mapExploration':
+        router.push('/maps');
+        break;
+      case 'completedChapter':
+      case 'favouriteVerse':
+        router.push('/bible');
+        break;
+      case 'dailyLogin':
+        router.push('/profile');
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
@@ -281,7 +266,6 @@ export default function Points() {
     });
   }, []);
 
-  // الفئة السرية: المغرور القديس (١٠ دقائق في صفحة النقاط)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (activeTab === 'points') {
@@ -359,177 +343,188 @@ export default function Points() {
       <nav className={styles.topNav}>
         <button
           className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`}
-          onClick={() => scrollToSection(pointsSectionRef, 'points')}
+          onClick={() => handleTabChange('points')}
         >
           <FaChartLine /> النقاط
         </button>
         <button
           className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`}
-          onClick={() => scrollToSection(badgesSectionRef, 'badges')}
+          onClick={() => handleTabChange('badges')}
         >
           <FaTrophy /> الأوسمة
         </button>
         <button
           className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`}
-          onClick={() => scrollToSection(historySectionRef, 'history')}
+          onClick={() => handleTabChange('history')}
         >
           <FaHistory /> السجل
         </button>
       </nav>
 
-      <section ref={pointsSectionRef} className={styles.sectionWrapper}>
-        <div className={styles.pointsSummary}>
-          <div className={styles.levelContainer}>
-            <div className={styles.levelBadge}>
-                <FaStar className={styles.levelStar} />
-                <span>المستوى {convertToArabicNumber(pointsData?.levelInfo.level || 1)}</span>
+      {activeTab === 'points' && (
+        <section className={styles.sectionWrapper}>
+          <div className={styles.pointsSummary}>
+            <div className={styles.levelContainer}>
+              <div className={styles.levelBadge}>
+                  <FaStar className={styles.levelStar} />
+                  <span>المستوى {convertToArabicNumber(pointsData?.levelInfo.level || 1)}</span>
+              </div>
+              <div className={styles.levelBarOuter}>
+                  <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
+              </div>
+              <p className={styles.nextLevelText}>تبقّى {convertToArabicNumber(pointsData?.levelInfo.nextXP || 0)} نقطة للمستوى التالي</p>
             </div>
-            <div className={styles.levelBarOuter}>
-                <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
+            <div className={styles.pointsTotal}>
+              <span className={styles.pointsNumber}>{convertToArabicNumber(pointsData?.totalPoints || 0)}</span>
+              <span className={styles.pointsLabel}>نقطة إجمالية</span>
             </div>
-            <p className={styles.nextLevelText}>تبقّى {convertToArabicNumber(pointsData?.levelInfo.nextXP || 0)} نقطة للمستوى التالي</p>
-          </div>
-          <div className={styles.pointsTotal}>
-            <span className={styles.pointsNumber}>{convertToArabicNumber(pointsData?.totalPoints || 0)}</span>
-            <span className={styles.pointsLabel}>نقطة إجمالية</span>
-          </div>
-          <div className={styles.streakBadge}>
-            <FaFire className={styles.fireIcon} />
-            <span>سلسلة تفاعل: {convertToArabicNumber(pointsData?.streak || 0)} يوم</span>
-          </div>
-          <div className={styles.dailyGoalsSection}>
-            <h3 className={styles.subTitle}>أهداف اليوم</h3>
-            <div className={styles.goalsGrid}>
-                {pointsData?.dailyGoals.map(goal => (
-                    <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`}>
-                        <div className={styles.goalIcon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
-                        <div className={styles.goalInfo}>
-                            <span>{goal.label}</span>
-                            <small>+{convertToArabicNumber(goal.points)} نقطة</small>
-                        </div>
-                    </div>
-                ))}
+            <div className={styles.streakBadge}>
+              <FaFire className={styles.fireIcon} />
+              <span>سلسلة تفاعل: {convertToArabicNumber(pointsData?.streak || 0)} يوم</span>
+            </div>
+            <div className={styles.dailyGoalsSection}>
+              <h3 className={styles.subTitle}>أهداف اليوم</h3>
+              <div className={styles.goalsGrid}>
+                  {pointsData?.dailyGoals.map(goal => (
+                      <div
+                        key={goal.id}
+                        className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`}
+                        onClick={() => handleGoalClick(goal.id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                          <div className={styles.goalIcon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
+                          <div className={styles.goalInfo}>
+                              <span>{goal.label}</span>
+                              <small>+{convertToArabicNumber(goal.points)} نقطة</small>
+                          </div>
+                      </div>
+                  ))}
+              </div>
+            </div>
+            <div className={styles.activityChartSection}>
+              <h3 className={styles.subTitle}>نشاطك الأخير</h3>
+              <div className={styles.chartWrapper}>
+                  {activitiesSummary?.chartData.map((d, i) => (
+                      <div key={i} className={styles.chartBarContainer}>
+                          <div className={styles.chartBar} style={{ height: `${Math.min(100, (d.points / 100) * 100)}%` }}>
+                              {d.points > 0 && <span className={styles.barValue}>{convertToArabicNumber(d.points)}</span>}
+                          </div>
+                          <span className={styles.barLabel}>{d.label}</span>
+                      </div>
+                  ))}
+              </div>
             </div>
           </div>
-          <div className={styles.activityChartSection}>
-            <h3 className={styles.subTitle}>نشاطك الأخير</h3>
-            <div className={styles.chartWrapper}>
-                {activitiesSummary?.chartData.map((d, i) => (
-                    <div key={i} className={styles.chartBarContainer}>
-                        <div className={styles.chartBar} style={{ height: `${Math.min(100, (d.points / 100) * 100)}%` }}>
-                            {d.points > 0 && <span className={styles.barValue}>{convertToArabicNumber(d.points)}</span>}
-                        </div>
-                        <span className={styles.barLabel}>{d.label}</span>
-                    </div>
-                ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section ref={badgesSectionRef} className={styles.sectionWrapper}>
-        <div className={styles.filterSection}>
-          <h2 className={styles.detailedHeader}>الأوسمة والبطولات</h2>
-          <div className={styles.searchControls}>
-            <div className={styles.searchBox}>
-              <FaSearch className={styles.searchIcon} />
-              <input type="text" placeholder="بحث باسم الوسام..." className={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-            </div>
-            <label className={styles.checkboxLabel}>
-              <input type="checkbox" checked={unlockedOnly} onChange={(e) => setUnlockedOnly(e.target.checked)} />
-              <span>المقتنيات فقط</span>
-            </label>
-          </div>
-          <div className={styles.selectGroup}>
-            <div className={styles.customSelectWrapper} ref={rarityRef}>
-              <div className={styles.selectTrigger} onClick={() => { setIsRarityOpen(!isRarityOpen); setIsFamilyOpen(false); }}>
-                {rarities.find(r => r.id === rarityFilter)?.name}
-                <FaChevronDown className={`${styles.arrowIcon} ${isRarityOpen ? styles.rotate : ''}`} />
+      {activeTab === 'badges' && (
+        <section className={styles.sectionWrapper}>
+          <div className={styles.filterSection}>
+            <h2 className={styles.detailedHeader}>الأوسمة والبطولات</h2>
+            <div className={styles.searchControls}>
+              <div className={styles.searchBox}>
+                <FaSearch className={styles.searchIcon} />
+                <input type="text" placeholder="بحث باسم الوسام..." className={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
-              <ul className={`${styles.dropdownMenu} ${isRarityOpen ? styles.open : ''}`}>
-                {rarities.map((r) => (
-                  <li key={r.id} className={`${styles.dropdownItem} ${rarityFilter === r.id ? styles.activeItem : ''}`} onClick={() => { setRarityFilter(r.id); setIsRarityOpen(false); }}>{r.name}</li>
-                ))}
-              </ul>
+              <label className={styles.checkboxLabel}>
+                <input type="checkbox" checked={unlockedOnly} onChange={(e) => setUnlockedOnly(e.target.checked)} />
+                <span>المقتنيات فقط</span>
+              </label>
             </div>
-            <div className={styles.customSelectWrapper} ref={familyRef}>
-              <div className={styles.selectTrigger} onClick={() => { setIsFamilyOpen(!isFamilyOpen); setIsRarityOpen(false); }}>
-                {familyFilter === 'all' ? 'كل الأنواع' : familyFilter}
-                <FaChevronDown className={`${styles.arrowIcon} ${isFamilyOpen ? styles.rotate : ''}`} />
-              </div>
-              <ul className={`${styles.dropdownMenu} ${isFamilyOpen ? styles.open : ''}`}>
-                <li className={`${styles.dropdownItem} ${familyFilter === 'all' ? styles.activeItem : ''}`} onClick={() => { setFamilyFilter('all'); setIsFamilyOpen(false); }}>كل الأنواع</li>
-                {badgesData.badge_families.map(f => (
-                  <li key={f.family_name} className={`${styles.dropdownItem} ${familyFilter === f.family_name ? styles.activeItem : ''}`} onClick={() => { setFamilyFilter(f.family_name); setIsFamilyOpen(false); }}>{f.family_name}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className={styles.badgesGrid}>
-          {filteredBadges.map((family) => (
-            <div key={family.family_name} className={styles.familyRow}>
-              <h3 className={styles.familyTitleSmall}>{family.family_name}</h3>
-              <div className={styles.badgesListHorizontal}>
-                {family.badges.map((badge) => (
-                  <div key={badge.id} className={styles.badgeWrapper}>
-                    <Badge badge={badge} familyName={family.family_name} isUnlocked={userUnlockedBadges.includes(badge.id)} />
-                    {badge.progress && (
-                        <div className={styles.badgeProgressMini}>
-                            <div className={styles.progressText}>{convertToArabicNumber(badge.progress.current)}/{convertToArabicNumber(badge.progress.target)}</div>
-                            <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current/badge.progress.target)*100}%` }} /></div>
-                        </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section ref={historySectionRef} className={styles.sectionWrapper}>
-        {activitiesSummary && (
-          <div className={styles.activitiesContainer}>
-            <div className={styles.historyHeaderToggle}>
-              <h2 className={styles.detailedHeader}>سجل النشاط </h2>
-              <button className={styles.toggleVisibilityBtn} onClick={() => setShowHistory(!showHistory)}>
-                {showHistory ? <><FaEyeSlash /> إخفاء</> : <><FaEye /> إظهار</>}
-              </button>
-            </div>
-            {showHistory && (
-              <>
-                <div className={styles.summaryGrid}>
-                  <div className={styles.summaryCard}><FaSignInAlt className={styles.icon} /><h3>تفاعل</h3><p>+{convertToArabicNumber(activitiesSummary.dailyActions.points)}</p></div>
-                  <div className={styles.summaryCard}><FaBookOpen className={styles.icon} /><h3>دراسة</h3><p>+{convertToArabicNumber(activitiesSummary.reading.points)}</p></div>
-                  <div className={styles.summaryCard}><FaMapMarkedAlt className={styles.icon} /><h3>خرائط</h3><p>+{convertToArabicNumber(activitiesSummary.maps.points)}</p></div>
-                  <div className={styles.summaryCard}><FaTrophy className={styles.icon} /><h3>بونص</h3><p>+{convertToArabicNumber(activitiesSummary.bonuses.points)}</p></div>
+            <div className={styles.selectGroup}>
+              <div className={styles.customSelectWrapper} ref={rarityRef}>
+                <div className={styles.selectTrigger} onClick={() => { setIsRarityOpen(!isRarityOpen); setIsFamilyOpen(false); }}>
+                  {rarities.find(r => r.id === rarityFilter)?.name}
+                  <FaChevronDown className={`${styles.arrowIcon} ${isRarityOpen ? styles.rotate : ''}`} />
                 </div>
-                <ul className={styles.activityList}>
-                  {activitiesSummary.filteredHistory.length > 0 ? activitiesSummary.filteredHistory.map((item, i) => (
-                    <li key={i} className={`${styles.activityItem} ${item.points > 0 ? styles.positiveActivity : styles.neutralActivity}`}>
-                      <div className={styles.activityIconWrapper}>
-                        {item.activity === 'share' && <FaShareAlt />}
-                        {item.activity === 'search' && <FaSearch />}
-                        {item.activity === 'mapExploration' && <FaMapMarkedAlt />}
-                        {item.activity === 'dailyLogin' && <FaSignInAlt />}
-                        {item.activity === 'dailyQuestion' && <FaFeatherAlt />}
-                        {item.activity === 'completedChapter' && <FaCheckCircle />}
-                        {item.activity === 'favouriteVerse' && <FaHeart />}
-                      </div>
-                      <div className={styles.activityInfo}>
-                        <p>{item.description}</p>
-                        <span>{item.timestamp.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                      <span className={styles.activityPoints}>{item.points > 0 ? '+' : ''}{convertToArabicNumber(item.points)}</span>
-                    </li>
-                  )) : <p className={styles.noDataSection}>لا توجد بيانات سجل.</p>}
+                <ul className={`${styles.dropdownMenu} ${isRarityOpen ? styles.open : ''}`}>
+                  {rarities.map((r) => (
+                    <li key={r.id} className={`${styles.dropdownItem} ${rarityFilter === r.id ? styles.activeItem : ''}`} onClick={() => { setRarityFilter(r.id); setIsRarityOpen(false); }}>{r.name}</li>
+                  ))}
                 </ul>
-              </>
-            )}
+              </div>
+              <div className={styles.customSelectWrapper} ref={familyRef}>
+                <div className={styles.selectTrigger} onClick={() => { setIsFamilyOpen(!isFamilyOpen); setIsRarityOpen(false); }}>
+                  {familyFilter === 'all' ? 'كل الأنواع' : familyFilter}
+                  <FaChevronDown className={`${styles.arrowIcon} ${isFamilyOpen ? styles.rotate : ''}`} />
+                </div>
+                <ul className={`${styles.dropdownMenu} ${isFamilyOpen ? styles.open : ''}`}>
+                  <li className={`${styles.dropdownItem} ${familyFilter === 'all' ? styles.activeItem : ''}`} onClick={() => { setFamilyFilter('all'); setIsFamilyOpen(false); }}>كل الأنواع</li>
+                  {badgesData.badge_families.map(f => (
+                    <li key={f.family_name} className={`${styles.dropdownItem} ${familyFilter === f.family_name ? styles.activeItem : ''}`} onClick={() => { setFamilyFilter(f.family_name); setIsFamilyOpen(false); }}>{f.family_name}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
-        )}
-      </section>
+          <div className={styles.badgesGrid}>
+            {filteredBadges.map((family) => (
+              <div key={family.family_name} className={styles.familyRow}>
+                <h3 className={styles.familyTitleSmall}>{family.family_name}</h3>
+                <div className={styles.badgesListHorizontal}>
+                  {family.badges.map((badge) => (
+                    <div key={badge.id} className={styles.badgeWrapper}>
+                      <Badge badge={badge} familyName={family.family_name} isUnlocked={userUnlockedBadges.includes(badge.id)} />
+                      {badge.progress && (
+                          <div className={styles.badgeProgressMini}>
+                              <div className={styles.progressText}>{convertToArabicNumber(badge.progress.current)}/{convertToArabicNumber(badge.progress.target)}</div>
+                              <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current/badge.progress.target)*100}%` }} /></div>
+                          </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'history' && (
+        <section className={styles.sectionWrapper}>
+          {activitiesSummary && (
+            <div className={styles.activitiesContainer}>
+              <div className={styles.historyHeaderToggle}>
+                <h2 className={styles.detailedHeader}>سجل النشاط </h2>
+                <button className={styles.toggleVisibilityBtn} onClick={() => setShowHistory(!showHistory)}>
+                  {showHistory ? <><FaEyeSlash /> إخفاء</> : <><FaEye /> إظهار</>}
+                </button>
+              </div>
+              {showHistory && (
+                <>
+                  <div className={styles.summaryGrid}>
+                    <div className={styles.summaryCard}><FaSignInAlt className={styles.icon} /><h3>تفاعل</h3><p>+{convertToArabicNumber(activitiesSummary.dailyActions.points)}</p></div>
+                    <div className={styles.summaryCard}><FaBookOpen className={styles.icon} /><h3>دراسة</h3><p>+{convertToArabicNumber(activitiesSummary.reading.points)}</p></div>
+                    <div className={styles.summaryCard}><FaMapMarkedAlt className={styles.icon} /><h3>خرائط</h3><p>+{convertToArabicNumber(activitiesSummary.maps.points)}</p></div>
+                    <div className={styles.summaryCard}><FaTrophy className={styles.icon} /><h3>بونص</h3><p>+{convertToArabicNumber(activitiesSummary.bonuses.points)}</p></div>
+                  </div>
+                  <ul className={styles.activityList}>
+                    {activitiesSummary.filteredHistory.length > 0 ? activitiesSummary.filteredHistory.map((item, i) => (
+                      <li key={i} className={`${styles.activityItem} ${item.points > 0 ? styles.positiveActivity : styles.neutralActivity}`}>
+                        <div className={styles.activityIconWrapper}>
+                          {item.activity === 'share' && <FaShareAlt />}
+                          {item.activity === 'search' && <FaSearch />}
+                          {item.activity === 'mapExploration' && <FaMapMarkedAlt />}
+                          {item.activity === 'dailyLogin' && <FaSignInAlt />}
+                          {item.activity === 'dailyQuestion' && <FaFeatherAlt />}
+                          {item.activity === 'completedChapter' && <FaCheckCircle />}
+                          {item.activity === 'favouriteVerse' && <FaHeart />}
+                        </div>
+                        <div className={styles.activityInfo}>
+                          <p>{item.description}</p>
+                          <span>{item.timestamp.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <span className={styles.activityPoints}>{item.points > 0 ? '+' : ''}{convertToArabicNumber(item.points)}</span>
+                      </li>
+                    )) : <p className={styles.noDataSection}>لا توجد بيانات سجل.</p>}
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

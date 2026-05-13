@@ -183,7 +183,14 @@ const LandingPage = () => {
                 unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
-                        setUserStats({ points: data.totalPoints || 0, streak: data.streak || 0 });
+                        const streak = data.streak || 0;
+                        setUserStats({ points: data.totalPoints || 0, streak: streak });
+
+                        // مزامنة الستريك مع تطبيق الأندرويد للاشعارات
+                        if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
+                            window.AgiosScannerNative.updateUserStats(streak);
+                        }
+
                         setUserBadges(data.badges || []);
                         setFavouriteVerses(data.favorites?.verses || {});
 
@@ -373,6 +380,30 @@ const LandingPage = () => {
         }
     };
 
+    const handleGoalClick = (goalId) => {
+        if (!user) { router.push('/intro'); return; }
+        switch (goalId) {
+            case 'dailyQuestion':
+                document.getElementById('daily-question')?.scrollIntoView({ behavior: 'smooth' });
+                break;
+            case 'share':
+                document.getElementById('daily-verse')?.scrollIntoView({ behavior: 'smooth' });
+                break;
+            case 'mapExploration':
+                router.push('/maps');
+                break;
+            case 'completedChapter':
+            case 'favouriteVerse':
+                router.push('/bible');
+                break;
+            case 'dailyLogin':
+                router.push('/profile');
+                break;
+            default:
+                break;
+        }
+    };
+
     const quickLinks = [
         { name: 'الكتاب المقدس', icon: <BookOpenText size={24} />, path: '/bible', color: '#6366f1' },
         { name: 'الخرائط', icon: <Map size={24} />, path: user ? '/maps' : '/intro', color: '#10b981' },
@@ -479,7 +510,12 @@ const LandingPage = () => {
                     </div>
                     <div className={styles.goalsMiniList}>
                         {dailyGoals.map(goal => (
-                            <div key={goal.id} className={`${styles.miniGoalItem} ${goal.completed ? styles.goalDone : ''}`}>
+                            <div
+                                key={goal.id}
+                                className={`${styles.miniGoalItem} ${goal.completed ? styles.goalDone : ''}`}
+                                onClick={() => handleGoalClick(goal.id)}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 {goal.completed ? <CheckCircle size={14} color="#10b981" /> : <Circle size={14} color="#94a3b8" />}
                                 <span>{goal.label}</span>
                             </div>
@@ -516,7 +552,7 @@ const LandingPage = () => {
                 </button>
             )}
 
-            <section className={styles.dailyHighlight}>
+            <section className={styles.dailyHighlight} id="daily-verse">
                 <div className={styles.verseGlass}>
                     <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>آية اليوم</span></div>
                     {isLoading ? <div className={styles.skeletonText} /> : (
@@ -526,7 +562,8 @@ const LandingPage = () => {
                             <div className={styles.verseActions}>
                                 <button onClick={() => {
                                     if (!user) { router.push('/intro'); return; }
-                                    navigator.clipboard.writeText(`"${dailyVerse?.verse}" (${dailyVerse?.reference})`);
+                                    const cleanRef = dailyVerse?.reference?.replace(/[()]/g, '').trim();
+                                    navigator.clipboard.writeText(`"${dailyVerse?.verse}" (${cleanRef})`);
                                     toast.success('تم النسخ');
                                 }} className={`${styles.glassBtn} ${styles.copyBtn}`}>نسخ</button>
                                 <button onClick={toggleFavorite} className={`${styles.glassBtn} ${favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? styles.activeFav : ''}`}>
@@ -542,7 +579,7 @@ const LandingPage = () => {
                     )}
                     <div className={styles.bottomDivider} style={{margin: '20px 0', opacity: 0.1, height: '1px', background: 'var(--color-text-primary)'}} />
                     {dailyQuestion && (
-                        <div className={styles.questionSection}>
+                        <div className={styles.questionSection} id="daily-question">
                             <div className={styles.glassHeader}><Trophy size={18} color="#f59e0b" /><span>تحدي اليوم</span></div>
                             <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
                             <div className={styles.optionsList}>
@@ -552,6 +589,32 @@ const LandingPage = () => {
                             </div>
                         </div>
                     )}
+                </div>
+            </section>
+
+            <section className={styles.aiFeaturesSection}>
+                <h2 className={styles.sectionTitle}>جرب مميزات الذكاء الاصطناعي</h2>
+                <div className={styles.aiFeaturesGrid}>
+                    <Link href={user ? "/search" : "/intro"} className={styles.aiFeatureCard}>
+                        <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                            <Search size={24} />
+                        </div>
+                        <div className={styles.aiFeatureInfo}>
+                            <h3>البحث بالمشتقات</h3>
+                            <p>ابحث عن الكلمات وجذورها اللغوية بذكاء</p>
+                        </div>
+                        <ArrowRight size={18} className={styles.aiArrow} />
+                    </Link>
+                    <Link href={user ? "/studyPlans/custom" : "/intro"} className={styles.aiFeatureCard}>
+                        <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+                            <Wand2 size={24} />
+                        </div>
+                        <div className={styles.aiFeatureInfo}>
+                            <h3>إنشاء خطة بالذكاء الاصطناعي</h3>
+                            <p>أخبر "أجيوس" بما تشعر به ليقترح لك خطة</p>
+                        </div>
+                        <ArrowRight size={18} className={styles.aiArrow} />
+                    </Link>
                 </div>
             </section>
 

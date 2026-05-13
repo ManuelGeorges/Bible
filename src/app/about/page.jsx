@@ -50,6 +50,10 @@ export default function AboutPage() {
 
         <hr className={styles.dividerLine} />
 
+        <p className={styles.paragraph}>
+          نتوجه بشكر خاص لمؤسسة <span className={styles.important}>Faith Comes By Hearing</span> على توفير المكتبة الصوتية الرائعة بصوت الأستاذ <span className={styles.important}>عادل نصحي</span>، ولدعمهم التقني المستمر الذي ساهم في إثراء تجربة المستخدم الاستماعية في هذا التطبيق.
+        </p>
+
         <p className={styles.paragraph}> 
           نتوجه بالشكر والتقدير لبيتنا العامر 
           <span className={styles.important}> كنيسة رئيس الملائكة الجليل ميخائيل بمصطفى كامل - الإسكندرية </span>

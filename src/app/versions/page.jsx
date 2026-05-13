@@ -7,18 +7,32 @@ export const metadata = {
 
 const updates = [
   {
-    version: 'Beta 1.0.0',
-    date: 'مارس 2026',
-    title: 'النسخة التجريبية الأولى (Beta Version)',
+    version: '1.0.0',
+    date: '12 مايو 2026',
+    title: 'النسخة الرسمية الأولى ',
     features: [
-      'إطلاق نظام البحث الذكي بالمشتقات والجذور اللغوية.',
-      'دعم كامل للعمل بدون إنترنت (Offline Mode).',
-      'خرائط تفاعلية للأماكن الكتابية مدعومة باللغة العربية.',
-      'واجهة مستخدم محسنة تدعم اللمس والأجهزة اللوحية.'
+      'النسخة الأولى والرسمية التي تحمل كل الخصائص',
     ],
     fixes: [
-      'تحسين سرعة استجابة قاعدة البيانات عند البحث في 31,000 آية.',
-      'إصلاح أخطاء عرض التشكيل والنصوص في المتصفحات القديمة.'
+      'تلا يوجد',
+    ]
+  },
+  {
+    version: '1.1.0',
+    date: '13 مايو 2026',
+    title: 'اصدار الخرائط المطورة',
+    features: [
+      'تزويد مكتبة الخرائط بخرائط جديدة',
+      'اضافة البحث الذكي بالاماكن والمعالم التاريخية',
+      'اضافة امكانية مشاهدة معلم ثم توجيه المستخدم لمكان ذكره بالانجيل',
+      'اضافة قسم " جرب الذكاء الاصطناعي" بالصفحة الرئيسية لتسهيل تجربة المستخدم',
+    ],
+    fixes: [
+      'حل مشكلة بطء قائمة اختار الاسفار والاصحاحات بقسم الكتاب المقدس',
+      'تحسينات جذرية في تصميم صفحة المسابقات',
+      'حل مشكلة عدم وضوح القوائم المنسدلة',
+
+
     ]
   }
 ];
@@ -30,7 +44,7 @@ export default function VersionsPage() {
       <p className={styles.introParagraph}>
         نحن حالياً في مرحلة الاختبار والتحسين المستمر للوصول لأفضل أداء.
       </p>
-      
+
       <div className={styles.updatesGrid}>
         {updates.map((update, index) => (
           <div key={index} className={styles.updateCard} style={{ borderTop: '4px solid #D4AF37' }}>
@@ -41,7 +55,7 @@ export default function VersionsPage() {
               <span className={styles.updateDate}>{update.date}</span>
             </div>
             <h2 className={styles.updateTitle}>{update.title}</h2>
-            
+
             {update.features.length > 0 && (
               <>
                 <h3 className={styles.listTitle}>الميزات الحالية</h3>
@@ -52,7 +66,7 @@ export default function VersionsPage() {
                 </ul>
               </>
             )}
-            
+
             {update.fixes.length > 0 && (
               <>
                 <h3 className={styles.listTitle}>التحسينات المستمرة</h3>

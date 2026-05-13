@@ -113,7 +113,10 @@ export default function StatsWatcher() {
             await unlockBadge('ghost_user');
         }
 
-        const isDark = localStorage.getItem('theme') !== 'light';
+        // تحسين منطق الدارك مود ليعتمد على النظام إذا كان الخيار هو system
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
         if (isDark) {
             const darkStart = localStorage.getItem('dark_mode_start');
             if (!darkStart) {

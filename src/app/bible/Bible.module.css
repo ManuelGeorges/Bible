@@ -329,3 +329,43 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.completionWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.completionBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: 1px solid #0047ab;
+  border-bottom: 3px solid #0047ab;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.completionBtn:hover {
+  background-color: #2f1e91;
+  transform: translateY(-2px);
+}
+
+.completionBtn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+}
+
+.completionBtn.completed {
+  border-color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}

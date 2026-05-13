@@ -4,12 +4,14 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
@@ -24,6 +26,20 @@ public class MainActivity extends BridgeActivity {
         refreshAllAlarms();
 
         WebView webView = getBridge().getWebView();
+        WebSettings settings = webView.getSettings();
+
+        // الحل النهائي لمشكلة الدارك مود في Capacitor
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // إيقاف ميزة Force Dark تماماً لمنع الأندرويد من فرض ألوان غامقة من عنده
+            // ده بيخلي الـ CSS prefers-color-scheme يشتغل بناءً على وضع النظام الحقيقي
+            settings.setForceDark(WebSettings.FORCE_DARK_OFF);
+        }
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // منع التعتيم الخوارزمي اللي بيبوظ الألوان في الإصدارات الجديدة
+            settings.setAlgorithmicDarkeningAllowed(false);
+        }
+
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void scanFile(String path) {
@@ -51,21 +67,13 @@ public class MainActivity extends BridgeActivity {
             }
 
             @JavascriptInterface
-            public void updateStudySummary(String json) {
-                SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-                prefs.edit()
-                    .putString("studyPlansSummary", json)
-                    .putString("_cap_studyPlansSummary", json)
-                    .apply();
-            }
-
-            @JavascriptInterface
-            public void updateUserStats(int streak) {
-                SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-                prefs.edit()
-                    .putInt("userStreak", streak)
-                    .putInt("_cap_userStreak", streak)
-                    .apply();
+            public String getSystemTheme() {
+                int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
+                    return "dark";
+                } else {
+                    return "light";
+                }
             }
         }, "AgiosScannerNative");
     }

@@ -4,7 +4,7 @@
       "name": "التكوين",
       "testament": "OT",
       "id": "Sefr-El-Takween",
-      "book_id": "GEN",
+      "book_id": "Gen",
       "type": "old",
       "chapters": 50,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/01-Sefr-El-Takween"
@@ -13,7 +13,7 @@
       "name": "الخروج",
       "testament": "OT",
       "id": "Sefr-El-Khoroug",
-      "book_id": "EXO",
+      "book_id": "Exo",
       "type": "old",
       "chapters": 40,
       "urlBase": "Holy-Bible-Tafsir-01-Old-Testament/Father-Tadros-Yacoub-Malaty/02-Sefr-El-Khoroug"

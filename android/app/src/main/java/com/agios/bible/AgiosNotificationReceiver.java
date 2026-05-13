@@ -55,7 +55,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         String norm = normalizeType(type);
 
         // إذا كان نوع الإشعار هو تحديث، نفحص المتجر أولاً
-        if (norm.equals("update")) {
+        if (norm.equals("updateAlerts")) {
             checkForUpdateAndNotify(context);
             // جدولة الفحص التالي ليوم غد
             scheduleAlarm(context, type, getDefaultHour(type), 0);
@@ -75,7 +75,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             case "studyPlans":
                 handleStudyPlansNotification(context);
                 break;
-            case "tip":
+            case "appSuggestions":
                 handleTipNotification(context);
                 break;
             default:
@@ -238,8 +238,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (low.contains("question")) return "question";
         if (low.contains("streak")) return "streak";
         if (low.contains("study") || low.contains("plan")) return "studyPlans";
-        if (low.contains("tip") || low.contains("suggestion")) return "tip";
-        if (low.contains("update")) return "update";
+        if (low.contains("tip") || low.contains("suggestion")) return "appSuggestions";
+        if (low.contains("update")) return "updateAlerts";
         return type;
     }
 
@@ -249,8 +249,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (n.equals("question")) return 18;
         if (n.equals("studyPlans")) return 10;
         if (n.equals("streak")) return 21;
-        if (n.equals("tip")) return 15;
-        if (n.equals("update")) return 12;
+        if (n.equals("appSuggestions")) return 12;
+        if (n.equals("updateAlerts")) return 12;
         return 12;
     }
 
@@ -260,10 +260,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         scheduleAlarm(context, "dailyQuestion", 18, 0);
         scheduleAlarm(context, "studyPlans", 10, 0);
         scheduleAlarm(context, "streakReminder", 21, 0);
-        scheduleAlarm(context, "tip", 15, 0);
-        // إضافة إشعار الاقتراحات باسمه الجديد أيضاً لضمان الدقة
+        // تم توحيد النصائح والاقتراحات تحت مسمى appSuggestions لضمان قراءة الإعدادات
         scheduleAlarm(context, "appSuggestions", 12, 0);
-        // إعادة تفعيل فحص التحديثات يومياً الساعة 12 ظهراً
         scheduleAlarm(context, "updateAlerts", 12, 0);
     }
 
@@ -285,7 +283,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (!jsonStr.isEmpty()) {
             try {
                 JSONObject json = new JSONObject(jsonStr);
-                // محاولة البحث عن الوقت بالمسمى المختصر (مثل streakTime) أو المسمى الكامل
+                // البحث عن الوقت بالمسمى الموحد (مثل appSuggestionsTime)
                 savedTime = json.optString(norm + "Time", json.optString(type + "Time", ""));
 
                 if (json.has(norm)) enabled = json.optBoolean(norm, true);

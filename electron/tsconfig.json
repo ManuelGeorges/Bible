@@ -1,0 +1,20 @@
+{
+  "compileOnSave": true,
+  "include": ["./src/**/*", "./capacitor.config.ts", "./capacitor.config.js"],
+  "compilerOptions": {
+    "outDir": "./build",
+    "importHelpers": true,
+    "target": "ES2017",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types"],
+    "allowJs": true,
+    "rootDir": ".",
+    "skipLibCheck": true,         // أهم خيار: تجاهل أخطاء الـ types في المكتبات
+    "strict": false,               // تقليل التشدد في الفحص لتجاوز تعارض الإصدارات
+    "noImplicitAny": false,
+    "ignoreDeprecations": "5.0"    // لو الـ TypeScript عندك حديث
+  },
+  "exclude": ["node_modules", "build"]
+}

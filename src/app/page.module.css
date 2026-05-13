@@ -549,6 +549,71 @@
 .correct { background: #10b981; color: white; }
 .wrong { background: #ef4444; color: white; }
 
+.aiFeaturesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aiFeaturesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aiFeatureCard {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  transition: all 0.3s var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+}
+
+.aiFeatureCard:active {
+  transform: scale(0.98);
+}
+
+.aiFeatureIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aiFeatureInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aiFeatureInfo h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.aiFeatureInfo p {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.aiArrow {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
 .startedPlansSection { margin-top: 8px; }
 .sectionTitle { font-size: 18px; font-weight: 800; margin-bottom: 16px; }
 .plansVerticalList { display: flex; flex-direction: column; gap: 12px; }

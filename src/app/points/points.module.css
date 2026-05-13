@@ -28,8 +28,8 @@
   gap: 8px;
   margin-bottom: 35px;
   position: sticky;
-  top: 15px;
-  z-index: 1000;
+  top: 75px; /* تم التعديل ليكون أسفل الـ Navbar الرئيسي (70px) */
+  z-index: 999; /* أقل من الـ Navbar الرئيسي لضمان عدم التداخل القبيح */
   background: var(--color-card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -71,7 +71,7 @@
   width: 100%;
   max-width: 650px;
   margin-bottom: 40px;
-  scroll-margin-top: 100px;
+  scroll-margin-top: 140px; /* تم التعديل ليشمل ارتفاع الشريطين (70px + 60px) */
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;

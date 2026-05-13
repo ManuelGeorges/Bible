@@ -240,42 +240,66 @@ export default function HomePage() {
         {user && <p className={styles.userBadge}>أهلاً، {user.displayName || 'مستخدم أجيوس'}</p>}
       </header>
 
-      <div className={styles.controls}>
-        <div className={styles.customSelectWrapper} ref={categoryRef}>
-          <div className={styles.selectTrigger} onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
-            {quizState.category || "اختر السفر"}
+      {!quizState.category && (
+        <div className={styles.controls}>
+          <div className={styles.customSelectWrapper} ref={categoryRef}>
+            <div className={styles.selectTrigger} onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
+              {quizState.category || "اختر سفراً للبدء"}
+            </div>
+            <AnimatePresence>
+              {isCategoryOpen && (
+                <motion.ul
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className={styles.dropdownMenu}
+                >
+                  {bookNamesData.map((book, i) => (
+                    <li key={i} className={styles.dropdownItem} onClick={() => { loadQuestionsByCategory(book.name); setIsCategoryOpen(false); }}>
+                      {book.name}
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
           </div>
-          <AnimatePresence>
-            {isCategoryOpen && (
-              <motion.ul initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className={styles.dropdownMenu}>
-                {bookNamesData.map((book, i) => (
-                  <li key={i} className={styles.dropdownItem} onClick={() => { loadQuestionsByCategory(book.name); setIsCategoryOpen(false); }}>
-                    {book.name}
-                  </li>
-                ))}
-              </motion.ul>
-            )}
-          </AnimatePresence>
         </div>
-      </div>
+      )}
 
       <main className={styles.quizContentWrapper}>
         {!quizState.category ? (
-          <div className={styles.welcomeMessage}>
-            <h2>تحدي أسفار الكتاب المقدس 📖</h2>
-            <p>اختر سفراً للبدء في الاختبار</p>
-          </div>
+          <>
+            <div className={styles.welcomeMessage}>
+              <h2>تحدي أسفار الكتاب المقدس 📖</h2>
+              <p>اختبر معلوماتك في كلمة الله واجمع النقاط والأوسمة</p>
+            </div>
+
+            {completedQuizzes.length > 0 && (
+              <div className={styles.historyContainer}>
+                <h3>سجل نتائجك ☁️</h3>
+                {completedQuizzes.map((quiz, idx) => (
+                  <div key={idx} className={styles.historyItem}>
+                    <div className={styles.historyInfo}>
+                      <span className={styles.historyCategory}>{quiz.category}</span>
+                      <span className={styles.historyScore}>النتيجة: {quiz.score} / {quiz.total}</span>
+                    </div>
+                    <button className={styles.redoButton} onClick={() => loadQuestionsByCategory(quiz.category)}>إعادة</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         ) : quizState.showResults ? (
           <div className={styles.resultsContainer}>
             <h2 className={styles.questionText}>النتائج النهائية 📊</h2>
-            <p className={styles.mainScore}>{quizState.score} / {questions.length}</p>
+            <div className={styles.mainScore}>{quizState.score} / {questions.length}</div>
             <button className={styles.playAgainButton} onClick={resetQuiz}>العودة للأسفار</button>
           </div>
         ) : (
           <div className={styles.quizActive}>
             <div className={styles.quizStats}>
-              <span>السؤال: {quizState.currentIndex + 1} / {questions.length}</span>
-              <span>🔥 {quizState.streak}</span>
+              <span>السؤال {quizState.currentIndex + 1} من {questions.length}</span>
+              <span>🔥 {quizState.streak} متتالي</span>
             </div>
 
             <div className={styles.questionCard}>
@@ -291,32 +315,19 @@ export default function HomePage() {
                 ))}
               </div>
               
-              <div style={{ display: 'flex', gap: '8px', marginTop: '20px', justifyContent: 'center' }}>
-                {quizState.answered && <button onClick={nextQuestion} className={styles.nextButton}>التالي</button>}
-                <button className={styles.actionBtn} onClick={resetQuiz} style={{ background: '#666' }}>إلغاء</button>
-              </div>
-
               {quizState.answered && (
                 <div className={styles.feedbackContainer}>
                   <p className={quizState.isCorrect ? styles.correctFeedback : styles.incorrectFeedback}>
-                    {quizState.isCorrect ? 'إجابة صحيحة ✅' : `الصح: ${questions[quizState.currentIndex].correctAnswer}`}
+                    {quizState.isCorrect ? 'إجابة صحيحة ✅' : `الإجابة الصحيحة هي: ${questions[quizState.currentIndex].correctAnswer}`}
                   </p>
                 </div>
               )}
-            </div>
-          </div>
-        )}
 
-        {completedQuizzes.length > 0 && !quizState.category && (
-          <div className={styles.historyContainer} style={{ marginTop: '40px' }}>
-            <h3>سجل نتائجك ☁️</h3>
-            {completedQuizzes.map((quiz, idx) => (
-              <div key={idx} className={styles.historyItem} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'var(--color-card-bg)', margin: '5px 0', borderRadius: '8px', borderBottom: '2px solid var(--color-border)' }}>
-                <span>{quiz.category}</span>
-                <strong>{quiz.score} / {quiz.total}</strong>
-                <button onClick={() => loadQuestionsByCategory(quiz.category)} style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}>إعادة</button>
+              <div className={styles.quizActions}>
+                {quizState.answered && <button onClick={nextQuestion} className={styles.nextButton}>السؤال التالي</button>}
+                <button className={styles.cancelButton} onClick={resetQuiz}>إلغاء المسابقة</button>
               </div>
-            ))}
+            </div>
           </div>
         )}
       </main>
