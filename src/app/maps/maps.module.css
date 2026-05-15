@@ -107,9 +107,18 @@
 }
 
 .noResults {
-  padding: 20px;
+  padding: 30px 20px;
   text-align: center;
   color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.noResultsIcon {
+  opacity: 0.5;
+  margin-bottom: 5px;
 }
 
 /* الضوابط */
@@ -148,10 +157,15 @@
   user-select: none;
 }
 
-.selectTrigger::after {
-  content: '▼';
-  font-size: 0.7rem;
-  opacity: 0.5;
+.triggerLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rotateIcon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
 }
 
 .dropdownMenu {
@@ -231,6 +245,9 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .activeStyle {
@@ -318,21 +335,39 @@
   color: var(--color-accent);
 }
 
+.journeyIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--color-accent-rgb), 0.2);
+  padding: 8px;
+  border-radius: 12px;
+  color: var(--color-accent);
+}
+
 .closeJourney {
   background: rgba(255,255,255,0.1);
   border: none;
   color: white;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.closeJourney:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 .journeyDesc {
   font-size: 0.95rem;
   color: var(--color-text-secondary);
   margin-bottom: 20px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .journeyFooter {
@@ -350,10 +385,15 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .journeyNavBtn:hover {
   background: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .loadingMessage {

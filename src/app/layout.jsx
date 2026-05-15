@@ -13,6 +13,7 @@ import StatsWatcher from '../components/StatsWatcher';
 import { BadgeProvider } from './context/BadgeContext';
 import { AudioProvider } from './context/AudioContext';
 import GlobalAudioPlayer from '../components/GlobalAudioPlayer';
+import TopHeader from '../components/TopHeader';
 
 export const viewport = {
   width: 'device-width',
@@ -35,7 +36,7 @@ export const metadata = {
   keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس , Bible study, دراسة الكتاب المقدس, آية اليوم, Verse of the day, خرائط الكتاب المقدس, Bible maps, خطط دراسة الكتاب المقدس, Bible study plans, مسابقات الكتاب المقدس, Bible quizzes, البحث في الكتاب المقدس, Bible search, كتب مسيحية, Christian books'],
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default', // Solid like WhatsApp
+    statusBarStyle: 'default',
     title: 'Agios Bible',
   },
   openGraph: {
@@ -87,7 +88,6 @@ export default function RootLayout({ children }) {
     var bgColor = (theme === 'dark' ? '#020617' : '#f0f4f8');
     document.documentElement.style.backgroundColor = bgColor;
 
-    // تحديث لون الـ Status Bar فوراً للـ Android و iOS
     var updateThemeColor = function() {
       var metas = document.querySelectorAll('meta[name="theme-color"]');
       metas.forEach(function(m) { m.setAttribute('content', bgColor); });
@@ -122,6 +122,7 @@ export default function RootLayout({ children }) {
             >
               <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
               <UserTracker />
+              <TopHeader />
               <BibleNavbar />
 
               <SplashHandler>

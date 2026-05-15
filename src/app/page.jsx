@@ -23,9 +23,10 @@ import {
     Lock, Unlock, Camera, Mail, Link as LinkIcon,
     ExternalLink, ShieldCheck, QrCode, BookOpen,
     Scroll, Languages, PartyPopper, Mic, Headphones,
-    Video, Music, Church, Sun, Moon, Cloud
+    Video, Music, Church, Sun, Moon, Cloud, Target, MapPin, BrainCircuit
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
+import Badge from '../components/Badge/Badge';
 import { useBadge } from './context/BadgeContext';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
@@ -42,12 +43,33 @@ const LUCIDE_ICONS = {
     'Calendar': Calendar, 'Camera': Camera, 'Mail': Mail, 'Link': LinkIcon, 'External': ExternalLink,
     'Lock': Lock, 'Unlock': Unlock, 'QrCode': QrCode, 'Translate': Languages, 'Mic': Mic,
     'Users': Users, 'People': Users, 'Like': ThumbsUp, 'Share': Share2, 'Music': Music, 'Video': Video, 'Headphones': Headphones,
-    'Sun': Sun, 'Moon': Moon, 'Cloud': Cloud, 'Flame': Flame, 'Fire': Flame
+    'Sun': Sun, 'Moon': Moon, 'Cloud': Cloud, 'Flame': Flame, 'Fire': Flame, 'Target': Target, 'MapPin': MapPin, 'BrainCircuit': BrainCircuit
 };
 
 const convertToArabicNumber = (num) => {
     const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return num.toString().split('').map(d => arabicNums[+d] || d).join('');
+};
+
+// وظائف مساعدة لتوحيد التوقيت على توقيت القاهرة
+const getCairoDate = (date = new Date()) => {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Africa/Cairo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(date);
+};
+
+const getCairoYesterday = () => {
+    const now = new Date();
+    const cairoNow = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Cairo"}));
+    cairoNow.setDate(cairoNow.getDate() - 1);
+    return new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(cairoNow);
 };
 
 const LandingPage = () => {
@@ -67,6 +89,8 @@ const LandingPage = () => {
     const [dailyGoals, setDailyGoals] = useState([]);
     const [remoteNews, setRemoteNews] = useState([]);
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
+    const [badgesData, setBadgesData] = useState(null);
+    const [rawUserData, setRawUserData] = useState(null);
 
     const unlockBadge = async (badgeId) => {
         if (!user) return;
@@ -102,8 +126,8 @@ const LandingPage = () => {
     }, []);
 
     const fetchDailyContent = useCallback(async (loggedInUser) => {
-        const now = new Date();
-        const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const dateKey = getCairoDate();
+        const [year, month, day] = dateKey.split('-').map(Number);
 
         try {
             const [verseRes, questRes] = await Promise.all([
@@ -114,8 +138,8 @@ const LandingPage = () => {
             const verseData = await verseRes.json();
             const questData = await questRes.json();
 
-            setDailyVerse(verseData.find(v => v.month === now.getMonth() + 1 && v.day === now.getDate()));
-            setDailyQuestion(questData.find(q => q.month === now.getMonth() + 1 && q.day === now.getDate()));
+            setDailyVerse(verseData.find(v => v.month === month && v.day === day));
+            setDailyQuestion(questData.find(q => q.month === month && q.day === day));
 
             let answered = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
             if (loggedInUser) {
@@ -130,6 +154,10 @@ const LandingPage = () => {
         } finally {
             setIsLoading(false);
         }
+    }, []);
+
+    useEffect(() => {
+        fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
     }, []);
 
     useEffect(() => {
@@ -183,6 +211,7 @@ const LandingPage = () => {
                 unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
+                        setRawUserData(data);
                         const streak = data.streak || 0;
                         setUserStats({ points: data.totalPoints || 0, streak: streak });
 
@@ -216,7 +245,7 @@ const LandingPage = () => {
 
                         setStartedPlans([...activeCustom, ...activeStatic]);
 
-                        const today = new Date().toISOString().split('T')[0];
+                        const today = getCairoDate();
                         const historyRaw = data.pointsHistory || [];
                         const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
 
@@ -224,7 +253,7 @@ const LandingPage = () => {
                             history.filter(h => {
                                 if (!h.timestamp) return false;
                                 const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
-                                return ts.toISOString().split('T')[0] === today;
+                                return getCairoDate(ts) === today;
                             }).map(h => h.type)
                         );
 
@@ -242,6 +271,7 @@ const LandingPage = () => {
             } else {
                 setStartedPlans([]);
                 setDailyGoals([]);
+                setRawUserData(null);
             }
         });
 
@@ -283,12 +313,9 @@ const LandingPage = () => {
     const handleOptionClick = async (index) => {
         if (!user) { router.push('/intro'); return; }
         if (hasAnswered || !dailyQuestion) return;
-        const now = new Date();
-        const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const dateKey = getCairoDate();
+        const yesterdayStr = getCairoYesterday();
 
         setSelectedAnswer(index);
         setHasAnswered(true);
@@ -415,6 +442,65 @@ const LandingPage = () => {
 
     const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);
 
+    const highlightBadges = useMemo(() => {
+        if (!badgesData || !rawUserData) return { acquired: [], near: [] };
+
+        const allBadges = badgesData.badge_families.flatMap(f => f.badges.map(b => ({ ...b, family_name: f.family_name })));
+        const acquired = allBadges
+            .filter(b => userBadges.includes(b.id))
+            .sort((a, b) => {
+                const rarityOrder = { "خرافي": 0, "أسطوري": 1, "نادر": 2, "مميز": 3, "عادي": 4, "سري": 5 };
+                return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+            })
+            .slice(0, 5);
+
+        const stats = {
+            streak: rawUserData.streak || 0,
+            chapters: Object.keys(rawUserData.completedChapters || {}).filter(k => rawUserData.completedChapters[k]).length,
+            quizzes: (rawUserData.completedQuizzes || []).length,
+            perfectQuizzes: (rawUserData.completedQuizzes || []).filter(q => q.score === q.total).length,
+            favorites: Object.keys(rawUserData.favorites?.verses || {}).length,
+            maps: (rawUserData.visitedMapPoints || []).length,
+            shares: (rawUserData.pointsHistory || []).filter(h => h.type === 'share').length
+        };
+
+        const near = allBadges
+            .filter(b => !userBadges.includes(b.id) && b.rarity !== "سري")
+            .map(b => {
+                let progress = 0;
+                let target = 1;
+                if (b.id.startsWith('streak_')) {
+                    target = parseInt(b.id.split('_')[1]);
+                    progress = stats.streak;
+                } else if (b.id === 'map_pioneer') { target = 5; progress = stats.maps; }
+                else if (b.id === 'ancient_navigator') { target = 20; progress = stats.maps; }
+                else if (b.id.startsWith('reader_')) {
+                    target = parseInt(b.id.split('_')[1]);
+                    progress = stats.chapters;
+                } else if (b.id === 'bible_finisher') { target = 1189; progress = stats.chapters; }
+                else if (b.id === 'reader_594') { target = 594; progress = stats.chapters; }
+                else if (b.id.startsWith('scholar_')) {
+                    target = parseInt(b.id.split('_')[1]);
+                    progress = stats.quizzes;
+                } else if (b.id === 'bible_master') { target = 73; progress = stats.quizzes; }
+                else if (b.id.startsWith('perfect_')) {
+                    target = b.id === 'perfect_all' ? 73 : parseInt(b.id.split('_')[1]);
+                    progress = stats.perfectQuizzes;
+                } else if (b.id.startsWith('fav_')) {
+                    target = parseInt(b.id.split('_')[1]);
+                    progress = stats.favorites;
+                } else if (b.id === 'share_1') { target = 1; progress = stats.shares; }
+                else if (b.id === 'social_influencer') { target = 50; progress = stats.shares; }
+
+                return { ...b, progress: Math.min(100, (progress / target) * 100), currentVal: progress, targetVal: target };
+            })
+            .filter(b => b.progress > 0 && b.progress < 100)
+            .sort((a, b) => b.progress - a.progress)
+            .slice(0, 5);
+
+        return { acquired, near };
+    }, [badgesData, rawUserData, userBadges]);
+
     return (
         <main className={`${styles.hubContainer} ${styles.rtl}`}>
             <header className={styles.header}>
@@ -533,6 +619,63 @@ const LandingPage = () => {
                 ))}
             </section>
 
+            {user && (highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
+                <section className={styles.badgesHighlightSection}>
+                    <div className={styles.sectionHeader}>
+                        <div className={styles.sectionTitleWithIcon}>
+                            <Trophy size={20} color="#f59e0b" />
+                            <h2 className={styles.sectionTitleMini}>أوسمتك وإنجازاتك</h2>
+                        </div>
+                        <Link href="/points" className={styles.viewMoreLink}>كل الأوسمة <ArrowUpRight size={14} /></Link>
+                    </div>
+
+                    <div className={styles.badgesDashboard}>
+                        {highlightBadges.acquired.length > 0 && (
+                            <div className={styles.badgeColumn}>
+                                <span className={styles.columnLabel}>أهم المقتنيات</span>
+                                <div className={styles.badgeHorizontalGrid}>
+                                    {highlightBadges.acquired.map(badge => (
+                                        <Badge
+                                            key={badge.id}
+                                            badge={badge}
+                                            familyName={badge.family_name}
+                                            isUnlocked={true}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {highlightBadges.near.length > 0 && (
+                            <div className={styles.badgeColumn}>
+                                <span className={styles.columnLabel}>اقتربت من اقتنائها</span>
+                                <div className={styles.badgeHorizontalGrid}>
+                                    {highlightBadges.near.map(badge => (
+                                        <div key={badge.id} className={styles.badgeWithProgressWrapper}>
+                                            <Badge
+                                                badge={badge}
+                                                familyName={badge.family_name}
+                                                isUnlocked={false}
+                                            />
+                                            <div className={styles.badgeProgressMini}>
+                                                <div className={styles.progressText}>
+                                                    {convertToArabicNumber(badge.currentVal)} / {convertToArabicNumber(badge.targetVal)}
+                                                </div>
+                                                <div className={styles.progressLine}>
+                                                    <div
+                                                        className={styles.progressFill}
+                                                        style={{ width: `${badge.progress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
+
             {lastRead && (
                 <button
                     onClick={() => {
@@ -595,13 +738,23 @@ const LandingPage = () => {
             <section className={styles.aiFeaturesSection}>
                 <h2 className={styles.sectionTitle}>جرب مميزات الذكاء الاصطناعي</h2>
                 <div className={styles.aiFeaturesGrid}>
-                    <Link href={user ? "/search" : "/intro"} className={styles.aiFeatureCard}>
+                    <Link href={user ? "/search?type=derivatives" : "/intro"} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                             <Search size={24} />
                         </div>
                         <div className={styles.aiFeatureInfo}>
                             <h3>البحث بالمشتقات</h3>
                             <p>ابحث عن الكلمات وجذورها اللغوية بذكاء</p>
+                        </div>
+                        <ArrowRight size={18} className={styles.aiArrow} />
+                    </Link>
+                    <Link href={user ? "/search?type=semantic" : "/intro"} className={styles.aiFeatureCard}>
+                        <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                            <Sparkles size={24} />
+                        </div>
+                        <div className={styles.aiFeatureInfo}>
+                            <h3>البحث بالمعنى والشرح</h3>
+                            <p>ابحث عن آيات بالكتاب المقدس عن طريق شرحها او شرح سياقها لمساعد آجيوس الذكي</p>
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>

@@ -44,15 +44,6 @@
   text-shadow: 0 4px 15px var(--color-shadow-medium);
 }
 
-.description {
-  font-size: clamp(0.85em, 3.5vw, 1em);
-  color: var(--color-text-secondary);
-  line-height: 1.8;
-  margin-bottom: 2rem;
-  text-align: center;
-  opacity: 0.9;
-}
-
 .inputGroup {
   display: flex;
   flex-wrap: wrap;
@@ -83,6 +74,9 @@
 }
 
 .searchButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 1rem 2.5rem;
   background: var(--color-accent);
   color: var(--btn-text);
@@ -114,23 +108,83 @@
   padding: 6px;
   border-radius: 18px;
   border: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  box-shadow: 0 4px 15px var(--color-shadow-small);
 }
 
 .originalRadioGroup label {
-  padding: 10px 25px;
-  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.4s var(--transition-bounce);
   font-weight: 600;
   color: var(--color-text-secondary);
-  font-size: 0.9em;
+  font-size: 0.85em;
+  white-space: nowrap;
 }
 
 .originalRadioGroup input[type="radio"] {
   display: none;
 }
 
-.originalRadioGroup label:has(input:checked) {
+.activeLabel {
+  background: var(--color-accent) !important;
+  color: var(--btn-text) !important;
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.disabledLabel {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.semanticOptions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(var(--color-accent-rgb), 0.03);
+  border-radius: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.optionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.optionControls {
+  display: flex;
+  gap: 8px;
+}
+
+.optionToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s var(--transition-smooth);
+}
+
+.activeOption {
   background: var(--color-accent);
   color: var(--btn-text);
   transform: scale(1.05);
@@ -248,41 +302,6 @@
   font-weight: bold;
 }
 
-.instructionGrid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin: 0 auto 30px;
-  width: 100%;
-  max-width: 800px;
-}
-
-.instructionItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-card-bg);
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1px solid var(--color-border);
-  backdrop-filter: blur(5px);
-  transition: all 0.3s ease;
-}
-
-.instructionItem:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-accent);
-}
-
-.instructionItem p {
-  margin: 0;
-  font-size: 0.8em;
-  color: var(--color-text-primary);
-  font-weight: 600;
-  opacity: 0.8;
-}
-
 .searchInfoBox {
   background: var(--color-card-bg);
   border: 1px dashed var(--color-accent);
@@ -371,8 +390,8 @@
   padding: clamp(1.2em, 5vw, 2.2em);
   margin-bottom: 20px;
   transition: all 0.4s var(--transition-smooth);
-  animation: slideIn 0.5s ease-out backwards;
   position: relative;
+  cursor: pointer;
 }
 
 .verseCard:hover {
@@ -443,67 +462,15 @@
   font-weight: bold;
 }
 
-.messageBox {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 30px;
-  border-radius: 50px;
-  background: var(--color-accent);
-  color: var(--btn-text);
-  z-index: 1000000;
-  font-weight: 800;
-  box-shadow: 0 10px 40px var(--color-shadow-medium);
-  animation: slideUp 0.4s var(--transition-bounce);
-  font-size: 0.95em;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translate(-50%, 30px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
-  .card { padding: 1.2em; }
-  .inputGroup { flex-direction: column; }
-  .searchButton { width: 100%; }
-  .filterGrid { grid-template-columns: 1fr; }
-  .instructionGrid { flex-direction: column; align-items: stretch; }
-  .instructionItem { justify-content: center; }
-  .heading { font-size: 1.5em; }
-}
-
-.dropdownMenu::-webkit-scrollbar {
-  width: 6px;
-}
-
-.dropdownMenu::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
-  border-radius: 10px;
-}
 /* لوحة الألوان والتحكم */
 .actionPanel {
   background-color: var(--color-card-bg);
   border-top: 1px solid var(--color-border);
   padding: 15px;
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px;
   animation: slideDown 0.3s ease-out;
+  margin-top: 10px;
+  width: 100%;
 }
 
 .colorPalette {
@@ -591,6 +558,7 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  width: 100%;
 }
 
 .noteDisplay p {
@@ -604,16 +572,26 @@
   font-size: 14px;
 }
 
-/* تحسينات كارت الآية */
-.verseCard {
-  transition: border-right 0.3s ease;
-  overflow: hidden; /* لضمان عدم خروج الأنميشن عن الكارت */
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, 30px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .referenceLink {
     color: var(--color-accent);
     text-decoration: none;
@@ -624,136 +602,150 @@
 
 .referenceLink:hover {
     filter: brightness(1.2);
-    text-decoration: underline; /* شد خط تحتيه عشان يحس إنه لينك */
+    text-decoration: underline;
 }
+
 .resultsHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
-  padding: 10px;
+  padding: 10px 20px;
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 20px;
   position: sticky;
-  top: 0;
-  z-index: 10;
-  box-shadow: 0 2px 5px var(--color-shadow-medium);
+  top: 10px;
+  z-index: 100;
+  box-shadow: 0 4px 20px var(--color-shadow-medium);
+  backdrop-filter: blur(10px);
 }
 
 .selectionActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.multiCopyBtn, .multiFavBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s;
 }
 
 .multiCopyBtn {
   background-color: #10b981;
   color: white;
-  border: none;
-  padding: 6px 15px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: bold;
-  transition: background 0.3s;
 }
 
-.multiCopyBtn:hover {
+.multiFavBtn {
+  background-color: #ec4899;
+  color: white;
+}
+
+.multiCopyBtn:hover, .multiFavBtn:hover {
   filter: brightness(1.1);
+  transform: translateY(-2px);
 }
 
 .clearSelectionBtn {
   background-color: var(--color-text-secondary);
   color: white;
   border: none;
-  padding: 6px 15px;
-  border-radius: 20px;
+  padding: 8px 16px;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* حالة اختيار الكارت */
 .selectedCard {
   background-color: var(--color-border) !important;
-  border: 1px solid var(--color-accent) !important;
-  transform: scale(1.01);
-  transition: all 0.2s ease;
+  border: 2px solid var(--color-accent) !important;
+  transform: scale(1.02);
 }
 
-.verseCard {
-  cursor: pointer; /* عشان المستخدم يعرف إنه يقدر يضغط للاختيار */
-  transition: transform 0.2s, background-color 0.2s;
+/* البحث بالمعنى (Semantic Search) */
+.semanticGroupWrapper {
+  margin-bottom: 40px;
+  background: rgba(var(--color-accent-rgb), 0.02);
+  padding: 20px;
+  border-radius: 30px;
+  border: 1px solid var(--color-border);
 }
 
-.verseCard:hover {
-  background-color: var(--color-border);
+.semanticGroupHeader {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed var(--color-border);
 }
 
-/* تعديل بسيط لضمان أن الأزرار داخل الكارت لا تمنع الضغط */
-.actions button {
-  position: relative;
-  z-index: 2;
-}
-.derivativeItem {
-  animation: popIn 0.3s ease-out forwards;
-  display: inline-block;
-}
-
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1); }
-}
-.derivativeItem {
+.semanticHeaderTop {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  background: var(--color-border);
-  padding: 5px 12px;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: 0.2s;
-  border: 1px solid transparent;
-  color: var(--color-text-primary);
+  margin-bottom: 10px;
 }
 
-.activeItem {
+.semanticTitle {
+  font-weight: 800;
+  color: var(--color-accent);
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.selectAllInCardBtn {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+  border: none;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.selectAllInCardBtn:hover {
   background: var(--color-accent);
-  border-color: var(--color-accent);
   color: var(--btn-text);
 }
 
-.selectionActionsSmall {
+.semanticReason {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-style: italic;
+  background: var(--color-card-bg);
+  padding: 12px;
+  border-radius: 12px;
+  margin: 0;
+}
+
+.semanticVersesList {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
 }
 
-.selectionActionsSmall button {
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  font-size: 0.75rem;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.derivativeItem input {
-  cursor: pointer;
-}
-.referenceLink {
-  display: flex;
-  flex-direction: row; /* يضمن ترتيب العناصر بجانب بعضها */
-  align-items: center;
-  gap: 4px;
-  color: var(--color-accent);
-  text-decoration: none;
-  font-weight: bold;
-  direction: rtl; /* اتجاه الحاوية الكبير يمين لليسار */
-}
-
-/* لضمان أن الأرقام والنقطة لا تنعكس */
-.referenceLink span[dir="ltr"] {
-  display: inline-block;
-  direction: ltr; 
-  unicode-bidi: isolate;
+@media (max-width: 768px) {
+  .resultsHeader {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .selectionActions {
+    justify-content: center;
+  }
+  .semanticHeaderTop {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
 }

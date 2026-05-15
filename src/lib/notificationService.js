@@ -32,6 +32,12 @@ export const syncNotifications = async () => {
 
     await Preferences.set({ key: 'masterNotifications', value: 'true' });
 
+    // مزامنة الستريك ليقرأه كود الأندرويد
+    const currentStreak = localStorage.getItem('userStreak');
+    if (currentStreak) {
+      await Preferences.set({ key: 'userStreak', value: String(currentStreak) });
+    }
+
     const savedSettings = localStorage.getItem('notificationSettings');
     if (savedSettings) {
       const settings = JSON.parse(savedSettings);

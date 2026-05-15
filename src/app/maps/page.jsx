@@ -48,7 +48,7 @@ const INITIAL_VIEW_STATE = {
   longitude: 35.0,
   latitude: 31.0,
   zoom: 5,
-  pitch: 0,
+  pitch: 45, // إضافة زاوية ميل افتراضية لإظهار التضاريس
   bearing: 0,
 };
 
@@ -254,10 +254,34 @@ export default function MapsPage() {
       });
     }
 
-    if (currentStyle === MAP_STYLES.topo) {
+    if (currentStyle === MAP_STYLES.satellite) {
+      map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.8 }); // زيادة التفاصيل الأرضية
+
+      if (map.setFog) {
+        map.setFog({
+          'range': [0.5, 10],
+          'color': '#111625', // لون الغلاف الجوي الداكن لإعطاء عمق
+          'horizon-blend': 0.2
+        });
+      }
+
+      // تحسين ألوان طبقة القمر الصناعي لتقليل البهتان
+      const style = map.getStyle();
+      if (style && style.layers) {
+        const satelliteLayer = style.layers.find(l => l.type === 'raster');
+      }
+    } else if (currentStyle === MAP_STYLES.topo) {
       map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.5 });
+      if (map.setFog) {
+        map.setFog({
+          'range': [0.5, 10],
+          'color': '#ffffff',
+          'horizon-blend': 0.1
+        });
+      }
     } else {
       map.setTerrain(null);
+      if (map.setFog) map.setFog(null);
     }
   };
 

@@ -1,0 +1,53 @@
+.container {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 15px);
+  right: 15px; /* بما أن التطبيق RTL */
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* لمنع حجز مساحة العرض بالكامل */
+}
+
+.backBtn {
+  pointer-events: auto; /* السماح بالضغط على الزر فقط */
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  /* Liquid Glass Effect (iOS Style) */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--color-accent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='dark'] .backBtn {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.backBtn:active {
+  transform: scale(0.85);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme='dark'] .backBtn:active {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+@media (min-width: 769px) {
+  .container {
+    display: none;
+  }
+}

@@ -5,18 +5,19 @@ import Link from 'next/link';
 import styles from './studyPlans.module.css';
 import studyPlansData from './studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, updateDoc, deleteField } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, deleteField, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { ChevronLeft, Sparkles } from 'lucide-react';
+import { useBadge } from '../context/BadgeContext';
 
 const staticPlans = studyPlansData.plans;
-// نقل التعريف للخارج لتجنب ReferenceError وضمان التوفر في كل مكان
 const filtersList = ['الكل', 'مخصصة', ...new Set(staticPlans.map(plan => plan.type))];
 
 export default function StudyPlans() {
   const router = useRouter();
+  const { triggerBadgeUnlock } = useBadge();
   const [activeFilter, setActiveFilter] = useState('الكل');
   const [completionData, setCompletionData] = useState({});
   const [customPlans, setCustomPlans] = useState({});
@@ -25,6 +26,56 @@ export default function StudyPlans() {
 
   const filterRef = useRef(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
+
+  const unlockBadge = async (badgeId, currentBadges) => {
+    if (!user || currentBadges?.includes(badgeId)) return;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+      triggerBadgeUnlock(badgeId);
+    } catch (e) { console.error(e); }
+  };
+
+  const checkPlanBadges = (userData) => {
+    const currentBadges = userData.badges || [];
+    const allPlans = { ...(userData.completedPlans || {}), ...(userData.customPlans || {}) };
+
+    let totalPlanDays = 0;
+    let finishedCount = 0;
+    let startedCount = 0;
+
+    Object.values(allPlans).forEach(plan => {
+      const doneDays = Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length;
+      totalPlanDays += doneDays;
+      if (doneDays > 0) startedCount++;
+      if (plan.completionPercentage === 100) finishedCount++;
+    });
+
+    // أوسمة المواظبة (أيام)
+    const dayMilestones = [
+      { d: 365, id: 'plan_streak_365' },
+      { d: 180, id: 'plan_streak_180' },
+      { d: 90, id: 'plan_streak_90' },
+      { d: 60, id: 'plan_streak_60' },
+      { d: 30, id: 'plan_streak_30' },
+      { d: 14, id: 'plan_streak_14' },
+      { d: 7, id: 'plan_streak_7' },
+      { d: 3, id: 'plan_streak_3' },
+      { d: 1, id: 'plan_streak_1' }
+    ];
+
+    dayMilestones.forEach(m => {
+      if (totalPlanDays >= m.d) unlockBadge(m.id, currentBadges);
+    });
+
+    // أوسمة الإنجاز (خطط)
+    if (startedCount >= 1) unlockBadge('plan_start_1', currentBadges);
+    if (finishedCount >= 1) unlockBadge('plan_finish_1', currentBadges);
+    if (finishedCount >= 3) unlockBadge('plan_finish_3', currentBadges);
+    if (finishedCount >= 5) unlockBadge('plan_finish_5', currentBadges);
+    if (finishedCount >= 10) unlockBadge('plan_finish_10', currentBadges);
+    if (finishedCount >= 20) unlockBadge('plan_finish_20', currentBadges);
+  };
 
   useEffect(() => {
     const auth = getAuth();
@@ -39,12 +90,14 @@ export default function StudyPlans() {
         unsubFirestore = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            const serverCompletion = data.completedPlans || {};
-            setCompletionData(serverCompletion);
+            setCompletionData(data.completedPlans || {});
             setCustomPlans(data.customPlans || {});
 
-            Object.keys(serverCompletion).forEach(planId => {
-              const planProgress = serverCompletion[planId];
+            // تحقق من الأوسمة
+            checkPlanBadges(data);
+
+            Object.keys(data.completedPlans || {}).forEach(planId => {
+              const planProgress = data.completedPlans[planId];
               if (planProgress.completedDays) {
                 const simpleProgress = {};
                 Object.keys(planProgress.completedDays).forEach(day => {
@@ -71,8 +124,6 @@ export default function StudyPlans() {
   const checkScroll = () => {
     if (filterRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = filterRef.current;
-      // في نظام RTL: التمرير يبدأ من 0 ويتجه للسالب.
-      // نتحقق مما إذا كان هناك محتوى متبقي جهة اليسار
       const canScrollFurther = Math.abs(scrollLeft) < (scrollWidth - clientWidth - 15);
       setShowScrollHint(canScrollFurther);
     }
@@ -94,7 +145,6 @@ export default function StudyPlans() {
 
   const handleScrollClick = () => {
     if (filterRef.current) {
-      // تحريك القائمة بمقدار 200 بكسل لليسار عند الضغط
       filterRef.current.scrollBy({ left: -200, behavior: 'smooth' });
     }
   };

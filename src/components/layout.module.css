@@ -53,29 +53,18 @@
   opacity: 0.7;
 }
 
-.navIcon {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  color: inherit;
-  display: block;
-  margin: 0;
-  transform: translateY(-2px);
-}
-
 @media (max-width: 768px) {
   .navbarWrapper {
     top: auto;
     bottom: 0;
-    /* 12- Darken background for navbar in dark mode */
-    background-color: var(--color-card-bg); 
+    background-color: var(--color-card-bg);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
   }
 
   [data-theme='dark'] .navbarWrapper,
   [data-theme='system'] .navbarWrapper {
-    background-color: #050a18 !important; /* Darker than card-bg */
+    background-color: #050a18 !important;
   }
 
   .navbar {
@@ -90,7 +79,8 @@
   }
 
   .mainContent {
-    padding-top: 20px;
+    /* جعل المحتوى يبدأ تحت الزر العائم بمسافة كافية لضمان عدم التداخل */
+    padding-top: calc(env(safe-area-inset-top, 0px) + 75px);
     padding-bottom: 100px;
   }
 
@@ -101,14 +91,14 @@
 }
 
 .active {
-  color: #003366 !important; /* 7- Navy color for active icon */
+  color: #003366 !important;
   opacity: 1;
   transform: scale(1.1);
 }
 
 [data-theme='dark'] .active,
 [data-theme='system'] .active {
-  color: #ffffff !important; /* White in dark mode */
+  color: #ffffff !important;
 }
 
 .active svg {

@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import styles from './PlanDetails.module.css';
 import studyPlansData from '../studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from '../../../lib/firebase';
 import toast from 'react-hot-toast';
+import { useBadge } from '../../context/BadgeContext';
 
 const allPlans = studyPlansData.plans;
 
@@ -16,14 +17,66 @@ function PlanDetailsContent() {
   const searchParams = useSearchParams();
   const planId = searchParams.get('id');
   const planType = searchParams.get('type');
-  
+  const { triggerBadgeUnlock } = useBadge();
+
   const readingsListRef = useRef(null);
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [plan, setPlan] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
   const [bookNames, setBookNames] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const unlockBadge = useCallback(async (badgeId, currentBadges) => {
+    if (!user || currentBadges?.includes(badgeId)) return;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+      triggerBadgeUnlock(badgeId);
+    } catch (e) { console.error(e); }
+  }, [user, triggerBadgeUnlock]);
+
+  const checkAndUnlockBadges = useCallback((data) => {
+    const currentBadges = data.badges || [];
+    const allUserPlans = { ...(data.completedPlans || {}), ...(data.customPlans || {}) };
+
+    let totalPlanDays = 0;
+    let finishedCount = 0;
+    let startedCount = 0;
+
+    Object.values(allUserPlans).forEach(p => {
+      const done = Object.values(p.completedDays || {}).filter(d => d.isCompleted).length;
+      totalPlanDays += done;
+      if (done > 0) startedCount++;
+      if (p.completionPercentage === 100) finishedCount++;
+    });
+
+    // أوسمة المواظبة (أيام)
+    const dayMilestones = [
+      { d: 365, id: 'plan_streak_365' },
+      { d: 180, id: 'plan_streak_180' },
+      { d: 90, id: 'plan_streak_90' },
+      { d: 60, id: 'plan_streak_60' },
+      { d: 30, id: 'plan_streak_30' },
+      { d: 14, id: 'plan_streak_14' },
+      { d: 7, id: 'plan_streak_7' },
+      { d: 3, id: 'plan_streak_3' },
+      { d: 1, id: 'plan_streak_1' }
+    ];
+
+    dayMilestones.forEach(m => {
+      if (totalPlanDays >= m.d) unlockBadge(m.id, currentBadges);
+    });
+
+    // أوسمة الإنجاز (خطط)
+    if (startedCount >= 1) unlockBadge('plan_start_1', currentBadges);
+    if (finishedCount >= 1) unlockBadge('plan_finish_1', currentBadges);
+    if (finishedCount >= 3) unlockBadge('plan_finish_3', currentBadges);
+    if (finishedCount >= 5) unlockBadge('plan_finish_5', currentBadges);
+    if (finishedCount >= 10) unlockBadge('plan_finish_10', currentBadges);
+    if (finishedCount >= 20) unlockBadge('plan_finish_20', currentBadges);
+  }, [unlockBadge]);
 
   useEffect(() => {
     fetch('/data/bookNames.json')
@@ -45,13 +98,12 @@ function PlanDetailsContent() {
         const userRef = doc(db, 'users', loggedInUser.uid);
         unsubSnap = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
-            const userData = docSnap.data();
-
-            // جلب الأصحاحات المكتملة من الكتاب المقدس
-            setCompletedChapters(userData.completedChapters || {});
+            const data = docSnap.data();
+            setUserData(data);
+            setCompletedChapters(data.completedChapters || {});
 
             if (planType === 'custom') {
-              const aiPlan = userData.customPlans?.[planId];
+              const aiPlan = data.customPlans?.[planId];
               if (aiPlan) {
                 setPlan(aiPlan);
                 setCompletedDays(aiPlan.completedDays || {});
@@ -59,8 +111,8 @@ function PlanDetailsContent() {
             } else {
               const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
               setPlan(staticPlan);
-              const data = userData.completedPlans?.[planId]?.completedDays || {};
-              setCompletedDays(data);
+              const planData = data.completedPlans?.[planId]?.completedDays || {};
+              setCompletedDays(planData);
             }
           }
           setLoading(false);
@@ -133,7 +185,6 @@ function PlanDetailsContent() {
       toast.success("تم التحديد يدوياً");
     }
 
-    // حساب النسبة بناءً على (يدوي OR تلقائي)
     const totalDays = plan.readings.length;
     const daysDoneCount = plan.readings.filter(r => {
         return newCompletedDays[r.day]?.isCompleted || isDayAutoCompleted(r);
@@ -148,10 +199,33 @@ function PlanDetailsContent() {
         ? `customPlans.${planId}` 
         : `completedPlans.${planId}`;
 
-      await updateDoc(userRef, {
+      const updateData = {
         [`${fieldPath}.completedDays`]: newCompletedDays,
         [`${fieldPath}.completionPercentage`]: percentage
-      });
+      };
+
+      await updateDoc(userRef, updateData);
+
+      // بعد التحديث مباشرة، نتحقق من الأوسمة
+      if (userData) {
+        // تحديث البيانات محلياً للتحقق من الأوسمة فوراً
+        const updatedUserData = { ...userData };
+        if (planType === 'custom') {
+            updatedUserData.customPlans[planId] = {
+                ...updatedUserData.customPlans[planId],
+                completedDays: newCompletedDays,
+                completionPercentage: percentage
+            };
+        } else {
+            updatedUserData.completedPlans = updatedUserData.completedPlans || {};
+            updatedUserData.completedPlans[planId] = {
+                ...updatedUserData.completedPlans[planId],
+                completedDays: newCompletedDays,
+                completionPercentage: percentage
+            };
+        }
+        checkAndUnlockBadges(updatedUserData);
+      }
     } catch (e) {
       console.error(e);
       toast.error("حدث خطأ أثناء مزامنة البيانات");

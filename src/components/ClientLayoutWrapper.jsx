@@ -9,7 +9,7 @@ export default function ClientLayoutWrapper({ children, styles }) {
 
   return (
     <>
-      <MoreSidebar 
+      <MoreSidebar
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
         isPage={false} 

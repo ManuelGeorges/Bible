@@ -16,6 +16,31 @@
       ]
     },
     {
+      "family_name": "المواظبة على الخطط",
+      "badges": [
+        { "id": "plan_streak_1", "name": "بداية الالتزام", "requirement": "إتمام يوم واحد في خطة دراسية", "rarity": "عادي" },
+        { "id": "plan_streak_3", "name": "المثابر الصغير", "requirement": "إتمام 3 أيام في خطة دراسية", "rarity": "عادي" },
+        { "id": "plan_streak_7", "name": "الأسبوع الأول", "requirement": "إتمام 7 أيام في الخطط الدراسية", "rarity": "عادي" },
+        { "id": "plan_streak_14", "name": "المجتهد", "requirement": "إتمام 14 يوماً من الخطط الدراسية", "rarity": "مميز" },
+        { "id": "plan_streak_30", "name": "الوفي للخطة", "requirement": "إتمام شهر كامل (30 يوماً) من الخطط الدراسية", "rarity": "مميز" },
+        { "id": "plan_streak_60", "name": "بطل الخطط", "requirement": "إتمام شهرين (60 يوماً) من الالتزام بالخطط الدراسية", "rarity": "نادر" },
+        { "id": "plan_streak_90", "name": "الخبير الروحي", "requirement": "إتمام 90 يوماً من المتابعة المستمرة للخطط", "rarity": "نادر" },
+        { "id": "plan_streak_180", "name": "المتفرغ للكلمة", "requirement": "إتمام نصف سنة (180 يوماً) من الالتزام بالخطط الدراسية", "rarity": "أسطوري" },
+        { "id": "plan_streak_365", "name": "حافظ العهد", "requirement": "إتمام سنة كاملة (365 يوماً) من الخطط الدراسية.. إنجاز تاريخي!", "rarity": "خرافي" }
+      ]
+    },
+    {
+      "family_name": "إنجازات الخطط",
+      "badges": [
+        { "id": "plan_start_1", "name": "أول الغيث", "requirement": "البدء في أول خطة دراسية لك", "rarity": "عادي" },
+        { "id": "plan_finish_1", "name": "أول الغنيمة", "requirement": "إتمام أول خطة دراسية بالكامل", "rarity": "عادي" },
+        { "id": "plan_finish_3", "name": "المثابر", "requirement": "إتمام 3 خطط دراسية متنوعة", "rarity": "عادي" },
+        { "id": "plan_finish_5", "name": "صديق الكتب", "requirement": "إتمام 5 خطط دراسية بنجاح", "rarity": "مميز" },
+        { "id": "plan_finish_10", "name": "المتبحر", "requirement": "إتمام 10 خطط دراسية مختلفة", "rarity": "نادر" },
+        { "id": "plan_finish_20", "name": "سيد الخطط", "requirement": "إتمام 20 خطة دراسية.. معرفة واسعة بكلمة الله", "rarity": "أسطوري" }
+      ]
+    },
+    {
       "family_name": "القارئ النهم",
       "badges": [
         { "id": "reader_10", "name": "المبتدئ", "requirement": "إتمام قراءة 10 أصحاحات مختلفة من أسفار الكتاب المقدس", "rarity": "عادي" },
