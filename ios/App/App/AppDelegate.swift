@@ -3,10 +3,9 @@ import Capacitor
 import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
-import WebKit
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
@@ -19,13 +18,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // 2. إعداد مفوض التنبيهات
         UNUserNotificationCenter.current().delegate = self
 
-        // 3. طلب الإذن
+        // 3. طلب الإذن وجدولة التنبيهات المحلية
         requestNotificationPermission()
 
-        // تسجيل التطبيق لاستقبال التنبيهات
+        // تسجيل التطبيق لاستقبال التنبيهات عن بعد
         application.registerForRemoteNotifications()
 
-        return true
+        return ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     private func requestNotificationPermission() {
@@ -39,21 +38,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     // --- ربط التنبيهات مع Firebase و Capacitor ---
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         // ربط توكن Apple بـ Firebase Messaging
         Messaging.messaging().apnsToken = deviceToken
-        Messaging.messaging().token { token, error in
-            if let error = error {
-                print("Error fetching FCM registration token: \(error)")
-            } else if let token = token {
-                print("FCM registration token: \(token)")
-                NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: token)
-            }
-        }
+
+        // إبلاغ Capacitor بنجاح التسجيل (مهم جداً لعمل الـ Plugins)
+        ApplicationDelegateProxy.shared.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+        ApplicationDelegateProxy.shared.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -63,16 +58,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
+}
+
+// MARK: - UNUserNotificationCenterDelegate
+extension AppDelegate: UNUserNotificationCenterDelegate {
 
     // إظهار التنبيه أثناء تواجد المستخدم داخل التطبيق
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([[.banner, .sound, .list]])
+        // تم إصلاح الخطأ هنا: استخدام مصفوفة واحدة من الخيارات بدلاً من مصفوفة ثنائية
+        completionHandler([.banner, .sound, .list])
     }
 
     // التعامل مع النقر على التنبيه
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        NotificationCenter.default.post(name: .capacitorDidReceiveNotification, object: response)
-        completionHandler()
+        // تمرير الحدث لـ Capacitor ليتم التعامل معه في JavaScript
+        ApplicationDelegateProxy.shared.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
     }
 }
 
@@ -114,7 +114,6 @@ class AgiosNotificationHelper {
     private func schedule(type: String, defH: Int, title: String, body: String) {
         var hour = defH
         var enabled = true
-
         let norm = normalize(type)
 
         if let jsonStr = getPref("notificationSettings"),
