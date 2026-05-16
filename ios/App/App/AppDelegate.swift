@@ -48,36 +48,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 }
 
 // MARK: - JavaScript Bridge (ترجمة @JavascriptInterface من Java)
-// نقوم بتوسيع المتحكم الرئيسي لحقن كائن AgiosScannerNative ومعالجة رسائله
-extension CAPBridgeViewController: WKScriptMessageHandler {
+// نقوم بإنشاء متحكم مخصص لحقن كائن AgiosScannerNative ومعالجة رسائله
+class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
-    override open func viewDidLoad() {
+    override func viewDidLoad() {
         super.viewDidLoad()
+
         // تسجيل معالج الرسائل "AgiosHandler" لاستقبال البيانات من الويب
         self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
-    }
-
-    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any],
-              let action = body["action"] as? String else { return }
-
-        if action == "refreshAlarms" {
-            AgiosNotificationHelper.shared.refreshAllNotifications()
-        } else if action == "updateSettings" {
-            if let json = body["json"] as? String, let master = body["master"] as? Bool {
-                AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
-            }
-        }
-    }
-
-    override open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        super.webView(webView, didFinish: navigation)
 
         let isDark = self.traitCollection.userInterfaceStyle == .dark
         let theme = isDark ? "dark" : "light"
 
-        // حقن الكود البرمجي لتعريف AgiosScannerNative داخل نافذة المتصفح
-        // لكي يعمل كود الـ React الحالي بدون أي تعديل
+        // حقن الكود البرمجي لتعريف AgiosScannerNative داخل نافذة المتصفح عبر WKUserScript
+        // لضمان توفره عند تحميل الصفحة (أفضل من didFinish)
         let js = """
         window.AgiosScannerNative = {
             scanFile: function(path) { console.log('iOS: scanFile called for ' + path); },
@@ -94,7 +78,21 @@ extension CAPBridgeViewController: WKScriptMessageHandler {
             getSystemTheme: function() { return "\(theme)"; }
         };
         """
-        webView.evaluateJavaScript(js, completionHandler: nil)
+        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        self.bridge?.webView?.configuration.userContentController.addUserScript(script)
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let body = message.body as? [String: Any],
+              let action = body["action"] as? String else { return }
+
+        if action == "refreshAlarms" {
+            AgiosNotificationHelper.shared.refreshAllNotifications()
+        } else if action == "updateSettings" {
+            if let json = body["json"] as? String, let master = body["master"] as? Bool {
+                AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
+            }
+        }
     }
 }
 
@@ -113,7 +111,6 @@ class AgiosNotificationHelper {
     ]
 
     private func getPrefString(key: String) -> String? {
-        // Capacitor Preferences تحفظ المفاتيح ببادئة _cap_ في UserDefaults
         return UserDefaults.standard.string(forKey: "_cap_" + key) ?? UserDefaults.standard.string(forKey: key)
     }
 
@@ -129,7 +126,6 @@ class AgiosNotificationHelper {
         let master = getPrefString(key: "masterNotifications") ?? "true"
         if master == "false" { return }
 
-        // جدولة التنبيهات بنفس المنطق والمواعيد الموجودة في نسخة الأندرويد
         schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
         schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
         schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
@@ -145,7 +141,6 @@ class AgiosNotificationHelper {
 
         let norm = normalize(type)
 
-        // قراءة الإعدادات من UserDefaults (التي تأتي من localStorage عبر Capacitor)
         if let jsonStr = getPrefString(key: "notificationSettings"),
            let data = jsonStr.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
@@ -172,7 +167,6 @@ class AgiosNotificationHelper {
         components.hour = hour
         components.minute = minute
 
-        // تكرار التنبيه يومياً
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "agios_\(norm)", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
