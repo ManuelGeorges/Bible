@@ -16,26 +16,40 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// التحقق من وجود مفتاح الـ API قبل التهيئة لتجنب الأخطاء أثناء الـ build
-const isConfigValid = !!firebaseConfig.apiKey;
+// وظيفة لتهيئة التطبيق بأمان
+const initializeFirebase = () => {
+  if (getApps().length > 0) {
+    return getApp();
+  }
 
-let app;
-if (isConfigValid) {
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-} else {
-    // في حالة الـ build أو عدم وجود مفاتيح، لا نقوم بتهيئة التطبيق
-    app = null;
-}
+  // التحقق من أن القيم الأساسية موجودة قبل التهيئة
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    console.warn("Firebase configuration is missing! Firebase services will not be available.");
+    return null;
+  }
 
-const auth = app ? getAuth(app) : null;
+  try {
+    return initializeApp(firebaseConfig);
+  } catch (error) {
+    console.error("Error initializing Firebase:", error);
+    return null;
+  }
+};
 
-const db = app ? initializeFirestore(app, {
+const app = initializeFirebase();
+
+// تصدير الخدمات مع التحقق من وجود التطبيق
+export const auth = app ? getAuth(app) : null;
+
+export const db = app ? initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager()
   })
 }) : null;
 
-// متغير لحفظ النسخة لضمان عدم تكرار التهيئة
+export { app };
+
+// دالة Remote Config لضمان عملها فقط في المتصفح ومع وجود تطبيق
 let remoteConfigInstance = null;
 
 export const getFirebaseRemoteConfig = async () => {
@@ -47,7 +61,6 @@ export const getFirebaseRemoteConfig = async () => {
         const supported = await isSupported();
         if (supported) {
             remoteConfigInstance = getRemoteConfig(app);
-            // ضبط قيم افتراضية للحقول
             remoteConfigInstance.defaultConfig = {
                 'app_news': JSON.stringify({
                     active: false,
@@ -66,5 +79,3 @@ export const getFirebaseRemoteConfig = async () => {
     }
     return null;
 };
-
-export { app, auth, db };

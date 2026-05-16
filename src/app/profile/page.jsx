@@ -115,25 +115,42 @@ const ProfilePage = () => {
 
     if (!currentUser) return;
 
+    // 1. التحقق الاستباقي من "حداثة" تسجيل الدخول
+    // Firebase يتطلب تسجيل دخول في آخر 5 دقائق لحذف الحساب
+    const lastSignInTime = new Date(currentUser.metadata.lastSignInTime).getTime();
+    const now = new Date().getTime();
+    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000); // 5 دقائق
+
+    if (!isFreshSession) {
+      alert("لدواعي أمنية، يتطلب حذف الحساب تسجيل دخول حديث. يرجى تسجيل الخروج ثم الدخول مرة أخرى والمحاولة مجدداً.");
+      return;
+    }
+
     const confirmed = window.confirm(
-      "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك."
+      "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك من السحابة."
     );
 
     if (confirmed) {
       try {
-        // حذف بيانات المستخدم من Firestore أولاً
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await deleteDoc(userDocRef);
+        const userId = currentUser.uid;
 
-        // ثم حذف الحساب من Firebase Auth
+        // 2. محاولة حذف المستخدم من Auth أولاً
+        // نستخدم هذه الطريقة لأنها الأكثر عرضة للفشل (أسباب أمنية)
+        // فإذا فشلت، تظل بيانات Firestore موجودة ولا ينكسر الحساب
         await deleteUser(currentUser);
 
-        alert("تم حذف الحساب بنجاح.");
+        // 3. إذا نجح حذف الـ Auth، نقوم بحذف بيانات Firestore
+        // ملاحظة: قد تحتاج لتعديل قواعد الحماية في Firestore لتسمح بالحذف إذا كان المستخدم محذوفاً للتو
+        // أو يفضل استخدام UID مخزن محلياً قبل الحذف
+        const userDocRef = doc(db, 'users', userId);
+        await deleteDoc(userDocRef);
+
+        alert("تم حذف الحساب والبيانات بنجاح.");
         router.push('/intro');
       } catch (error) {
         console.error("Error deleting user:", error);
         if (error.code === 'auth/requires-recent-login') {
-          alert("لحماية حسابك، يرجى تسجيل الخروج ثم الدخول مرة أخرى قبل محاولة حذف الحساب.");
+          alert("انتهت صلاحية الجلسة الأمنية. يرجى إعادة تسجيل الدخول ثم المحاولة مرة أخرى.");
         } else {
           alert("حدث خطأ أثناء حذف الحساب. يرجى المحاولة لاحقاً.");
         }
