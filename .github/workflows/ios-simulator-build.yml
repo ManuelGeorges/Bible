@@ -2,8 +2,8 @@ name: Build iOS for Appetize.io
 
 on:
   push:
-    branches: [ main, master ] # سيعمل الأكشن عند الدفع لهذه الفروع
-  workflow_dispatch: # يتيح لك تشغيله يدوياً من GitHub
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -28,11 +28,7 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync ios
 
-      # 🔥 الخطوة السحرية الناقصة: تثبيت الكوكوبودز للـ iOS Plugins والفايربيز
-      - name: Install CocoaPods Dependencies
-        run: |
-          cd ios/App
-          pod install
+      # تمت إزالة خطوة CocoaPods لأن المشروع يستخدم Swift Package Manager (SPM)
 
       - name: Build iOS App for Simulator
         run: |
@@ -47,7 +43,6 @@ jobs:
       - name: Prepare for Appetize.io
         run: |
           mkdir -p build-output
-          # تأمين الـ Path للوصول لملف الـ App.app التجريبي
           APP_PATH=$(find build/Build/Products -name "App.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
             echo "Error: App.app not found!"

@@ -150,6 +150,17 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+.deleteAccount {
+  color: #ef4444;
+  margin-top: 5px;
+  border-top: 1px solid rgba(239, 68, 68, 0.1);
+  border-radius: 0 0 16px 16px;
+}
+
+.deleteAccount:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
 .profileFooter {
   margin-top: 40px;
   text-align: center;

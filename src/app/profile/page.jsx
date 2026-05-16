@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signOut, getAuth } from 'firebase/auth';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged, signOut, getAuth, deleteUser } from 'firebase/auth';
+import { doc, getDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { 
-  User, Mail, Calendar, Share2, LogOut, 
+  User, Mail, Calendar, Share2, LogOut, Trash2,
   BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon 
 } from 'lucide-react';
 import styles from './profile.module.css';
@@ -109,6 +109,38 @@ const ProfilePage = () => {
     router.push('/intro');
   };
 
+  const handleDeleteAccount = async () => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) return;
+
+    const confirmed = window.confirm(
+      "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك."
+    );
+
+    if (confirmed) {
+      try {
+        // حذف بيانات المستخدم من Firestore أولاً
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await deleteDoc(userDocRef);
+
+        // ثم حذف الحساب من Firebase Auth
+        await deleteUser(currentUser);
+
+        alert("تم حذف الحساب بنجاح.");
+        router.push('/intro');
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        if (error.code === 'auth/requires-recent-login') {
+          alert("لحماية حسابك، يرجى تسجيل الخروج ثم الدخول مرة أخرى قبل محاولة حذف الحساب.");
+        } else {
+          alert("حدث خطأ أثناء حذف الحساب. يرجى المحاولة لاحقاً.");
+        }
+      }
+    }
+  };
+
   if (loading) return <div className={styles.loading}>جاري التحميل...</div>;
   if (!user) return null;
 
@@ -170,6 +202,13 @@ const ProfilePage = () => {
           <div className={styles.menuItemRight}>
             <LogOut size={20} />
             <span>تسجيل الخروج</span>
+          </div>
+        </button>
+
+        <button className={`${styles.menuItem} ${styles.deleteAccount}`} onClick={handleDeleteAccount}>
+          <div className={styles.menuItemRight}>
+            <Trash2 size={20} />
+            <span>حذف الحساب</span>
           </div>
         </button>
       </div>
