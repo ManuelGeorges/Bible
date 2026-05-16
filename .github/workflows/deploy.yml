@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20' # متوافقة مع Next.js
+          node-version: '22' # تم التحديث إلى 22 ليتوافق مع Capacitor 8
           cache: 'npm'
 
       - name: Install and Build
