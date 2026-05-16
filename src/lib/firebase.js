@@ -7,31 +7,27 @@ import {
 } from "firebase/firestore";
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
 
+// إعدادات Firebase مع قيم احتياطية لضمان العمل في بيئات مثل Capacitor
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "profiles-system.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "profiles-system",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "profiles-system.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "900022943169",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:900022943169:web:583b03be3f070dfe92c340"
 };
 
-// وظيفة لتهيئة التطبيق بأمان
+// وظيفة لتهيئة التطبيق وضمان وجود نسخة [DEFAULT]
 const initializeFirebase = () => {
   if (getApps().length > 0) {
     return getApp();
   }
 
-  // التحقق من أن القيم الأساسية موجودة قبل التهيئة
-  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-    console.warn("Firebase configuration is missing! Firebase services will not be available.");
-    return null;
-  }
-
   try {
+    console.log("Initializing Firebase with config...");
     return initializeApp(firebaseConfig);
   } catch (error) {
-    console.error("Error initializing Firebase:", error);
+    console.error("Firebase Initialization Error:", error);
     return null;
   }
 };
@@ -75,7 +71,7 @@ export const getFirebaseRemoteConfig = async () => {
             return remoteConfigInstance;
         }
     } catch (e) {
-        console.error("Remote Config Support Check Error:", e);
+        console.error("Remote Config Support Error:", e);
     }
     return null;
 };
