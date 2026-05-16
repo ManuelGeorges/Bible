@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
+  OAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
   signInWithPopup
@@ -13,6 +14,7 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
 import { auth } from '../../lib/firebase';
 import styles from './login.module.css';
+import { Apple } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -86,6 +88,36 @@ const LoginPage = () => {
     }
   };
 
+  const handleAppleAuth = async () => {
+    if (isSubmitting) return;
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithApple();
+        const idToken = result.credential?.idToken;
+        const rawNonce = result.credential?.rawNonce;
+
+        if (idToken) {
+          const provider = new OAuthProvider('apple.com');
+          const credential = provider.credential({
+            idToken: idToken,
+            rawNonce: rawNonce,
+          });
+          await signInWithCredential(auth, credential);
+        }
+      } else {
+        const provider = new OAuthProvider('apple.com');
+        await signInWithPopup(auth, provider);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('فشل تسجيل الدخول بواسطة آبل');
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className={`${styles.container} ${styles.rtl}`}>
       <div className={styles.card}>
@@ -114,15 +146,31 @@ const LoginPage = () => {
             {isSubmitting ? 'جاري الدخول...' : 'دخول'}
           </button>
         </form>
+
         <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
-        <button 
-          onClick={handleGoogleAuth} 
-          className={styles.googleButton} 
-          disabled={isSubmitting}
-        >
-          <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-          <span>{isSubmitting ? 'جاري التحميل...' : 'الدخول بواسطة جوجل'}</span>
-        </button>
+
+        <div className={styles.socialButtons}>
+          <button
+            onClick={handleGoogleAuth}
+            className={styles.googleButton}
+            disabled={isSubmitting}
+          >
+            <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+            <span>جوجل</span>
+          </button>
+
+          {Capacitor.getPlatform() !== 'android' && (
+            <button
+              onClick={handleAppleAuth}
+              className={styles.appleButton}
+              disabled={isSubmitting}
+            >
+              <Apple size={20} />
+              <span>آبل</span>
+            </button>
+          )}
+        </div>
+
         <p className={styles.toggleMode}>
           ليس لديك حساب؟ <span onClick={() => router.push('/signup')} className={styles.link}>إنشاء حساب</span>
         </p>

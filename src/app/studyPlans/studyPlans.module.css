@@ -97,7 +97,7 @@
   z-index: 2;
   padding: 6px;
   margin-top: -4px;
-  margin-left: 4px;
+  margin-inline-start: 4px;
   outline: none;
   transition: all 0.2s ease;
 }

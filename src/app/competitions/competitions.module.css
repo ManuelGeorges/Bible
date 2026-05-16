@@ -98,7 +98,7 @@
 .dropdownItem:hover {
   background: rgba(var(--color-accent-rgb), 0.1);
   color: var(--color-accent);
-  padding-right: 25px;
+  padding-inline-end: 25px;
 }
 
 .welcomeMessage {
@@ -327,7 +327,7 @@
   font-weight: 800;
   color: var(--color-text-primary);
   margin-bottom: 20px;
-  padding-right: 10px;
+  padding-inline-end: 10px;
 }
 
 .historyItem {

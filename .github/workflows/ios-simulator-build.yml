@@ -1,0 +1,65 @@
+name: Build iOS for Appetize.io
+
+on:
+  push:
+    branches: [ main, master ] # سيعمل الأكشن عند الدفع لهذه الفروع
+  workflow_dispatch: # يتيح لك تشغيله يدوياً من GitHub
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Next.js Static Export
+        run: npm run build
+
+      - name: Capacitor Sync
+        run: npx cap sync ios
+
+      # 🔥 الخطوة السحرية الناقصة: تثبيت الكوكوبودز للـ iOS Plugins والفايربيز
+      - name: Install CocoaPods Dependencies
+        run: |
+          cd ios/App
+          pod install
+
+      - name: Build iOS App for Simulator
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+                     -scheme App \
+                     -sdk iphonesimulator \
+                     -destination 'generic/platform=iOS Simulator' \
+                     -configuration Debug \
+                     -derivedDataPath build \
+                     COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Prepare for Appetize.io
+        run: |
+          mkdir -p build-output
+          # تأمين الـ Path للوصول لملف الـ App.app التجريبي
+          APP_PATH=$(find build/Build/Products -name "App.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: App.app not found!"
+            exit 1
+          fi
+          cp -R "$APP_PATH" build-output/
+          cd build-output
+          zip -r ../ios-simulator-app.zip App.app
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: ios-simulator-app.zip
+          retention-days: 5

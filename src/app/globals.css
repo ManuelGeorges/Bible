@@ -5,6 +5,7 @@
   --main-font-size: 18px;
   --bible-font-size: 18px;
   --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
@@ -58,7 +59,11 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 
-  padding-top: 0;  transition: background 0.3s ease, color 0.3s ease;
+  /* Safe Area for iOS */
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+
+  transition: background 0.3s ease, color 0.3s ease;
   user-select: none;
 }
 

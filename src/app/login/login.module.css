@@ -121,31 +121,46 @@
   font-size: 0.85em;
 }
 
-.googleButton {
-  width: 100%;
-  padding: 14px;
-  font-size: 1em;
+.socialButtons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.googleButton, .appleButton {
+  flex: 1;
+  padding: 12px;
+  font-size: 0.95em;
   font-weight: 600;
   border-radius: 12px;
-  border: 1px solid var(--color-border);
   cursor: pointer;
-  color: var(--color-text-primary);
-  background: var(--color-card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   transition: all 0.3s ease;
 }
 
-.googleButton:hover:not(:disabled) {
-  background: var(--color-bg-start);
-  border-color: var(--color-accent);
+.googleButton {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.appleButton {
+  background: #000000;
+  border: 1px solid #000000;
+  color: #ffffff;
+}
+
+[data-theme='dark'] .appleButton {
+  background: #ffffff;
+  color: #000000;
 }
 
 .googleIcon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .toggleMode {
@@ -158,7 +173,7 @@
   color: var(--color-accent);
   cursor: pointer;
   font-weight: 700;
-  margin-right: 5px;
+  margin-inline-start: 5px;
   transition: 0.2s;
 }
 
@@ -189,8 +204,5 @@
   }
   .title {
     font-size: 1.5em;
-  }
-  .input {
-    padding: 14px;
   }
 }

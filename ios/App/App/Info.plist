@@ -2,12 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CAPACITOR_DEBUG</key>
+	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Agios Bible</string>
+	<string>Agios Bible</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -43,9 +43,28 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<key>UIInterfaceOrientationLandscapeRight</key>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>نحتاج الوصول للكاميرا لالتقاط صورة شخصية لحسابك.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>نحتاج الوصول لمكتبة الصور لاختيار صورة شخصية أو حفظ آيات الكتاب.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>نحتاج لحفظ الصور في مكتبتك عند تحميل الآيات أو المحتوى.</string>
+	<key>NSLocalNotificationsUsageDescription</key>
+	<string>نحتاج لإرسال تنبيهات لك بآية اليوم وخطط القراءة والمسابقات.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.agios.bible</string>
+				<string>com.googleusercontent.apps.900022943169-not0croo7tcj3ikee41h0dhqcgdqfrb6</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

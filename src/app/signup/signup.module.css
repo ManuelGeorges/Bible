@@ -165,7 +165,7 @@
   color: var(--color-accent);
   cursor: pointer;
   font-weight: 700;
-  margin-right: 5px;
+  margin-inline-end: 5px;
   transition: 0.2s;
 }
 
