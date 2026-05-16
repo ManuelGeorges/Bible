@@ -1,6 +1,7 @@
 import UIKit
 import Capacitor
 import Firebase
+import FirebaseMessaging
 import UserNotifications
 import WebKit
 
@@ -19,6 +20,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // 3. طلب الإذن وجدولة التنبيهات الابتدائية
         requestNotificationPermission()
 
+        // تسجيل التطبيق لاستقبال التنبيهات
+        application.registerForRemoteNotifications()
+
         return true
     }
 
@@ -32,7 +36,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
 
-    // التعامل مع الروابط العميقة (مثل تسجيل دخول جوجل وآبل)
+    // --- ربط التنبيهات مع Firebase و Capacitor ---
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // ربط توكن Apple بـ Firebase Messaging لضمان وصول التنبيهات من السيرفر
+        Messaging.messaging().apnsToken = deviceToken
+        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+    }
+
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
@@ -41,30 +55,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
-    // إظهار التنبيه حتى لو التطبيق مفتوح (محاكاة لسلوك أندرويد)
+    // إظهار التنبيه أثناء تواجد المستخدم داخل التطبيق
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([[.banner, .sound, .list]])
     }
+
+    // التعامل مع النقر على التنبيه
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        NotificationCenter.default.post(name: .capacitorDidReceiveNotification, object: response)
+        completionHandler()
+    }
 }
 
-// MARK: - JavaScript Bridge (ترجمة @JavascriptInterface من Java)
-// نقوم بإنشاء متحكم مخصص لحقن كائن AgiosScannerNative ومعالجة رسائله
+// MARK: - JavaScript Bridge (AgiosScannerNative)
 class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // تسجيل معالج الرسائل "AgiosHandler" لاستقبال البيانات من الويب
         self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
 
         let isDark = self.traitCollection.userInterfaceStyle == .dark
         let theme = isDark ? "dark" : "light"
 
-        // حقن الكود البرمجي لتعريف AgiosScannerNative داخل نافذة المتصفح عبر WKUserScript
-        // لضمان توفره عند تحميل الصفحة (أفضل من didFinish)
         let js = """
         window.AgiosScannerNative = {
-            scanFile: function(path) { console.log('iOS: scanFile called for ' + path); },
+            scanFile: function(path) { console.log('iOS: scanFile called'); },
             refreshAlarms: function() {
                 window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
             },
@@ -96,7 +111,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     }
 }
 
-// MARK: - Notification Logic (ترجمة ملف AgiosNotificationReceiver.java)
+// MARK: - Logic for Notifications (AgiosNotificationHelper)
 class AgiosNotificationHelper {
     static let shared = AgiosNotificationHelper()
 
@@ -105,12 +120,10 @@ class AgiosNotificationHelper {
         "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
         "يمكنك تظليل الآيات باللون الذي يريحك وكتابة ملحوظات عليها",
         "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
-        "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط",
-        "يمكنك تغيير حجم خط القراءة لراحة عينيك.",
         "هل تعلم أن بإمكانك قراءة الكتاب المقدس بدون إنترنت؟"
     ]
 
-    private func getPrefString(key: String) -> String? {
+    private func getPref(_ key: String) -> String? {
         return UserDefaults.standard.string(forKey: "_cap_" + key) ?? UserDefaults.standard.string(forKey: key)
     }
 
@@ -123,7 +136,7 @@ class AgiosNotificationHelper {
     func refreshAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 
-        let master = getPrefString(key: "masterNotifications") ?? "true"
+        let master = getPref("masterNotifications") ?? "true"
         if master == "false" { return }
 
         schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
@@ -131,28 +144,22 @@ class AgiosNotificationHelper {
         schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
         schedule(type: "streak", defH: 21, title: "حافظ على حماسك", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
         schedule(type: "appSuggestions", defH: 12, title: "معلومة سريعة", body: tips.randomElement() ?? "اكتشف ميزات أجيوس.")
-        schedule(type: "updateAlerts", defH: 12, title: "تحديث جديد", body: "تأكد من استخدام أحدث نسخة من أجيوس للمميزات الجديدة.")
     }
 
     private func schedule(type: String, defH: Int, title: String, body: String) {
         var hour = defH
-        var minute = 0
         var enabled = true
 
         let norm = normalize(type)
 
-        if let jsonStr = getPrefString(key: "notificationSettings"),
+        if let jsonStr = getPref("notificationSettings"),
            let data = jsonStr.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
 
             enabled = json[norm] as? Bool ?? true
             let timeKey = norm + "Time"
             if let timeStr = json[timeKey] as? String, timeStr.contains(":") {
-                let p = timeStr.components(separatedBy: ":")
-                if p.count == 2 {
-                    hour = Int(p[0]) ?? defH
-                    minute = Int(p[1]) ?? 0
-                }
+                hour = Int(timeStr.components(separatedBy: ":")[0]) ?? defH
             }
         }
 
@@ -165,7 +172,7 @@ class AgiosNotificationHelper {
 
         var components = DateComponents()
         components.hour = hour
-        components.minute = minute
+        components.minute = 0
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "agios_\(norm)", content: content, trigger: trigger)

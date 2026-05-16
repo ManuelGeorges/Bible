@@ -1,281 +1,179 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { db, auth } from '../../../lib/firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { Capacitor } from '@capacitor/core'; // إضافة Capacitor
+import { Capacitor } from '@capacitor/core';
+import { db } from '../../../lib/firebase';
+import { getAuth } from 'firebase/auth';
+import { doc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import styles from './customPlan.module.css';
-import toast from 'react-hot-toast';
+import { Sparkles, Calendar, BookOpen, Target, Loader2, ArrowRight, BrainCircuit } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-export default function CustomPlanForm() {
+export default function CustomStudyPlanPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        mood: '',
-        duration: '',
-        level: ''
+    const [step, setStep] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+    const [userInput, setUserInput] = useState({
+        topic: '',
+        duration: '7',
+        intensity: 'medium'
     });
 
-    const durations = [
-        { id: '3', label: '3 أيام (سريعة)' },
-        { id: '7', label: 'أسبوع (متوسطة)' },
-        { id: '14', label: 'أسبوعين (عميقة)' }
-    ];
-
-    const levels = [
-        { id: 'beginner', label: 'مبتدئ (أصحاح واحد)' },
-        { id: 'advanced', label: 'متقدم (عدة أصحاحات)' }
-    ];
-
-    const handleSelect = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const cleanPlanData = (plan) => {
-        if (!plan.readings || !Array.isArray(plan.readings)) return plan;
-        const cleanedReadings = plan.readings.map(reading => ({
-            ...reading,
-            books: reading.books.map(book =>
-                book.replace(/إنجيل\s+/g, '').replace(/سفر\s+/g, '').trim()
-            )
-        }));
-        return { ...plan, readings: cleanedReadings };
-    };
-
-    const generatePlanWithAI = async (data) => {
+    const callGemini = async (prompt) => {
         try {
-            const response = await fetch('/data/bookNames.json');
-            const bookNamesData = await response.json();
-            const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
-
-            const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
-
-### [بيانات الحالة]
-- مدخلات المستخدم (المشاعر/الظروف): "${data.mood}"
-- مدة البرنامج: "${data.duration}" أيام.
-- الكثافة القرائية: "${data.level === 'beginner' ? 'تركيز عالٍ على أصحاح واحد يومياً' : 'ربط موضوعي بين عدة أصحاحات يومياً'}".
-
-### [خوارزمية العمل]
-1. التحليل النفس-روحي: حلل بعمق ما وراء كلمات المستخدم ("${data.mood}").
-2. الانتقاء الموضوعي: اختر حصرياً من القائمة أدناه النصوص التي تخاطب هذا الاحتياج الجوهري.
-3. الصياغة الوجدانية: اكتب العنوان والوصف بلهجة مشجعة ودافئة.
-
-### [قائمة الأسفار المتاحة]
-[${allowedBooks}]
-
-### [قواعد الاستجابة التقنية]
-1. الرد JSON صالح فقط.
-2. الالتزام بأسماء الأسفار تماماً.
-3. مصفوفة "books" عناصر مستقلة بدون شرطات.
-4. إذا كانت المدخلات مسيئة، صمم خطة تدعو للسلام والحكمة بشكل عام.
-
-### [قالب المخرجات]
-{
-  "title": "عنوان ملهم",
-  "description": "رسالة شخصية قصيرة",
-  "duration": "${data.duration} أيام",
-  "readings": [
-    {
-      "day": 1,
-      "books": ["اسم_السفر رقم_الأصحاح"]
-    }
-  ]
-}
-
-تذكر: أنت تقدم دواءً روحياً مخصصاً.`;
-
-            // حل مشكلة iOS عبر استخدام الـ API مباشرة إذا فشلت المكتبة أو كنا على الموبايل
-            // لأن مكتبة Google تحاول استخدام fetch الذي قد يتعرض للمنع بسبب CORS في iOS
+            // استخدام المكتبة الرسمية أولاً (تعمل جيداً مع CapacitorHttp المفعّل)
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
+        } catch (err) {
+            console.error("Gemini AI Error (Native):", err);
+            // محاولة بديلة عبر fetch المباشر في حالة فشل المكتبة على الموبايل
             if (Capacitor.isNativePlatform()) {
-                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-                 const res = await fetch(apiUrl, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({
-                         contents: [{ parts: [{ text: prompt }] }]
-                     })
-                 });
-                 const resultData = await res.json();
-                 const responseText = resultData.candidates[0].content.parts[0].text;
-                 const firstBrace = responseText.indexOf('{');
-                 const lastBrace = responseText.lastIndexOf('}');
-                 const jsonString = responseText.substring(firstBrace, lastBrace + 1);
-                 return JSON.parse(jsonString);
-            } else {
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                const result = await model.generateContent(prompt);
-                const responseText = result.response.text();
-                const firstBrace = responseText.indexOf('{');
-                const lastBrace = responseText.lastIndexOf('}');
-                const jsonString = responseText.substring(firstBrace, lastBrace + 1);
-                return JSON.parse(jsonString);
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text;
             }
-        } catch (e) {
-            console.error("Gemini Error:", e);
-            return null;
+            throw err;
         }
     };
 
-    const handleSubmit = async () => {
-        if (loading) return;
+    const generatePlan = async () => {
+        if (!userInput.topic.trim()) return toast.error("برجاء إدخال موضوع الخطة");
 
-        const badWords = ["خول", "عرص", "طيز", "كس", "زبي", "قحبة", "شرموطة", "متناك", "مخنث", "لواط", "سحاق", "سكس"];
-        const isBad = badWords.some(word => formData.mood.includes(word));
-
-        if (isBad) {
-            toast.error("من فضلك استخدم لغة لائقة تعبر عن احتياجك الروحي.");
-            return;
-        }
-
-        if (formData.mood.trim().length < 10) {
-            toast.error("وصفك قصير جداً، من فضلك اكتب كلمات أكثر.");
-            return;
-        }
-
-        if (!formData.mood.trim() || !formData.duration || !formData.level) {
-            toast.error('من فضلك أكمل البيانات أولاً');
-            return;
-        }
-
-        if (!auth.currentUser) {
-            toast.error('يجب تسجيل الدخول أولاً');
-            return;
-        }
-
-        setLoading(true);
-
+        setIsLoading(true);
         try {
-            const userRef = doc(db, 'users', auth.currentUser.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const lastGenerated = userData.lastAIGenerated?.toDate();
-                const now = new Date();
-                
-                if (lastGenerated && (now - lastGenerated) < 60000) {
-                    const waitTime = Math.ceil((60000 - (now - lastGenerated)) / 1000);
-                    toast.error(`برجاء الانتظار ${waitTime} ثانية قبل إنشاء خطة جديدة.`);
-                    setLoading(false);
-                    return;
-                }
-
-                const existingPlans = Object.keys(userData.customPlans || {}).length;
-                if (existingPlans >= 10) {
-                    toast.error("لقد وصلت للحد الأقصى (10 خطط). يرجى حذف خطة قديمة أولاً.");
-                    setLoading(false);
-                    return;
-                }
+            const prompt = `أنت مساعد ذكي متخصص في الكتاب المقدس. صمم خطة قراءة مسيحية أرثوذكسية حول: "${userInput.topic}".
+            المدة: ${userInput.duration} يوم.
+            المستوى: ${userInput.intensity === 'easy' ? 'آية واحدة' : userInput.intensity === 'medium' ? '5-10 آيات' : 'أصحاح كامل'} يومياً.
+            يجب أن يكون الرد بصيغة JSON فقط بهذا التنسيق:
+            {
+              "title": "عنوان الخطة",
+              "description": "وصف قصير",
+              "days": [
+                { "day": 1, "title": "عنوان اليوم", "reference": "اسم السفر رقم الأصحاح:رقم الآية", "thought": "تأمل قصير جداً" }
+              ]
             }
+            التزم بأسماء الأسفار العربية الرسمية.`;
 
-            const rawPlan = await generatePlanWithAI(formData);
+            const text = await callGemini(prompt);
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("Invalid response format");
 
-            if (rawPlan && rawPlan.readings) {
-                const plan = cleanPlanData(rawPlan);
-                const planId = `ai_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
+            const planData = JSON.parse(jsonMatch[0]);
 
-                await setDoc(userRef, {
-                    lastAIGenerated: serverTimestamp(),
-                    customPlans: {
-                        [planId]: {
-                            ...plan,
-                            id: planId,
-                            type: 'custom',
-                            createdAt: new Date().toISOString(),
-                            completedDays: {},
-                            completionPercentage: 0
-                        }
-                    }
-                }, { merge: true });
+            const auth = getAuth();
+            const user = auth.currentUser;
 
-                toast.success("تم إنشاء خطتك الروحية بنجاح!");
-                router.push(`/studyPlans/details?id=${planId}&type=custom`);
+            if (user) {
+                const planId = `custom_${Date.now()}`;
+                const finalPlan = {
+                    id: planId,
+                    ...planData,
+                    startDate: new Date().toISOString(),
+                    progress: 0,
+                    isCustom: true,
+                    isCompleted: false,
+                    type: 'custom'
+                };
+
+                await updateDoc(doc(db, 'users', user.uid), {
+                    'studyPlans.active': arrayUnion(finalPlan),
+                    totalPoints: increment(50)
+                });
+
+                toast.success("تم إنشاء خطتك المخصصة بنجاح! (+50 نقطة)");
+                router.push('/studyPlans');
             } else {
-                throw new Error("Invalid Plan Structure");
+                toast.error("يرجى تسجيل الدخول لحفظ الخطة");
             }
         } catch (error) {
-            console.error("Submit Error:", error);
-            toast.error('حدث خطأ أثناء إنشاء الخطة. حاول مرة أخرى.');
-            setLoading(false);
+            console.error(error);
+            toast.error("فشل الذكاء الاصطناعي في إنشاء الخطة، حاول مرة أخرى");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className={styles.container}>
-            {loading && (
-                <div className={styles.loadingOverlay}>
-                    <div className={styles.spinner}></div>
-                    <h2 className={styles.sectionTitle}>جاري تصميم خطتك الروحية...</h2>
-                    <p className={styles.secondaryText}>نحلل كلماتك لنختار لك أنسب الأصحاحات</p>
-                </div>
-            )}
+        <div className={styles.container} dir="rtl">
+            <div className={styles.header}>
+                <Sparkles className={styles.sparkleIcon} />
+                <h1>مساعد أجيوس الذكي</h1>
+                <p>صمم خطة قراءة مخصصة تناسب احتياجك الروحي</p>
+            </div>
 
-            <div className={styles.formCard}>
-                <div className={styles.header}>
-                    <h1 className={styles.mainTitle}>مُصمم الخطط الذكي</h1>
-                    <p>أخبر أجيوس بما يدور في قلبك اليوم</p>
-                </div>
-
-                <div className={styles.questionGroup}>
-                    <label className={styles.questionLabel}>بماذا تشعر حالياً؟ أو ما الذي تبحث عنه؟</label>
-                    <textarea
-                        className={styles.textInput}
-                        rows="4"
-                        maxLength={500}
-                        disabled={loading}
-                        placeholder="مثلاً: حاسس اني قلقان من المستقبل.."
-                        value={formData.mood}
-                        onChange={(e) => handleSelect('mood', e.target.value)}
-                    ></textarea>
-                    <p className={styles.charCount}>{formData.mood.length}/500</p>
-                </div>
-
-                <div className={styles.questionGroup}>
-                    <label className={styles.questionLabel}>ما هي المدة المفضلة للخطة؟</label>
-                    <div className={styles.optionsGrid}>
-                        {durations.map(d => (
-                            <button
-                                key={d.id}
-                                type="button"
-                                disabled={loading}
-                                className={`${styles.optionCard} ${formData.duration === d.id ? styles.selected : ''}`}
-                                onClick={() => handleSelect('duration', d.id)}
-                            >
-                                {d.label}
-                            </button>
-                        ))}
+            <div className={styles.card}>
+                {step === 1 && (
+                    <div className={styles.step}>
+                        <div className={styles.inputGroup}>
+                            <label><Target size={18} /> ما هو الموضوع الذي تريد دراسته؟</label>
+                            <textarea
+                                placeholder="مثلاً: الصبر، محبة الأعداء، حياة الصلاة..."
+                                value={userInput.topic}
+                                onChange={(e) => setUserInput({...userInput, topic: e.target.value})}
+                            />
+                        </div>
+                        <button className={styles.nextBtn} onClick={() => setStep(2)}>
+                            التالي <ArrowRight size={18} />
+                        </button>
                     </div>
-                </div>
+                )}
 
-                <div className={styles.questionGroup}>
-                    <label className={styles.questionLabel}>مستوى القراءة</label>
-                    <div className={styles.optionsGrid}>
-                        {levels.map(l => (
-                            <button
-                                key={l.id}
-                                type="button"
-                                disabled={loading}
-                                className={`${styles.optionCard} ${formData.level === l.id ? styles.selected : ''}`}
-                                onClick={() => handleSelect('level', l.id)}
+                {step === 2 && (
+                    <div className={styles.step}>
+                        <div className={styles.inputGroup}>
+                            <label><Calendar size={18} /> مدة الخطة (بالأيام)</label>
+                            <select
+                                value={userInput.duration}
+                                onChange={(e) => setUserInput({...userInput, duration: e.target.value})}
                             >
-                                {l.label}
-                            </button>
-                        ))}
+                                <option value="3">3 أيام</option>
+                                <option value="7">7 أيام</option>
+                                <option value="14">14 يوم</option>
+                                <option value="30">30 يوم</option>
+                            </select>
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label><BookOpen size={18} /> كمية القراءة اليومية</label>
+                            <div className={styles.intensityGrid}>
+                                <button
+                                    className={userInput.intensity === 'easy' ? styles.active : ''}
+                                    onClick={() => setUserInput({...userInput, intensity: 'easy'})}
+                                >خفيفة</button>
+                                <button
+                                    className={userInput.intensity === 'medium' ? styles.active : ''}
+                                    onClick={() => setUserInput({...userInput, intensity: 'medium'})}
+                                >متوسطة</button>
+                                <button
+                                    className={userInput.intensity === 'hard' ? styles.active : ''}
+                                    onClick={() => setUserInput({...userInput, intensity: 'hard'})}
+                                >دسمة</button>
+                            </div>
+                        </div>
+                        <button
+                            className={styles.generateBtn}
+                            onClick={generatePlan}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <><Loader2 className={styles.spin} /> جاري التصميم...</>
+                            ) : (
+                                <><BrainCircuit size={20} /> إنشاء الخطة بالذكاء الاصطناعي</>
+                            )}
+                        </button>
                     </div>
-                </div>
-
-                <button
-                    className={styles.submitBtn}
-                    onClick={handleSubmit}
-                    disabled={loading}
-                >
-                    {loading ? 'جاري الإنشاء...' : 'إنشاء خطتي الخاصة ✨'}
-                </button>
+                )}
             </div>
         </div>
     );

@@ -6,6 +6,7 @@ import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Toast } from '@capacitor/toast';
 import { Capacitor } from '@capacitor/core';
+import { Media } from '@capacitor-community/media';
 import { Share2, Download, Loader2 } from 'lucide-react';
 import styles from './ShareVerseCard.module.css';
 
@@ -45,7 +46,6 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
   const generateImage = async () => {
     if (!templateRef.current) return null;
     try {
-      // إعدادات محسنة لـ Electron لضمان التقاط الصور بشكل صحيح
       return await toPng(templateRef.current, {
         cacheBust: true,
         pixelRatio: 2,
@@ -67,14 +67,12 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
       const base64Data = dataUrl.split(',')[1];
       const platform = Capacitor.getPlatform();
 
-      // التعامل مع Electron كحالة خاصة أو كمتصفح
       if (platform === 'electron' || platform === 'web') {
         if (type === 'share' && navigator.share) {
           const blob = await fetch(dataUrl).then(res => res.blob());
           const file = new File([blob], fileName, { type: 'image/png' });
           await navigator.share({ files: [file], title: 'آية اليوم' });
         } else {
-          // التحميل في Electron يعمل بشكل ممتاز عبر وسم <a>
           const link = document.createElement('a');
           link.download = fileName;
           link.href = dataUrl;
@@ -82,10 +80,9 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
           await showToast('بدأ تحميل الصورة...');
         }
         if (onShareSuccess) onShareSuccess();
-      }
-      // التعامل مع موبايل (Android/iOS)
-      else {
-        const cacheFile = await Filesystem.writeFile({
+      } else {
+        // حفظ مؤقت في الكاش للقيام بالعملية التالية
+        const tempFile = await Filesystem.writeFile({
           path: fileName,
           data: base64Data,
           directory: Directory.Cache
@@ -94,25 +91,27 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
         if (type === 'share') {
           await Share.share({
             title: 'آية اليوم',
-            files: [cacheFile.uri],
+            files: [tempFile.uri],
             dialogTitle: 'مشاركة كصورة',
           });
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
-          if (onShareSuccess) onShareSuccess();
         } else {
-          // حفظ دائم في مجلد الصور للموبايل
-          const permanentFile = await Filesystem.writeFile({
-            path: `Pictures/${fileName}`,
-            data: base64Data,
-            directory: Directory.ExternalStorage,
-            recursive: true
-          });
-          if (window.AgiosScannerNative) {
-            window.AgiosScannerNative.scanFile(decodeURI(permanentFile.uri.replace('file://', '')));
+          // حفظ في المعرض (Gallery) لكل من iOS وأندرويد
+          try {
+            await Media.savePhoto({
+              path: tempFile.uri,
+              albumName: 'Agios Bible'
+            });
+            await showToast('تم حفظ الآية في المعرض بنجاح');
+          } catch (mediaError) {
+            console.error("Media save error:", mediaError);
+            // حل بديل لو فشلت مكتبة Media (مثل نقص الصلاحيات)
+            await showToast('تأكد من إعطاء التطبيق صلاحية الوصول للصور');
           }
-          await showToast('تم حفظ الآية في المعرض بنجاح');
-          if (onShareSuccess) onShareSuccess();
+          // تنظيف الملف المؤقت
+          await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {});
         }
+        if (onShareSuccess) onShareSuccess();
       }
     } catch (err) {
       console.error(err);
@@ -124,7 +123,6 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
 
   return (
     <div className={styles.container}>
-      {/* تأكد أن هذا الجزء غير مخفي بـ display: none بل موجود خارج الشاشة فقط */}
       <div className={styles.offscreen} aria-hidden="true">
         <div ref={templateRef} className={styles.cardTemplate} style={{ background: themeColors.bg }}>
            <div className={styles.innerContent} style={{ backgroundColor: themeColors.card, borderColor: themeColors.border }}>
