@@ -32,6 +32,12 @@ jobs:
           fi
           npx cap sync ios
 
+      - name: Resolve Swift Packages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+                     -project ios/App/App.xcodeproj \
+                     -scheme App
+
       - name: Build iOS App for Simulator
         run: |
           xcodebuild -project ios/App/App.xcodeproj \
@@ -40,6 +46,7 @@ jobs:
                      -destination 'generic/platform=iOS Simulator' \
                      -configuration Debug \
                      -derivedDataPath build \
+                     ONLY_ACTIVE_ARCH=NO \
                      COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Prepare for Appetize.io

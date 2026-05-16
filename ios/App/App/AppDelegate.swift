@@ -1,6 +1,6 @@
 import UIKit
 import Capacitor
-import Firebase
+import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
 import WebKit
@@ -12,12 +12,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // 1. إعداد Firebase
-        FirebaseApp.configure()
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
 
-        // 2. إعداد مفوض التنبيهات لتعمل حتى والتطبيق مفتوح
+        // 2. إعداد مفوض التنبيهات
         UNUserNotificationCenter.current().delegate = self
 
-        // 3. طلب الإذن وجدولة التنبيهات الابتدائية
+        // 3. طلب الإذن
         requestNotificationPermission()
 
         // تسجيل التطبيق لاستقبال التنبيهات
@@ -38,9 +40,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // --- ربط التنبيهات مع Firebase و Capacitor ---
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        // ربط توكن Apple بـ Firebase Messaging لضمان وصول التنبيهات من السيرفر
+        // ربط توكن Apple بـ Firebase Messaging
         Messaging.messaging().apnsToken = deviceToken
-        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+        Messaging.messaging().token { token, error in
+            if let error = error {
+                print("Error fetching FCM registration token: \(error)")
+            } else if let token = token {
+                print("FCM registration token: \(token)")
+                NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: token)
+            }
+        }
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -64,50 +73,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         NotificationCenter.default.post(name: .capacitorDidReceiveNotification, object: response)
         completionHandler()
-    }
-}
-
-// MARK: - JavaScript Bridge (AgiosScannerNative)
-class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
-
-        let isDark = self.traitCollection.userInterfaceStyle == .dark
-        let theme = isDark ? "dark" : "light"
-
-        let js = """
-        window.AgiosScannerNative = {
-            scanFile: function(path) { console.log('iOS: scanFile called'); },
-            refreshAlarms: function() {
-                window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
-            },
-            updateSettings: function(json, masterEnabled) {
-                window.webkit.messageHandlers.AgiosHandler.postMessage({
-                    action: 'updateSettings',
-                    json: json,
-                    master: masterEnabled
-                });
-            },
-            getSystemTheme: function() { return "\(theme)"; }
-        };
-        """
-        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        self.bridge?.webView?.configuration.userContentController.addUserScript(script)
-    }
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any],
-              let action = body["action"] as? String else { return }
-
-        if action == "refreshAlarms" {
-            AgiosNotificationHelper.shared.refreshAllNotifications()
-        } else if action == "updateSettings" {
-            if let json = body["json"] as? String, let master = body["master"] as? Bool {
-                AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
-            }
-        }
     }
 }
 
