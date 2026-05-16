@@ -1,11 +1,12 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, indexedDBLocalPersistence, initializeAuth } from "firebase/auth";
 import { 
   initializeFirestore, 
   persistentLocalCache, 
   persistentMultipleTabManager 
 } from "firebase/firestore";
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
+import { Capacitor } from "@capacitor/core";
 
 // إعدادات Firebase مع قيم احتياطية لضمان العمل في بيئات مثل Capacitor
 const firebaseConfig = {
@@ -34,8 +35,24 @@ const initializeFirebase = () => {
 
 const app = initializeFirebase();
 
-// تصدير الخدمات مع التحقق من وجود التطبيق
-export const auth = app ? getAuth(app) : null;
+// تهيئة Auth ليعمل بشكل مستقر في Capacitor باستخدام IndexedDB
+export const auth = (() => {
+  if (!app) return null;
+
+  // إذا كنا على منصة موبايل (Native)، نستخدم persistence يضمن بقاء الجلسة
+  if (Capacitor.isNativePlatform()) {
+    try {
+      return initializeAuth(app, {
+        persistence: indexedDBLocalPersistence
+      });
+    } catch (e) {
+      // في حالة وجود نسخة مسبقة من Auth
+      return getAuth(app);
+    }
+  }
+
+  return getAuth(app);
+})();
 
 export const db = app ? initializeFirestore(app, {
   localCache: persistentLocalCache({

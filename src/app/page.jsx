@@ -51,25 +51,34 @@ const convertToArabicNumber = (num) => {
     return num.toString().split('').map(d => arabicNums[+d] || d).join('');
 };
 
-// وظائف مساعدة لتوحيد التوقيت على توقيت القاهرة
-const getCairoDate = (date = new Date()) => {
-    return new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Africa/Cairo',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).format(date);
+// دالة محسنة لتوحيد التوقيت وجلب أجزاء التاريخ بشكل مضمون على iOS
+const getCairoDateParts = (date = new Date()) => {
+    try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Africa/Cairo',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
+        });
+        const parts = formatter.formatToParts(date);
+        const dateObj = {};
+        parts.forEach(p => {
+            if (p.type !== 'literal') dateObj[p.type] = parseInt(p.value);
+        });
+        return dateObj; // يعيد { year, month, day }
+    } catch (e) {
+        // Fallback في حالة فشل Intl
+        return {
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+            day: date.getDate()
+        };
+    }
 };
 
-const getCairoYesterday = () => {
-    const now = new Date();
-    const cairoNow = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Cairo"}));
-    cairoNow.setDate(cairoNow.getDate() - 1);
-    return new Intl.DateTimeFormat('en-CA', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).format(cairoNow);
+const getCairoDateString = (date = new Date()) => {
+    const { year, month, day } = getCairoDateParts(date);
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };
 
 const LandingPage = () => {
@@ -126,13 +135,14 @@ const LandingPage = () => {
     }, []);
 
     const fetchDailyContent = useCallback(async (loggedInUser) => {
-        const dateKey = getCairoDate();
-        const [year, month, day] = dateKey.split('-').map(Number);
+        const { month, day } = getCairoDateParts();
+        const dateKey = getCairoDateString();
 
         try {
+            // محاولة جلب الملفات بمسار نسبي لضمان التوافق مع Capacitor iOS
             const [verseRes, questRes] = await Promise.all([
-                fetch('/data/dailyVerses.json'),
-                fetch('/data/dailyQuestions.json')
+                fetch('./data/dailyVerses.json'),
+                fetch('./data/dailyQuestions.json')
             ]);
 
             const verseData = await verseRes.json();
@@ -150,14 +160,14 @@ const LandingPage = () => {
             }
             setHasAnswered(answered);
         } catch (e) {
-            console.error(e);
+            console.error("Fetch Daily Content Error:", e);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
+        fetch('./data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
     }, []);
 
     useEffect(() => {
@@ -215,7 +225,6 @@ const LandingPage = () => {
                         const streak = data.streak || 0;
                         setUserStats({ points: data.totalPoints || 0, streak: streak });
 
-                        // مزامنة الستريك مع تطبيق الأندرويد للاشعارات
                         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
                             window.AgiosScannerNative.updateUserStats(streak);
                         }
@@ -245,7 +254,7 @@ const LandingPage = () => {
 
                         setStartedPlans([...activeCustom, ...activeStatic]);
 
-                        const today = getCairoDate();
+                        const today = getCairoDateString();
                         const historyRaw = data.pointsHistory || [];
                         const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
 
@@ -253,7 +262,7 @@ const LandingPage = () => {
                             history.filter(h => {
                                 if (!h.timestamp) return false;
                                 const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
-                                return getCairoDate(ts) === today;
+                                return getCairoDateString(ts) === today;
                             }).map(h => h.type)
                         );
 
@@ -314,8 +323,8 @@ const LandingPage = () => {
         if (!user) { router.push('/intro'); return; }
         if (hasAnswered || !dailyQuestion) return;
 
-        const dateKey = getCairoDate();
-        const yesterdayStr = getCairoYesterday();
+        const dateKey = getCairoDateString();
+        const yesterdayStr = getCairoDateString(new Date(Date.now() - 86400000));
 
         setSelectedAnswer(index);
         setHasAnswered(true);
