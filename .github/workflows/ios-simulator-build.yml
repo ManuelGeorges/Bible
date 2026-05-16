@@ -26,13 +26,15 @@ jobs:
         run: npm run build
 
       - name: Capacitor Sync
-        run: npx cap sync ios
-
-      # تمت إزالة خطوة CocoaPods لأن المشروع يستخدم Swift Package Manager (SPM)
+        run: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+          npx cap sync ios
 
       - name: Build iOS App for Simulator
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          xcodebuild -project ios/App/App.xcodeproj \
                      -scheme App \
                      -sdk iphonesimulator \
                      -destination 'generic/platform=iOS Simulator' \
