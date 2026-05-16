@@ -293,7 +293,7 @@
 .dropdownItem:hover {
   background: var(--color-accent);
   color: var(--btn-text);
-  padding-right: 28px;
+  padding-inline-end: 28px;
 }
 
 .dropdownItem.selected {
@@ -410,7 +410,7 @@
 .verseNumber {
   color: var(--color-accent);
   font-weight: 900;
-  margin-left: 10px;
+  margin-inline-start: 10px;
   font-size: 0.9em;
   font-family: 'Cairo', sans-serif;
 }
@@ -551,7 +551,7 @@
 /* عرض الملحوظة المحفوظة */
 .noteDisplay {
   background-color: var(--color-border);
-  border-right: 3px solid var(--color-accent);
+  border-inline-start: 3px solid var(--color-accent);
   padding: 10px;
   margin: 10px 0;
   border-radius: 4px;

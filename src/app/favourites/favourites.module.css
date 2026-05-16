@@ -273,7 +273,7 @@
   padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border-right: 3px solid var(--color-accent);
+  border-inline-start: 3px solid var(--color-accent);
   font-size: 0.95em;
   color: var(--color-text-secondary);
 }
@@ -301,7 +301,7 @@
   align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-right: 1.5rem;
+  margin-inline-start: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -328,5 +328,5 @@
   .colorGrid { gap: 12px; }
   .colorWrapper { min-width: 75px; }
   .favouriteItem { padding: 1.2rem; }
-  .removeButton { width: 2.5rem; height: 2.5rem; margin-right: 1rem; }
+  .removeButton { width: 2.5rem; height: 2.5rem; margin-inline-start: 1rem; }
 }
