@@ -64,7 +64,7 @@ export const metadata = {
     google: 'JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY',
   },
   other: {
-    'Content-Security-Policy': "default-src 'self' capacitor-electron://* 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https://*.googleapis.com https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;",
+    'Content-Security-Policy': "default-src 'self' capacitor://* capacitor-electron://* 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self' capacitor://* https://*.googleapis.com https://generativelanguage.googleapis.com https://*.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;",
   },
 };
 
