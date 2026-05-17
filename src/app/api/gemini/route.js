@@ -1,47 +1,43 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const dynamic = 'force-dynamic';
+// هذا السطر يمنع الخطأ عند عمل static export للموبايل
+export const dynamic = 'force-static';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
+export async function GET() {
+  return NextResponse.json({ message: "API is active in server mode only" });
 }
 
+// في حالة الـ Build العادي (Server-side) سيظل الـ POST يعمل
 export async function POST(req) {
+  if (process.env.NEXT_PUBLIC_EXPORT === 'true') {
+    return NextResponse.json({ error: "API Routes not available in static export" }, { status: 403 });
+  }
+
   try {
     const body = await req.json().catch(() => null);
     if (!body || !body.prompt) {
-      console.error("❌ Gemini API: No prompt received");
-      return NextResponse.json({ error: "No prompt provided" }, { status: 400, headers: corsHeaders });
+      return NextResponse.json({ error: "No prompt provided" }, { status: 400 });
     }
 
     const { prompt, config } = body;
     const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error("❌ Gemini API: API Key missing in environment");
-      return NextResponse.json({ error: "API Key missing" }, { status: 500, headers: corsHeaders });
+      return NextResponse.json({ error: "API Key missing" }, { status: 500 });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: config?.model || "gemini-flash-latest",
-      generationConfig: config?.generationConfig,
+      model: config?.model || "gemini-1.5-flash",
     });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
-    return NextResponse.json({ text }, { status: 200, headers: corsHeaders });
+    return NextResponse.json({ text }, { status: 200 });
   } catch (error) {
-    console.error("🔥 Gemini Server Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
+import { generateWithGemini } from '../../../lib/geminiService';
 
 export default function CustomPlanForm() {
     const router = useRouter();
@@ -68,19 +69,14 @@ export default function CustomPlanForm() {
 قائمة الأسفار المتاحة: [${allowedBooks}]
 ملاحظة: يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية قبل أو بعد القالب.`;
 
-            // استخدام مسار نسبي وحذف السلاش النهائية لحل مشكلة CORS والـ Redirect
-            const res = await fetch('/api/gemini', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
+            // استبدال استدعاء الـ API الداخلي بالخدمة المباشرة لتعمل على الموبايل
+            const responseText = await generateWithGemini(prompt, {
+                model: "gemini-1.5-flash",
+                generationConfig: { temperature: 0.7 }
             });
 
-            if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+            if (!responseText) throw new Error("No response from Gemini");
 
-            const aiData = await res.json();
-            if (aiData.error) throw new Error(aiData.error);
-
-            let responseText = aiData.text;
             // استخراج الـ JSON من استجابة الذكاء الاصطناعي بدقة أكبر
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("Format Error: No JSON found in AI response");
