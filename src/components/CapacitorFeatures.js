@@ -10,13 +10,14 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { FirebaseCrashlytics } from '@capacitor-community/firebase-crashlytics';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
+import { AppReview } from '@capawesome/capacitor-app-review';
 import { fetchAndActivate, getNumber } from 'firebase/remote-config';
 import { getFirebaseRemoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const hasSetup = useRef(false);
 
   useEffect(() => {
@@ -25,36 +26,37 @@ export default function CapacitorFeatures() {
     }
   }, [setTheme]);
 
-  // تحديث الـ StatusBar بناءً على الـ resolvedTheme لضمان الدقة
   useEffect(() => {
     const platform = Capacitor.getPlatform();
     if (platform === 'web' || platform === 'electron') return;
 
     const updateStatusBar = async () => {
       try {
-        // resolvedTheme ستكون إما 'dark' أو 'light' دائماً
-        const isDark = resolvedTheme === 'dark';
+        const isDark =
+          theme === 'dark' ||
+          (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+        // في Capacitor:
+        // Style.Light تعني أيقونات بيضاء (تُستخدم مع الخلفيات الداكنة)
+        // Style.Dark تعني أيقونات سوداء (تُستخدم مع الخلفيات الفاتحة)
         if (isDark) {
-          // في الـ Dark Mode: الأيقونات بيضاء (Style.Light)
-          await StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+          await StatusBar.setStyle({ style: Style.Light });
           if (platform === 'android') {
-            await StatusBar.setBackgroundColor({ color: '#0f172a' }).catch(() => {});
+            await StatusBar.setBackgroundColor({ color: '#0f172a' });
           }
         } else {
-          // في الـ Light Mode: الأيقونات سوداء (Style.Dark)
-          await StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+          await StatusBar.setStyle({ style: Style.Dark });
           if (platform === 'android') {
-            await StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(() => {});
+            await StatusBar.setBackgroundColor({ color: '#ffffff' });
           }
         }
       } catch (e) {
-        console.warn("StatusBar style update failed:", e);
+        console.error("StatusBar Error:", e);
       }
     };
 
     updateStatusBar();
-  }, [resolvedTheme]); // الاعتماد على resolvedTheme هو السر هنا
+  }, [theme]);
 
   useEffect(() => {
     const platform = Capacitor.getPlatform();
@@ -78,62 +80,61 @@ export default function CapacitorFeatures() {
         
         if (updateInfo) {
           if (updateInfo.installStatus === 11) {
-            await AppUpdate.completeFlexibleUpdate().catch(() => {});
+            await AppUpdate.completeFlexibleUpdate();
             return;
           }
           if (updateInfo.updateAvailability === 2) {
             if (currentVersionCode < minRequiredVersion) {
-              await AppUpdate.performImmediateUpdate().catch(() => {});
+              await AppUpdate.performImmediateUpdate();
             } else {
               if (updateInfo.installStatus !== 1) {
-                await AppUpdate.startFlexibleUpdate().catch(() => {});
+                await AppUpdate.startFlexibleUpdate();
               }
             }
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn("AppUpdate is not available on this environment (likely Simulator).");
+      }
     };
 
     const setupUIAndNotifications = async () => {
       try {
-        KeepAwake.keepAwake().catch(() => {});
-        FirebaseCrashlytics.setCrashlyticsCollectionEnabled({ enabled: true }).catch(() => {});
+        await KeepAwake.keepAwake().catch(() => {});
+        await FirebaseCrashlytics.setCrashlyticsCollectionEnabled({ enabled: true }).catch(() => {});
 
-        await LocalNotifications.removeAllListeners().catch(() => {});
+        await LocalNotifications.removeAllListeners();
         await LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
           const url = notification.notification.extra?.url;
           if (url) router.push(url);
-        }).catch(() => {});
+        });
 
-        let pushPerms = await PushNotifications.checkPermissions().catch(() => ({ receive: 'denied' }));
-        if (pushPerms.receive === 'prompt') {
-          pushPerms = await PushNotifications.requestPermissions().catch(() => ({ receive: 'denied' }));
-        }
-
+        let pushPerms = await PushNotifications.checkPermissions();
+        if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions();
         if (pushPerms.receive === 'granted') {
           await PushNotifications.register().catch(() => {});
-          await PushNotifications.removeAllListeners().catch(() => {});
+          await PushNotifications.removeAllListeners();
           await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
             const url = notification.notification.data?.url;
             if (url) router.push(url);
-          }).catch(() => {});
+          });
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("UI/Notification Error:", e);
+      }
     };
 
     const init = async () => {
-      await Promise.allSettled([
-        handleAppUpdate(),
-        setupUIAndNotifications(),
-        syncNotifications()
-      ]);
+      await handleAppUpdate();
+      await setupUIAndNotifications();
+      await syncNotifications();
     };
 
     init();
 
     return () => {
-      LocalNotifications.removeAllListeners().catch(() => {});
-      PushNotifications.removeAllListeners().catch(() => {});
+      LocalNotifications.removeAllListeners();
+      PushNotifications.removeAllListeners();
     };
   }, [router]);
 

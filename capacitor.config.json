@@ -3,13 +3,9 @@
   "appName": "Agios Bible",
   "webDir": "out",
   "plugins": {
-    "CapacitorHttp": {
-      "enabled": true
-    },
     "StatusBar": {
       "overlay": false,
-      "backgroundColor": "#ffffff",
-      "style": "LIGHT"
+      "style": "DEFAULT"
     },
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
@@ -36,8 +32,5 @@
   "android": {
     "backgroundColor": "#f0f4f8",
     "allowMixedContent": true
-  },
-  "ios": {
-    "contentInset": "always"
   }
 }

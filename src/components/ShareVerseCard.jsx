@@ -6,7 +6,6 @@ import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Toast } from '@capacitor/toast';
 import { Capacitor } from '@capacitor/core';
-import { Media } from '@capacitor-community/media';
 import { Share2, Download, Loader2 } from 'lucide-react';
 import styles from './ShareVerseCard.module.css';
 
@@ -80,38 +79,44 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
           await showToast('بدأ تحميل الصورة...');
         }
         if (onShareSuccess) onShareSuccess();
-      } else {
-        // حفظ مؤقت في الكاش للقيام بالعملية التالية
+      }
+      else {
+        // في iOS نستخدم Cache أو Documents، وفي أندرويد نستخدم Cache للعمليات المؤقتة
+        const tempDirectory = platform === 'ios' ? Directory.Documents : Directory.Cache;
+
         const tempFile = await Filesystem.writeFile({
           path: fileName,
           data: base64Data,
-          directory: Directory.Cache
+          directory: tempDirectory
         });
 
-        if (type === 'share') {
+        // في iOS: واجهة المشاركة (Share Sheet) هي الحل الأمثل للحفظ والمشاركة معاً
+        if (type === 'share' || platform === 'ios') {
           await Share.share({
             title: 'آية اليوم',
             files: [tempFile.uri],
-            dialogTitle: 'مشاركة كصورة',
+            dialogTitle: type === 'share' ? 'مشاركة كصورة' : 'حفظ الصورة',
           });
-          await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
-        } else {
-          // حفظ في المعرض (Gallery) لكل من iOS وأندرويد
-          try {
-            await Media.savePhoto({
-              path: tempFile.uri,
-              albumName: 'Agios Bible'
-            });
-            await showToast('تم حفظ الآية في المعرض بنجاح');
-          } catch (mediaError) {
-            console.error("Media save error:", mediaError);
-            // حل بديل لو فشلت مكتبة Media (مثل نقص الصلاحيات)
-            await showToast('تأكد من إعطاء التطبيق صلاحية الوصول للصور');
-          }
-          // تنظيف الملف المؤقت
-          await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {});
+
+          // تنظيف الملف بعد المشاركة
+          await Filesystem.deleteFile({ path: fileName, directory: tempDirectory });
+          if (onShareSuccess) onShareSuccess();
         }
-        if (onShareSuccess) onShareSuccess();
+        // في أندرويد: حفظ مباشر في مجلد الصور
+        else {
+          const permanentFile = await Filesystem.writeFile({
+            path: `Pictures/${fileName}`,
+            data: base64Data,
+            directory: Directory.ExternalStorage,
+            recursive: true
+          });
+
+          if (window.AgiosScannerNative) {
+            window.AgiosScannerNative.scanFile(decodeURI(permanentFile.uri.replace('file://', '')));
+          }
+          await showToast('تم حفظ الآية في المعرض بنجاح');
+          if (onShareSuccess) onShareSuccess();
+        }
       }
     } catch (err) {
       console.error(err);

@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { Capacitor } from '@capacitor/core'; // إضافة Capacitor
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho";
+const genAI = new GoogleGenerativeAI(API_KEY);
 
 export default function CustomPlanForm() {
     const router = useRouter();
@@ -51,7 +53,6 @@ export default function CustomPlanForm() {
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
-            const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
             const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
 
 ### [بيانات الحالة]
@@ -88,15 +89,32 @@ export default function CustomPlanForm() {
 
 تذكر: أنت تقدم دواءً روحياً مخصصاً.`;
 
-            const result = await model.generateContent(prompt);
-            const responseText = result.response.text();
-            const firstBrace = responseText.indexOf('{');
-            const lastBrace = responseText.lastIndexOf('}');
-
-            if (firstBrace === -1 || lastBrace === -1) throw new Error("Format Error");
-
-            const jsonString = responseText.substring(firstBrace, lastBrace + 1);
-            return JSON.parse(jsonString);
+            // حل مشكلة iOS عبر استخدام الـ API مباشرة إذا فشلت المكتبة أو كنا على الموبايل
+            // لأن مكتبة Google تحاول استخدام fetch الذي قد يتعرض للمنع بسبب CORS في iOS
+            if (Capacitor.isNativePlatform()) {
+                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                 const res = await fetch(apiUrl, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                         contents: [{ parts: [{ text: prompt }] }]
+                     })
+                 });
+                 const resultData = await res.json();
+                 const responseText = resultData.candidates[0].content.parts[0].text;
+                 const firstBrace = responseText.indexOf('{');
+                 const lastBrace = responseText.lastIndexOf('}');
+                 const jsonString = responseText.substring(firstBrace, lastBrace + 1);
+                 return JSON.parse(jsonString);
+            } else {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const result = await model.generateContent(prompt);
+                const responseText = result.response.text();
+                const firstBrace = responseText.indexOf('{');
+                const lastBrace = responseText.lastIndexOf('}');
+                const jsonString = responseText.substring(firstBrace, lastBrace + 1);
+                return JSON.parse(jsonString);
+            }
         } catch (e) {
             console.error("Gemini Error:", e);
             return null;
@@ -139,7 +157,7 @@ export default function CustomPlanForm() {
                 const userData = userSnap.data();
                 const lastGenerated = userData.lastAIGenerated?.toDate();
                 const now = new Date();
-
+                
                 if (lastGenerated && (now - lastGenerated) < 60000) {
                     const waitTime = Math.ceil((60000 - (now - lastGenerated)) / 1000);
                     toast.error(`برجاء الانتظار ${waitTime} ثانية قبل إنشاء خطة جديدة.`);
