@@ -8,7 +8,7 @@ import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 if (!apiKey) {
   console.error("Gemini API Key is missing or undefined!");
 }
