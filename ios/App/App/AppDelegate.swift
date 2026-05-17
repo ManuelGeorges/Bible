@@ -10,14 +10,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
-        }
-        UNUserNotificationCenter.current().delegate = self
+        // تهيئة فايبربيز كأول خطوة لضمان عمل كافة الإضافات
+        FirebaseApp.configure()
 
+        UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
 
-        // تأخير التحديث لضمان استقرار التطبيق وعدم التضارب مع Capacitor Plugins
+        // تأخير التحديث لضمان استقرار التطبيق
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             AgiosNotificationHelper.shared.refreshAllNotifications()
         }
@@ -48,7 +47,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // إخطار الواجهة (Web) بضرورة تحديث البيانات عند العودة للتطبيق (لحل مشكلة عدم ظهور الآية فوراً)
         if let bridge = (self.window?.rootViewController as? CAPBridgeViewController)?.bridge {
             bridge.eval(js: "window.dispatchEvent(new Event('visibilitychange'));")
         }
@@ -127,7 +125,6 @@ class AgiosNotificationHelper {
     }
 
     func refreshAllNotifications() {
-        // حذف التنبيهات الخاصة بـ أجيوس فقط لتجنب مسح تنبيهات Capacitor الأخرى
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let idsToRemove = requests.filter { $0.identifier.hasPrefix("agios_") }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)

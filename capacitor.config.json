@@ -2,6 +2,14 @@
   "appId": "com.agios.bible",
   "appName": "Agios Bible",
   "webDir": "out",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor",
+    "allowNavigation": [
+      "localhost"
+    ]
+  },
   "plugins": {
     "StatusBar": {
       "overlay": false,
@@ -22,12 +30,8 @@
       "androidScaleType": "CENTER",
       "showSpinner": false
     },
-    "CapacitorUpdater": {
-      "appId": "com.agios.bible",
-      "version": "1.0.3",
-      "autoUpdate": false,
-      "stats": true,
-      "resetWhenError": true
+    "AppUpdate": {
+      "appleAppId": ""
     }
   },
   "android": {

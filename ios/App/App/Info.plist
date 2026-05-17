@@ -43,7 +43,6 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<key>UIInterfaceOrientationLandscapeRight</key>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
@@ -56,6 +55,13 @@
 	<string>نحتاج لحفظ الصور في مكتبتك عند تحميل الآيات أو المحتوى.</string>
 	<key>NSLocalNotificationsUsageDescription</key>
 	<string>نحتاج لإرسال تنبيهات لك بآية اليوم وخطط القراءة والمسابقات.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

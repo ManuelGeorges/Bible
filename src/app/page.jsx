@@ -51,35 +51,44 @@ const convertToArabicNumber = (num) => {
     return num.toString().split('').map(d => arabicNums[+d] || d).join('');
 };
 
-// وظائف مساعدة لتوحيد التوقيت على توقيت القاهرة
 const getCairoDateInfo = (date = new Date()) => {
-    // حل مشكلة التواريخ في iOS عبر استخراج المكونات يدوياً
-    const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Africa/Cairo',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric'
-    });
-    const parts = formatter.formatToParts(date);
-    const getPart = (type) => parseInt(parts.find(p => p.type === type)?.value);
+    try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Africa/Cairo',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
+        });
+        const parts = formatter.formatToParts(date);
+        const getPart = (type) => parseInt(parts.find(p => p.type === type)?.value);
 
-    const year = getPart('year');
-    const month = getPart('month');
-    const day = getPart('day');
+        const year = getPart('year');
+        const month = getPart('month');
+        const day = getPart('day');
 
-    return {
-        year,
-        month,
-        day,
-        key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    };
+        if (isNaN(month) || isNaN(day)) throw new Error("Invalid Date");
+
+        return {
+            year,
+            month,
+            day,
+            key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        };
+    } catch (e) {
+        // Fallback في حالة فشل Intl على بعض إصدارات iOS القديمة
+        return {
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+            day: date.getDate(),
+            key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        };
+    }
 };
 
 const getCairoDate = (date = new Date()) => getCairoDateInfo(date).key;
 
 const getCairoYesterday = () => {
     const now = new Date();
-    // تقليل يوم واحد مع مراعاة التوقيت
     const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
     return getCairoDate(yesterday);
 };
@@ -142,10 +151,10 @@ const LandingPage = () => {
         const { month, day, key: dateKey } = getCairoDateInfo();
 
         try {
-            // استخدام مسارات نسبية لضمان عملها في Capacitor iOS
+            // استخدام مسارات مطلقة لضمان العمل في Capacitor iOS
             const [verseRes, questRes] = await Promise.all([
-                fetch('./data/dailyVerses.json'),
-                fetch('./data/dailyQuestions.json')
+                fetch('/data/dailyVerses.json'),
+                fetch('/data/dailyQuestions.json')
             ]);
 
             if (!verseRes.ok || !questRes.ok) throw new Error("Data files not found");
@@ -175,9 +184,11 @@ const LandingPage = () => {
         }
     }, []);
 
+    // جلب البيانات الأساسية فور التحميل بغض النظر عن حالة المستخدم
     useEffect(() => {
+        fetchDailyContent(null);
         fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
-    }, []);
+    }, [fetchDailyContent]);
 
     useEffect(() => {
         const fetchRemoteConfig = async () => {
@@ -215,11 +226,19 @@ const LandingPage = () => {
     };
 
     useEffect(() => {
-
         let unsubSnap = null;
         const unsubAuth = auth?.onAuthStateChanged((u) => {
             setUser(u);
-            fetchDailyContent(u);
+
+            // تحديث حالة الإجابة إذا سجل المستخدم دخوله
+            if (u) {
+                const { key: dateKey } = getCairoDateInfo();
+                getDoc(doc(firestore, 'users', u.uid)).then(userSnap => {
+                    if (userSnap.exists() && userSnap.data().answeredQuestions?.[dateKey]?.answered) {
+                        setHasAnswered(true);
+                    }
+                });
+            }
 
             if (unsubSnap) {
                 unsubSnap();
@@ -234,7 +253,6 @@ const LandingPage = () => {
                         const streak = data.streak || 0;
                         setUserStats({ points: data.totalPoints || 0, streak: streak });
 
-                        // مزامنة الستريك مع تطبيق الأندرويد للاشعارات
                         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
                             window.AgiosScannerNative.updateUserStats(streak);
                         }
@@ -298,7 +316,7 @@ const LandingPage = () => {
             unsubAuth?.();
             if (unsubSnap) unsubSnap();
         };
-    }, [fetchDailyContent, calculatePlanStats]);
+    }, [calculatePlanStats]);
 
     useEffect(() => {
         if (user && startedPlans.length > 0) {
@@ -743,12 +761,16 @@ const LandingPage = () => {
                     {dailyQuestion && (
                         <div className={styles.questionSection} id="daily-question">
                             <div className={styles.glassHeader}><Trophy size={18} color="#f59e0b" /><span>تحدي اليوم</span></div>
-                            <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
-                            <div className={styles.optionsList}>
-                                {dailyQuestion.options.map((opt, i) => (
-                                    <button key={i} disabled={hasAnswered} onClick={() => handleOptionClick(i)} className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}>{opt}</button>
-                                ))}
-                            </div>
+                            {isLoading ? <div className={styles.skeletonText} style={{height: '100px'}} /> : (
+                                <>
+                                    <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
+                                    <div className={styles.optionsList}>
+                                        {dailyQuestion.options.map((opt, i) => (
+                                            <button key={i} disabled={hasAnswered} onClick={() => handleOptionClick(i)} className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}>{opt}</button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
