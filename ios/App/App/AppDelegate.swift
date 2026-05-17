@@ -13,6 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             FirebaseApp.configure()
         }
 
+        // في الإصدارات الحديثة من Capacitor، يفضل استخدام الاستدعاء الافتراضي أو التأكد من مطابقة الـ Signature
         let result = ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         UNUserNotificationCenter.current().delegate = self
@@ -21,6 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
             if granted {
                 DispatchQueue.main.async {
+                    // تم تعديل الاستدعاء للتأكد من الوصول إليه
                     AgiosNotificationHelper.shared.refreshAllNotifications()
                 }
             }
