@@ -2,13 +2,10 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
-
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 
 export default function CustomPlanForm() {
     const router = useRouter();
@@ -51,7 +48,6 @@ export default function CustomPlanForm() {
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
-            const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
             const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
 
 ### [بيانات الحالة]
@@ -88,8 +84,16 @@ export default function CustomPlanForm() {
 
 تذكر: أنت تقدم دواءً روحياً مخصصاً.`;
 
-            const result = await model.generateContent(prompt);
-            const responseText = result.response.text();
+            const res = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+
+            const aiData = await res.json();
+            if (aiData.error) throw new Error(aiData.error);
+
+            const responseText = aiData.text;
             const firstBrace = responseText.indexOf('{');
             const lastBrace = responseText.lastIndexOf('}');
 

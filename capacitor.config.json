@@ -21,7 +21,8 @@
       "providers": [
         "google.com",
         "apple.com"
-      ]
+      ],
+      "googleClientId": "900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com"
     },
     "SplashScreen": {
       "launchShowDuration": 1000,
@@ -31,7 +32,19 @@
       "showSpinner": false
     },
     "AppUpdate": {
-      "appleAppId": ""
+      "appleAppId": "6470000000"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "DARK",
+      "setAccessoryBarVisible": false
+    },
+    "PushNotifications": {
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
     }
   },
   "android": {

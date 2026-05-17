@@ -10,18 +10,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // تهيئة فايبربيز كأول خطوة لضمان عمل كافة الإضافات
-        FirebaseApp.configure()
+        // 1. تهيئة فايبربيز كأول خطوة
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
+
+        // 2. السماح لـ Capacitor بمعالجة الإضافات (بما فيها Firebase Auth)
+        let result = ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
 
-        // تأخير التحديث لضمان استقرار التطبيق
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+        // تهيئة الإشعارات المتأخرة
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             AgiosNotificationHelper.shared.refreshAllNotifications()
         }
 
-        return true
+        return result
     }
 
     private func requestNotificationPermission() {
