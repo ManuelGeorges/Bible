@@ -62,7 +62,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleAuth = async (e) => {
+const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
@@ -71,22 +71,23 @@ export default function SignUpPage() {
     setIsSubmitting(true);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      await setDoc(doc(db, 'users', user.uid), {
-        firstName,
-        lastName,
-        email: user.email,
-        createdAt: new Date().toISOString(),
-        favorites: { verses: {} },
-        completedChapters: {},
-        completedPlans: {}
-      });
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        await setDoc(doc(db, 'users', user.uid), {
+            firstName,
+            lastName,
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            favorites: { verses: {} },
+            completedChapters: {},
+            completedPlans: {}
+        });
+        router.replace('/'); // ✅ redirect manually, don't rely on onAuthStateChanged
     } catch (err) {
-      setError(translateError(err.code));
-      setIsSubmitting(false);
+        setError(translateError(err.code));
+        setIsSubmitting(false);
     }
-  };
+};
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
@@ -101,11 +102,12 @@ export default function SignUpPage() {
         
         const idToken = result.credential?.idToken;
 
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        } else {
+if (idToken) {
+    const credential = GoogleAuthProvider.credential(idToken);
+    const userCredential = await signInWithCredential(auth, credential);
+    await handleUserData(userCredential.user);
+    router.replace('/'); // ✅ add this
+}else {
           throw new Error("No ID Token");
         }
       } else {

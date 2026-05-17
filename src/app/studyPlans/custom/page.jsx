@@ -6,8 +6,13 @@ import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
-import { generateWithGemini } from '../../../lib/geminiService';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("Gemini API Key is missing or undefined!");
+}
+const genAI = new GoogleGenerativeAI(apiKey);
 export default function CustomPlanForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -69,21 +74,21 @@ export default function CustomPlanForm() {
 قائمة الأسفار المتاحة: [${allowedBooks}]
 ملاحظة: يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية قبل أو بعد القالب.`;
 
-            // استبدال استدعاء الـ API الداخلي بالخدمة المباشرة لتعمل على الموبايل
-            const responseText = await generateWithGemini(prompt, {
-                model: "gemini-1.5-flash",
+            const model = genAI.getGenerativeModel({
+                model: "gemini-flash-latest",
                 generationConfig: { temperature: 0.7 }
             });
 
+            const result = await model.generateContent(prompt);
+            const responseText = result.response.text();
+
             if (!responseText) throw new Error("No response from Gemini");
 
-            // استخراج الـ JSON من استجابة الذكاء الاصطناعي بدقة أكبر
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("Format Error: No JSON found in AI response");
 
             const parsedPlan = JSON.parse(jsonMatch[0]);
 
-            // التأكد من وجود البيانات الأساسية
             if (!parsedPlan.readings || !Array.isArray(parsedPlan.readings)) {
                 throw new Error("Missing readings in AI response");
             }

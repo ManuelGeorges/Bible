@@ -13,7 +13,11 @@ import { useSearchParams } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
 import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart } from 'lucide-react';
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("Gemini API Key is missing or undefined!");
+}
+const genAI = new GoogleGenerativeAI(apiKey);
 const geminiCache = {};
 
 const highlightColors = [

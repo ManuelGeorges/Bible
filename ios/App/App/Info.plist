@@ -72,5 +72,9 @@
 			</array>
 		</dict>
 	</array>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.agios.bible</string>
+	</array>
 </dict>
 </plist>

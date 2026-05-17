@@ -5,7 +5,7 @@
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",
-    "iosScheme": "capacitor",
+    "iosScheme": "http",
     "allowNavigation": [
       "localhost"
     ]

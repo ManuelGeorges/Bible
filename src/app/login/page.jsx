@@ -48,18 +48,19 @@ const LoginPage = () => {
     }
   };
 
-  const handleAuth = async (e) => {
+const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email, password);
+        router.replace('/'); // ✅ add this
     } catch (err) {
-      setError(translateError(err.code));
-      setIsSubmitting(false);
+        setError(translateError(err.code));
+        setIsSubmitting(false);
     }
-  };
+};
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
@@ -77,12 +78,14 @@ const LoginPage = () => {
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
+          router.replace('/');
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
+        router.replace('/');
       }
     } catch (err) {
       console.error("Google Auth Error:", err);
