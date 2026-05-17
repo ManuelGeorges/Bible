@@ -4,9 +4,7 @@ import Firebase
 import UserNotifications
 import WebKit
 
-// إضافة الامتدادات لضمان عدم فشل المترجم إذا لم تكن معرفة مسبقاً
 extension Notification.Name {
-    static let capacitorSetupBridge = Notification.Name("CAPBridgeSetup")
     static let capacitorDidRegisterForRemoteNotifications = Notification.Name("capDidRegisterForRemoteNotifications")
     static let capacitorDidFailToRegisterForRemoteNotifications = Notification.Name("capDidFailToRegisterForRemoteNotifications")
 }
@@ -17,14 +15,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // إعداد Firebase
         FirebaseApp.configure()
 
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
         application.registerForRemoteNotifications()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(handleBridgeReady(_:)), name: .capacitorSetupBridge, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleBridgeReady), name: Notification.Name(CAPNotifications.BridgeReady.name), object: nil)
 
         return true
     }
@@ -41,14 +38,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     @objc func handleBridgeReady(_ notification: Notification) {
-        // الإصلاح: الوصول إلى webView مباشرة من الـ bridge ليتوافق مع Capacitor
-        guard let bridge = notification.object as? CAPBridge,
-              let webView = bridge.webView else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
 
+            guard let rootVC = self.window?.rootViewController as? CAPBridgeViewController,
+                  let webView = rootVC.webView else {
+
+                if #available(iOS 13.0, *),
+                   let windowScene = self.applicationConnectedScene(),
+                   let fallbackRoot = windowScene.windows.first?.rootViewController as? CAPBridgeViewController,
+                   let fallbackWebView = fallbackRoot.webView {
+                    self.setupNativeBridge(on: fallbackWebView)
+                }
+                return
+            }
+
+            self.setupNativeBridge(on: webView)
+        }
+    }
+
+    private func setupNativeBridge(on webView: WKWebView) {
         let handler = AgiosScriptHandler()
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "AgiosHandler")
         webView.configuration.userContentController.add(handler, name: "AgiosHandler")
 
-        let isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
+        var isDark = false
+        if #available(iOS 13.0, *) {
+            if let windowScene = applicationConnectedScene(),
+               let window = windowScene.windows.first {
+                isDark = window.traitCollection.userInterfaceStyle == .dark
+            } else {
+                isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
+            }
+        } else {
+            isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
+        }
+
         let theme = isDark ? "dark" : "light"
 
         let js = """
@@ -69,6 +94,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         """
         let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
         webView.configuration.userContentController.addUserScript(script)
+        webView.evaluateJavaScript(js, completionHandler: nil)
+    }
+
+    private func applicationConnectedScene() -> UIWindowScene? {
+        if #available(iOS 13.0, *) {
+            return UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive }) as? UIWindowScene
+        }
+        return nil
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -139,7 +173,7 @@ class AgiosNotificationHelper {
         schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
         schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
         schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
-        schedule(type: "streak", defH: 21, title: "حافظ على حماسك", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
+        schedule(type: "streak", defH: 21, title: "حافظ على حماسة", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
         schedule(type: "appSuggestions", defH: 12, title: "معلومة سريعة", body: tips.randomElement() ?? "اكتشف ميزات أجيوس.")
         schedule(type: "updateAlerts", defH: 12, title: "تحديث جديد", body: "تأكد من استخدام أحدث نسخة من أجيوس للمميزات الجديدة.")
     }
