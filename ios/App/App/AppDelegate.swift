@@ -1,29 +1,28 @@
 import UIKit
 import Capacitor
-import Firebase
+import FirebaseCore
 import UserNotifications
 import WebKit
-
-extension Notification.Name {
-    static let capacitorDidRegisterForRemoteNotifications = Notification.Name("capDidRegisterForRemoteNotifications")
-    static let capacitorDidFailToRegisterForRemoteNotifications = Notification.Name("capDidFailToRegisterForRemoteNotifications")
-}
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
+    // نحتفظ بمرجع للهاندلر لمنع حذفه من الذاكرة
+    private let agiosHandler = AgiosScriptHandler()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // إعداد Firebase أولاً
         FirebaseApp.configure()
 
+        // إعداد الإشعارات
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
-        application.registerForRemoteNotifications()
+        
+        // الطريقة الرسمية لـ Capacitor 7 للانتظار حتى جاهزية الـ Bridge
+        NotificationCenter.default.addObserver(self, selector: #selector(handleBridgeReady(_:)), name: CAPBridge.setupNotification, object: nil)
 
-        NotificationCenter.default.addObserver(self, selector: #selector(handleBridgeReady), name: Notification.Name(CAPNotifications.BridgeReady.name), object: nil)
-
-        return true
+        return ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     private func requestNotificationPermission() {
@@ -38,47 +37,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     @objc func handleBridgeReady(_ notification: Notification) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-
-            guard let rootVC = self.window?.rootViewController as? CAPBridgeViewController,
-                  let webView = rootVC.webView else {
-
-                if #available(iOS 13.0, *),
-                   let windowScene = self.applicationConnectedScene(),
-                   let fallbackRoot = windowScene.windows.first?.rootViewController as? CAPBridgeViewController,
-                   let fallbackWebView = fallbackRoot.webView {
-                    self.setupNativeBridge(on: fallbackWebView)
-                }
-                return
-            }
-
-            self.setupNativeBridge(on: webView)
-        }
+        // الوصول الصحيح للـ Bridge في الإصدارات الحديثة
+        guard let bridge = notification.object as? Bridge,
+              let webView = bridge.webView else { return }
+        
+        self.setupNativeBridge(on: webView)
     }
 
     private func setupNativeBridge(on webView: WKWebView) {
-        let handler = AgiosScriptHandler()
-        webView.configuration.userContentController.removeScriptMessageHandler(forName: "AgiosHandler")
-        webView.configuration.userContentController.add(handler, name: "AgiosHandler")
+        let contentController = webView.configuration.userContentController
+        
+        // تنظيف وحقن الهاندلر
+        contentController.removeScriptMessageHandler(forName: "AgiosHandler")
+        contentController.add(self.agiosHandler, name: "AgiosHandler")
 
-        var isDark = false
-        if #available(iOS 13.0, *) {
-            if let windowScene = applicationConnectedScene(),
-               let window = windowScene.windows.first {
-                isDark = window.traitCollection.userInterfaceStyle == .dark
-            } else {
-                isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
-            }
-        } else {
-            isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
-        }
-
+        let isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
         let theme = isDark ? "dark" : "light"
 
         let js = """
         window.AgiosScannerNative = {
-            scanFile: function(path) { console.log('iOS: scanFile called for ' + path); },
             refreshAlarms: function() {
                 window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
             },
@@ -92,25 +69,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             getSystemTheme: function() { return "\(theme)"; }
         };
         """
+        // حقن الكود ليكون متاحاً قبل تحميل الصفحة
         let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        webView.configuration.userContentController.addUserScript(script)
+        contentController.addUserScript(script)
+        
+        // تنفيذ فوري في حال كانت الصفحة محملة بالفعل
         webView.evaluateJavaScript(js, completionHandler: nil)
     }
 
-    private func applicationConnectedScene() -> UIWindowScene? {
-        if #available(iOS 13.0, *) {
-            return UIApplication.shared.connectedScenes
-                .first(where: { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive }) as? UIWindowScene
-        }
-        return nil
-    }
-
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+        ApplicationDelegateProxy.shared.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+        ApplicationDelegateProxy.shared.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -120,12 +92,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
-
+    
+    // لإظهار الإشعارات والتطبيق مفتوح
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .sound, .list])
+        completionHandler([[.banner, .sound, .list]])
     }
 }
 
+// MARK: - Script Handler
 class AgiosScriptHandler: NSObject, WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any],
@@ -141,22 +115,17 @@ class AgiosScriptHandler: NSObject, WKScriptMessageHandler {
     }
 }
 
+// MARK: - Notification Helper
 class AgiosNotificationHelper {
     static let shared = AgiosNotificationHelper()
-
+    
     private let tips = [
         "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
         "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
         "يمكنك تظليل الآيات باللون الذي يريحك وكتابة ملحوظات عليها",
         "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
-        "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط",
-        "يمكنك تغيير حجم خط القراءة لراحة عينيك.",
-        "هل تعلم أن بإمكانك قراءة الكتاب المقدس بدون إنترنت؟"
+        "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط"
     ]
-
-    private func getPrefString(key: String) -> String? {
-        return UserDefaults.standard.string(forKey: "_cap_" + key) ?? UserDefaults.standard.string(forKey: key)
-    }
 
     func updateSettings(json: String, masterEnabled: Bool) {
         UserDefaults.standard.set(json, forKey: "_cap_notificationSettings")
@@ -166,31 +135,27 @@ class AgiosNotificationHelper {
 
     func refreshAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-
-        let master = getPrefString(key: "masterNotifications") ?? "true"
+        
+        let master = UserDefaults.standard.string(forKey: "_cap_masterNotifications") ?? "true"
         if master == "false" { return }
 
         schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
         schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
         schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
-        schedule(type: "streak", defH: 21, title: "حافظ على حماسة", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
         schedule(type: "appSuggestions", defH: 12, title: "معلومة سريعة", body: tips.randomElement() ?? "اكتشف ميزات أجيوس.")
-        schedule(type: "updateAlerts", defH: 12, title: "تحديث جديد", body: "تأكد من استخدام أحدث نسخة من أجيوس للمميزات الجديدة.")
     }
 
     private func schedule(type: String, defH: Int, title: String, body: String) {
         var hour = defH
         var minute = 0
         var enabled = true
-        let norm = normalize(type)
 
-        if let jsonStr = getPrefString(key: "notificationSettings"),
+        if let jsonStr = UserDefaults.standard.string(forKey: "_cap_notificationSettings"),
            let data = jsonStr.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-
-            enabled = json[norm] as? Bool ?? true
-            let timeKey = norm + "Time"
-            if let timeStr = json[timeKey] as? String, timeStr.contains(":") {
+            
+            enabled = json[type] as? Bool ?? true
+            if let timeStr = json[type + "Time"] as? String, timeStr.contains(":") {
                 let p = timeStr.components(separatedBy: ":")
                 if p.count == 2 {
                     hour = Int(p[0]) ?? defH
@@ -211,18 +176,7 @@ class AgiosNotificationHelper {
         components.minute = minute
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-        let request = UNNotificationRequest(identifier: "agios_\(norm)", content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: "agios_\(type)", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
-    }
-
-    private func normalize(_ type: String) -> String {
-        let low = type.lowercased()
-        if low.contains("verse") { return "verse" }
-        if low.contains("question") { return "question" }
-        if low.contains("streak") { return "streak" }
-        if low.contains("study") || low.contains("plan") { return "studyPlans" }
-        if low.contains("tip") || low.contains("suggestion") { return "appSuggestions" }
-        if low.contains("update") { return "updateAlerts" }
-        return type
     }
 }
