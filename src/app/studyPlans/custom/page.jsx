@@ -7,6 +7,8 @@ import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 
+const API_BASE_URL = 'https://agios-bible.vercel.app';
+
 export default function CustomPlanForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -48,46 +50,14 @@ export default function CustomPlanForm() {
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
-            const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
+            const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.\n\n### [بيانات الحالة]\n- مدخلات المستخدم (المشاعر/الظروف): "${data.mood}"\n- مدة البرنامج: "${data.duration}" أيام.\n- الكثافة القرائية: "${data.level === 'beginner' ? 'تركيز عالٍ على أصحاح واحد يومياً' : 'ربط موضوعي بين عدة أصحاحات يومياً'}".\n\n### [خوارزمية العمل]\n1. التحليل النفس-روحي: حلل بعمق ما وراء كلمات المستخدم ("${data.mood}").\n2. الانتقاء الموضوعي: اختر حصرياً من القائمة أدناه النصوص التي تخاطب هذا الاحتياج الجوهري.\n3. الصياغة الوجدانية: اكتب العنوان والوصف بلهجة مشجعة ودافئة.\n\n### [قائمة الأسفار المتاحة]\n[${allowedBooks}]\n\n### [قواعد الاستجابة التقنية]\n1. الرد JSON صالح فقط.\n2. الالتزام بأسماء الأسفار تماماً.\n3. مصفوفة "books" عناصر مستقلة بدون شرطات.\n4. إذا كانت المدخلات مسيئة، صمم خطة تدعو للسلام والحكمة بشكل عام.\n\n### [قالب المخرجات]\n{\n  "title": "عنوان ملهم",\n  "description": "رسالة شخصية قصيرة",\n  "duration": "${data.duration} أيام",\n  "readings": [\n    {\n      "day": 1,\n      "books": ["اسم_السفر رقم_الأصحاح"]\n    }\n  ]\n}\n\nتذكر: أنت تقدم دواءً روحياً مخصصاً.`;
 
-### [بيانات الحالة]
-- مدخلات المستخدم (المشاعر/الظروف): "${data.mood}"
-- مدة البرنامج: "${data.duration}" أيام.
-- الكثافة القرائية: "${data.level === 'beginner' ? 'تركيز عالٍ على أصحاح واحد يومياً' : 'ربط موضوعي بين عدة أصحاحات يومياً'}".
-
-### [خوارزمية العمل]
-1. التحليل النفس-روحي: حلل بعمق ما وراء كلمات المستخدم ("${data.mood}").
-2. الانتقاء الموضوعي: اختر حصرياً من القائمة أدناه النصوص التي تخاطب هذا الاحتياج الجوهري.
-3. الصياغة الوجدانية: اكتب العنوان والوصف بلهجة مشجعة ودافئة.
-
-### [قائمة الأسفار المتاحة]
-[${allowedBooks}]
-
-### [قواعد الاستجابة التقنية]
-1. الرد JSON صالح فقط.
-2. الالتزام بأسماء الأسفار تماماً.
-3. مصفوفة "books" عناصر مستقلة بدون شرطات.
-4. إذا كانت المدخلات مسيئة، صمم خطة تدعو للسلام والحكمة بشكل عام.
-
-### [قالب المخرجات]
-{
-  "title": "عنوان ملهم",
-  "description": "رسالة شخصية قصيرة",
-  "duration": "${data.duration} أيام",
-  "readings": [
-    {
-      "day": 1,
-      "books": ["اسم_السفر رقم_الأصحاح"]
-    }
-  ]
-}
-
-تذكر: أنت تقدم دواءً روحياً مخصصاً.`;
-
-            // استخدام المسار النسبي لضمان التوافق مع السيرفر الجديد
-            const res = await fetch('/api/gemini', {
+            // إضافة / في نهاية الرابط ضروري جداً لتجنب Redirect (الذي يسبب CORS error)
+            const res = await fetch(`${API_BASE_URL}/api/gemini/`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ prompt })
             });
 
@@ -97,7 +67,6 @@ export default function CustomPlanForm() {
             if (aiData.error) throw new Error(aiData.error);
 
             const responseText = aiData.text;
-            // استخراج الـ JSON من النص (لأن الموديل أحياناً يضيف Markdown)
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("Format Error: No JSON found in AI response");
 
@@ -145,7 +114,7 @@ export default function CustomPlanForm() {
                 const userData = userSnap.data();
                 const lastGenerated = userData.lastAIGenerated?.toDate();
                 const now = new Date();
-                
+
                 if (lastGenerated && (now - lastGenerated) < 60000) {
                     const waitTime = Math.ceil((60000 - (now - lastGenerated)) / 1000);
                     toast.error(`برجاء الانتظار ${waitTime} ثانية قبل إنشاء خطة جديدة.`);
