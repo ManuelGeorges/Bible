@@ -1,30 +1,29 @@
 import UIKit
 import Capacitor
 import Firebase
-import FirebaseMessaging
 import UserNotifications
 import WebKit
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // 1. إعداد Firebase
+        // 1. إعداد Firebase الأساسي (مطلوب للـ Auth والخدمات الأخرى)
         FirebaseApp.configure()
 
-        // 2. إعداد مفوض التنبيهات لتعمل حتى والتطبيق مفتوح (مثل أندرويد)
+        // 2. إعداد مفوض التنبيهات لتعمل حتى والتطبيق مفتوح
         UNUserNotificationCenter.current().delegate = self
 
-        // 3. إعداد مفوض Firebase Messaging
-        Messaging.messaging().delegate = self
-
-        // 4. طلب الإذن وجدولة التنبيهات المحلية
+        // 3. طلب الإذن وجدولة التنبيهات المحلية
         requestNotificationPermission()
 
-        // 5. تسجيل الجهاز لاستقبال الإشعارات من Apple (APNs)
+        // 4. تسجيل الجهاز لاستقبال الإشعارات
         application.registerForRemoteNotifications()
+
+        // 5. إعداد مستمع الـ Bridge لحقن الـ Script يدوي أول ما الـ WebView يفتح
+        NotificationCenter.default.addObserver(self, selector: #selector(handleBridgeReady(_:)), name: .capacitorSetupBridge, object: nil)
 
         return true
     }
@@ -41,53 +40,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
 
-    // MARK: - Remote Notification Handling
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        // ربط توكن Apple بـ Firebase - خطوة حاسمة للـ Push Notifications
-        Messaging.messaging().apnsToken = deviceToken
-        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
-    }
+    // حقن كود الـ Bridge للـ WebView التابع لـ Capacitor
+    @objc func handleBridgeReady(_ notification: Notification) {
+        guard let bridge = notification.object as? CAPBridge,
+              let webView = bridge.webView else { return }
 
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
-    }
+        let handler = AgiosScriptHandler()
+        webView.configuration.userContentController.add(handler, name: "AgiosHandler")
 
-    // MARK: - MessagingDelegate
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        print("Firebase registration token: \(String(describing: fcmToken))")
-        // إرسال التوكن للـ JavaScript
-        let dataDict: [String: String] = ["token": fcmToken ?? ""]
-        NotificationCenter.default.post(name: Notification.Name("FCMToken"), object: nil, userInfo: dataDict)
-    }
-
-    // التعامل مع الروابط العميقة (Deep Links)
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
-    }
-
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
-    }
-
-    // إظهار التنبيه أثناء فتح التطبيق (ForeGround)
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([[.banner, .sound, .list]])
-    }
-}
-
-// MARK: - JavaScript Bridge
-class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // تسجيل معالج الرسائل "AgiosHandler" لاستقبال البيانات من الويب
-        self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
-
-        let isDark = self.traitCollection.userInterfaceStyle == .dark
+        let isDark = UIScreen.main.traitCollection.userInterfaceStyle == .dark
         let theme = isDark ? "dark" : "light"
 
-        // حقن الكود البرمجي لتعريف AgiosScannerNative داخل نافذة المتصفح
         let js = """
         window.AgiosScannerNative = {
             scanFile: function(path) { console.log('iOS: scanFile called for ' + path); },
@@ -105,9 +68,35 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         };
         """
         let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        self.bridge?.webView?.configuration.userContentController.addUserScript(script)
+        webView.configuration.userContentController.addUserScript(script)
     }
 
+    // MARK: - Remote Notification Handling
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+    }
+
+    // التعامل مع الروابط العميقة (Deep Links)
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+    }
+
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
+    // إظهار التنبيه أثناء فتح التطبيق (ForeGround)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([[.banner, .sound, .list]])
+    }
+}
+
+// MARK: - JavaScript Bridge Handler
+class AgiosScriptHandler: NSObject, WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any],
               let action = body["action"] as? String else { return }

@@ -7,6 +7,9 @@
       "overlay": false,
       "style": "DEFAULT"
     },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
       "providers": [
