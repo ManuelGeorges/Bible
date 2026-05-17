@@ -9,12 +9,13 @@ import { getRemoteConfig, isSupported } from "firebase/remote-config";
 
 // إعدادات Firebase - تم تحديث الـ API Key ليتطابق مع إعدادات المشروع
 const firebaseConfig = {
-  apiKey: "AIzaSyBEy10nOnGjswa6nyWVovgsXXwfLPsmTUc", // المفتاح الصحيح من GoogleService-Info.plist
+  apiKey: "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
   authDomain: "profiles-system.firebaseapp.com",
   projectId: "profiles-system",
   storageBucket: "profiles-system.firebasestorage.app",
   messagingSenderId: "900022943169",
-  appId: "1:900022943169:web:583b03be3f070dfe92c340"
+  appId: "1:900022943169:web:583b03be3f070dfe92c340",
+  measurementId: "G-Q42KEXNB3L"
 };
 
 const initializeFirebase = () => {
