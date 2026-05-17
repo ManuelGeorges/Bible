@@ -27,25 +27,22 @@ export default function CapacitorFeatures() {
   }, [setTheme]);
 
   useEffect(() => {
+    // StatusBar works on Android/iOS and some Electron setups, but we guard it
     const platform = Capacitor.getPlatform();
     if (platform === 'web' || platform === 'electron') return;
 
     const updateStatusBar = async () => {
       try {
-        const isDark =
-          theme === 'dark' ||
-          (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-        if (isDark) {
-          // الدارك مود: أيقونات بيضاء
-          await StatusBar.setStyle({ style: Style.Light });
-          if (platform === 'android') {
+        if (platform === 'android') {
+          const isDark = 
+            theme === 'dark' || 
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          
+          if (isDark) {
+            await StatusBar.setStyle({ style: Style.Dark });
             await StatusBar.setBackgroundColor({ color: '#0f172a' });
-          }
-        } else {
-          // اللايت مود: أيقونات سوداء
-          await StatusBar.setStyle({ style: Style.Dark });
-          if (platform === 'android') {
+          } else {
+            await StatusBar.setStyle({ style: Style.Light });
             await StatusBar.setBackgroundColor({ color: '#ffffff' });
           }
         }
@@ -59,21 +56,26 @@ export default function CapacitorFeatures() {
 
   useEffect(() => {
     const platform = Capacitor.getPlatform();
+    // تعطيل الميزات التي لا تعمل على Electron أو الويب
     if (platform === 'web' || platform === 'electron' || hasSetup.current) return;
     hasSetup.current = true;
 
     const handleAppUpdate = async () => {
-      if (process.env.NODE_ENV === 'development') return;
-
       try {
         const remoteConfig = await getFirebaseRemoteConfig();
         if (!remoteConfig) return;
-
+        remoteConfig.settings.minimumFetchIntervalMillis = 600000;
         await fetchAndActivate(remoteConfig).catch(() => {});
+        
         const minRequiredVersion = getNumber(remoteConfig, 'min_required_version') || 0;
-
         const appInfo = await App.getInfo();
         const currentVersionCode = parseInt(appInfo.build || '0') || 0;
+
+        await AppUpdate.addListener('onFlexibleUpdateStateChanged', async (state) => {
+          if (state.installStatus === 11) {
+            await AppUpdate.completeFlexibleUpdate();
+          }
+        });
 
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
         
@@ -93,7 +95,7 @@ export default function CapacitorFeatures() {
           }
         }
       } catch (e) {
-        console.warn("AppUpdate is not available on this environment (likely Simulator).");
+        console.error("Update Error:", e);
       }
     };
 
@@ -102,7 +104,6 @@ export default function CapacitorFeatures() {
         await KeepAwake.keepAwake().catch(() => {});
         await FirebaseCrashlytics.setCrashlyticsCollectionEnabled({ enabled: true }).catch(() => {});
 
-        await LocalNotifications.removeAllListeners();
         await LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
           const url = notification.notification.extra?.url;
           if (url) router.push(url);
@@ -112,7 +113,6 @@ export default function CapacitorFeatures() {
         if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions();
         if (pushPerms.receive === 'granted') {
           await PushNotifications.register().catch(() => {});
-          await PushNotifications.removeAllListeners();
           await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
             const url = notification.notification.data?.url;
             if (url) router.push(url);
@@ -123,6 +123,28 @@ export default function CapacitorFeatures() {
       }
     };
 
+    const handleReviewLogic = () => {
+      const interval = setInterval(async () => {
+        const totalSeconds = parseInt(localStorage.getItem('total_usage_seconds') || '0');
+        const newTotal = totalSeconds + 30;
+        localStorage.setItem('total_usage_seconds', newTotal.toString());
+
+        const alreadyAsked = localStorage.getItem('review_asked') === 'true';
+        
+        if (newTotal >= 1800 && !alreadyAsked) {
+          try {
+            await AppReview.requestReview();
+            localStorage.setItem('review_asked', 'true');
+            clearInterval(interval);
+          } catch (e) {
+            console.error("Review Error:", e);
+          }
+        }
+      }, 30000);
+
+      return interval;
+    };
+
     const init = async () => {
       await handleAppUpdate();
       await setupUIAndNotifications();
@@ -130,8 +152,10 @@ export default function CapacitorFeatures() {
     };
 
     init();
+    const reviewInterval = handleReviewLogic();
 
     return () => {
+      clearInterval(reviewInterval);
       LocalNotifications.removeAllListeners();
       PushNotifications.removeAllListeners();
     };
