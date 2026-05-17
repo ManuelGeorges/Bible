@@ -10,17 +10,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // 1. إعداد Firebase
-        FirebaseApp.configure()
-
-        // 2. إعداد مفوض التنبيهات لتعمل حتى والتطبيق مفتوح
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
         UNUserNotificationCenter.current().delegate = self
 
-        // 3. طلب الإذن وجدولة التنبيهات الابتدائية
         requestNotificationPermission()
 
-        // في إصدارات Capacitor الحديثة، لا نحتاج لاستدعاء Proxy هنا.
-        // يتم التعامل مع الـ Launch Options تلقائياً.
+        // تأخير التحديث لضمان استقرار التطبيق وعدم التضارب مع Capacitor Plugins
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            AgiosNotificationHelper.shared.refreshAllNotifications()
+        }
+
         return true
     }
 
@@ -34,7 +35,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
 
-    // التعامل مع الروابط العميقة (مثل تسجيل دخول جوجل وآبل)
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
@@ -43,45 +43,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
-    // إظهار التنبيه حتى لو التطبيق مفتوح (محاكاة لسلوك أندرويد)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .list])
     }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // إخطار الواجهة (Web) بضرورة تحديث البيانات عند العودة للتطبيق (لحل مشكلة عدم ظهور الآية فوراً)
+        if let bridge = (self.window?.rootViewController as? CAPBridgeViewController)?.bridge {
+            bridge.eval(js: "window.dispatchEvent(new Event('visibilitychange'));")
+        }
+    }
 }
 
-// MARK: - JavaScript Bridge (ترجمة @JavascriptInterface من Java)
-// نقوم بإنشاء متحكم مخصص لحقن كائن AgiosScannerNative ومعالجة رسائله
+// MARK: - JavaScript Bridge
 class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
-    // جعل الـ Status Bar يستجيب تلقائياً للثيم (أبيض في المظلم، أسود في الفاتح)
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .default
     }
 
-    // تحديث الـ Status Bar عند تغيير الثيم من إعدادات النظام
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if #available(iOS 13.0, *) {
-            if self.traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-                setNeedsStatusBarAppearanceUpdate()
-            }
-        }
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // تسجيل معالج الرسائل "AgiosHandler" لاستقبال البيانات من الويب
         self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
 
         let isDark = self.traitCollection.userInterfaceStyle == .dark
         let theme = isDark ? "dark" : "light"
 
-        // حقن الكود البرمجي لتعريف AgiosScannerNative داخل نافذة المتصفح عبر WKUserScript
-        // لضمان توفره عند تحميل الصفحة (أفضل من didFinish)
         let js = """
         window.AgiosScannerNative = {
-            scanFile: function(path) { console.log('iOS: scanFile called for ' + path); },
             refreshAlarms: function() {
                 window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
             },
@@ -113,7 +102,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     }
 }
 
-// MARK: - Notification Logic (ترجمة ملف AgiosNotificationReceiver.java)
+// MARK: - Notification Logic
 class AgiosNotificationHelper {
     static let shared = AgiosNotificationHelper()
 
@@ -138,30 +127,32 @@ class AgiosNotificationHelper {
     }
 
     func refreshAllNotifications() {
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        // حذف التنبيهات الخاصة بـ أجيوس فقط لتجنب مسح تنبيهات Capacitor الأخرى
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let idsToRemove = requests.filter { $0.identifier.hasPrefix("agios_") }.map { $0.identifier }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)
 
-        let master = getPrefString(key: "masterNotifications") ?? "true"
-        if master == "false" { return }
+            let master = self.getPrefString(key: "masterNotifications") ?? "true"
+            if master == "false" { return }
 
-        schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
-        schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
-        schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
-        schedule(type: "streak", defH: 21, title: "حافظ على حماسك", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
-        schedule(type: "appSuggestions", defH: 12, title: "معلومة سريعة", body: tips.randomElement() ?? "اكتشف ميزات أجيوس.")
-        schedule(type: "updateAlerts", defH: 12, title: "تحديث جديد", body: "تأكد من استخدام أحدث نسخة من أجيوس للمميزات الجديدة.")
+            self.schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
+            self.schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
+            self.schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
+            self.schedule(type: "streak", defH: 21, title: "حافظ على حماسك", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
+            self.schedule(type: "appSuggestions", defH: 12, title: "معلومة سريعة", body: self.tips.randomElement() ?? "اكتشف ميزات أجيوس.")
+            self.schedule(type: "updateAlerts", defH: 12, title: "تحديث جديد", body: "تأكد من استخدام أحدث نسخة من أجيوس للمميزات الجديدة.")
+        }
     }
 
     private func schedule(type: String, defH: Int, title: String, body: String) {
         var hour = defH
         var minute = 0
         var enabled = true
-
         let norm = normalize(type)
 
         if let jsonStr = getPrefString(key: "notificationSettings"),
            let data = jsonStr.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-
             enabled = json[norm] as? Bool ?? true
             let timeKey = norm + "Time"
             if let timeStr = json[timeKey] as? String, timeStr.contains(":") {
@@ -186,13 +177,7 @@ class AgiosNotificationHelper {
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "agios_\(norm)", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("❌ Local Notification Error (\(norm)): \(error.localizedDescription)")
-            } else {
-                print("✅ Local Notification Scheduled (\(norm)) at \(hour):\(minute)")
-            }
-        }
+        UNUserNotificationCenter.current().add(request)
     }
 
     private func normalize(_ type: String) -> String {

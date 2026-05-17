@@ -52,24 +52,36 @@ const convertToArabicNumber = (num) => {
 };
 
 // وظائف مساعدة لتوحيد التوقيت على توقيت القاهرة
-const getCairoDate = (date = new Date()) => {
-    return new Intl.DateTimeFormat('en-CA', {
+const getCairoDateInfo = (date = new Date()) => {
+    // حل مشكلة التواريخ في iOS عبر استخراج المكونات يدوياً
+    const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Africa/Cairo',
         year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).format(date);
+        month: 'numeric',
+        day: 'numeric'
+    });
+    const parts = formatter.formatToParts(date);
+    const getPart = (type) => parseInt(parts.find(p => p.type === type)?.value);
+
+    const year = getPart('year');
+    const month = getPart('month');
+    const day = getPart('day');
+
+    return {
+        year,
+        month,
+        day,
+        key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    };
 };
+
+const getCairoDate = (date = new Date()) => getCairoDateInfo(date).key;
 
 const getCairoYesterday = () => {
     const now = new Date();
-    const cairoNow = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Cairo"}));
-    cairoNow.setDate(cairoNow.getDate() - 1);
-    return new Intl.DateTimeFormat('en-CA', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).format(cairoNow);
+    // تقليل يوم واحد مع مراعاة التوقيت
+    const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    return getCairoDate(yesterday);
 };
 
 const LandingPage = () => {
@@ -126,20 +138,26 @@ const LandingPage = () => {
     }, []);
 
     const fetchDailyContent = useCallback(async (loggedInUser) => {
-        const dateKey = getCairoDate();
-        const [year, month, day] = dateKey.split('-').map(Number);
+        setIsLoading(true);
+        const { month, day, key: dateKey } = getCairoDateInfo();
 
         try {
+            // استخدام مسارات نسبية لضمان عملها في Capacitor iOS
             const [verseRes, questRes] = await Promise.all([
-                fetch('/data/dailyVerses.json'),
-                fetch('/data/dailyQuestions.json')
+                fetch('./data/dailyVerses.json'),
+                fetch('./data/dailyQuestions.json')
             ]);
+
+            if (!verseRes.ok || !questRes.ok) throw new Error("Data files not found");
 
             const verseData = await verseRes.json();
             const questData = await questRes.json();
 
-            setDailyVerse(verseData.find(v => v.month === month && v.day === day));
-            setDailyQuestion(questData.find(q => q.month === month && q.day === day));
+            const todayVerse = verseData.find(v => Number(v.month) === month && Number(v.day) === day);
+            const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
+
+            setDailyVerse(todayVerse);
+            setDailyQuestion(todayQuest);
 
             let answered = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
             if (loggedInUser) {
@@ -150,7 +168,8 @@ const LandingPage = () => {
             }
             setHasAnswered(answered);
         } catch (e) {
-            console.error(e);
+            console.error("Home Fetch Error:", e);
+            toast.error("حدث خطأ أثناء تحميل بيانات اليوم");
         } finally {
             setIsLoading(false);
         }

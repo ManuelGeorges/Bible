@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { app } from '../../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../lib/firebase';
 import styles from './intro.module.css';
 
 export default function IntroPage() {
@@ -11,22 +11,40 @@ export default function IntroPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth(app);
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
+    // إضافة Timeout لضمان عدم تعليق الصفحة في iOS إذا تأخر Firebase
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      clearTimeout(timeout);
       if (user) {
-        router.replace('/profile');
+        router.replace('/');
       } else {
         setLoading(false);
       }
     }, (error) => {
+      console.error("Auth State Error:", error);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [router]);
 
   if (loading) {
-    return <div className={styles.loading}>جاري التحميل...</div>;
+    return (
+      <div className={styles.container} style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <div className={styles.loading}>جاري التحميل...</div>
+      </div>
+    );
   }
 
   const features = [
