@@ -30,17 +30,25 @@ jobs:
           if [ ! -d "ios" ]; then
             npx cap add ios
           fi
+          # تحديث الإضافات والتزامن
+          npx cap update ios
           npx cap sync ios
 
       - name: Build iOS App for Simulator
         run: |
+          # تنظيف أي بناء سابق لضمان عدم وجود ملفات متضاربة
+          xcodebuild clean -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
+          
+          # البناء للمحاكي مع تجاهل تواقيع الأكواد (لأننا نبني للمحاكي فقط)
           xcodebuild -project ios/App/App.xcodeproj \
                      -scheme App \
                      -sdk iphonesimulator \
                      -destination 'generic/platform=iOS Simulator' \
                      -configuration Debug \
                      -derivedDataPath build \
-                     COMPILER_INDEX_STORE_ENABLE=NO
+                     CODE_SIGNING_ALLOWED=NO \
+                     COMPILER_INDEX_STORE_ENABLE=NO \
+                     OTHER_SWIFT_FLAGS="$(inherited) -DDEBUG"
 
       - name: Prepare for Appetize.io
         run: |

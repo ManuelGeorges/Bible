@@ -1,8 +1,9 @@
 import Foundation
 import UserNotifications
 
-class AgiosNotificationHelper {
-    static let shared = AgiosNotificationHelper()
+@objc(AgiosNotificationHelper)
+public class AgiosNotificationHelper: NSObject {
+    @objc public static let shared = AgiosNotificationHelper()
 
     private let tips = [
         "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
@@ -18,13 +19,13 @@ class AgiosNotificationHelper {
         return UserDefaults.standard.string(forKey: "_cap_" + key) ?? UserDefaults.standard.string(forKey: key)
     }
 
-    func updateSettings(json: String, masterEnabled: Bool) {
+    @objc public func updateSettings(json: String, masterEnabled: Bool) {
         UserDefaults.standard.set(json, forKey: "_cap_notificationSettings")
         UserDefaults.standard.set(String(masterEnabled), forKey: "_cap_masterNotifications")
         refreshAllNotifications()
     }
 
-    func refreshAllNotifications() {
+    @objc public func refreshAllNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let idsToRemove = requests.filter { $0.identifier.hasPrefix("agios_") }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)
@@ -34,8 +35,8 @@ class AgiosNotificationHelper {
 
             self.schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
             self.schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
-            self.schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
-            self.schedule(type: "streak", defH: 21, title: "حافظ على حماسك", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك 🔥")
+            self.schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة ", body: "لديك جزء متبقي في خطة القراءة اليومية.")
+            self.schedule(type: "streak", defH: 21, title: "حافظ على حماسك", body: "لا تنسَ قراءة آية اليوم لتحافظ على سلسلة تفاعلك ")
             self.schedule(type: "appSuggestions", defH: 12, title: "معلومة سريعة", body: self.tips.randomElement() ?? "اكتشف ميزات أجيوس.")
             self.schedule(type: "updateAlerts", defH: 12, title: "تحديث جديد", body: "تأكد من استخدام أحدث نسخة من أجيوس للمميزات الجديدة.")
         }
