@@ -36,15 +36,14 @@ export default function CapacitorFeatures() {
           theme === 'dark' ||
           (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-        // في Capacitor:
-        // Style.Light تعني أيقونات بيضاء (تُستخدم مع الخلفيات الداكنة)
-        // Style.Dark تعني أيقونات سوداء (تُستخدم مع الخلفيات الفاتحة)
         if (isDark) {
+          // الدارك مود: أيقونات بيضاء
           await StatusBar.setStyle({ style: Style.Light });
           if (platform === 'android') {
             await StatusBar.setBackgroundColor({ color: '#0f172a' });
           }
         } else {
+          // اللايت مود: أيقونات سوداء
           await StatusBar.setStyle({ style: Style.Dark });
           if (platform === 'android') {
             await StatusBar.setBackgroundColor({ color: '#ffffff' });

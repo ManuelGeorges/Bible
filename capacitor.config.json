@@ -5,10 +5,8 @@
   "plugins": {
     "StatusBar": {
       "overlay": false,
-      "style": "DEFAULT"
-    },
-    "PushNotifications": {
-      "presentationOptions": ["badge", "sound", "alert"]
+      "backgroundColor": "#ffffff",
+      "style": "LIGHT"
     },
     "FirebaseAuthentication": {
       "skipNativeAuth": false,

@@ -56,12 +56,6 @@
 	<string>نحتاج لحفظ الصور في مكتبتك عند تحميل الآيات أو المحتوى.</string>
 	<key>NSLocalNotificationsUsageDescription</key>
 	<string>نحتاج لإرسال تنبيهات لك بآية اليوم وخطط القراءة والمسابقات.</string>
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<false/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
