@@ -30,16 +30,16 @@ jobs:
           if [ ! -d "ios" ]; then
             npx cap add ios
           fi
-          # تحديث الإضافات والتزامن
+          # تحديث الإضافات لضمان توافق SPM مع Capacitor 6
           npx cap update ios
           npx cap sync ios
 
       - name: Build iOS App for Simulator
         run: |
-          # تنظيف أي بناء سابق لضمان عدم وجود ملفات متضاربة
+          # تنظيف أي بناء سابق لضمان بيئة نظيفة
           xcodebuild clean -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
           
-          # البناء للمحاكي مع تجاهل تواقيع الأكواد (لأننا نبني للمحاكي فقط)
+          # البناء للمحاكي مع تعطيل التوقيع وتحديد المعمارية الشاملة
           xcodebuild -project ios/App/App.xcodeproj \
                      -scheme App \
                      -sdk iphonesimulator \
@@ -47,12 +47,14 @@ jobs:
                      -configuration Debug \
                      -derivedDataPath build \
                      CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO \
                      COMPILER_INDEX_STORE_ENABLE=NO \
-                     OTHER_SWIFT_FLAGS="$(inherited) -DDEBUG"
+                     ONLY_ACTIVE_ARCH=NO
 
       - name: Prepare for Appetize.io
         run: |
           mkdir -p build-output
+          # البحث عن ملف الـ .app الناتج
           APP_PATH=$(find build/Build/Products -name "App.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
             echo "Error: App.app not found!"

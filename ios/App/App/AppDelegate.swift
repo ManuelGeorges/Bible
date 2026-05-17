@@ -3,7 +3,8 @@ import Capacitor
 import Firebase
 import UserNotifications
 
-@UIApplicationMain
+@main
+@MainActor
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
@@ -15,8 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
 
         // 2. إعداد Capacitor
-        let proxy = ApplicationDelegateProxy.shared
-        let result = proxy.application(application, didFinishLaunchingWithOptions: launchOptions)
+        let result = ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         // 3. إعداد الإشعارات
         UNUserNotificationCenter.current().delegate = self
@@ -32,8 +32,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return result
     }
 
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+    func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
+        return ApplicationDelegateProxy.shared.application(application, open: url, options: options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
@@ -47,6 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
 // MARK: - Notification Helper (دمج هنا لحل مشكلة الـ Build في CI)
 @objc(AgiosNotificationHelper)
+@MainActor
 public class AgiosNotificationHelper: NSObject {
     @objc public static let shared = AgiosNotificationHelper()
 
