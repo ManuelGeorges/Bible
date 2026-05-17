@@ -41,9 +41,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     @objc func handleBridgeReady(_ notification: Notification) {
-        // تم التعديل هنا للوصول إلى webView عبر viewController ليتوافق مع Capacitor 8
+        // الإصلاح: الوصول إلى webView مباشرة من الـ bridge ليتوافق مع Capacitor
         guard let bridge = notification.object as? CAPBridge,
-              let webView = bridge.viewController?.webView else { return }
+              let webView = bridge.webView else { return }
 
         let handler = AgiosScriptHandler()
         webView.configuration.userContentController.add(handler, name: "AgiosHandler")
