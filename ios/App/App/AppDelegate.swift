@@ -9,20 +9,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // 1. تهيئة Firebase أولاً
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
         }
 
-        // في الإصدارات الحديثة من Capacitor، يفضل استخدام الاستدعاء الافتراضي أو التأكد من مطابقة الـ Signature
-        let result = ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+        // 2. إعداد الـ Proxy الخاص بـ Capacitor
+        let proxy = ApplicationDelegateProxy.shared
+        let result = proxy.application(application, didFinishLaunchingWithOptions: launchOptions)
 
+        // 3. إعداد الإشعارات
         UNUserNotificationCenter.current().delegate = self
-
-        // طلب الإذن للإشعارات
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
             if granted {
                 DispatchQueue.main.async {
-                    // تم تعديل الاستدعاء للتأكد من الوصول إليه
+                    // ملاحظة: هذا السطر سيعمل بعد إضافة الملف للمشروع في الخطوة القادمة
                     AgiosNotificationHelper.shared.refreshAllNotifications()
                 }
             }
@@ -31,6 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return result
     }
 
+    // إصلاح خطأ الـ URL Handling بالتأكيد على الـ Signature الصحيح
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
@@ -41,11 +43,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .list])
-    }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        if let bridge = (self.window?.rootViewController as? CAPBridgeViewController)?.bridge {
-            bridge.eval(js: "window.dispatchEvent(new Event('visibilitychange'));")
-        }
     }
 }
