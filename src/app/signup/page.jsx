@@ -26,15 +26,14 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace('/');
+      if (user && !isSubmitting) router.replace('/');
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, isSubmitting]);
 
   const handleUserData = async (user) => {
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
-
     if (!userSnap.exists()) {
       const [fName, ...lName] = (user.displayName || "مستخدم جديد").split(' ');
       await setDoc(userRef, {
@@ -62,58 +61,57 @@ export default function SignUpPage() {
     }
   };
 
-const handleAuth = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
-
     setError(null);
     setIsSubmitting(true);
-
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await setDoc(doc(db, 'users', user.uid), {
-            firstName,
-            lastName,
-            email: user.email,
-            createdAt: new Date().toISOString(),
-            favorites: { verses: {} },
-            completedChapters: {},
-            completedPlans: {}
-        });
-        router.replace('/'); // ✅ redirect manually, don't rely on onAuthStateChanged
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await setDoc(doc(db, 'users', user.uid), {
+        firstName,
+        lastName,
+        email: user.email,
+        createdAt: new Date().toISOString(),
+        favorites: { verses: {} },
+        completedChapters: {},
+        completedPlans: {}
+      });
+      setIsSubmitting(false);
+      router.replace('/');
     } catch (err) {
-        setError(translateError(err.code));
-        setIsSubmitting(false);
+      setError(translateError(err.code));
+      setIsSubmitting(false);
     }
-};
+  };
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({
           webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
         });
-        
         const idToken = result.credential?.idToken;
-
-if (idToken) {
-    const credential = GoogleAuthProvider.credential(idToken);
-    const userCredential = await signInWithCredential(auth, credential);
-    await handleUserData(userCredential.user);
-    router.replace('/'); // ✅ add this
-}else {
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          const userCredential = await signInWithCredential(auth, credential);
+          await handleUserData(userCredential.user);
+          setIsSubmitting(false);
+          router.replace('/');
+        } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
+        setIsSubmitting(false);
+        router.replace('/');
       }
     } catch (err) {
       console.error(err);

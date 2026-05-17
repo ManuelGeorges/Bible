@@ -1,0 +1,57 @@
+workflows:
+  ios-simulator-build:
+    name: Build iOS for Appetize.io
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+        - pattern: 'master'
+
+    scripts:
+      - name: Install Dependencies
+        script: npm install
+
+      - name: Build Next.js Static Export
+        script: npm run build:mobile
+
+      - name: Capacitor Sync
+        script: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+          npx cap update ios
+          npx cap sync ios
+
+      - name: Build iOS App for Simulator
+        script: |
+          xcodebuild clean -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
+          
+          xcodebuild -project ios/App/App.xcodeproj \
+                     -scheme App \
+                     -sdk iphonesimulator \
+                     -destination 'generic/platform=iOS Simulator' \
+                     -configuration Debug \
+                     -derivedDataPath build \
+                     CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO \
+                     COMPILER_INDEX_STORE_ENABLE=NO \
+                     ONLY_ACTIVE_ARCH=NO
+
+      - name: Prepare for Appetize.io
+        script: |
+          mkdir -p build-output
+          APP_PATH=$(find build/Build/Products -name "App.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: App.app not found!"
+            exit 1
+          fi
+          cp -R "$APP_PATH" build-output/
+          cd build-output
+          zip -r ../ios-simulator-app.zip App.app
+
+    artifacts:
+      - ios-simulator-app.zip
