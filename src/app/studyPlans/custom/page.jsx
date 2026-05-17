@@ -84,25 +84,27 @@ export default function CustomPlanForm() {
 
 تذكر: أنت تقدم دواءً روحياً مخصصاً.`;
 
+            // استخدام المسار النسبي لضمان التوافق مع السيرفر الجديد
             const res = await fetch('/api/gemini', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt })
             });
 
+            if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+
             const aiData = await res.json();
             if (aiData.error) throw new Error(aiData.error);
 
             const responseText = aiData.text;
-            const firstBrace = responseText.indexOf('{');
-            const lastBrace = responseText.lastIndexOf('}');
+            // استخراج الـ JSON من النص (لأن الموديل أحياناً يضيف Markdown)
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("Format Error: No JSON found in AI response");
 
-            if (firstBrace === -1 || lastBrace === -1) throw new Error("Format Error");
-
-            const jsonString = responseText.substring(firstBrace, lastBrace + 1);
-            return JSON.parse(jsonString);
+            return JSON.parse(jsonMatch[0]);
         } catch (e) {
             console.error("Gemini Error:", e);
+            toast.error("حدث خطأ في الاتصال بالذكاء الاصطناعي");
             return null;
         }
     };
