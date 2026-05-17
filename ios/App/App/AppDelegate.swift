@@ -4,17 +4,27 @@ import Firebase
 import UserNotifications
 import WebKit
 
-@main
+@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
-        }
+        // تهيئة فايبربيز كأول خطوة لضمان عمل كافة الإضافات
+        FirebaseApp.configure()
 
         UNUserNotificationCenter.current().delegate = self
+        requestNotificationPermission()
+
+        // تأخير التحديث لضمان استقرار التطبيق
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            AgiosNotificationHelper.shared.refreshAllNotifications()
+        }
+
+        return true
+    }
+
+    private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
             if granted {
                 DispatchQueue.main.async {
@@ -22,8 +32,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 }
             }
         }
-
-        return ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -34,19 +42,67 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .list])
     }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        completionHandler()
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        if let bridge = (self.window?.rootViewController as? CAPBridgeViewController)?.bridge {
+            bridge.eval(js: "window.dispatchEvent(new Event('visibilitychange'));")
+        }
     }
 }
 
-@objc(AgiosNotificationHelper)
-@MainActor
-public class AgiosNotificationHelper: NSObject {
-    @objc public static let shared = AgiosNotificationHelper()
+// MARK: - JavaScript Bridge
+class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
+
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .default
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
+
+        let isDark = self.traitCollection.userInterfaceStyle == .dark
+        let theme = isDark ? "dark" : "light"
+
+        let js = """
+        window.AgiosScannerNative = {
+            refreshAlarms: function() {
+                window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
+            },
+            updateSettings: function(json, masterEnabled) {
+                window.webkit.messageHandlers.AgiosHandler.postMessage({
+                    action: 'updateSettings',
+                    json: json,
+                    master: masterEnabled
+                });
+            },
+            getSystemTheme: function() { return "\(theme)"; }
+        };
+        """
+        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        self.bridge?.webView?.configuration.userContentController.addUserScript(script)
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let body = message.body as? [String: Any],
+              let action = body["action"] as? String else { return }
+
+        if action == "refreshAlarms" {
+            AgiosNotificationHelper.shared.refreshAllNotifications()
+        } else if action == "updateSettings" {
+            if let json = body["json"] as? String, let master = body["master"] as? Bool {
+                AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
+            }
+        }
+    }
+}
+
+// MARK: - Notification Logic
+class AgiosNotificationHelper {
+    static let shared = AgiosNotificationHelper()
 
     private let tips = [
         "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
@@ -62,13 +118,13 @@ public class AgiosNotificationHelper: NSObject {
         return UserDefaults.standard.string(forKey: "_cap_" + key) ?? UserDefaults.standard.string(forKey: key)
     }
 
-    @objc public func updateSettings(json: String, masterEnabled: Bool) {
+    func updateSettings(json: String, masterEnabled: Bool) {
         UserDefaults.standard.set(json, forKey: "_cap_notificationSettings")
         UserDefaults.standard.set(String(masterEnabled), forKey: "_cap_masterNotifications")
         refreshAllNotifications()
     }
 
-    @objc public func refreshAllNotifications() {
+    func refreshAllNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let idsToRemove = requests.filter { $0.identifier.hasPrefix("agios_") }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)
@@ -130,52 +186,5 @@ public class AgiosNotificationHelper: NSObject {
         if low.contains("tip") || low.contains("suggestion") { return "appSuggestions" }
         if low.contains("update") { return "updateAlerts" }
         return type
-    }
-}
-
-class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
-
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .default
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
-
-        let isDark = self.traitCollection.userInterfaceStyle == .dark
-        let theme = isDark ? "dark" : "light"
-
-        let js = """
-        window.AgiosScannerNative = {
-            refreshAlarms: function() {
-                window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
-            },
-            updateSettings: function(json, masterEnabled) {
-                window.webkit.messageHandlers.AgiosHandler.postMessage({
-                    action: 'updateSettings',
-                    json: json,
-                    master: masterEnabled
-                });
-            },
-            getSystemTheme: function() { return "\(theme)"; }
-        };
-        """
-        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        self.bridge?.webView?.configuration.userContentController.addUserScript(script)
-    }
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any],
-              let action = body["action"] as? String else { return }
-
-        if action == "refreshAlarms" {
-            AgiosNotificationHelper.shared.refreshAllNotifications()
-        } else if action == "updateSettings" {
-            if let json = body["json"] as? String, let master = body["master"] as? Bool {
-                AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
-            }
-        }
     }
 }
