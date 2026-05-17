@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // 3. طلب الإذن وجدولة التنبيهات الابتدائية
         requestNotificationPermission()
 
-        return true
+        return ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     private func requestNotificationPermission() {
@@ -43,13 +43,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // إظهار التنبيه حتى لو التطبيق مفتوح (محاكاة لسلوك أندرويد)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([[.banner, .sound, .list]])
+        completionHandler([.banner, .sound, .list])
     }
 }
 
 // MARK: - JavaScript Bridge (ترجمة @JavascriptInterface من Java)
 // نقوم بإنشاء متحكم مخصص لحقن كائن AgiosScannerNative ومعالجة رسائله
 class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
+
+    // جعل الـ Status Bar يستجيب تلقائياً للثيم (أبيض في المظلم، أسود في الفاتح)
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .default
+    }
+
+    // تحديث الـ Status Bar عند تغيير الثيم من إعدادات النظام
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 13.0, *) {
+            if self.traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                setNeedsStatusBarAppearanceUpdate()
+            }
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -169,7 +184,13 @@ class AgiosNotificationHelper {
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: "agios_\(norm)", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Local Notification Error (\(norm)): \(error.localizedDescription)")
+            } else {
+                print("✅ Local Notification Scheduled (\(norm)) at \(hour):\(minute)")
+            }
+        }
     }
 
     private func normalize(_ type: String) -> String {

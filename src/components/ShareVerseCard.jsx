@@ -6,6 +6,7 @@ import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Toast } from '@capacitor/toast';
 import { Capacitor } from '@capacitor/core';
+import { Media } from '@capacitor-community/media';
 import { Share2, Download, Loader2 } from 'lucide-react';
 import styles from './ShareVerseCard.module.css';
 
@@ -100,15 +101,26 @@ const ShareVerseCard = ({ verse, reference, onShareSuccess }) => {
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
           if (onShareSuccess) onShareSuccess();
         } else {
-          // حفظ دائم في مجلد الصور للموبايل
-          const permanentFile = await Filesystem.writeFile({
-            path: `Pictures/${fileName}`,
-            data: base64Data,
-            directory: Directory.ExternalStorage,
-            recursive: true
-          });
-          if (window.AgiosScannerNative) {
-            window.AgiosScannerNative.scanFile(decodeURI(permanentFile.uri.replace('file://', '')));
+          // التعامل مع حفظ الصورة بناءً على نظام التشغيل
+          if (platform === 'ios') {
+            // iOS: استخدام مكتبة Media لحفظ الصور مباشرة في المعرض
+            await Media.savePhoto({
+              path: cacheFile.uri,
+              album: 'Agios Bible'
+            });
+            // حذف ملف الكاش بعد الحفظ
+            await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
+          } else {
+            // Android: حفظ دائم في مجلد الصور
+            const permanentFile = await Filesystem.writeFile({
+              path: `Pictures/${fileName}`,
+              data: base64Data,
+              directory: Directory.ExternalStorage,
+              recursive: true
+            });
+            if (window.AgiosScannerNative) {
+              window.AgiosScannerNative.scanFile(decodeURI(permanentFile.uri.replace('file://', '')));
+            }
           }
           await showToast('تم حفظ الآية في المعرض بنجاح');
           if (onShareSuccess) onShareSuccess();
