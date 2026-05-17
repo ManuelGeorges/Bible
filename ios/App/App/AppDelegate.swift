@@ -5,8 +5,7 @@ import UserNotifications
 import WebKit
 
 @main
-@MainActor
-class AppDelegate: UIResponder, UIApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
@@ -14,8 +13,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, @preconcurrency UNUserNot
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
         }
-
-        let result = ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
@@ -26,15 +23,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, @preconcurrency UNUserNot
             }
         }
 
-        return result
+        return ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        return ApplicationDelegateProxy.shared.application(app, url, options)
+        return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        return ApplicationDelegateProxy.shared.application(application, userActivity, restorationHandler)
+        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
