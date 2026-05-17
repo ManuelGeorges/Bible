@@ -41,8 +41,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     @objc func handleBridgeReady(_ notification: Notification) {
+        // تم التعديل هنا للوصول إلى webView عبر viewController ليتوافق مع Capacitor 8
         guard let bridge = notification.object as? CAPBridge,
-              let webView = bridge.webView else { return }
+              let webView = bridge.viewController?.webView else { return }
 
         let handler = AgiosScriptHandler()
         webView.configuration.userContentController.add(handler, name: "AgiosHandler")
@@ -87,7 +88,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        // تم إصلاح الأقواس هنا
         completionHandler([.banner, .sound, .list])
     }
 }
