@@ -5,6 +5,7 @@ import { db } from '../../lib/firebase';
 import { doc, onSnapshot, updateDoc, increment, arrayUnion, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import styles from './search.module.css';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import { useSearchParams } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
 import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart } from 'lucide-react';
 
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 const geminiCache = {};
 
 const highlightColors = [
@@ -294,6 +296,7 @@ function SearchContent() {
     setShowDerivatives(true);
 
     try {
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       const prompt = `أنت عالم لغوي متخصص في فقه اللغة العربية والصرف المعمق.
 الكلمة المستهدفة: "${term}".
 المطلوب: تحليل صرفي شامل يستخرج "كل صورة ممكنة" للكلمة في النص.
@@ -308,39 +311,46 @@ function SearchContent() {
   "root": "الجذر أو 'اسم علم'",
   "derivatives": ["كلمة1", "كلمة2", "..."]
 }`;
-
-      const res = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
+      const result = await model.generateContentStream(prompt);
       localStorage.setItem('last_gemini_search', Date.now().toString());
       setTimeLeft(60);
 
-      const jsonMatch = data.text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Invalid Format");
+      let fullText = '';
 
-      const resultData = JSON.parse(jsonMatch[0]);
-      currentInfo.root = resultData.root;
-      currentInfo.derivatives = _.uniq([normalizeArabicText(term), ...resultData.derivatives.map(d => normalizeArabicText(d))]);
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        fullText += chunkText;
 
-      setSearchInfo(currentInfo);
-      setSelectedDerivatives(currentInfo.derivatives);
+        const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
+        if (rootMatch) currentInfo.root = rootMatch[1];
+
+        const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
+        if (derivativesMatch) {
+          const wordsString = derivativesMatch[1];
+          const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => normalizeArabicText(m[1]));
+          if (words.length > 0) {
+            const allWords = _.uniq([normalizeArabicText(term), ...words]);
+            currentInfo.derivatives = allWords;
+            setSearchInfo({ ...currentInfo });
+            setSelectedDerivatives(allWords);
+          }
+        }
+      }
+
       geminiCache[term] = currentInfo;
 
+      // بادجة سرية: كاسر المنطق (استخدام NLP للبحث ٣ مرات)
       const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
       localStorage.setItem('nlp_search_count', nlpCount.toString());
-      if (nlpCount >= 3) await unlockBadge('logic_breaker');
+      if (nlpCount >= 3) {
+        await unlockBadge('logic_breaker');
+      }
 
       return currentInfo;
 
     } catch (e) {
       console.error("Gemini Error:", e);
-      toast.error("حدث خطأ في الاتصال بالذكاء الاصطناعي");
+      toast.error(navigator.onLine ? "حدث خطأ في الاتصال بالذكاء الاصطناعي" : "تأكد من اتصالك بالإنترنت");
       const fallback = { derivatives: [normalizeArabicText(term)], root: 'غير معروف' };
       setSearchInfo(fallback);
       setSelectedDerivatives(fallback.derivatives);
@@ -360,6 +370,7 @@ function SearchContent() {
         ${selectedBookIndex !== '' ? `السفر المطلوب البحث فيه: ${bookNamesData.ar[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       const prompt = `أنت محرك بحث لاهوتي ذكي ومفسر للكتاب المقدس لتطبيق "أجيوس". مهمتك هي فهم "المعنى" العميق وراء بحث المستخدم واستخراج شواهد مرتبطة به.
 
 ### [سؤال المستخدم]
@@ -389,24 +400,17 @@ ${filterContext}
 3. إذا كان البحث عن صفة (مثل التواضع)، ابحث عن آيات مباشرة وعن قصص تجسد الصفة (مثل غسل الأرجل، ميلاد المسيح).
 4. تأكد تماماً من صحة أرقام الآيات والأصحاحات ومناسبتها للسفر.`;
 
-      const res = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
+      const result = await model.generateContent(prompt);
       localStorage.setItem('last_gemini_search', Date.now().toString());
       setTimeLeft(60);
 
-      const jsonMatch = data.text.match(/\{[\s\S]*\}/);
+      const responseText = result.response.text();
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("Invalid Format");
 
-      const parsedData = JSON.parse(jsonMatch[0]);
+      const data = JSON.parse(jsonMatch[0]);
 
-      const enriched = parsedData.results.map(ref => {
+      const enriched = data.results.map(ref => {
         const bookIdx = bookNamesData.ar.findIndex(b => b.name === ref.book);
         if (bookIdx === -1) return null;
 
@@ -429,7 +433,7 @@ ${filterContext}
           ...ref,
           bookIndex: bookIdx,
           versesContent,
-          book: bookNamesData.ar[bookIdx].name
+          book: bookNamesData.ar[bookIdx].name // ضمان تطابق الاسم
         };
       }).filter(r => r !== null);
 

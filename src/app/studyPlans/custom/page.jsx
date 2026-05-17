@@ -7,8 +7,6 @@ import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = 'https://agios-bible.vercel.app';
-
 export default function CustomPlanForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -37,9 +35,9 @@ export default function CustomPlanForm() {
         if (!plan.readings || !Array.isArray(plan.readings)) return plan;
         const cleanedReadings = plan.readings.map(reading => ({
             ...reading,
-            books: reading.books.map(book =>
-                book.replace(/إنجيل\s+/g, '').replace(/سفر\s+/g, '').trim()
-            )
+            books: Array.isArray(reading.books)
+                ? reading.books.map(book => book.replace(/إنجيل\s+/g, '').replace(/سفر\s+/g, '').trim())
+                : []
         }));
         return { ...plan, readings: cleanedReadings };
     };
@@ -50,14 +48,30 @@ export default function CustomPlanForm() {
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
-            const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.\n\n### [بيانات الحالة]\n- مدخلات المستخدم (المشاعر/الظروف): "${data.mood}"\n- مدة البرنامج: "${data.duration}" أيام.\n- الكثافة القرائية: "${data.level === 'beginner' ? 'تركيز عالٍ على أصحاح واحد يومياً' : 'ربط موضوعي بين عدة أصحاحات يومياً'}".\n\n### [خوارزمية العمل]\n1. التحليل النفس-روحي: حلل بعمق ما وراء كلمات المستخدم ("${data.mood}").\n2. الانتقاء الموضوعي: اختر حصرياً من القائمة أدناه النصوص التي تخاطب هذا الاحتياج الجوهري.\n3. الصياغة الوجدانية: اكتب العنوان والوصف بلهجة مشجعة ودافئة.\n\n### [قائمة الأسفار المتاحة]\n[${allowedBooks}]\n\n### [قواعد الاستجابة التقنية]\n1. الرد JSON صالح فقط.\n2. الالتزام بأسماء الأسفار تماماً.\n3. مصفوفة "books" عناصر مستقلة بدون شرطات.\n4. إذا كانت المدخلات مسيئة، صمم خطة تدعو للسلام والحكمة بشكل عام.\n\n### [قالب المخرجات]\n{\n  "title": "عنوان ملهم",\n  "description": "رسالة شخصية قصيرة",\n  "duration": "${data.duration} أيام",\n  "readings": [\n    {\n      "day": 1,\n      "books": ["اسم_السفر رقم_الأصحاح"]\n    }\n  ]\n}\n\nتذكر: أنت تقدم دواءً روحياً مخصصاً.`;
+            const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
 
-            // إضافة / في نهاية الرابط ضروري جداً لتجنب Redirect (الذي يسبب CORS error)
-            const res = await fetch(`${API_BASE_URL}/api/gemini/`, {
+### [بيانات الحالة]
+- مدخلات المستخدم: "${data.mood}"
+- مدة البرنامج: "${data.duration}" أيام.
+- الكثافة: "${data.level === 'beginner' ? 'أصحاح واحد يومياً' : 'عدة أصحاحات موضوعية'}".
+
+### [قالب المخرجات JSON فقط]
+{
+  "title": "عنوان ملهم",
+  "description": "رسالة قصيرة",
+  "duration": "${data.duration} أيام",
+  "readings": [
+    { "day": 1, "books": ["اسم_السفر رقم_الأصحاح"] }
+  ]
+}
+
+قائمة الأسفار المتاحة: [${allowedBooks}]
+ملاحظة: يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية قبل أو بعد القالب.`;
+
+            // استخدام مسار نسبي وحذف السلاش النهائية لحل مشكلة CORS والـ Redirect
+            const res = await fetch('/api/gemini', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt })
             });
 
@@ -66,14 +80,21 @@ export default function CustomPlanForm() {
             const aiData = await res.json();
             if (aiData.error) throw new Error(aiData.error);
 
-            const responseText = aiData.text;
+            let responseText = aiData.text;
+            // استخراج الـ JSON من استجابة الذكاء الاصطناعي بدقة أكبر
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("Format Error: No JSON found in AI response");
 
-            return JSON.parse(jsonMatch[0]);
+            const parsedPlan = JSON.parse(jsonMatch[0]);
+
+            // التأكد من وجود البيانات الأساسية
+            if (!parsedPlan.readings || !Array.isArray(parsedPlan.readings)) {
+                throw new Error("Missing readings in AI response");
+            }
+
+            return parsedPlan;
         } catch (e) {
             console.error("Gemini Error:", e);
-            toast.error("حدث خطأ في الاتصال بالذكاء الاصطناعي");
             return null;
         }
     };
@@ -81,21 +102,13 @@ export default function CustomPlanForm() {
     const handleSubmit = async () => {
         if (loading) return;
 
-        const badWords = ["خول", "عرص", "طيز", "كس", "زبي", "قحبة", "شرموطة", "متناك", "مخنث", "لواط", "سحاق", "سكس"];
-        const isBad = badWords.some(word => formData.mood.includes(word));
-
-        if (isBad) {
-            toast.error("من فضلك استخدم لغة لائقة تعبر عن احتياجك الروحي.");
-            return;
-        }
-
-        if (formData.mood.trim().length < 10) {
-            toast.error("وصفك قصير جداً، من فضلك اكتب كلمات أكثر.");
-            return;
-        }
-
         if (!formData.mood.trim() || !formData.duration || !formData.level) {
             toast.error('من فضلك أكمل البيانات أولاً');
+            return;
+        }
+
+        if (formData.mood.trim().length < 5) {
+            toast.error("الوصف قصير جداً، من فضلك اكتب كلمات أكثر.");
             return;
         }
 
@@ -115,16 +128,9 @@ export default function CustomPlanForm() {
                 const lastGenerated = userData.lastAIGenerated?.toDate();
                 const now = new Date();
 
-                if (lastGenerated && (now - lastGenerated) < 60000) {
-                    const waitTime = Math.ceil((60000 - (now - lastGenerated)) / 1000);
-                    toast.error(`برجاء الانتظار ${waitTime} ثانية قبل إنشاء خطة جديدة.`);
-                    setLoading(false);
-                    return;
-                }
-
-                const existingPlans = Object.keys(userData.customPlans || {}).length;
-                if (existingPlans >= 10) {
-                    toast.error("لقد وصلت للحد الأقصى (10 خطط). يرجى حذف خطة قديمة أولاً.");
+                if (lastGenerated && (now - lastGenerated) < 30000) {
+                    const waitTime = Math.ceil((30000 - (now - lastGenerated)) / 1000);
+                    toast.error(`برجاء الانتظار ${waitTime} ثانية.`);
                     setLoading(false);
                     return;
                 }
@@ -132,7 +138,7 @@ export default function CustomPlanForm() {
 
             const rawPlan = await generatePlanWithAI(formData);
 
-            if (rawPlan && rawPlan.readings) {
+            if (rawPlan && rawPlan.readings && rawPlan.readings.length > 0) {
                 const plan = cleanPlanData(rawPlan);
                 const planId = `ai_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
 
@@ -150,14 +156,15 @@ export default function CustomPlanForm() {
                     }
                 }, { merge: true });
 
-                toast.success("تم إنشاء خطتك الروحية بنجاح!");
+                toast.success("تم إنشاء خطتك بنجاح!");
                 router.push(`/studyPlans/details?id=${planId}&type=custom`);
             } else {
-                throw new Error("Invalid Plan Structure");
+                throw new Error("فشل الذكاء الاصطناعي في تكوين خطة صحيحة");
             }
         } catch (error) {
             console.error("Submit Error:", error);
-            toast.error('حدث خطأ أثناء إنشاء الخطة. حاول مرة أخرى.');
+            toast.error(error.message || 'حدث خطأ أثناء إنشاء الخطة');
+        } finally {
             setLoading(false);
         }
     };
@@ -168,7 +175,6 @@ export default function CustomPlanForm() {
                 <div className={styles.loadingOverlay}>
                     <div className={styles.spinner}></div>
                     <h2 className={styles.sectionTitle}>جاري تصميم خطتك الروحية...</h2>
-                    <p className={styles.secondaryText}>نحلل كلماتك لنختار لك أنسب الأصحاحات</p>
                 </div>
             )}
 
@@ -189,7 +195,6 @@ export default function CustomPlanForm() {
                         value={formData.mood}
                         onChange={(e) => handleSelect('mood', e.target.value)}
                     ></textarea>
-                    <p className={styles.charCount}>{formData.mood.length}/500</p>
                 </div>
 
                 <div className={styles.questionGroup}>
