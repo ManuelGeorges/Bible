@@ -19,7 +19,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // 3. طلب الإذن وجدولة التنبيهات الابتدائية
         requestNotificationPermission()
 
-        return ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+        // في إصدارات Capacitor الحديثة، لا نحتاج لاستدعاء Proxy هنا.
+        // يتم التعامل مع الـ Launch Options تلقائياً.
+        return true
     }
 
     private func requestNotificationPermission() {
