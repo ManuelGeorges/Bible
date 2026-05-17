@@ -4,25 +4,26 @@ import Firebase
 import UserNotifications
 import WebKit
 
+// إضافة الامتدادات لضمان عدم فشل المترجم إذا لم تكن معرفة مسبقاً
+extension Notification.Name {
+    static let capacitorSetupBridge = Notification.Name("CAPBridgeSetup")
+    static let capacitorDidRegisterForRemoteNotifications = Notification.Name("capDidRegisterForRemoteNotifications")
+    static let capacitorDidFailToRegisterForRemoteNotifications = Notification.Name("capDidFailToRegisterForRemoteNotifications")
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // 1. إعداد Firebase الأساسي (مطلوب للـ Auth والخدمات الأخرى)
+        // إعداد Firebase
         FirebaseApp.configure()
 
-        // 2. إعداد مفوض التنبيهات لتعمل حتى والتطبيق مفتوح
         UNUserNotificationCenter.current().delegate = self
-
-        // 3. طلب الإذن وجدولة التنبيهات المحلية
         requestNotificationPermission()
-
-        // 4. تسجيل الجهاز لاستقبال الإشعارات
         application.registerForRemoteNotifications()
 
-        // 5. إعداد مستمع الـ Bridge لحقن الـ Script يدوي أول ما الـ WebView يفتح
         NotificationCenter.default.addObserver(self, selector: #selector(handleBridgeReady(_:)), name: .capacitorSetupBridge, object: nil)
 
         return true
@@ -33,14 +34,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             if granted {
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
-                    // جدولة الإشعارات المحلية فور الموافقة
                     AgiosNotificationHelper.shared.refreshAllNotifications()
                 }
             }
         }
     }
 
-    // حقن كود الـ Bridge للـ WebView التابع لـ Capacitor
     @objc func handleBridgeReady(_ notification: Notification) {
         guard let bridge = notification.object as? CAPBridge,
               let webView = bridge.webView else { return }
@@ -71,7 +70,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         webView.configuration.userContentController.addUserScript(script)
     }
 
-    // MARK: - Remote Notification Handling
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
     }
@@ -80,7 +78,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
-    // التعامل مع الروابط العميقة (Deep Links)
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
@@ -89,13 +86,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
-    // إظهار التنبيه أثناء فتح التطبيق (ForeGround)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([[.banner, .sound, .list]])
+        // تم إصلاح الأقواس هنا
+        completionHandler([.banner, .sound, .list])
     }
 }
 
-// MARK: - JavaScript Bridge Handler
 class AgiosScriptHandler: NSObject, WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any],
@@ -111,7 +107,6 @@ class AgiosScriptHandler: NSObject, WKScriptMessageHandler {
     }
 }
 
-// MARK: - Notification Logic (Local Notifications)
 class AgiosNotificationHelper {
     static let shared = AgiosNotificationHelper()
 
@@ -141,7 +136,6 @@ class AgiosNotificationHelper {
         let master = getPrefString(key: "masterNotifications") ?? "true"
         if master == "false" { return }
 
-        // جدولة الإشعارات المحلية الأساسية
         schedule(type: "verse", defH: 6, title: "آية اليوم", body: "اكتشف آية اليوم وشاركها مع أصدقائك.")
         schedule(type: "question", defH: 18, title: "سؤال اليوم", body: "حان وقت سؤال اليوم، اختبر معلوماتك!")
         schedule(type: "studyPlans", defH: 10, title: "متابعة القراءة 📖", body: "لديك جزء متبقي في خطة القراءة اليومية.")
