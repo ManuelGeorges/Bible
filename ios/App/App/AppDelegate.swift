@@ -2,28 +2,25 @@ import UIKit
 import Capacitor
 import Firebase
 import UserNotifications
+import WebKit
 
 @main
 @MainActor
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, @preconcurrency UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // 1. تهيئة Firebase
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
         }
 
-        // 2. إعداد Capacitor
         let result = ApplicationDelegateProxy.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
-        // 3. إعداد الإشعارات
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
             if granted {
                 DispatchQueue.main.async {
-                    // استدعاء المساعد الموجود بالأسفل
                     AgiosNotificationHelper.shared.refreshAllNotifications()
                 }
             }
@@ -32,20 +29,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return result
     }
 
-    func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool {
-        return ApplicationDelegateProxy.shared.application(application, open: url, options: options)
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        return ApplicationDelegateProxy.shared.application(app, url, options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+        return ApplicationDelegateProxy.shared.application(application, userActivity, restorationHandler)
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .list])
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
     }
 }
 
-// MARK: - Notification Helper (دمج هنا لحل مشكلة الـ Build في CI)
 @objc(AgiosNotificationHelper)
 @MainActor
 public class AgiosNotificationHelper: NSObject {
@@ -63,6 +63,12 @@ public class AgiosNotificationHelper: NSObject {
 
     private func getPrefString(key: String) -> String? {
         return UserDefaults.standard.string(forKey: "_cap_" + key) ?? UserDefaults.standard.string(forKey: key)
+    }
+
+    @objc public func updateSettings(json: String, masterEnabled: Bool) {
+        UserDefaults.standard.set(json, forKey: "_cap_notificationSettings")
+        UserDefaults.standard.set(String(masterEnabled), forKey: "_cap_masterNotifications")
+        refreshAllNotifications()
     }
 
     @objc public func refreshAllNotifications() {
@@ -127,5 +133,52 @@ public class AgiosNotificationHelper: NSObject {
         if low.contains("tip") || low.contains("suggestion") { return "appSuggestions" }
         if low.contains("update") { return "updateAlerts" }
         return type
+    }
+}
+
+class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
+
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .default
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.bridge?.webView?.configuration.userContentController.add(self, name: "AgiosHandler")
+
+        let isDark = self.traitCollection.userInterfaceStyle == .dark
+        let theme = isDark ? "dark" : "light"
+
+        let js = """
+        window.AgiosScannerNative = {
+            refreshAlarms: function() {
+                window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'refreshAlarms'});
+            },
+            updateSettings: function(json, masterEnabled) {
+                window.webkit.messageHandlers.AgiosHandler.postMessage({
+                    action: 'updateSettings',
+                    json: json,
+                    master: masterEnabled
+                });
+            },
+            getSystemTheme: function() { return "\(theme)"; }
+        };
+        """
+        let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        self.bridge?.webView?.configuration.userContentController.addUserScript(script)
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let body = message.body as? [String: Any],
+              let action = body["action"] as? String else { return }
+
+        if action == "refreshAlarms" {
+            AgiosNotificationHelper.shared.refreshAllNotifications()
+        } else if action == "updateSettings" {
+            if let json = body["json"] as? String, let master = body["master"] as? Bool {
+                AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
+            }
+        }
     }
 }
