@@ -9,16 +9,74 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
 import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart } from 'lucide-react';
 
-const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
-if (!apiKey) {
-  console.error("Gemini API Key is missing or undefined!");
-}
-const genAI = new GoogleGenerativeAI(apiKey);
+const apiKeys = [
+  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
+  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic"
+];
+
+const getGenAI = (index) => {
+  const key = apiKeys[index % apiKeys.length];
+  return new GoogleGenerativeAI(key);
+};
+
 const geminiCache = {};
+
+// ─── Retry helper المُطور والذكي ────────────────────────────────────────────────────────────
+async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
+  let lastError;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn(attempt);
+    } catch (err) {
+      lastError = err;
+      const errorMsg = err.message?.toLowerCase() || "";
+
+      // تحديد ما إذا كان الخطأ يستحق إعادة المحاولة
+      const isRetryable = errorMsg.includes('429') ||
+                          errorMsg.includes('quota') ||
+                          errorMsg.includes('503') ||
+                          errorMsg.includes('overloaded') ||
+                          errorMsg.includes('busy') ||
+                          errorMsg.includes('timeout') ||
+                          errorMsg.includes('network') ||
+                          errorMsg.includes('fetch') ||
+                          errorMsg.includes('deadline');
+
+      if (attempt < maxAttempts - 1 && isRetryable) {
+        const delay = baseDelayMs * Math.pow(2, attempt);
+
+        let reason = "مشكلة في الاتصال";
+        if (errorMsg.includes('429') || errorMsg.includes('quota')) reason = "ضغط طلبات (Quota)";
+        else if (errorMsg.includes('503') || errorMsg.includes('busy')) reason = "الخادم مشغول";
+        else if (errorMsg.includes('timeout')) reason = "بطء في الاستجابة";
+
+        if (onRetry) onRetry(attempt + 1, maxAttempts, reason);
+
+        console.warn(`Attempt ${attempt + 1} failed: ${reason}. Switching key and retrying in ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+      } else if (!isRetryable) {
+        throw err; // إذا كان خطأ برمجي لا نعيد المحاولة
+      }
+    }
+  }
+  throw lastError;
+}
+
+// ─── Stream with chunk timeout ────────────────────────────────────────────────
+async function* streamWithTimeout(stream, timeoutMs = 15000) {
+  for await (const chunk of stream) {
+    yield await Promise.race([
+      Promise.resolve(chunk),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Stream chunk timed out')), timeoutMs)
+      )
+    ]);
+  }
+}
 
 const highlightColors = [
   { color: "#ffeb3b", label: "اصفر" }, { color: "#ffc107", label: "برتقالي" },
@@ -34,7 +92,7 @@ const highlightColors = [
 
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num.toString().split('').map(d => arabicNums[+d] || d).join('');
+  return num?.toString().split('').map(d => arabicNums[+d] || d).join('') || '';
 }
 
 function normalizeArabicText(text) {
@@ -83,6 +141,7 @@ function SearchContent() {
   const [user, setUser] = useState(null);
   const { triggerBadgeUnlock } = useBadge();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialType = searchParams.get('type') || 'literal';
 
   const [inputTerm, setInputTerm] = useState('');
@@ -105,14 +164,15 @@ function SearchContent() {
   const [activeActionId, setActiveActionId] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [selectedVerses, setSelectedVerses] = useState([]);
+  const [aiStatus, setAiStatus] = useState('');
 
-  // إعدادات البحث بالمعنى
   const [semanticOptions, setSemanticOptions] = useState({
     showTitle: true,
     showReason: true
   });
 
   const resultsRef = useRef(null);
+  const currentSearchIdRef = useRef(0);
 
   useEffect(() => {
     const typeFromUrl = searchParams.get('type');
@@ -296,18 +356,20 @@ function SearchContent() {
     const now = Date.now();
     if (lastSearch && now - parseInt(lastSearch) < 60000) return null;
 
+    const searchId = ++currentSearchIdRef.current;
     let currentInfo = { root: '...', derivatives: [] };
     setShowDerivatives(true);
 
-    try {
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const attemptStream = async (attemptIndex) => {
+      const genAIInstance = getGenAI(attemptIndex);
+      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = `أنت عالم لغوي متخصص في فقه اللغة العربية والصرف المعمق.
 الكلمة المستهدفة: "${term}".
 المطلوب: تحليل صرفي شامل يستخرج "كل صورة ممكنة" للكلمة في النص.
 يجب أن تتضمن قائمة المشتقات (derivatives) ما يلي:
 1. الجذر اللغوي الصحيح. "تنبيه": إذا كانت الكلمة (اسم علم أعجمي)، يمنع تماماً اشتقاق أفعال منها، وبدلاً من ذلك يتم التركيز على صور ورودها المختلفة بالسوابق واللواحق.
 2. الأفعال: في حالات (الرفع، النصب، الجزم) بما يشمل حذف النون وحروف العلة، وتصريفها في الماضي والمضارع والأمر مع كافة الضمائر.
-3. الضمائر المتصلة: شمول الأفعال المتصلة بضمائر المفعول به ونون الوقاية.
+3. الضمائر المتصلة: شمول الأفعال المتصلة بضمائر المفعول به نون الوقاية.
 4. الأسماء المشتقة: (فاعل، مفعول، مصدر، مبالغة، تفضيل).
 5. السوابق واللواحق لأسماء الأعلام والأفعال.
 يجب أن يكون الرد بصيغة JSON فقط:
@@ -315,13 +377,16 @@ function SearchContent() {
   "root": "الجذر أو 'اسم علم'",
   "derivatives": ["كلمة1", "كلمة2", "..."]
 }`;
+
       const result = await model.generateContentStream(prompt);
       localStorage.setItem('last_gemini_search', Date.now().toString());
       setTimeLeft(60);
 
       let fullText = '';
 
-      for await (const chunk of result.stream) {
+      for await (const chunk of streamWithTimeout(result.stream, 15000)) {
+        if (currentSearchIdRef.current !== searchId) return currentInfo;
+
         const chunkText = chunk.text();
         fullText += chunkText;
 
@@ -341,20 +406,29 @@ function SearchContent() {
         }
       }
 
-      geminiCache[term] = currentInfo;
+      return currentInfo;
+    };
 
-      // بادجة سرية: كاسر المنطق (استخدام NLP للبحث ٣ مرات)
+    try {
+      setAiStatus('جاري تحليل الكلمة...');
+      const result = await withRetry(
+        attemptStream,
+        (attempt, max, reason) => setAiStatus(`محاولة (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. جاري تجربة مفتاح بديل...`),
+        5,
+        2000
+      );
+      geminiCache[term] = result;
+      setAiStatus('');
+
       const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
       localStorage.setItem('nlp_search_count', nlpCount.toString());
-      if (nlpCount >= 3) {
-        await unlockBadge('logic_breaker');
-      }
+      if (nlpCount >= 3) await unlockBadge('logic_breaker');
 
-      return currentInfo;
-
+      return result;
     } catch (e) {
-      console.error("Gemini Error:", e);
-      toast.error(navigator.onLine ? "حدث خطأ في الاتصال بالذكاء الاصطناعي" : "تأكد من اتصالك بالإنترنت");
+      setAiStatus('');
+      console.error("Gemini Derivatives Error (all retries exhausted):", e);
+      toast.error(navigator.onLine ? "تعذّر الوصول للذكاء الاصطناعي، حاول مجدداً" : "تأكد من اتصالك بالإنترنت");
       const fallback = { derivatives: [normalizeArabicText(term)], root: 'غير معروف' };
       setSearchInfo(fallback);
       setSelectedDerivatives(fallback.derivatives);
@@ -367,14 +441,17 @@ function SearchContent() {
     const now = Date.now();
     if (lastSearch && now - parseInt(lastSearch) < 60000) return null;
 
-    try {
+    const searchId = ++currentSearchIdRef.current;
+
+    const attemptSemantic = async (attemptIndex) => {
       const allowedBooks = bookNamesData?.ar?.map(b => b.name).join(', ') || '';
       const filterContext = `
         ${selectedTestament ? `العهد المطلوب البحث فيه: ${selectedTestament === 'OT' ? 'العهد القديم' : 'العهد الجديد'}` : ''}
         ${selectedBookIndex !== '' ? `السفر المطلوب البحث فيه: ${bookNamesData.ar[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+      const genAIInstance = getGenAI(attemptIndex);
+      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = `أنت محرك بحث لاهوتي ذكي ومفسر للكتاب المقدس لتطبيق "أجيوس". مهمتك هي فهم "المعنى" العميق وراء بحث المستخدم واستخراج شواهد مرتبطة به.
 
 ### [سؤال المستخدم]
@@ -404,13 +481,20 @@ ${filterContext}
 3. إذا كان البحث عن صفة (مثل التواضع)، ابحث عن آيات مباشرة وعن قصص تجسد الصفة (مثل غسل الأرجل، ميلاد المسيح).
 4. تأكد تماماً من صحة أرقام الآيات والأصحاحات ومناسبتها للسفر.`;
 
-      const result = await model.generateContent(prompt);
+      const responsePromise = model.generateContent(prompt);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Semantic search timed out after 25s')), 25000)
+      );
+
+      const result = await Promise.race([responsePromise, timeoutPromise]);
       localStorage.setItem('last_gemini_search', Date.now().toString());
       setTimeLeft(60);
 
+      if (currentSearchIdRef.current !== searchId) return null;
+
       const responseText = result.response.text();
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Invalid Format");
+      if (!jsonMatch) throw new Error("Invalid JSON format from model");
 
       const data = JSON.parse(jsonMatch[0]);
 
@@ -437,15 +521,28 @@ ${filterContext}
           ...ref,
           bookIndex: bookIdx,
           versesContent,
-          book: bookNamesData.ar[bookIdx].name // ضمان تطابق الاسم
+          book: bookNamesData.ar[bookIdx].name
         };
       }).filter(r => r !== null);
 
       setSemanticResults(enriched);
       return enriched;
+    };
+
+    try {
+      setAiStatus('جاري البحث في الكتاب المقدس...');
+      const result = await withRetry(
+        attemptSemantic,
+        (attempt, max, reason) => setAiStatus(`محاولة (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. جاري تجربة مفتاح احتياطي...`),
+        5,
+        2000
+      );
+      setAiStatus('');
+      return result;
     } catch (e) {
-      console.error("Semantic Error:", e);
-      toast.error("حدث خطأ في البحث الذكي، حاول مرة أخرى.");
+      setAiStatus('');
+      console.error("Semantic Search Error (all retries exhausted):", e);
+      toast.error("عذراً، الخادم مضغوط حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.");
       return null;
     }
   };
@@ -474,6 +571,7 @@ ${filterContext}
       setSearchResults([]);
       setSemanticResults([]);
       setSearchQuery('');
+      setAiStatus('');
       return;
     }
 
@@ -585,6 +683,83 @@ ${filterContext}
     setSelectedVerses([]);
   };
 
+  const copyAllResults = () => {
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    let fullText = "";
+
+    if (searchType === 'semantic') {
+      if (semanticResults.length === 0) return;
+
+      fullText = semanticResults.map(res => {
+        let groupText = "";
+        if (semanticOptions.showTitle) groupText += `العنوان: ${res.title}\n`;
+        if (semanticOptions.showReason) groupText += `الشرح: ${res.reason}\n`;
+
+        const versesText = res.versesContent.map(v => v.text).join(' ');
+        const first = res.versesContent[0];
+        const last = res.versesContent[res.versesContent.length - 1];
+
+        const verseRange = res.versesContent.length === 1
+          ? convertToArabicNumber(first.number)
+          : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+
+        groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+        return groupText;
+      }).join('\n\n');
+
+    } else {
+      if (searchResults.length === 0) return;
+      fullText = searchResults.map(v => {
+        const chapterLabel = convertToArabicNumber(v.chapter + 1);
+        const verseLabel = convertToArabicNumber(v.verse + 1);
+        return `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
+      }).join('\n');
+    }
+
+    navigator.clipboard.writeText(fullText);
+    toast.success("تم نسخ جميع النتائج ✨");
+    updateUserPoints(20, "نسخ جميع نتائج البحث");
+  };
+
+  const copySemanticGroup = (res) => {
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    let groupText = "";
+
+    if (semanticOptions.showTitle) groupText += `العنوان: ${res.title}\n`;
+    if (semanticOptions.showReason) groupText += `الشرح: ${res.reason}\n`;
+
+    const versesText = res.versesContent.map(v => v.text).join(' ');
+    const first = res.versesContent[0];
+    const last = res.versesContent[res.versesContent.length - 1];
+
+    const verseRange = res.versesContent.length === 1
+      ? convertToArabicNumber(first.number)
+      : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+
+    groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+
+    navigator.clipboard.writeText(groupText);
+    toast.success("تم نسخ المقطع بنجاح ✨");
+    updateUserPoints(10, "نسخ مقطع من البحث الذكي");
+  };
+
+  const analyzeSelected = () => {
+    if (selectedVerses.length === 0) return;
+
+    const first = selectedVerses[0];
+    const sameChapter = selectedVerses.every(v => v.book_index === first.book_index && v.chapter === first.chapter);
+
+    if (!sameChapter) {
+      toast.error("التحليل متاح للآيات من نفس الإصحاح فقط");
+      return;
+    }
+
+    const verseNumbers = selectedVerses.map(v => v.verse + 1).sort((a, b) => a - b).join(',');
+    router.push(`/bible/analysis/?book=${encodeURIComponent(first.book)}&chapter=${first.chapter + 1}&verses=${verseNumbers}`);
+  };
+
   const booksList = bookNamesData?.ar || [];
   const filteredBooks = selectedTestament ? booksList.filter(b => b.testament === selectedTestament) : booksList;
   const chaptersCount = (selectedBookIndex !== '' && bibleData) ? bibleData[parseInt(selectedBookIndex)].chapters.length : 0;
@@ -629,10 +804,20 @@ ${filterContext}
             })()}
           </Link>
           <div className={styles.actions}>
-            <button onClick={(e) => { e.stopPropagation(); handleCopy(v); }}>
+            <button onClick={(e) => { e.stopPropagation(); handleCopy(v); }} title="نسخ">
               <Copy size={18} />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); setActiveActionId(activeActionId === vId ? null : vId); setNoteText(savedVerse?.note || ''); }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/bible/analysis/?book=${encodeURIComponent(v.book)}&chapter=${v.chapter + 1}&verses=${v.verse + 1}`);
+              }}
+              title="تحليل بالذكاء الاصطناعي"
+              className={styles.aiActionBtn}
+            >
+              <Sparkles size={18} />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); setActiveActionId(activeActionId === vId ? null : vId); setNoteText(savedVerse?.note || ''); }} title="تفضيل">
               {savedVerse ? <span style={{color: savedVerse.color}}>💙</span> : '🤍'}
             </button>
           </div>
@@ -722,6 +907,12 @@ ${filterContext}
           </div>
         </form>
 
+        {aiStatus && (
+          <div className={styles.loading} style={{ textAlign: 'center', padding: '12px', background: 'rgba(52, 152, 219, 0.1)', borderRadius: '8px', marginBottom: '15px' }}>
+            <span>⏳ {aiStatus}</span>
+          </div>
+        )}
+
         {searchInfo && searchType === 'derivatives' && (
           <div className={styles.derivativesWrapper}>
             <button type="button" className={styles.toggleDerivativesBtn} onClick={() => setShowDerivatives(!showDerivatives)}>{showDerivatives ? 'إخفاء خيارات المشتقات ▲' : 'تخصيص كلمات البحث ▼'}</button>
@@ -749,13 +940,21 @@ ${filterContext}
 
         <div ref={resultsRef}>
           {isLoading ? <div className={styles.loading}>جاري البحث، يرجى الانتظار...</div> : (
-            (searchQuery || selectedTestament || selectedBookIndex !== '') && (
+            ((searchType === 'semantic' ? semanticResults.length > 0 : searchResults.length > 0) || searchQuery || selectedTestament || selectedBookIndex !== '') && (
               <div className={styles.resultsWrapper}>
 
                 <div className={styles.resultsHeader}>
-                    <p className={styles.resultsCount}>
-                      {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(semanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
-                    </p>
+                    <div className={styles.headerInfo}>
+                      <p className={styles.resultsCount}>
+                        {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(semanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
+                      </p>
+                      {(searchType === 'semantic' ? semanticResults.length > 0 : searchResults.length > 0) && (
+                        <button onClick={copyAllResults} className={styles.copyAllBtn}>
+                          <Copy size={14} />
+                          <span>نسخ جميع النتائج</span>
+                        </button>
+                      )}
+                    </div>
                     {selectedVerses.length > 0 && (
                      <div className={styles.selectionActions}>
                        <button onClick={copySelected} className={styles.multiCopyBtn}>
@@ -765,6 +964,10 @@ ${filterContext}
                        <button onClick={() => addSelectedToFavorites("#ffeb3b")} className={styles.multiFavBtn}>
                          <Heart size={16} />
                          <span>تفضيل الكل</span>
+                       </button>
+                       <button onClick={analyzeSelected} className={styles.multiAiBtn}>
+                         <Sparkles size={16} />
+                         <span>تحليل ذكي</span>
                        </button>
                        <button onClick={() => setSelectedVerses([])} className={styles.clearSelectionBtn}>إلغاء</button>
                      </div>
@@ -778,20 +981,17 @@ ${filterContext}
                         <div className={styles.semanticGroupHeader}>
                           <div className={styles.semanticHeaderTop}>
                             {semanticOptions.showTitle && <h3 className={styles.semanticTitle}>{res.title}</h3>}
-                            <button
-                              type="button"
-                              className={styles.selectAllInCardBtn}
-                              onClick={() => {
-                                const allInCard = res.versesContent;
-                                setSelectedVerses(prev => {
-                                  const others = prev.filter(sv => !allInCard.some(v => `${v.book_index}-${v.chapter}-${v.verse}` === `${sv.book_index}-${sv.chapter}-${sv.verse}`));
-                                  return [...others, ...allInCard];
-                                });
-                                toast.success("تم تحديد المقطع بالكامل");
-                              }}
-                            >
-                              تحديد المقطع
-                            </button>
+                            <div className={styles.semanticGroupActions}>
+                                <button
+                                  type="button"
+                                  className={styles.copyGroupBtn}
+                                  onClick={() => copySemanticGroup(res)}
+                                >
+                                  <Copy size={14} />
+                                  <span>نسخ المقطع</span>
+                                </button>
+
+                            </div>
                           </div>
                           {semanticOptions.showReason && <p className={styles.semanticReason}>{res.reason}</p>}
                         </div>

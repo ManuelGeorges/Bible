@@ -10,13 +10,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // تهيئة فايبربيز كأول خطوة لضمان عمل كافة الإضافات
+        // 1. تهيئة Firebase كأول خطوة لضمان عمل كافة الإضافات
         FirebaseApp.configure()
 
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
 
-        // تأخير التحديث لضمان استقرار التطبيق
+        // تأخير التحديث لضمان استقرار التطبيق (من منطق تطبيقك الأصلي)
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             AgiosNotificationHelper.shared.refreshAllNotifications()
         }
@@ -29,9 +29,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             if granted {
                 DispatchQueue.main.async {
                     AgiosNotificationHelper.shared.refreshAllNotifications()
+                    // 2. تسجيل الجهاز للحصول على Token التنبيهات من Apple (ضروري لـ Firebase)
+                    UIApplication.shared.registerForRemoteNotifications()
                 }
             }
         }
+    }
+
+    // 3. ربط الـ Device Token بـ Capacitor ليعمل Firebase Cloud Messaging (FCM)
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {

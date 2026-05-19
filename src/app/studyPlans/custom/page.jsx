@@ -75,7 +75,7 @@ export default function CustomPlanForm() {
 ملاحظة: يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية قبل أو بعد القالب.`;
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash-lite",
+                model: "gemini-3.1-flash-lite",
                 generationConfig: { temperature: 0.7 }
             });
 

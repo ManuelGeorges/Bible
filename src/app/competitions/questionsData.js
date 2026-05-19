@@ -6478,5 +6478,95 @@ export const allQuestions = [
     "options": ["بالسلام", "نعمة ربنا يسوع المسيح مع جميعكم. آمين", "بالوداع", "بالتحذير"],
     "correctAnswer": "نعمة ربنا يسوع المسيح مع جميعكم. آمين",
     "verseReference": "رؤيا 22: 21"
+  },
+  {
+    "id": 721,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "من هي حماة راعوث التي عادت معها إلى بيت لحم؟",
+    "options": ["نعمي", "عرفة", "هيلانة", "سارة"],
+    "correctAnswer": "نعمي",
+    "verseReference": "راعوث 1: 22"
+  },
+  {
+    "id": 72,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "ما هي جنسية راعوث؟",
+    "options": ["مصرية", "مؤابية", "كنعانية", "فلسطينية"],
+    "correctAnswer": "مؤابية",
+    "verseReference": "راعوث 1: 4"
+  },
+  {
+    "id": 723,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "ما هو اسم زوج راعوث الأول الذي مات في أرض موآب؟",
+    "options": ["محلون", "كيلون", "بوعز", "أليمالك"],
+    "correctAnswer": "محلون",
+    "verseReference": "راعوث 4: 10"
+  },
+  {
+    "id": 724,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "إلى أي مدينة عادت نعمي وراعوث؟",
+    "options": ["أورشليم", "السامرة", "بيت لحم", "أريحا"],
+    "correctAnswer": "بيت لحم",
+    "verseReference": "راعوث 1: 19"
+  },
+  {
+    "id": 725,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "ماذا كان اسم السلفة (زوجة الأخ) لراعوث التي فضلت البقاء في موآب؟",
+    "options": ["عرفة", "ليئة", "رفقة", "راحيل"],
+    "correctAnswer": "عرفة",
+    "verseReference": "راعوث 1: 14"
+  },
+  {
+    "id": 726,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "في حقل من ذهبت راعوث لتلتقط السنابل؟",
+    "options": ["أليمالك", "بوعز", "يسى", "داود"],
+    "correctAnswer": "بوعز",
+    "verseReference": "راعوث 2: 3"
+  },
+  {
+    "id": 727,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "في أي موسم أو حصاد وصلت نعمي وراعوث إلى بيت لحم؟",
+    "options": ["حصاد الحنطة", "حصاد الشعير", "قطاف العنب", "حصاد الزيتون"],
+    "correctAnswer": "حصاد الشعير",
+    "verseReference": "راعوث 1: 22"
+  },
+  {
+    "id": 728,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "من هو صاحب الحقل الغني الذي كان ذو قرابة لأليمالك؟",
+    "options": ["بوعز", "عوبيد", "شلومو", "يسى"],
+    "correctAnswer": "بوعز",
+    "verseReference": "راعوث 2: 1"
+  },
+  {
+    "id": 729,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "ماذا طلبت نعمي من أهل بيت لحم أن يدعوها بسبب مرارة حظها؟",
+    "options": ["مُرّة", "مسكينة", "حزينة", "باكية"],
+    "correctAnswer": "مُرّة",
+    "verseReference": "راعوث 1: 20"
+  },
+  {
+    "id": 730,
+    "category": "راعوث",
+    "difficulty": "easy",
+    "questionText": "ما اسم ابن راعوث وبوعز الذي صار جدًا للملك داود؟",
+    "options": ["عوبيد", "يسى", "سليمان", "شاول"],
+    "correctAnswer": "عوبيد",
+    "verseReference": "راعوث 4: 17"
   }
 ] 

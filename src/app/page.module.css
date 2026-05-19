@@ -605,6 +605,27 @@
 [data-theme='dark'] .activeFav,
 [data-theme='system'] .activeFav { background: #3b82f6 !important; color: white !important; }
 
+.aiAskBtn {
+  grid-column: span 2;
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  color: white !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+[data-theme='dark'] .aiAskBtn,
+[data-theme='system'] .aiAskBtn {
+  background: linear-gradient(135deg, #4f46e5, #9333ea) !important;
+}
+
+.fullWidthAction {
+  grid-column: span 2;
+  width: 100%;
+}
+
 .lastReadBar {
   display: flex;
   justify-content: space-between;

@@ -454,6 +454,10 @@
   color: var(--color-accent);
 }
 
+.aiActionBtn:hover {
+  color: #8b5cf6 !important; /* Purple for AI */
+}
+
 .loading {
   text-align: center;
   padding: 40px;
@@ -621,13 +625,40 @@
   backdrop-filter: blur(10px);
 }
 
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.copyAllBtn {
+  background: var(--color-bg-end);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.copyAllBtn:hover {
+  background: var(--color-accent);
+  color: var(--btn-text);
+  transform: translateY(-2px);
+}
+
 .selectionActions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.multiCopyBtn, .multiFavBtn {
+.multiCopyBtn, .multiFavBtn, .multiAiBtn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -650,7 +681,12 @@
   color: white;
 }
 
-.multiCopyBtn:hover, .multiFavBtn:hover {
+.multiAiBtn {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.multiCopyBtn:hover, .multiFavBtn:hover, .multiAiBtn:hover {
   filter: brightness(1.1);
   transform: translateY(-2px);
 }
@@ -701,6 +737,32 @@
   margin: 0;
 }
 
+.semanticGroupActions {
+  display: flex;
+  gap: 10px;
+}
+
+.copyGroupBtn {
+  background: var(--color-bg-end);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.copyGroupBtn:hover {
+  background: #10b981;
+  color: white;
+  border-color: transparent;
+}
+
 .selectAllInCardBtn {
   background: var(--color-border);
   color: var(--color-text-primary);
@@ -740,6 +802,10 @@
     gap: 10px;
     align-items: stretch;
   }
+  .headerInfo {
+    flex-direction: column;
+    gap: 10px;
+  }
   .selectionActions {
     justify-content: center;
   }
@@ -747,5 +813,9 @@
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
+  }
+  .semanticGroupActions {
+    width: 100%;
+    justify-content: space-between;
   }
 }

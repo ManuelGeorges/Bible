@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import studyPlansData from './studyPlans/studyPlansData.json';
@@ -23,11 +23,13 @@ import {
     Lock, Unlock, Camera, Mail, Link as LinkIcon,
     ExternalLink, ShieldCheck, QrCode, BookOpen,
     Scroll, Languages, PartyPopper, Mic, Headphones,
-    Video, Music, Church, Sun, Moon, Cloud, Target, MapPin, BrainCircuit
+    Video, Music, Church, Sun, Moon, Cloud, Target, MapPin, BrainCircuit,
+    ChevronRight
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
 import Badge from '../components/Badge/Badge';
 import { useBadge } from './context/BadgeContext';
+import BibleBookSelector from '../components/BibleBookSelector';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -112,6 +114,17 @@ const LandingPage = () => {
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
     const [badgesData, setBadgesData] = useState(null);
     const [rawUserData, setRawUserData] = useState(null);
+    const newsRef = useRef(null);
+
+    const scrollNews = (direction) => {
+        if (newsRef.current) {
+            const scrollAmount = newsRef.current.offsetWidth * 0.8;
+            newsRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     const unlockBadge = async (badgeId) => {
         if (!user) return;
@@ -571,7 +584,13 @@ const LandingPage = () => {
 
             {remoteNews.length > 0 && (
                 <div className={styles.newsSliderWrapper}>
-                    <div className={styles.newsContainer} onScroll={handleNewsScroll}>
+                    <button className={`${styles.navBtn} ${styles.prevBtn}`} onClick={() => scrollNews('right')} aria-label="Previous News">
+                        <ChevronRight size={20} />
+                    </button>
+                    <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={() => scrollNews('left')} aria-label="Next News">
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div className={styles.newsContainer} ref={newsRef} onScroll={handleNewsScroll}>
                         {remoteNews.map((news, idx) => {
                             const IconComponent = LUCIDE_ICONS[news.iconName] || Bell;
                             return (
@@ -655,6 +674,8 @@ const LandingPage = () => {
                     </Link>
                 ))}
             </section>
+
+            <BibleBookSelector />
 
             {user && (highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
                 <section className={styles.badgesHighlightSection}>
@@ -749,11 +770,30 @@ const LandingPage = () => {
                                 <button onClick={toggleFavorite} className={`${styles.glassBtn} ${favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? styles.activeFav : ''}`}>
                                     {favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? '⭐ مضافة' : '⭐ مفضلة'}
                                 </button>
-                                <ShareVerseCard
-                                    verse={dailyVerse?.verse}
-                                    reference={dailyVerse?.reference}
-                                    onShareSuccess={handleShareSuccess}
-                                />
+                                <button
+                                    onClick={() => {
+                                        if (!user) { router.push('/intro'); return; }
+                                        const cleanRef = dailyVerse?.reference?.replace(/[()]/g, '').trim();
+                                        const parts = cleanRef.split(' ');
+                                        const rawNumbers = parts[parts.length - 1];
+                                        const bookName = parts.slice(0, -1).join(' ');
+                                        const [rawCh] = rawNumbers.split(':');
+                                        const convertNumbers = (str) => str?.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '') || "";
+
+                                        router.push(`/bible/analysis?book=${encodeURIComponent(bookName)}&chapter=${convertNumbers(rawCh)}`);
+                                    }}
+                                    className={`${styles.glassBtn} ${styles.aiAskBtn}`}
+                                >
+                                    <Bot size={18} />
+                                    <span>اسأل أجيوس</span>
+                                </button>
+                                <div className={styles.fullWidthAction}>
+                                    <ShareVerseCard
+                                        verse={dailyVerse?.verse}
+                                        reference={dailyVerse?.reference}
+                                        onShareSuccess={handleShareSuccess}
+                                    />
+                                </div>
                             </div>
                         </>
                     )}
@@ -806,6 +846,16 @@ const LandingPage = () => {
                         <div className={styles.aiFeatureInfo}>
                             <h3>إنشاء خطة بالذكاء الاصطناعي</h3>
                             <p>أخبر "أجيوس" بما تشعر به ليقترح لك خطة</p>
+                        </div>
+                        <ArrowRight size={18} className={styles.aiArrow} />
+                    </Link>
+                    <Link href={user ? "/bible" : "/intro"} className={styles.aiFeatureCard}>
+                        <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
+                            <BrainCircuit size={24} />
+                        </div>
+                        <div className={styles.aiFeatureInfo}>
+                            <h3>مساعد آجيوس (تحليل وتفسير)</h3>
+                            <p>تحليل لاهوتي وتفسير آبائي عميق ومدعوم بالذكاء الاصطناعي لكل النصوص</p>
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>

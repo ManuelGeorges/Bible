@@ -1,0 +1,111 @@
+.container {
+    min-height: 100vh;
+    padding: 20px 16px;
+    background: var(--color-bg-primary);
+    direction: rtl;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    justify-content: center; /* Centered */
+    align-items: center;
+    margin-bottom: 24px;
+    padding-top: env(safe-area-inset-top, 20px);
+}
+
+.bookInfo {
+    display: flex;
+    flex-direction: column; /* Stack icon and title */
+    align-items: center;
+    gap: 16px;
+}
+
+.iconWrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: hsla(var(--book-hue), 85%, 40%, 0.1);
+    color: hsl(var(--book-hue), 85%, 40%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px -4px hsla(var(--book-hue), 85%, 40%, 0.2);
+}
+
+:global([data-theme='dark']) .iconWrapper {
+    background: hsla(var(--book-hue), 90%, 75%, 0.15);
+    color: hsl(var(--book-hue), 90%, 75%);
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 0;
+    color: var(--color-text-primary);
+    text-align: center;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    font-weight: 700;
+    margin-bottom: 32px;
+    text-align: center; /* Centered */
+}
+
+.chaptersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    gap: 12px;
+    padding-bottom: 40px;
+}
+
+.chapterItem {
+    aspect-ratio: 1;
+    background: var(--color-card-bg);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.04);
+}
+
+.chapterItem:active {
+    transform: scale(0.9);
+    background: hsl(var(--book-hue), 85%, 40%);
+    color: white;
+    border-color: hsl(var(--book-hue), 85%, 40%);
+}
+
+:global([data-theme='dark']) .chapterItem {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .chapterItem:active {
+    background: hsl(var(--book-hue), 90%, 75%);
+    color: #000;
+    border-color: hsl(var(--book-hue), 90%, 75%);
+}
+
+@media (max-width: 480px) {
+    .chaptersGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}

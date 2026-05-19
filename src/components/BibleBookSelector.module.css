@@ -1,0 +1,299 @@
+.container {
+    padding: 12px 8px;
+    direction: rtl;
+    background: transparent;
+}
+
+.mainHeader {
+    margin-bottom: 12px;
+    padding: 0 8px;
+}
+
+.title {
+    font-size: 1.05rem;
+    font-weight: 900;
+    margin-bottom: 2px;
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: -0.3px;
+}
+
+.headerLine {
+    width: 25px;
+    height: 3px;
+    background: var(--color-primary);
+    border-radius: 10px;
+}
+
+.searchWrapper {
+    margin-top: 14px;
+    margin-bottom: 4px;
+}
+
+.searchContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 0 12px;
+    height: 40px;
+    transition: all 0.3s ease;
+}
+
+:global([data-theme='dark']) .searchContainer {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.searchContainer:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.searchIcon {
+    color: var(--color-text-secondary);
+    margin-left: 10px;
+    opacity: 0.6;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    width: 100%;
+}
+
+.searchInput::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.5;
+}
+
+.clearSearch {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.section {
+    margin-bottom: 16px;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 4px;
+}
+
+.sectionTitle {
+    color: var(--color-text-primary);
+    font-size: 0.82rem;
+    font-weight: 800;
+    opacity: 0.75;
+}
+
+.scrollWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.navBtn {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .navBtn {
+        display: flex;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-card-bg);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .scrollWrapper:hover .navBtn {
+        opacity: 0.8;
+    }
+
+    .navBtn:hover {
+        opacity: 1 !important;
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .prevBtn { right: -12px; }
+    .nextBtn { left: -12px; }
+}
+
+.scrollRow {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 4px;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+}
+
+.scrollRow::-webkit-scrollbar {
+    display: none;
+}
+
+.bookCard {
+    flex: 0 0 72px;
+    aspect-ratio: 0.75;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+
+    /* Extremely Deep & Vibrant Dynamic Colors */
+    --book-hue: 210;
+    --grad-top: hsl(var(--book-hue), 100%, 50%);
+    --grad-mid: hsl(var(--book-hue), 100%, 25%);
+    --grad-bottom: hsl(var(--book-hue), 100%, 5%);
+    --shadow-color: hsla(var(--book-hue), 100%, 3%, 0.6);
+
+    background: linear-gradient(165deg,
+        var(--grad-top) 0%,
+        var(--grad-mid) 45%,
+        var(--grad-bottom) 100%
+    );
+
+    box-shadow:
+        0 4px 10px -2px var(--shadow-color),
+        inset 0 -4px 8px rgba(0,0,0,0.6),
+        inset 0 2px 6px rgba(255,255,255,0.3);
+}
+
+:global([data-theme='dark']) .bookCard {
+    --grad-top: hsl(var(--book-hue), 80%, 25%);
+    --grad-mid: hsl(var(--book-hue), 100%, 12%);
+    --grad-bottom: hsl(var(--book-hue), 100%, 3%);
+    --shadow-color: rgba(0, 0, 0, 0.9);
+
+    box-shadow:
+        0 6px 14px -4px var(--shadow-color),
+        inset 0 -3px 10px rgba(0,0,0,0.8),
+        inset 0 1px 4px rgba(255,255,255,0.05);
+}
+
+/* Hardened Noise for Depth */
+.bookCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.22;
+    mix-blend-mode: color-burn;
+    pointer-events: none;
+}
+
+/* Vivid top light strip */
+.bookCard::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.bookCard:hover {
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 8px 18px -4px var(--shadow-color);
+}
+
+.bookCard:active {
+    transform: scale(0.9);
+}
+
+.iconWrapper {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(4px);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.bookCard:hover .iconWrapper {
+    transform: scale(1.1) rotate(4deg);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.bookName {
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-align: center;
+    color: white;
+    padding: 0 2px;
+    line-height: 1;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    z-index: 2;
+    letter-spacing: -0.2px;
+}
+
+.watermark {
+    position: absolute;
+    bottom: 4px;
+    font-size: 0.38rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    z-index: 1;
+}
+
+.noResults {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-text-secondary);
+    font-weight: 700;
+    font-size: 0.95rem;
+    opacity: 0.7;
+}

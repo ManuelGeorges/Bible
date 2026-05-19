@@ -27,10 +27,10 @@ const LoginPage = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && !isSubmitting) router.replace('/');
+      if (user) router.replace('/');
     });
     return () => unsubscribe();
-  }, [router, isSubmitting]);
+  }, [router]);
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
@@ -54,8 +54,6 @@ const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setIsSubmitting(false);
-      router.replace('/');
     } catch (err) {
       setError(translateError(err.code));
       setIsSubmitting(false);
@@ -75,16 +73,12 @@ const LoginPage = () => {
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
-          setIsSubmitting(false);
-          router.replace('/');
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        setIsSubmitting(false);
-        router.replace('/');
       }
     } catch (err) {
       console.error("Google Auth Error:", err);
@@ -106,16 +100,12 @@ const LoginPage = () => {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({ idToken, rawNonce });
           await signInWithCredential(auth, credential);
-          setIsSubmitting(false);
-          router.replace('/');
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new OAuthProvider('apple.com');
         await signInWithPopup(auth, provider);
-        setIsSubmitting(false);
-        router.replace('/');
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);

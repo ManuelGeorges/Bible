@@ -26,10 +26,10 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && !isSubmitting) router.replace('/');
+      if (user) router.replace('/');
     });
     return () => unsubscribe();
-  }, [router, isSubmitting]);
+  }, [router]);
 
   const handleUserData = async (user) => {
     const userRef = doc(db, 'users', user.uid);
@@ -69,18 +69,15 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      await setDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
         firstName,
         lastName,
-        email: user.email,
+        email: userCredential.user.email,
         createdAt: new Date().toISOString(),
         favorites: { verses: {} },
         completedChapters: {},
         completedPlans: {}
       });
-      setIsSubmitting(false);
-      router.replace('/');
     } catch (err) {
       setError(translateError(err.code));
       setIsSubmitting(false);
@@ -101,8 +98,6 @@ export default function SignUpPage() {
           const credential = GoogleAuthProvider.credential(idToken);
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
-          setIsSubmitting(false);
-          router.replace('/');
         } else {
           throw new Error("No ID Token");
         }
@@ -110,8 +105,6 @@ export default function SignUpPage() {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
-        setIsSubmitting(false);
-        router.replace('/');
       }
     } catch (err) {
       console.error(err);

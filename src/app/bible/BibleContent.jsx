@@ -7,9 +7,8 @@ import { getAuth } from "firebase/auth";
 import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import BibleNavModal from '../../components/BibleNavModal';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
@@ -34,12 +33,12 @@ function convertToArabicNumber(num) {
 
 const variants = {
   enter: (direction) => ({
-    x: direction > 0 ? 50 : direction < 0 ? -50 : 0,
+    x: direction > 0 ? 30 : direction < 0 ? -30 : 0,
     opacity: 0,
   }),
   center: { x: 0, opacity: 1 },
   exit: (direction) => ({
-    x: direction < 0 ? 50 : direction > 0 ? -50 : 0,
+    x: direction < 0 ? 30 : direction > 0 ? -30 : 0,
     opacity: 0,
   }),
 };
@@ -65,7 +64,6 @@ export default function BibleContent() {
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  const [isNavModalOpen, setIsNavModalOpen] = useState(false);
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [copiedMessage, setCopiedMessage] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
@@ -233,7 +231,6 @@ export default function BibleContent() {
 
   useEffect(() => {
     const syncAppSettings = () => {
-      // تم تغيير الافتراضي من dark إلى system
       const savedTheme = localStorage.getItem('theme') || 'system';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
@@ -251,7 +248,6 @@ export default function BibleContent() {
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);
 
-    // إضافة مستمع لتغيير وضع الجهاز
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleThemeChange = () => {
         if (localStorage.getItem('theme') === 'system') syncAppSettings();
@@ -260,7 +256,7 @@ export default function BibleContent() {
 
     return () => {
         window.removeEventListener('storage', syncAppSettings);
-        mediaQuery.removeEventListener('change', handleThemeChange);
+        mediaQuery.addEventListener('change', handleThemeChange);
     };
   }, []);
 
@@ -537,7 +533,6 @@ export default function BibleContent() {
 
       const currentCompletedDays = planData.completedDays || {};
 
-      // إذا كان اليوم مكتملاً بالفعل لا نفعل شيئاً
       if (currentCompletedDays[day]?.isCompleted) return;
 
       const newCompletedDays = {
@@ -548,7 +543,6 @@ export default function BibleContent() {
         }
       };
 
-      // حساب النسبة المئوية
       let totalDays = 0;
       if (planType === 'custom') {
         totalDays = planData.readings?.length || 0;
@@ -587,7 +581,6 @@ export default function BibleContent() {
       saveToFirestore(favouriteVerses, next);
       updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
 
-      // التحقق مما إذا كان المستخدم يقرأ من خطة دراسية
       const planId = searchParams.get('planId');
       const planType = searchParams.get('planType');
       const day = searchParams.get('day');
@@ -639,6 +632,16 @@ export default function BibleContent() {
                 shareVerse(combinedText, selectedVerses[0].index);
             }} className={styles.actionBtn}><Share2 size={20} /></button>
             <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title="ملاحظة"><MessageSquare size={20} /></button>
+            <button
+              onClick={() => {
+                const verseNumbers = selectedVerses.map(v => v.index + 1).sort((a, b) => a - b).join(',');
+                router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}&verses=${verseNumbers}`);
+              }}
+              className={styles.actionBtn}
+              title="تحليل بالذكاء الاصطناعي"
+            >
+              <Sparkles size={20} />
+            </button>
           </div>
           <div className={styles.colorGrid}>
             {HIGHLIGHT_COLORS.map((color, idx) => {
@@ -659,21 +662,6 @@ export default function BibleContent() {
         </div>
       )}
 
-      <BibleNavModal 
-        isOpen={isNavModalOpen}
-        onClose={() => setIsNavModalOpen(false)}
-        bookNamesData={bookNamesData}
-        bibleData={bibleData}
-        selectedBookIndex={selectedBookIndex}
-        onSelectLocation={(bookIdx, chapterIdx) => {
-          const isForward = (bookIdx > selectedBookIndex) || (bookIdx === selectedBookIndex && chapterIdx > selectedChapterIndex);
-          setDirection(isForward ? 1 : -1);
-          setSelectedBookIndex(bookIdx);
-          setSelectedChapterIndex(chapterIdx);
-          setSelectedVerses([]);
-        }}
-      />
-
       {isNoteModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.noteModal}>
@@ -690,7 +678,7 @@ export default function BibleContent() {
       <h1 className={styles.title}>الكتاب المقدس</h1>
 
       <div className={styles.controls}>
-        <button className={styles.navigationDisplay} onClick={() => setIsNavModalOpen(true)}>
+        <button className={styles.navigationDisplay} onClick={() => router.push('/bible/books')}>
           <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
           <span className={styles.navSeparator}>|</span>
           <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
@@ -700,15 +688,22 @@ export default function BibleContent() {
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
 
       <AnimatePresence mode="wait" custom={direction}>
-        <motion.div 
+        <motion.div
           key={`${selectedBookIndex}-${selectedChapterIndex}`}
           custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
-          transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
+          transition={{ x: { type: "spring", stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
           className={styles.verseContainer}
           style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
         >
           <div className={styles.chapterHeader}>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
+            <button
+              className={styles.aiBtn}
+              onClick={() => router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}`)}
+              title="تحليل بالذكاء الاصطناعي"
+            >
+              <Sparkles size={20} />
+            </button>
           </div>
 
           <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
@@ -734,7 +729,7 @@ export default function BibleContent() {
                     display: versePerLine ? 'block' : 'inline',
                     marginBottom: versePerLine ? '15px' : '0',
                     padding: '2px 4px', borderRadius: '4px', position: 'relative',
-                    transition: 'background-color 0.3s ease'
+                    transition: 'background-color 0.2s ease'
                   }}
                 >
                   <span className={styles.styledVerseNumber}>{convertToArabicNumber(i + 1)}</span>
