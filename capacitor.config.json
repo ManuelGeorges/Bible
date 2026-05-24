@@ -7,7 +7,7 @@
     "androidScheme": "https",
     "iosScheme": "https",
     "allowNavigation": [
-      "localhost"
+      "*"
     ]
   },
   "plugins": {
