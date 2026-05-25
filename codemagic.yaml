@@ -1,12 +1,10 @@
 workflows:
   ios-release:
-    name: Build iOS Release (IPA)
+    name: Build iOS Release (TestFlight)
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
-      node: 20 # تحديد نسخة Node حديثة لتتوافق مع React 19 و Next.js
-      groups:
-        - apple_auth 
+      node: 22
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
@@ -25,7 +23,6 @@ workflows:
     scripts:
       - name: Install Dependencies
         script: | 
-          # زيادة وقت الانتظار وتقليل الطلبات غير الضرورية
           npm config set fetch-retries 5
           npm config set fetch-retry-mintimeout 20000
           npm config set fetch-retry-maxtimeout 120000
@@ -41,29 +38,31 @@ workflows:
       - name: Set up Keychain
         script: keychain initialize
 
-      - name: Fetch Certificates and Provisioning Profiles
-        script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
 
-      - name: Build IPA
+      - name: Build IPA for TestFlight
         script: |
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --configuration Release
+            --configuration Release \
+            --export-method app-store
 
     artifacts:
       - build/ios/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
 
   ios-simulator-build:
     name: Build iOS for Appetize.io
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
-      node: 20
+      node: 22
     triggering:
       events:
         - push
