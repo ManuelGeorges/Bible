@@ -35,6 +35,12 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Force iOS 15.0 Deployment Target
+        script: |
+          # رفع إصدار الـ Target في ملف المشروع و SPM لضمان التوافق مع الإضافات
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/.iOS(.v13)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
+
       - name: Set up Keychain
         script: keychain initialize
 

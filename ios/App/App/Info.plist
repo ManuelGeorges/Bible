@@ -68,6 +68,6 @@
     <key>FirebaseAppDelegateProxyEnabled</key>
     <string>YES</string>
     <key>MinimumOSVersion</key>
-    <string>13.0</string>
+    <string>15.0</string>
 </dict>
 </plist>
