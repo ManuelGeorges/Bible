@@ -23,9 +23,6 @@ workflows:
     scripts:
       - name: Install Dependencies
         script: | 
-          npm config set fetch-retries 5
-          npm config set fetch-retry-mintimeout 20000
-          npm config set fetch-retry-maxtimeout 120000
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
       - name: Build Next.js Static Export
@@ -35,62 +32,32 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Force iOS 15.0 Deployment Target
+      - name: Patch iOS Project for CI
         script: |
-          # رفع إصدار الـ Target في ملف المشروع و SPM لضمان التوافق مع الإضافات
-          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' ios/App/App.xcodeproj/project.pbxproj
-          sed -i '' 's/.iOS(.v13)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
+          # 1. فرض إصدار iOS 15.0 في كل مكان (المشروع و SPM)
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' ios/App/App.xcodeproj/project.pbxproj
+          if [ -f "ios/App/CapApp-SPM/Package.swift" ]; then
+            sed -i '' 's/.iOS(.v[0-9]*)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
+          fi
+          
+          # 2. التأكد من أن Signing مضبوط على Manual ليقبله Codemagic
+          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
 
       - name: Set up Keychain
         script: keychain initialize
 
-      - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
+      - name: Fetch Profiles and Code Sign
+        script: |
+          # إضافة فلاج --clean لإجبار الأداة على مسح الكاش القديم وتحميل البروفايل الجديد بالـ Capabilities الحالية
+          xcode-project use-profiles --clean
 
       - name: Build IPA for TestFlight
         script: |
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --config Release
+            --configuration Release
 
     artifacts:
       - build/ios/ipa/*.ipa
-
-  ios-simulator-build:
-    name: Build iOS for Appetize.io
-    max_build_duration: 60
-    instance_type: mac_mini_m1
-    environment:
-      node: 22
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: 'main'
-    scripts:
-      - name: Install Dependencies
-        script: |
-          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
-      - name: Build Next.js Static Export
-        script: npm run build:mobile
-      - name: Capacitor Sync
-        script: npx cap sync ios
-      - name: Build iOS App for Simulator
-        script: |
-          xcodebuild -project ios/App/App.xcodeproj \
-                     -scheme App \
-                     -sdk iphonesimulator \
-                     -destination 'generic/platform=iOS Simulator' \
-                     -configuration Debug \
-                     -derivedDataPath build \
-                     CODE_SIGNING_ALLOWED=NO
-      - name: Prepare for Appetize.io
-        script: |
-          mkdir -p build-output
-          APP_PATH=$(find build/Build/Products -name "App.app" -type d | head -n 1)
-          cp -R "$APP_PATH" build-output/
-          cd build-output
-          zip -r ../ios-simulator-app.zip App.app
-    artifacts:
-      - ios-simulator-app.zip
