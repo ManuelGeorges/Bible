@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1
     integrations:
-      - app_store_connect
+      app_store_connect: true
     environment:
       node: 22
       vars:
