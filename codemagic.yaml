@@ -46,8 +46,7 @@ workflows:
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --configuration Release \
-            --export-method app-store
+            --config Release
 
     artifacts:
       - build/ios/ipa/*.ipa
