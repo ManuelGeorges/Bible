@@ -27,7 +27,6 @@ export default function CapacitorFeatures() {
   }, [setTheme]);
 
   useEffect(() => {
-    // StatusBar works on Android/iOS and some Electron setups, but we guard it
     const platform = Capacitor.getPlatform();
     if (platform === 'web' || platform === 'electron') return;
 
@@ -56,46 +55,47 @@ export default function CapacitorFeatures() {
 
   useEffect(() => {
     const platform = Capacitor.getPlatform();
-    // تعطيل الميزات التي لا تعمل على Electron أو الويب
     if (platform === 'web' || platform === 'electron' || hasSetup.current) return;
     hasSetup.current = true;
 
     const handleAppUpdate = async () => {
       try {
-        const remoteConfig = await getFirebaseRemoteConfig();
+        const remoteConfig = await getFirebaseRemoteConfig().catch(() => null);
         if (!remoteConfig) return;
         remoteConfig.settings.minimumFetchIntervalMillis = 600000;
         await fetchAndActivate(remoteConfig).catch(() => {});
         
         const minRequiredVersion = getNumber(remoteConfig, 'min_required_version') || 0;
-        const appInfo = await App.getInfo();
+        const appInfo = await App.getInfo().catch(() => ({ build: '0' }));
         const currentVersionCode = parseInt(appInfo.build || '0') || 0;
 
-        await AppUpdate.addListener('onFlexibleUpdateStateChanged', async (state) => {
-          if (state.installStatus === 11) {
-            await AppUpdate.completeFlexibleUpdate();
-          }
-        });
+        try {
+          await AppUpdate.addListener('onFlexibleUpdateStateChanged', async (state) => {
+            if (state.installStatus === 11) {
+              await AppUpdate.completeFlexibleUpdate().catch(() => {});
+            }
+          });
+        } catch (e) {}
 
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
         
         if (updateInfo) {
           if (updateInfo.installStatus === 11) {
-            await AppUpdate.completeFlexibleUpdate();
+            await AppUpdate.completeFlexibleUpdate().catch(() => {});
             return;
           }
           if (updateInfo.updateAvailability === 2) {
             if (currentVersionCode < minRequiredVersion) {
-              await AppUpdate.performImmediateUpdate();
+              await AppUpdate.performImmediateUpdate().catch(() => {});
             } else {
               if (updateInfo.installStatus !== 1) {
-                await AppUpdate.startFlexibleUpdate();
+                await AppUpdate.startFlexibleUpdate().catch(() => {});
               }
             }
           }
         }
       } catch (e) {
-        console.error("Update Error:", e);
+        console.error("Update Block Error Safe Bypassed:", e);
       }
     };
 
@@ -109,8 +109,8 @@ export default function CapacitorFeatures() {
           if (url) router.push(url);
         });
 
-        let pushPerms = await PushNotifications.checkPermissions();
-        if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions();
+        let pushPerms = await PushNotifications.checkPermissions().catch(() => ({ receive: 'prompt' }));
+        if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions().catch(() => ({ receive: 'denied' }));
         if (pushPerms.receive === 'granted') {
           await PushNotifications.register().catch(() => {});
           await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
@@ -148,7 +148,7 @@ export default function CapacitorFeatures() {
     const init = async () => {
       await handleAppUpdate();
       await setupUIAndNotifications();
-      await syncNotifications();
+      await syncNotifications().catch(() => {});
     };
 
     init();
@@ -156,8 +156,10 @@ export default function CapacitorFeatures() {
 
     return () => {
       clearInterval(reviewInterval);
-      LocalNotifications.removeAllListeners();
-      PushNotifications.removeAllListeners();
+      try {
+        LocalNotifications.removeAllListeners();
+        PushNotifications.removeAllListeners();
+      } catch (e) {}
     };
   }, [router]);
 

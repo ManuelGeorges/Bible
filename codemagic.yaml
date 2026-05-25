@@ -4,12 +4,17 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
+      node: 20 # تحديد نسخة Node حديثة لتتوافق مع React 19 و Next.js
       groups:
         - apple_auth 
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
+    cache:
+      cache_paths:
+        - node_modules
+        - ~/.npm
 
     triggering:
       events:
@@ -20,8 +25,10 @@ workflows:
     scripts:
       - name: Install Dependencies
         script: | 
-          # استخدام npm ci أسرع وأكثر استقراراً في السيرفرات
-          # إضافة --no-audit --no-fund لتقليل الطلبات على الشبكة
+          # زيادة وقت الانتظار وتقليل الطلبات غير الضرورية
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
       - name: Build Next.js Static Export
@@ -55,6 +62,8 @@ workflows:
     name: Build iOS for Appetize.io
     max_build_duration: 60
     instance_type: mac_mini_m1
+    environment:
+      node: 20
     triggering:
       events:
         - push
