@@ -5,8 +5,6 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       groups:
-        # يجب عليك إضافة مجموعة باسم apple_auth في Codemagic UI تحتوي على:
-        # APP_STORE_CONNECT_PRIVATE_KEY, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID
         - apple_auth 
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
@@ -21,7 +19,10 @@ workflows:
 
     scripts:
       - name: Install Dependencies
-        script: npm install
+        script: | 
+          # استخدام npm ci أسرع وأكثر استقراراً في السيرفرات
+          # إضافة --no-audit --no-fund لتقليل الطلبات على الشبكة
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
       - name: Build Next.js Static Export
         script: npm run build:mobile
@@ -35,7 +36,6 @@ workflows:
 
       - name: Fetch Certificates and Provisioning Profiles
         script: |
-          # هذه الأداة تجلب شهادات التوزيع والـ Provisioning Profiles من آبل تلقائياً
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
 
       - name: Set up code signing settings on Xcode project
@@ -62,7 +62,8 @@ workflows:
         - pattern: 'main'
     scripts:
       - name: Install Dependencies
-        script: npm install
+        script: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
       - name: Build Next.js Static Export
         script: npm run build:mobile
       - name: Capacitor Sync
