@@ -3,8 +3,6 @@ workflows:
     name: Build iOS Release (TestFlight)
     max_build_duration: 60
     instance_type: mac_mini_m1
-    integrations:
-      app_store_connect: true
     environment:
       node: 22
       vars:
@@ -58,6 +56,7 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+        integration: "Agios App Store Key"
 
   ios-simulator-build:
     name: Build iOS for Appetize.io
