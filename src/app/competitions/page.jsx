@@ -9,6 +9,7 @@ import { db, auth } from '../../lib/firebase';
 import { doc, getDoc, updateDoc, arrayUnion, increment, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useBadge } from '../context/BadgeContext';
+import { getCairoIsoString } from '../../lib/dateUtils';
 
 const normalizeArabic = (text) => {
   if (typeof text !== 'string') return '';
@@ -169,7 +170,7 @@ export default function HomePage() {
         category: quizState.category,
         score: finalScore,
         total: totalQuestions,
-        date: new Date().toISOString()
+        date: getCairoIsoString()
       };
       setQuizState(prev => ({ ...prev, showResults: true }));
       await finalizeQuiz(record, finalScore === totalQuestions);
@@ -197,7 +198,7 @@ export default function HomePage() {
           type: 'quiz',
           points: pointsToAdd,
           reason: reason,
-          timestamp: new Date().toISOString()
+          timestamp: getCairoIsoString()
         })
       });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { db } from '../../lib/firebase';
 import { doc, onSnapshot, updateDoc, increment, arrayUnion, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
 import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart } from 'lucide-react';
+import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -98,11 +99,10 @@ function convertToArabicNumber(num) {
 function normalizeArabicText(text) {
   if (!text || typeof text !== 'string') return '';
   return text
-    .replace(/[ًٌٍَُِْ]/g, '')
-    .replace(/[أآإ]/g, 'ا')
-    .replace(/[ىي]/g, 'ي')
-    .replace(/[ة]/g, 'ه')
-    .replace(/[ءئؤ]/g, '')
+    .replace(/[ًٌٍَُِْ]/g, '')      // حذف التشكيل
+    .replace(/[أآإآءئؤ]/g, 'ا')   // توحيد جميع أشكال الهمزة إلى ألف
+    .replace(/[ىي]/g, 'ي')       // توحيد الياء والألف المقصورة
+    .replace(/[ة]/g, 'ه')        // توحيد التاء المربوطة والهاء
     .trim();
 }
 
@@ -207,7 +207,13 @@ function SearchContent() {
         const flattened = bJson.flatMap((book, bIdx) => {
           const meta = nJson?.ar?.[bIdx];
           return book.chapters.flatMap((ch, chIdx) => ch.map((v, vIdx) => ({
-            text: v, book: meta.name, book_index: bIdx, chapter: chIdx, verse: vIdx, testament: meta.testament
+            text: v,
+            normText: normalizeArabicText(v),
+            book: meta.name,
+            book_index: bIdx,
+            chapter: chIdx,
+            verse: vIdx,
+            testament: meta.testament
           })));
         });
         setAllVerses(flattened);
@@ -218,10 +224,14 @@ function SearchContent() {
   }, []);
 
   useEffect(() => {
-    const lastSearch = localStorage.getItem('last_gemini_search');
-    if (lastSearch) {
-      const diff = Date.now() - parseInt(lastSearch);
-      if (diff < 60000) setTimeLeft(Math.ceil((60000 - diff) / 1000));
+    const requestTimes = JSON.parse(localStorage.getItem('aiSearchTimestamps') || '[]');
+    const now = Date.now();
+    const oneMinute = 60000;
+    const recentRequests = requestTimes.filter(time => now - time < oneMinute);
+
+    if (recentRequests.length >= 3) {
+      const oldestInWindow = Math.min(...recentRequests);
+      setTimeLeft(Math.ceil((oneMinute - (now - oldestInWindow)) / 1000));
     }
   }, []);
 
@@ -232,7 +242,19 @@ function SearchContent() {
     }
   }, [timeLeft]);
 
+  // فلترة فورية للبحث الحرفي والمشتقات
   useEffect(() => {
+    if (allVerses.length === 0) return;
+
+    const normQuery = normalizeArabicText(searchQuery);
+    const isFilterActive = selectedTestament !== '' || selectedBookIndex !== '' || selectedChapter !== '';
+
+    // منع عرض كل الآيات إذا لم يوجد بحث أو فلتر فعال لتجنب تهنيج المتصفح عند الفتح
+    if (!normQuery && !isFilterActive && (searchType !== 'derivatives' || selectedDerivatives.length === 0)) {
+      setSearchResults([]);
+      return;
+    }
+
     if (searchType === 'derivatives' && selectedDerivatives.length > 0) {
       const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
       const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
@@ -243,12 +265,36 @@ function SearchContent() {
       if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
-      const finalFiltered = filtered.filter(v => regex.test(normalizeArabicText(v.text)));
-      setSearchResults(finalFiltered);
+      const finalFiltered = filtered.filter(v => regex.test(v.normText || normalizeArabicText(v.text)));
+      setSearchResults(finalFiltered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
+    } else if (searchType === 'literal') {
+      let filtered = allVerses;
+
+      if (normQuery) {
+        filtered = filtered.filter(v => (v.normText || normalizeArabicText(v.text)).includes(normQuery));
+      }
+
+      if (selectedTestament) filtered = filtered.filter(v => v.testament === selectedTestament);
+      if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
+      if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
+
+      setSearchResults(filtered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
     } else if (searchType === 'derivatives' && selectedDerivatives.length === 0) {
         setSearchResults([]);
     }
-  }, [selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
+  }, [searchQuery, selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
+
+  // فلترة فورية لنتائج البحث الذكي
+  const displaySemanticResults = useMemo(() => {
+    if (searchType !== 'semantic' || semanticResults.length === 0) return [];
+
+    return semanticResults.filter(res => {
+      if (selectedTestament && bookNamesData?.ar[res.bookIndex]?.testament !== selectedTestament) return false;
+      if (selectedBookIndex !== '' && res.bookIndex !== parseInt(selectedBookIndex)) return false;
+      if (selectedChapter !== '' && res.chapter !== (parseInt(selectedChapter) + 1)) return false;
+      return true;
+    });
+  }, [semanticResults, selectedTestament, selectedBookIndex, selectedChapter, searchType, bookNamesData]);
 
   const unlockBadge = async (badgeId) => {
     if (!user) return;
@@ -272,7 +318,7 @@ function SearchContent() {
         pointsHistory: arrayUnion({
           points: amount,
           reason,
-          timestamp: new Date().toISOString()
+          timestamp: getCairoIsoString()
         })
       });
     } catch (e) { console.error("Points Update Error:", e); }
@@ -295,7 +341,7 @@ function SearchContent() {
         book_index: v.book_index,
         color: color !== null ? color : (newFavorites[verseId]?.color || "#ffeb3b"),
         note: noteText,
-        timestamp: Date.now()
+        dateAdded: getCairoIsoString()
       };
       if (isNew) updateUserPoints(5, "تظليل آية من البحث");
     }
@@ -327,7 +373,7 @@ function SearchContent() {
           book_index: v.book_index,
           color: color,
           note: '',
-          timestamp: Date.now()
+          dateAdded: getCairoIsoString()
         };
         addedCount++;
       }
@@ -345,6 +391,24 @@ function SearchContent() {
     }
   };
 
+  const checkRateLimit = () => {
+    const requestTimes = JSON.parse(localStorage.getItem('aiSearchTimestamps') || '[]');
+    const now = Date.now();
+    const oneMinute = 60000;
+    const recentRequests = requestTimes.filter(time => now - time < oneMinute);
+
+    if (recentRequests.length >= 3) {
+      const oldestInWindow = Math.min(...recentRequests);
+      const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
+      setTimeLeft(remaining);
+      return false;
+    }
+
+    const updatedRequests = [...recentRequests, now];
+    localStorage.setItem('aiSearchTimestamps', JSON.stringify(updatedRequests));
+    return true;
+  };
+
   const searchWithGeminiDerivatives = async (term) => {
     if (geminiCache[term]) {
       setSearchInfo(geminiCache[term]);
@@ -352,9 +416,7 @@ function SearchContent() {
       return geminiCache[term];
     }
 
-    const lastSearch = localStorage.getItem('last_gemini_search');
-    const now = Date.now();
-    if (lastSearch && now - parseInt(lastSearch) < 60000) return null;
+    if (!checkRateLimit()) return null;
 
     const searchId = ++currentSearchIdRef.current;
     let currentInfo = { root: '...', derivatives: [] };
@@ -379,8 +441,6 @@ function SearchContent() {
 }`;
 
       const result = await model.generateContentStream(prompt);
-      localStorage.setItem('last_gemini_search', Date.now().toString());
-      setTimeLeft(60);
 
       let fullText = '';
 
@@ -437,9 +497,7 @@ function SearchContent() {
   };
 
   const handleSemanticSearch = async (term) => {
-    const lastSearch = localStorage.getItem('last_gemini_search');
-    const now = Date.now();
-    if (lastSearch && now - parseInt(lastSearch) < 60000) return null;
+    if (!checkRateLimit()) return null;
 
     const searchId = ++currentSearchIdRef.current;
 
@@ -487,8 +545,6 @@ ${filterContext}
       );
 
       const result = await Promise.race([responsePromise, timeoutPromise]);
-      localStorage.setItem('last_gemini_search', Date.now().toString());
-      setTimeLeft(60);
 
       if (currentSearchIdRef.current !== searchId) return null;
 
@@ -549,7 +605,7 @@ ${filterContext}
 
   const handleSearchPoints = () => {
     if (!user) return;
-    const today = new Date().toLocaleDateString();
+    const today = getCairoDate();
     const storageKey = `search_points_${user.uid}`;
     const searchData = JSON.parse(localStorage.getItem(storageKey) || '{"date":"","count":0}');
 
@@ -593,47 +649,54 @@ ${filterContext}
         await handleSemanticSearch(currentQuery);
       } else {
         setSemanticResults([]);
-        const normQuery = normalizeArabicText(currentQuery);
-        let filtered = allVerses;
-        if (selectedTestament) filtered = filtered.filter(v => v.testament === selectedTestament);
-        if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
-        if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
-
-        filtered = filtered.filter(v => normalizeArabicText(v.text).includes(normQuery));
-        setSearchResults(filtered);
         setSearchInfo(null);
         setSelectedDerivatives([]);
+        // الفلترة تتم الآن تلقائياً عبر useEffect عند تغيير searchQuery
       }
     } else {
       setSemanticResults([]);
-      let filtered = allVerses;
-      if (selectedTestament) filtered = filtered.filter(v => v.testament === selectedTestament);
-      if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
-      if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
-      setSearchResults(filtered);
+      // الفلترة تتم الآن تلقائياً عبر useEffect
     }
     setIsLoading(false);
   };
 
   const renderHighlightedText = (text, highlight, verseColor) => {
     if (!highlight || !text) return <span style={{ backgroundColor: verseColor ? `${verseColor} 66` : 'transparent' }}>{text}</span>;
+
+    const normalizedHighlight = normalizeArabicText(highlight);
     let regex;
+
     if (searchType === 'derivatives' && selectedDerivatives.length > 0) {
       const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
       const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
       regex = new RegExp(pattern, 'gi');
     } else {
-      regex = new RegExp(`(${_.escapeRegExp(normalizeArabicText(highlight))})`, 'gi');
+      // نظام تظليل مرن يتجاهل التشكيل ويوحد الهمزات
+      const tashkeelRegex = "[ًٌٍَُِْ]*";
+      const fuzzyPattern = normalizedHighlight.split('').map(char => {
+        if (char === 'ا') return "[اأإآءئؤ]";
+        if (char === 'ي') return "[يى]";
+        if (char === 'ه') return "[هة]";
+        return _.escapeRegExp(char);
+      }).join(tashkeelRegex);
+
+      regex = new RegExp(`(${fuzzyPattern})`, 'gi');
     }
+
     const parts = text.split(regex);
     return (
       <span style={{ backgroundColor: verseColor ? `${verseColor} 66` : 'transparent', borderRadius: '4px', padding: '2px 0' }}>
         {parts.map((p, i) => {
           if (!p) return null;
           const normalizedP = normalizeArabicText(p);
-          const isMatch = searchType === 'derivatives'
-            ? selectedDerivatives.some(d => normalizedP.startsWith(d))
-            : normalizedP === normalizeArabicText(highlight);
+          let isMatch = false;
+
+          if (searchType === 'derivatives') {
+            isMatch = selectedDerivatives.some(d => normalizedP.startsWith(d));
+          } else {
+            isMatch = normalizedP === normalizedHighlight;
+          }
+
           return isMatch ? <span key={i} className={styles.highlight}>{p}</span> : p;
         })}
       </span>
@@ -689,9 +752,9 @@ ${filterContext}
     let fullText = "";
 
     if (searchType === 'semantic') {
-      if (semanticResults.length === 0) return;
+      if (displaySemanticResults.length === 0) return;
 
-      fullText = semanticResults.map(res => {
+      fullText = displaySemanticResults.map(res => {
         let groupText = "";
         if (semanticOptions.showTitle) groupText += `العنوان: ${res.title}\n`;
         if (semanticOptions.showReason) groupText += `الشرح: ${res.reason}\n`;
@@ -940,15 +1003,15 @@ ${filterContext}
 
         <div ref={resultsRef}>
           {isLoading ? <div className={styles.loading}>جاري البحث، يرجى الانتظار...</div> : (
-            ((searchType === 'semantic' ? semanticResults.length > 0 : searchResults.length > 0) || searchQuery || selectedTestament || selectedBookIndex !== '') && (
+            ((searchType === 'semantic' ? displaySemanticResults.length > 0 : searchResults.length > 0) || searchQuery || selectedTestament || selectedBookIndex !== '') && (
               <div className={styles.resultsWrapper}>
 
                 <div className={styles.resultsHeader}>
                     <div className={styles.headerInfo}>
                       <p className={styles.resultsCount}>
-                        {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(semanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
+                        {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(displaySemanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
                       </p>
-                      {(searchType === 'semantic' ? semanticResults.length > 0 : searchResults.length > 0) && (
+                      {(searchType === 'semantic' ? displaySemanticResults.length > 0 : searchResults.length > 0) && (
                         <button onClick={copyAllResults} className={styles.copyAllBtn}>
                           <Copy size={14} />
                           <span>نسخ جميع النتائج</span>
@@ -974,9 +1037,9 @@ ${filterContext}
                     )}
                 </div>
 
-                {searchType === 'semantic' && semanticResults.length > 0 && (
+                {searchType === 'semantic' && displaySemanticResults.length > 0 && (
                   <div className={styles.resultsContainer}>
-                    {semanticResults.map((res, idx) => (
+                    {displaySemanticResults.map((res, idx) => (
                       <div key={idx} className={styles.semanticGroupWrapper}>
                         <div className={styles.semanticGroupHeader}>
                           <div className={styles.semanticHeaderTop}>

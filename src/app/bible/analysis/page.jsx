@@ -62,27 +62,29 @@ function AnalysisContent() {
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
-    // Check rate limit (1 minute)
-    const lastRequest = localStorage.getItem('lastAiRequestTimestamp');
+    // Check rate limit (3 requests per minute)
+    const requestTimes = JSON.parse(localStorage.getItem('aiRequestTimestamps') || '[]');
     const now = Date.now();
-    const waitTime = 60000; // 1 minute
+    const oneMinute = 60000;
 
-    if (lastRequest) {
-      const timePassed = now - parseInt(lastRequest);
-      if (timePassed < waitTime) {
-        const remaining = Math.ceil((waitTime - timePassed) / 1000);
-        setCountdown(remaining);
-        setIsLoading(false);
-        return;
-      }
+    // Filter for requests within the last minute
+    const recentRequests = requestTimes.filter(time => now - time < oneMinute);
+
+    if (recentRequests.length >= 3) {
+      const oldestInWindow = Math.min(...recentRequests);
+      const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
+      setCountdown(remaining);
+      setIsLoading(false);
+      return;
     }
 
     setIsLoading(true);
     setError(null);
     setAnalysis('');
 
-    // Update last request time immediately when starting
-    localStorage.setItem('lastAiRequestTimestamp', Date.now().toString());
+    // Update request times immediately when starting
+    const updatedRequests = [...recentRequests, now];
+    localStorage.setItem('aiRequestTimestamps', JSON.stringify(updatedRequests));
 
     const targetText = verses
       ? `السفر: ${book}\nالإصحاح: ${chapter}\nالآيات المحددة: ${verses}`
@@ -220,6 +222,9 @@ ${targetText}
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerRight}>
+          <button onClick={() => router.back()} className={styles.backBtn} title="رجوع">
+            <ArrowRight size={24} />
+          </button>
           <div className={styles.titleInfo}>
             <h1 className={styles.title}>{displayTitle}</h1>
             <span className={styles.aiBadge}><Sparkles size={12} /> مدعوم بالذكاء الاصطناعي</span>

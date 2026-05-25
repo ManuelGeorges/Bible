@@ -5,6 +5,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, increment, arrayUnion, setDoc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
+import { getCairoDate, getCairoDateInfo } from '../lib/dateUtils';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 
@@ -16,8 +17,8 @@ export default function UserTracker() {
       if (user) {
         try {
           const userRef = doc(db, 'users', user.uid);
-          const now = new Date();
-          const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+          // توحيد التاريخ بتوقيت القاهرة
+          const today = getCairoDate();
 
           await runTransaction(db, async (transaction) => {
             const userSnap = await transaction.get(userRef);
@@ -31,10 +32,15 @@ export default function UserTracker() {
                 let newStreak = (userData.streak || 0) + 1;
                 
                 if (lastLogin) {
-                  const lastDate = new Date(lastLogin);
-                  const currentDate = new Date(today);
-                  const diffTime = Math.abs(currentDate - lastDate);
-                  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                  // حساب الفرق بالأيام بناءً على تواريخ القاهرة
+                  const lastParts = lastLogin.split('-').map(Number);
+                  const todayParts = today.split('-').map(Number);
+
+                  const lastDateObj = new Date(lastParts[0], lastParts[1] - 1, lastParts[2]);
+                  const todayDateObj = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+
+                  const diffTime = Math.abs(todayDateObj - lastDateObj);
+                  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                   
                   if (diffDays > 1) {
                     newStreak = 1;

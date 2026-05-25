@@ -1589,7 +1589,7 @@ export const allQuestions = [
     "difficulty": "easy",
     "questionText": "كم عدد المزامير في الكتاب المقدس؟",
     "options": ["100", "150", "151", "200"],
-    "correctAnswer": "150",
+    "correctAnswer": "151",
     "verseReference": " المزامير"
   },
   {

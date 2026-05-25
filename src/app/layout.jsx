@@ -73,42 +73,6 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light dark" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function() {
-  try {
-    var savedTheme = localStorage.getItem('theme');
-    var theme = savedTheme;
-    if (!theme || theme === 'system') {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    document.documentElement.setAttribute('data-theme', theme);
-    var bgColor = (theme === 'dark' ? '#020617' : '#f0f4f8');
-    document.documentElement.style.backgroundColor = bgColor;
-
-    var updateThemeColor = function() {
-      var metas = document.querySelectorAll('meta[name="theme-color"]');
-      metas.forEach(function(m) { m.setAttribute('content', bgColor); });
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', updateThemeColor);
-    } else {
-      updateThemeColor();
-    }
-  } catch (e) {}
-})();
-      `,
-          }}
-        />
-        <style dangerouslySetInnerHTML={{
-          __html: `
-          html { background-color: #f0f4f8; }
-          html[data-theme='dark'] { background-color: #020617; }
-          body { background-color: transparent !important; margin: 0; padding: 0; }
-        `}} />
       </head>
       <body>
         <BadgeProvider>

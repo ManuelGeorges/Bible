@@ -5,6 +5,7 @@ import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, getCountFromServer, deleteField } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useBadge } from '../app/context/BadgeContext';
+import { getCairoDate, getCairoDateInfo, getCairoIsoString } from '../lib/dateUtils';
 
 export default function StatsWatcher() {
   const pathname = usePathname();
@@ -68,8 +69,8 @@ export default function StatsWatcher() {
     const userRef = doc(db, "users", user.uid);
     try {
       const docSnap = await getDoc(userRef);
-      const today = new Date().toISOString().split('T')[0];
-      const now = new Date();
+      const today = getCairoDate();
+      const cairoInfo = getCairoDateInfo();
 
       if (!docSnap.exists()) {
         const coll = collection(db, "users");
@@ -87,7 +88,7 @@ export default function StatsWatcher() {
             streak: 1,
             lastActiveDate: today,
             badges: loyaltyBadges,
-            createdAt: new Date().toISOString()
+            createdAt: getCairoIsoString()
         }, { merge: true });
       } else {
         let data = docSnap.data();
@@ -113,9 +114,10 @@ export default function StatsWatcher() {
         let currentStreak = data.streak || 0;
 
         if (lastActive !== today) {
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayStr = yesterday.toISOString().split('T')[0];
+          // حساب الأمس بتوقيت القاهرة
+          const now = new Date();
+          const yesterdayObj = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+          const yesterdayStr = getCairoDate(yesterdayObj);
 
           let newStreak = (lastActive === yesterdayStr) ? currentStreak + 1 : 1;
 
@@ -158,10 +160,14 @@ export default function StatsWatcher() {
           }
         }
 
-        if (now.getHours() < 7) await unlockBadge('early_bird', data);
-        if (now.getHours() >= 0 && now.getHours() < 3) await unlockBadge('night_owl', data);
+        // استخدام ساعات توقيت القاهرة للأوسمة المرتبطة بالوقت
+        const hours = cairoInfo.hour;
+        const minutes = cairoInfo.minute;
 
-        if (now.getHours() === 3 && now.getMinutes() === 0) {
+        if (hours < 7) await unlockBadge('early_bird', data);
+        if (hours >= 0 && hours < 3) await unlockBadge('night_owl', data);
+
+        if (hours === 3 && minutes === 0) {
             await unlockBadge('ghost_user', data);
         }
 
@@ -173,7 +179,13 @@ export default function StatsWatcher() {
             if (!darkStart) {
                 localStorage.setItem('dark_mode_start', today);
             } else {
-                const days = (new Date() - new Date(darkStart)) / (1000 * 60 * 60 * 24);
+                // حساب الأيام بناءً على القاهرة
+                const startParts = darkStart.split('-').map(Number);
+                const startDate = new Date(startParts[0], startParts[1]-1, startParts[2]);
+                const todayParts = today.split('-').map(Number);
+                const todayDate = new Date(todayParts[0], todayParts[1]-1, todayParts[2]);
+
+                const days = (todayDate - startDate) / (1000 * 60 * 60 * 24);
                 if (days >= 30) await unlockBadge('shadow_reader', data);
             }
         } else {

@@ -12,6 +12,7 @@ import android.os.Build;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import java.util.Calendar;
+import java.util.TimeZone;
 import org.json.JSONObject;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -215,7 +216,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             is.close();
             JSONArray array = new JSONArray(new String(buffer, StandardCharsets.UTF_8));
 
-            Calendar now = Calendar.getInstance();
+            // توحيد التوقيت ليكون توقيت القاهرة دائماً عند جلب بيانات اليوم
+            Calendar now = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
             int month = now.get(Calendar.MONTH) + 1;
             int day = now.get(Calendar.DAY_OF_MONTH);
 
@@ -301,7 +303,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             return;
         }
 
-        Calendar cal = Calendar.getInstance();
+        // توحيد توقيت الجدولة ليكون بناءً على توقيت القاهرة
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
         boolean customFound = false;
         if (!savedTime.isEmpty() && savedTime.contains(":")) {
             try {

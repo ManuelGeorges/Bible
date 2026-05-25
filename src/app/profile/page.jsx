@@ -43,8 +43,13 @@ const ProfilePage = () => {
           const staticPlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
           const customPlansCount = data.customPlans ? Object.keys(data.customPlans).length : 0;
 
+          // توحيد عرض تاريخ الانضمام بتوقيت القاهرة
           const registrationDate = currentUser.metadata.creationTime
-            ? new Date(currentUser.metadata.creationTime).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' })
+            ? new Date(currentUser.metadata.creationTime).toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'long',
+                timeZone: 'Africa/Cairo'
+              })
             : 'غير متوفر';
 
           setUserStats({
@@ -135,13 +140,9 @@ const ProfilePage = () => {
         const userId = currentUser.uid;
 
         // 2. محاولة حذف المستخدم من Auth أولاً
-        // نستخدم هذه الطريقة لأنها الأكثر عرضة للفشل (أسباب أمنية)
-        // فإذا فشلت، تظل بيانات Firestore موجودة ولا ينكسر الحساب
         await deleteUser(currentUser);
 
         // 3. إذا نجح حذف الـ Auth، نقوم بحذف بيانات Firestore
-        // ملاحظة: قد تحتاج لتعديل قواعد الحماية في Firestore لتسمح بالحذف إذا كان المستخدم محذوفاً للتو
-        // أو يفضل استخدام UID مخزن محلياً قبل الحذف
         const userDocRef = doc(db, 'users', userId);
         await deleteDoc(userDocRef);
 

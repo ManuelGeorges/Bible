@@ -2,7 +2,7 @@
   width: 100% ;
   max-width: 100% ;
   margin: 0 ;
-  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%) ;
+  background: transparent;
   min-height: 100vh ;
   color: var(--color-text-primary) ;
   line-height: 1.6 ;
@@ -45,40 +45,38 @@
 }
 
 .navigationDisplay {
-  background-color: var(--btn-bg) ;
+  background: var(--btn-bg) ;
   padding: 12px 24px ;
   border-radius: 12px ;
-  border: 1px solid #0047ab ;
-  border-bottom: 3px solid #0047ab ;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex ;
   align-items: center ;
   justify-content: center ;
   gap: 8px ;
   cursor: pointer ;
   width: 100% ;
-  transition: all 0.2s ;
-  box-shadow: 0 4px 12px rgba(0, 71, 171, 0.1) ;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) ;
 }
 
 .navigationDisplay:hover {
-  background-color: #2f1e91 ;
+  background-color: var(--btn-hover) ;
   transform: translateY(-2px) ;
-  box-shadow: 0 6px 15px rgba(0, 71, 171, 0.15) ;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) ;
 }
 
 .navigationDisplay:active {
   transform: translateY(1px) ;
-  border-bottom-width: 1px ;
 }
 
 .navText {
-  color: var(--btn-text) ;
+  color: #ffffff !important;
   font-size: 1.2rem ;
-  font-weight: 600 ;
+  font-weight: 700 ;
 }
 
 .navSeparator {
-  color: var(--btn-text) ;
+  color: rgba(255, 255, 255, 0.6) ;
   font-size: 1.4rem ;
   font-weight: 300 ;
   margin: 0 5px ;
@@ -87,12 +85,14 @@
 .verseContainer {
   width: 95% ;
   max-width: 800px ;
-  background: var(--color-card-bg) ;
+  background: var(--color-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   padding: clamp(1rem, 2vw, 2rem) ;
-  border-radius: 15px ;
-  box-shadow: 0 10px 30px var(--color-shadow-light) ;
+  border-radius: 24px ;
+  box-shadow: var(--glass-shadow);
   margin-bottom: 120px ;
-  border: 1px solid var(--color-border) ;
+  border: 1px solid var(--color-border) !important;
   position: relative ;
   z-index: 1 ;
 }
@@ -114,8 +114,8 @@
 }
 
 .aiBtn {
-  background: linear-gradient(135deg, #6e8efb, #a777e3);
-  color: white;
+  background: var(--btn-bg);
+  color: var(--btn-text);
   border: none;
   padding: 8px 12px;
   border-radius: 10px;
@@ -124,12 +124,12 @@
   align-items: center;
   gap: 6px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(110, 142, 251, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .aiBtn:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(110, 142, 251, 0.4);
+  background-color: var(--btn-hover);
+  transform: translateY(-2px);
 }
 
 .verseText {
@@ -159,8 +159,9 @@
   transform: translateX(-50%) ;
   width: 92% ;
   max-width: 500px ;
-  background: var(--color-bg-start) ;
-  backdrop-filter: blur(15px) ;
+  background: var(--color-card-bg) ;
+  backdrop-filter: blur(var(--glass-blur)) ;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) ;
   padding: 10px 15px ;
   border-radius: 20px ;
   display: flex ;
@@ -239,8 +240,9 @@
   transform: translateX(-50%) ;
   width: 90% ;
   max-width: 400px ;
-  background: var(--color-bg-end) ;
-  backdrop-filter: blur(10px) ;
+  background: var(--color-card-bg) ;
+  backdrop-filter: blur(var(--glass-blur)) ;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) ;
   border-radius: 20px ;
   display: flex ;
   justify-content: space-around ;
@@ -248,7 +250,7 @@
   padding: 8px ;
   z-index: 1000 ;
   border: 1px solid var(--color-border) ;
-  box-shadow: 0 10px 40px var(--color-shadow-medium) ;
+  box-shadow: var(--glass-shadow) ;
 }
 
 .navigation button {
@@ -334,7 +336,9 @@
 }
 .noteModal textarea {
   width: 100% ; height: 120px ; margin: 15px 0 ; padding: 10px ;
-  border-radius: 8px ; border: 1px solid var(--color-border) ; background: rgba(255,255,255,0.05) ; color: white ;
+  border-radius: 8px ; border: 1px solid var(--color-border) ;
+  background: rgba(128, 128, 128, 0.1) ;
+  color: var(--color-text-primary) ;
 }
 .modalActions { display: flex ; gap: 10px ; }
 .saveBtn { background: #4CAF50 ; color: white ; padding: 10px ; flex: 1 ; border-radius: 8px ; border: none ; }
@@ -361,29 +365,28 @@
   align-items: center;
   gap: 12px;
   background: var(--btn-bg);
-  color: var(--btn-text);
-  border: 1px solid #0047ab;
-  border-bottom: 3px solid #0047ab;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 12px 24px;
   border-radius: 12px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .completionBtn:hover {
-  background-color: #2f1e91;
+  background-color: var(--btn-hover);
   transform: translateY(-2px);
 }
 
 .completionBtn:active {
   transform: translateY(1px);
-  border-bottom-width: 1px;
 }
 
 .completionBtn.completed {
   border-color: #4CAF50;
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: rgba(76, 175, 80, 0.2);
   color: #4CAF50;
 }

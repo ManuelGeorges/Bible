@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && next-sitemap",
-    "build:mobile": "NEXT_PUBLIC_EXPORT=true next build && next-sitemap",
+    "build:mobile": "cross-env NEXT_PUBLIC_EXPORT=true next build && next-sitemap",
     "start": "next start",
     "lint": "next lint"
   },
@@ -20,7 +20,7 @@
     "@capacitor/browser": "^8.0.2",
     "@capacitor/core": "^8.2.0",
     "@capacitor/filesystem": "^8.1.2",
-    "@capacitor/ios": "^8.2.0",
+    "@capacitor/ios": "^8.3.4",
     "@capacitor/local-notifications": "^8.0.2",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/push-notifications": "^8.0.2",
@@ -69,6 +69,7 @@
     "@capacitor/cli": "^8.2.0",
     "@eslint/eslintrc": "^3",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",

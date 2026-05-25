@@ -14,6 +14,7 @@ import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
 import { useAudio } from '../context/AudioContext';
 import studyPlansData from '../studyPlans/studyPlansData.json';
+import { getCairoIsoString } from '../../lib/dateUtils';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -103,7 +104,7 @@ export default function BibleContent() {
       bookIndex: bookIdx,
       chapterIndex: chapIdx,
       bookName: bookNamesData[bookIdx].name,
-      timestamp: new Date().toISOString()
+      timestamp: getCairoIsoString()
     };
 
     localStorage.setItem('lastReadLocation', JSON.stringify(lastReadData));
@@ -271,7 +272,7 @@ export default function BibleContent() {
           type: type,
           points: finalAmount,
           reason: reason,
-          timestamp: new Date().toISOString()
+          timestamp: getCairoIsoString()
         })
       });
       if (!isNegative) toast.success(`${reason}: +${amount} نقطة ✨`);
@@ -425,7 +426,7 @@ export default function BibleContent() {
         const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
         if (targetColor) {
           if (!next[key]) newlyAddedCount++;
-          next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: targetColor };
+          next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: targetColor, dateAdded: getCairoIsoString() };
         } else { delete next[key]; }
       });
       if (newlyAddedCount > 0) {
@@ -456,9 +457,10 @@ export default function BibleContent() {
       const next = { ...prev };
       if (!next[targetVerseKey]) {
         const [b, c, v] = targetVerseKey.split('-');
-        next[targetVerseKey] = { text: bibleData[b].chapters[c][v], book: getBookName(b), ch: parseInt(c), v: parseInt(v), color: '#FFC107' };
+        next[targetVerseKey] = { text: bibleData[b].chapters[c][v], book: getBookName(b), ch: parseInt(c), v: parseInt(v), color: '#FFC107', dateAdded: getCairoIsoString() };
       }
       next[targetVerseKey].note = currentNoteText;
+      next[targetVerseKey].noteDate = getCairoIsoString();
       saveToFirestore(next, completedChapters);
       return next;
     });
@@ -539,7 +541,7 @@ export default function BibleContent() {
         ...currentCompletedDays,
         [day]: {
           isCompleted: true,
-          dateCompleted: new Date().toISOString()
+          dateCompleted: getCairoIsoString()
         }
       };
 
@@ -592,6 +594,8 @@ export default function BibleContent() {
       const completedCount = Object.keys(next).filter(k => next[k]).length;
       if (completedCount >= 10) unlockBadge('reader_10');
       if (completedCount >= 50) unlockBadge('reader_50');
+      if (completedCount >= 100) unlockBadge('reader_100');
+      if (completedCount >= 250) unlockBadge('reader_250');
       if (completedCount >= 100) unlockBadge('reader_100');
       if (completedCount >= 250) unlockBadge('reader_250');
       if (completedCount >= 500) unlockBadge('reader_500');

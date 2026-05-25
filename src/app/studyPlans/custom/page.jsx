@@ -7,12 +7,14 @@ import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getCairoIsoString } from '../../../lib/dateUtils';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 if (!apiKey) {
   console.error("Gemini API Key is missing or undefined!");
 }
 const genAI = new GoogleGenerativeAI(apiKey);
+
 export default function CustomPlanForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -118,28 +120,32 @@ export default function CustomPlanForm() {
             return;
         }
 
+        // Check Rate Limit (3 requests per minute)
+        const requestTimes = JSON.parse(localStorage.getItem('aiStudyPlanTimestamps') || '[]');
+        const now = Date.now();
+        const oneMinute = 60000;
+        const recentRequests = requestTimes.filter(time => now - time < oneMinute);
+
+        if (recentRequests.length >= 3) {
+            const oldestInWindow = Math.min(...recentRequests);
+            const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
+            toast.error(`برجاء الانتظار ${remaining} ثانية قبل إنشاء خطة جديدة.`);
+            return;
+        }
+
         setLoading(true);
 
         try {
             const userRef = doc(db, 'users', auth.currentUser.uid);
-            const userSnap = await getDoc(userRef);
 
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const lastGenerated = userData.lastAIGenerated?.toDate();
-                const now = new Date();
-
-                if (lastGenerated && (now - lastGenerated) < 30000) {
-                    const waitTime = Math.ceil((30000 - (now - lastGenerated)) / 1000);
-                    toast.error(`برجاء الانتظار ${waitTime} ثانية.`);
-                    setLoading(false);
-                    return;
-                }
-            }
-
+            // Generate the plan
             const rawPlan = await generatePlanWithAI(formData);
 
             if (rawPlan && rawPlan.readings && rawPlan.readings.length > 0) {
+                // Update local storage timestamps
+                const updatedRequests = [...recentRequests, Date.now()];
+                localStorage.setItem('aiStudyPlanTimestamps', JSON.stringify(updatedRequests));
+
                 const plan = cleanPlanData(rawPlan);
                 const planId = `ai_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
 
@@ -150,7 +156,7 @@ export default function CustomPlanForm() {
                             ...plan,
                             id: planId,
                             type: 'custom',
-                            createdAt: new Date().toISOString(),
+                            createdAt: getCairoIsoString(),
                             completedDays: {},
                             completionPercentage: 0
                         }

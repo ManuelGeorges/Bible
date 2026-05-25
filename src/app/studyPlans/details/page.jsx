@@ -10,6 +10,7 @@ import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from '../../../lib/firebase';
 import toast from 'react-hot-toast';
 import { useBadge } from '../../context/BadgeContext';
+import { getCairoIsoString } from '../../../lib/dateUtils';
 
 const allPlans = studyPlansData.plans;
 
@@ -180,7 +181,7 @@ function PlanDetailsContent() {
     } else {
       newCompletedDays[day] = { 
         isCompleted: true, 
-        dateCompleted: new Date().toISOString() 
+        dateCompleted: getCairoIsoString()
       };
       toast.success("تم التحديد يدوياً");
     }

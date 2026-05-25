@@ -28,15 +28,15 @@
   gap: 8px;
   margin-bottom: 35px;
   position: sticky;
-  top: 75px; /* تم التعديل ليكون أسفل الـ Navbar الرئيسي (70px) */
-  z-index: 999; /* أقل من الـ Navbar الرئيسي لضمان عدم التداخل القبيح */
+  top: 75px;
+  z-index: 999;
   background: var(--color-card-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   padding: 8px;
   border-radius: 60px;
   border: 1px solid var(--color-border);
-  box-shadow: 0 12px 30px var(--color-shadow-medium);
+  box-shadow: var(--glass-shadow);
   width: fit-content;
 }
 
@@ -80,13 +80,15 @@
 
 .pointsSummary {
   background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: 35px;
   border: 1px solid var(--color-border);
   padding: 40px 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 20px 60px var(--color-shadow-medium);
+  box-shadow: var(--glass-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -222,7 +224,9 @@
 
 .goalCard {
   background: var(--color-card-bg);
-  border: 1.5px solid var(--color-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--color-border);
   border-radius: 22px;
   padding: 18px 22px;
   display: flex;
@@ -230,10 +234,11 @@
   gap: 20px;
   transition: all 0.3s ease;
   width: 100%;
+  box-shadow: var(--glass-shadow);
 }
 
 .goalCompleted {
-  background: rgba(16, 185, 129, 0.05);
+  background: rgba(16, 185, 129, 0.15);
   border-color: #10b981;
 }
 
@@ -285,8 +290,8 @@
   align-items: flex-end;
   justify-content: space-around;
   padding: 30px 10px 15px 10px;
-  background: var(--color-border);
-  background-color: rgba(var(--color-accent-rgb), 0.05);
+  background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
   border-radius: 28px;
   border: 1px solid var(--color-border);
 }
@@ -337,6 +342,7 @@
 
 .filterSection {
   background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
   border-radius: 30px;
   padding: 30px;
   border: 1px solid var(--color-border);
@@ -371,7 +377,7 @@
   padding-inline-end: 50px;
   border-radius: 18px;
   border: 1.5px solid var(--color-border);
-  background: var(--color-bg-start);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--color-text-primary);
   outline: none;
   font-weight: 700;
@@ -451,6 +457,7 @@
   width: 100%;
   margin-bottom: 40px;
   background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
   border-radius: 35px;
   padding: 30px;
   border: 1px solid var(--color-border);
@@ -476,9 +483,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--color-bg-start);
+  background: rgba(255, 255, 255, 0.03);
   padding: 20px 15px;
   border-radius: 28px;
+  border: 1px solid var(--color-border);
   transition: all 0.3s ease;
 }
 

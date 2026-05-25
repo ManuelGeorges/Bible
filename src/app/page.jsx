@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import studyPlansData from './studyPlans/studyPlansData.json';
 import Link from 'next/link';
 import { getAuth } from "firebase/auth";
@@ -30,6 +31,7 @@ import ShareVerseCard from '../components/ShareVerseCard';
 import Badge from '../components/Badge/Badge';
 import { useBadge } from './context/BadgeContext';
 import BibleBookSelector from '../components/BibleBookSelector';
+import { getCairoDate, getCairoDateInfo, getCairoYesterday, getCairoIsoString } from '../lib/dateUtils';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -53,50 +55,30 @@ const convertToArabicNumber = (num) => {
     return num.toString().split('').map(d => arabicNums[+d] || d).join('');
 };
 
-const getCairoDateInfo = (date = new Date()) => {
-    try {
-        const formatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Africa/Cairo',
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric'
-        });
-        const parts = formatter.formatToParts(date);
-        const getPart = (type) => parseInt(parts.find(p => p.type === type)?.value);
+const formatReference = (ref) => {
+    if (!ref) return "";
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    // إزالة الأقواس الحالية لتجنب التكرار وللتحكم في الاتجاه يدوياً
+    const cleanRef = ref.replace(/[()]/g, '').trim();
+    const parts = cleanRef.split(' ');
+    if (parts.length < 2) return ref;
 
-        const year = getPart('year');
-        const month = getPart('month');
-        const day = getPart('day');
+    const rawNumbers = parts[parts.length - 1];
+    const bookName = parts.slice(0, -1).join(' ');
 
-        if (isNaN(month) || isNaN(day)) throw new Error("Invalid Date");
-
-        return {
-            year,
-            month,
-            day,
-            key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-        };
-    } catch (e) {
-        // Fallback في حالة فشل Intl على بعض إصدارات iOS القديمة
-        return {
-            year: date.getFullYear(),
-            month: date.getMonth() + 1,
-            day: date.getDate(),
-            key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-        };
+    if (rawNumbers.includes(':')) {
+        const [rawCh, rawV] = rawNumbers.split(':');
+        return `${rlm}(${bookName} ${rawCh}${lrm}:${rlm}${rawV})`;
     }
-};
 
-const getCairoDate = (date = new Date()) => getCairoDateInfo(date).key;
-
-const getCairoYesterday = () => {
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-    return getCairoDate(yesterday);
+    return `${rlm}(${bookName} ${rawNumbers})`;
 };
 
 const LandingPage = () => {
     const router = useRouter();
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
     const { triggerBadgeUnlock } = useBadge();
     const [dailyVerse, setDailyVerse] = useState(null);
     const [dailyQuestion, setDailyQuestion] = useState(null);
@@ -199,6 +181,7 @@ const LandingPage = () => {
 
     // جلب البيانات الأساسية فور التحميل بغض النظر عن حالة المستخدم
     useEffect(() => {
+        setMounted(true);
         fetchDailyContent(null);
         fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
     }, [fetchDailyContent]);
@@ -354,7 +337,7 @@ const LandingPage = () => {
                 type: 'share',
                 points: 10,
                 reason: 'مشاركة آية اليوم من الصفحة الرئيسية',
-                timestamp: new Date().toISOString()
+                timestamp: getCairoIsoString()
             })
         });
         toast.success('أحسنت! تم تسجيل المشاركة اليومية +10 نقاط 📢');
@@ -385,7 +368,7 @@ const LandingPage = () => {
         }
 
         const updatePayload = {
-            [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: new Date().toISOString() },
+            [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: getCairoIsoString() },
             questionStreak: qStreak,
             lastQuestionDate: dateKey
         };
@@ -400,7 +383,7 @@ const LandingPage = () => {
                     type: 'dailyQuestion',
                     points: 20,
                     reason: 'إجابة صحيحة على سؤال اليوم',
-                    timestamp: new Date().toISOString()
+                    timestamp: getCairoIsoString()
                 })
             });
         } else {
@@ -434,12 +417,12 @@ const LandingPage = () => {
 
             const verseData = {
                 text: dailyVerse.verse,
-                reference: cleanRef,
+                reference: formatReference(dailyVerse.reference),
                 book: bookName,
                 ch: convertNumbers(rawCh),
                 v: convertNumbers(rawV),
                 color: '#FFC107',
-                dateAdded: new Date().toISOString()
+                dateAdded: getCairoIsoString()
             };
             newFavs[verseKey] = verseData;
             setFavouriteVerses(newFavs);
@@ -450,7 +433,7 @@ const LandingPage = () => {
                     type: 'favouriteVerse',
                     points: 5,
                     reason: 'تظليل آية اليوم من الصفحة الرئيسية',
-                    timestamp: new Date().toISOString()
+                    timestamp: getCairoIsoString()
                 })
             });
             toast.success('رائع! تمت الإضافة لكنوزك +5 نقاط ⭐');
@@ -551,6 +534,12 @@ const LandingPage = () => {
         return { acquired, near };
     }, [badgesData, rawUserData, userBadges]);
 
+    const formattedDailyRef = useMemo(() => formatReference(dailyVerse?.reference), [dailyVerse]);
+
+    const toggleTheme = () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
+
     return (
         <main className={`${styles.hubContainer} ${styles.rtl}`}>
             <header className={styles.header}>
@@ -562,6 +551,15 @@ const LandingPage = () => {
                         </p>
                     </div>
                     <div className={styles.topActions}>
+                        {mounted && (
+                            <button
+                                onClick={toggleTheme}
+                                className={styles.iconCircle}
+                                aria-label="Toggle Theme"
+                            >
+                                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                            </button>
+                        )}
                         <Link href={user ? "/points" : "/intro"} className={styles.iconCircle}><Award size={20} /></Link>
                         <Link href={user ? "/profile" : "/intro"} className={styles.iconCircle}><User size={20} /></Link>
                         <Link href="/settings" className={styles.iconCircle}><Settings size={20} /></Link>
@@ -759,16 +757,15 @@ const LandingPage = () => {
                     {isLoading ? <div className={styles.skeletonText} /> : (
                         <>
                             <p className={styles.verseText}>"{dailyVerse?.verse}"</p>
-                            <span className={styles.verseRef}>{dailyVerse?.reference}</span>
+                            <span className={styles.verseRef}>{formattedDailyRef}</span>
                             <div className={styles.verseActions}>
                                 <button onClick={() => {
                                     if (!user) { router.push('/intro'); return; }
-                                    const cleanRef = dailyVerse?.reference?.replace(/[()]/g, '').trim();
-                                    navigator.clipboard.writeText(`"${dailyVerse?.verse}" (${cleanRef})`);
+                                    navigator.clipboard.writeText(`"${dailyVerse?.verse}" ${formattedDailyRef}`);
                                     toast.success('تم النسخ');
                                 }} className={`${styles.glassBtn} ${styles.copyBtn}`}>نسخ</button>
                                 <button onClick={toggleFavorite} className={`${styles.glassBtn} ${favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? styles.activeFav : ''}`}>
-                                    {favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? '⭐ مضافة' : '⭐ مفضلة'}
+                                    {favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? 'مظللة' : 'تظليل'}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -790,7 +787,7 @@ const LandingPage = () => {
                                 <div className={styles.fullWidthAction}>
                                     <ShareVerseCard
                                         verse={dailyVerse?.verse}
-                                        reference={dailyVerse?.reference}
+                                        reference={formattedDailyRef}
                                         onShareSuccess={handleShareSuccess}
                                     />
                                 </div>

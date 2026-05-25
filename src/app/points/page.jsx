@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import Badge from '../../components/Badge/Badge';
 import { toast } from 'react-hot-toast';
+import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dateUtils';
 
 const convertToArabicNumber = (num) => {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -41,9 +42,9 @@ const awardPoints = async (userId, type, points, reason) => {
         type,
         points,
         reason,
-        timestamp: new Date()
+        timestamp: getCairoIsoString()
       }),
-      lastActiveDate: new Date().toISOString().split('T')[0]
+      lastActiveDate: getCairoDate()
     });
     return true;
   } catch (error) {
@@ -55,7 +56,7 @@ const awardPoints = async (userId, type, points, reason) => {
 const calculatePointsFromData = (data) => {
   let totalPoints = data.totalPoints || 0;
   const history = [];
-  const today = new Date().toISOString().split('T')[0];
+  const today = getCairoDate();
 
   const POINTS_MAP = {
     dailyLogin: 10,
@@ -77,7 +78,7 @@ const calculatePointsFromData = (data) => {
         points: item.points || POINTS_MAP[item.type] || 0,
         description: item.reason || 'نشاط غير محدد',
         timestamp: ts,
-        dateStr: ts.toISOString().split('T')[0]
+        dateStr: getCairoDate(ts)
       });
     });
   }
@@ -86,18 +87,18 @@ const calculatePointsFromData = (data) => {
     Object.entries(data.answeredQuestions).forEach(([dateKey, q]) => {
       if (q && q.answered) {
         const qTime = q.timestamp || dateKey;
-        const exists = history.some(h => {
-           const hTime = h.timestamp?.toISOString ? h.timestamp.toISOString() : h.timestamp;
-           return hTime === qTime;
-        });
+        const qDateObj = new Date(qTime);
+        const qDateStr = getCairoDate(qDateObj);
+
+        const exists = history.some(h => h.activity === 'dailyQuestion' && h.dateStr === qDateStr);
 
         if (!exists) {
           history.push({
             activity: 'dailyQuestion',
             points: q.correct ? 20 : 0,
             description: q.correct ? `إجابة صحيحة على سؤال يوم ${dateKey}` : `محاولة الإجابة على سؤال يوم ${dateKey}`,
-            timestamp: new Date(qTime),
-            dateStr: new Date(qTime).toISOString().split('T')[0]
+            timestamp: qDateObj,
+            dateStr: qDateStr
           });
         }
       }
@@ -143,15 +144,18 @@ const categorizeActivities = (history) => {
     chartData: []
   };
 
+  // استخدام توقيت القاهرة للأيام السبعة الأخيرة
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    const dateKey = d.toISOString().split('T')[0];
-    return { date: dateKey, points: 0, label: d.toLocaleDateString('ar-EG', { weekday: 'short' }) };
+    const dateKey = getCairoDate(d);
+    // الحصول على اسم اليوم بالعربي بناءً على القاهرة
+    const label = d.toLocaleDateString('ar-EG', { weekday: 'short', timeZone: 'Africa/Cairo' });
+    return { date: dateKey, points: 0, label };
   });
 
   history.forEach(item => {
-    const dateKey = item.timestamp.toISOString().split('T')[0];
+    const dateKey = getCairoDate(item.timestamp);
     const chartDay = last7Days.find(d => d.date === dateKey);
     if (chartDay) chartDay.points += Math.max(0, item.points);
 
@@ -250,7 +254,7 @@ export default function Points() {
           if (docSnap.exists()) {
             const data = docSnap.data();
             const newData = calculatePointsFromData(data);
-            const today = new Date().toISOString().split('T')[0];
+            const today = getCairoDate();
             if (data.lastActiveDate !== today) {
               awardPoints(currentUser.uid, 'dailyLogin', 10, 'تسجيل دخول يومي');
               toast.success('حصلت على ١٠ نقاط لتفاعلك اليوم! 🔥', { icon: '✨' });
@@ -513,7 +517,7 @@ export default function Points() {
                         </div>
                         <div className={styles.activityInfo}>
                           <p>{item.description}</p>
-                          <span>{item.timestamp.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>{item.timestamp.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' })}</span>
                         </div>
                         <span className={styles.activityPoints}>{item.points > 0 ? '+' : ''}{convertToArabicNumber(item.points)}</span>
                       </li>

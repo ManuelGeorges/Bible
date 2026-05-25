@@ -23,6 +23,7 @@ import {
   Map as MapIcon,
   Mountain
 } from 'lucide-react';
+import { getCairoIsoString } from '../../lib/dateUtils';
 
 // تفعيل ميزة النصوص العربية بشكل آمن لتجنب التكرار
 if (typeof window !== 'undefined') {
@@ -116,7 +117,7 @@ export default function MapsPage() {
           type: 'mapExploration',
           points: amount,
           reason: reason,
-          timestamp: new Date().toISOString()
+          timestamp: getCairoIsoString()
         })
       });
       toast.success(`+${amount} نقطة: ${reason}`);

@@ -199,7 +199,7 @@
   width: 100%;
   max-width: 800px;
   margin-inline: auto;
-  z-index: 100;
+  z-index: 1001;
   position: relative;
 }
 

@@ -1,15 +1,23 @@
 workflows:
-  ios-simulator-build:
-    name: Build iOS for Appetize.io
+  ios-release:
+    name: Build iOS Release (IPA)
     max_build_duration: 60
     instance_type: mac_mini_m1
-    
+    environment:
+      groups:
+        # يجب عليك إضافة مجموعة باسم apple_auth في Codemagic UI تحتوي على:
+        # APP_STORE_CONNECT_PRIVATE_KEY, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID
+        - apple_auth 
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.agios.bible"
+
     triggering:
       events:
         - push
       branch_patterns:
         - pattern: 'main'
-        - pattern: 'master'
 
     scripts:
       - name: Install Dependencies
@@ -20,38 +28,60 @@ workflows:
 
       - name: Capacitor Sync
         script: |
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
-          npx cap update ios
           npx cap sync ios
 
+      - name: Set up Keychain
+        script: keychain initialize
+
+      - name: Fetch Certificates and Provisioning Profiles
+        script: |
+          # هذه الأداة تجلب شهادات التوزيع والـ Provisioning Profiles من آبل تلقائياً
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --configuration Release
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+  ios-simulator-build:
+    name: Build iOS for Appetize.io
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+    scripts:
+      - name: Install Dependencies
+        script: npm install
+      - name: Build Next.js Static Export
+        script: npm run build:mobile
+      - name: Capacitor Sync
+        script: npx cap sync ios
       - name: Build iOS App for Simulator
         script: |
-          xcodebuild clean -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator
-          
           xcodebuild -project ios/App/App.xcodeproj \
                      -scheme App \
                      -sdk iphonesimulator \
                      -destination 'generic/platform=iOS Simulator' \
                      -configuration Debug \
                      -derivedDataPath build \
-                     CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO \
-                     COMPILER_INDEX_STORE_ENABLE=NO \
-                     ONLY_ACTIVE_ARCH=NO
-
+                     CODE_SIGNING_ALLOWED=NO
       - name: Prepare for Appetize.io
         script: |
           mkdir -p build-output
           APP_PATH=$(find build/Build/Products -name "App.app" -type d | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: App.app not found!"
-            exit 1
-          fi
           cp -R "$APP_PATH" build-output/
           cd build-output
           zip -r ../ios-simulator-app.zip App.app
-
     artifacts:
       - ios-simulator-app.zip
