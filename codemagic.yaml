@@ -50,11 +50,23 @@ workflows:
             sed -i '' 's/.iOS(.v[0-9]*)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
           fi
           
-          # 2. Set Signing to Manual so Codemagic can manage it via API
+          # 2. Set Signing to Manual
           sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           
-          # 3. Fix Entitlements path
+          # 3. Inject SystemCapabilities using Python for precision
+          # This tells Xcode that Push and Apple Sign In are officially requested
+          python3 -c "
+          import os
+          path = 'ios/App/App.xcodeproj/project.pbxproj'
+          with open(path, 'r') as f: content = f.read()
+          cap_block = 'SystemCapabilities = { com.apple.Push = { enabled = 1; }; com.apple.AppleSignIn = { enabled = 1; }; };'
+          if 'SystemCapabilities' not in content:
+              content = content.replace('ProvisioningStyle = Manual;', f'ProvisioningStyle = Manual; {cap_block}')
+              with open(path, 'w') as f: f.write(content)
+          "
+          
+          # 4. Fix Entitlements path
           sed -i '' 's|CODE_SIGN_ENTITLEMENTS = [^;]*;|CODE_SIGN_ENTITLEMENTS = App/App.entitlements;|g' ios/App/App.xcodeproj/project.pbxproj
 
       - name: Set up Keychain
@@ -62,8 +74,8 @@ workflows:
 
       - name: Fetch Profiles and Code Sign
         script: |
-          # This will automatically create profiles with Push/Apple Sign-in capabilities
-          xcode-project use-profiles
+          # Use the bundle ID explicitly to ensure the API fetches the correct profile
+          xcode-project use-profiles --bundle-id "$BUNDLE_ID"
 
       - name: Build IPA for TestFlight
         script: |
