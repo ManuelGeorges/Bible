@@ -30,7 +30,6 @@ workflows:
       - name: Codemagic Code Signing
         script: |
           keychain initialize
-          # سيستخدم المتغيرات التي أضفتها أنت في ios-secrets تلقائياً
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
@@ -43,8 +42,8 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        # قمنا باستبدال auth: integration بالمتغيرات التي أضفتها يدوياً
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        # وضعنا المعرفات مباشرة لتخطي خطأ الـ Validation
+        issuer_id: f458a0dc-007e-4a1b-88d9-40b42981095d
+        key_id: RRT834L4Z8
         private_key: $APP_STORE_CONNECT_PRIVATE_KEY
         submit_to_testflight: true
