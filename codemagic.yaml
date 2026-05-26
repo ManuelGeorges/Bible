@@ -102,10 +102,6 @@ workflows:
 
           echo "=== Fixing API key format ==="
           printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
-          cat /tmp/asc_key.p8
-          echo "---"
-          echo "File size: $(wc -c < /tmp/asc_key.p8) bytes"
-          echo "Line count: $(wc -l < /tmp/asc_key.p8)"
 
           echo "=== Fetching signing files ==="
           APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
@@ -118,79 +114,12 @@ workflows:
 
           keychain add-certificates
 
-          echo "=== Profiles folder ==="
-          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          ls -la "$PROFILES_DIR" || echo "❌ No profiles folder"
-
-          echo "=== Profile details ==="
-          for f in "$PROFILES_DIR"/*.mobileprovision; do
-            echo "--- $f ---"
-            security cms -D -i "$f" | grep -E "Name|UUID|TeamIdentifier|aps-environment|com.apple.developer.applesignin" -A1
-          done
-
-          echo "=== Certificates ==="
-          security find-identity -v -p codesigning
-
-          echo "=== Extracting UUID ==="
-          PROFILE_PATH=$(ls "$PROFILES_DIR"/*.mobileprovision 2>/dev/null | head -1)
-          if [ -z "$PROFILE_PATH" ]; then
-            echo "❌ No .mobileprovision file found!"
-            exit 1
-          fi
-
-          PROFILE_UUID=$(python3 -c "
-          import plistlib, subprocess
-          out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH'])
-          p = plistlib.loads(out)
-          print(p['UUID'])
-          ")
-
-          echo "✅ Profile UUID: $PROFILE_UUID"
-          echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV        script: |
-          echo "=== Checking env vars ==="
-          echo "ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID"
-          echo "KEY_ID: $APP_STORE_CONNECT_KEY_IDENTIFIER"
-          echo "PRIVATE_KEY length: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
-
-          echo "=== Generating private key ==="
-          openssl genrsa -out /tmp/cert_key.pem 2048
-          openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
-            -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
-          echo "✅ Private key generated"
-
-          echo "=== Writing API key to file ==="
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
-          echo "API key file size: $(wc -c < /tmp/asc_key.p8) bytes"
-
-          echo "=== Fetching signing files ==="
-          app-store-connect fetch-signing-files \
-            "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key @file:/tmp/cert_key_pkcs8.pem \
-            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key @file:/tmp/asc_key.p8 \
-            --create \
-            --delete        script: |
-          echo "=== Generating private key ==="
-          openssl genrsa -out /tmp/cert_key.pem 2048
-          openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
-            -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
-          echo "✅ Private key generated"
-
-          echo "=== Fetching signing files ==="
-          app-store-connect fetch-signing-files \
-            "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key @file:/tmp/cert_key_pkcs8.pem \
-            --create \
-            --delete
-
-          keychain add-certificates
-
-          echo "=== Profiles folder ==="
-          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          ls -la "$PROFILES_DIR" || echo "❌ No profiles folder"
+          echo "=== Searching all profile locations ==="
+          PROFILES_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          echo "Xcode UserData:"
+          ls -la "$PROFILES_DIR" 2>/dev/null || echo "❌ Not found"
+          echo "MobileDevice:"
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" 2>/dev/null || echo "❌ Not found"
 
           echo "=== Profile details ==="
           for f in "$PROFILES_DIR"/*.mobileprovision; do
