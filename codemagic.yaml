@@ -118,6 +118,8 @@ workflows:
           PROFILES_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
           echo "Xcode UserData:"
           ls -la "$PROFILES_DIR" 2>/dev/null || echo "❌ Not found"
+          echo "MobileDevice:"
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" 2>/dev/null || echo "❌ Not found"
 
           echo "=== Profile details ==="
           for f in "$PROFILES_DIR"/*.mobileprovision; do
@@ -155,9 +157,6 @@ workflows:
           IPA_DIR="$CM_BUILD_DIR/ipa"
           mkdir -p "$IPA_DIR"
 
-          KEYCHAIN_PATH=$(ls "$HOME/Library/codemagic-cli-tools/keychains/"*.keychain-db 2>/dev/null | head -1)
-          echo "Keychain: $KEYCHAIN_PATH"
-
           echo "=== Archiving ==="
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
@@ -170,7 +169,8 @@ workflows:
             PROVISIONING_PROFILE="$PROFILE_UUID" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH"
+            -allowProvisioningUpdates \
+            OTHER_CODE_SIGN_FLAGS="--keychain $HOME/Library/codemagic-cli-tools/keychains/$(ls $HOME/Library/codemagic-cli-tools/keychains/ | head -1)"
 
           echo "=== Exporting IPA ==="
           cat > /tmp/ExportOptions.plist << EOF
@@ -182,6 +182,61 @@ workflows:
             <string>app-store-connect</string>
             <key>teamID</key>
             <string>$TEAM_ID</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$BUNDLE_ID</key>
+              <string>$PROFILE_UUID</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$IPA_DIR" \
+            -exportOptionsPlist /tmp/ExportOptions.plist
+
+          echo "=== IPA output ==="
+          ls -la "$IPA_DIR"
+
+        script: |
+          echo "=== Build environment ==="
+          echo "PROFILE_UUID: $PROFILE_UUID"
+          echo "TEAM_ID: $TEAM_ID"
+
+          ARCHIVE_PATH="$CM_BUILD_DIR/App.xcarchive"
+          IPA_DIR="$CM_BUILD_DIR/ipa"
+          mkdir -p "$IPA_DIR"
+
+          echo "=== Archiving ==="
+          xcodebuild archive \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE="$PROFILE_UUID" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+          echo "=== Exporting IPA ==="
+          cat > /tmp/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>$TEAM_ID</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
             <key>signingStyle</key>
             <string>manual</string>
             <key>provisioningProfiles</key>
