@@ -32,17 +32,18 @@ workflows:
       - name: Codemagic Code Signing
         script: |
           keychain initialize
-          # جلب ملفات التوقيع (الشهادات والبروفايلات) التي تدعم الميزات المفعّلة في حسابك
+          # جلب ملفات التوقيع. أضفنا --create لضمان تحديث الميزات (Push & Sign In)
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
-          # إجبار Xcode على استخدام التوقيع اليدوي والبروفايلات التي جلبناها
+          # تحديث المشروع لاستخدام البروفايلات المجلوبة
           xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
-          # بناء الـ IPA (سيستخدم الإعدادات من الخطوة السابقة تلقائياً)
+          # بناء الـ IPA مع تمرير ملف الـ Entitlements بشكل صريح لحل مشكلة الـ Capabilities
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags "CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
