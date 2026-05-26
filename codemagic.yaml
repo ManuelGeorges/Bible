@@ -36,38 +36,33 @@ workflows:
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. إنشاء الشهادة والبروفايل بكلمة سر لضمان فك التشفير
-          export CERT_PASS="codemagic"
-          app-store-connect certificates create --type IOS_DISTRIBUTION --save --password "$CERT_PASS"
+          # 2. جلب التوقيع المحدث من أبل (سيقوم بإنشاء الشهادة والبروفايل تلقائياً)
+          # حذفنا الباسوورد هنا لتجنب خطأ unrecognized arguments
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          
-          # استيراد الشهادة يدوياً باستخدام كلمة السر لضمان قبولها في الـ Keychain
-          find ~/Library -name "*.p12" -exec security import {} -k "$CM_KEYCHAIN_PATH" -P "$CERT_PASS" -A \;
           keychain add-certificates
           
-          # 3. استخراج الـ UUID بعد فك تشفير البروفايل
+          # 3. استخراج الـ UUID بعد فك التشفير (للتأكد فقط)
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
           security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
           PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
-          echo "تم استخراج UUID بنجاح: $PROV_UUID"
+          echo "تم تجهيز البروفايل: $PROV_UUID"
           
-          # 4. تحديث المشروع برمجياً بشكل "جذري" (تطهير شامل)
-          # استبدال كل الهويات القديمة بـ Apple Distribution وحقن الـ Team ID لضمان المطابقة
+          # 4. تطهير ملف المشروع برمجياً (تغيير كل المسميات القديمة لـ Apple Distribution)
+          # هذه الخطوة ستحل مشكلة تعارض الهويات (iPhone vs Apple)
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/iPhone Distribution/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/iPhone Developer/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
           
-          # ربط البروفايل الجديد بالمشروع
+          # 5. ربط البروفايلات بالمشروع بشكل آلي
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 5. بناء الـ IPA النهائي
-          # نمرر الهوية Apple Distribution والـ UUID بشكل صريح جداً لقطع الطريق على أي تضارب
+          # 6. بناء الـ IPA النهائي
+          # سنترك الأداة تستخدم الإعدادات التي حقناها في المشروع لضمان عدم وجود أعلام متعارضة في السجل
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE=$PROV_UUID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
+            --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
