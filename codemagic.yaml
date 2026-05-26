@@ -47,8 +47,7 @@ workflows:
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
 
-          content = re.sub(r'ProvisioningStyle = [^;]*;', 'ProvisioningStyle = Manual;', content)
-          content = re.sub(r'CODE_SIGN_STYLE = [^;]*;', 'CODE_SIGN_STYLE = Manual;', content)
+          content = re.sub(r'CODE_SIGN_STYLE = Automatic;', 'CODE_SIGN_STYLE = Manual;', content)
 
           team_id = '$TEAM_ID'
           content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
@@ -77,8 +76,9 @@ workflows:
           with open(path, 'w') as f: f.write(content)
           "
 
-          # Remove hardcoded provisioning profile specifiers so SPM packages don't inherit them
+          # Remove all hardcoded provisioning profile settings - xcconfig will handle it
           sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' "$PROJECT_FILE"
+          sed -i '' '/PROVISIONING_PROFILE = /d' "$PROJECT_FILE"
 
           if [ -f "$ENT_FILE" ]; then
             sed -i '' 's/development/production/g' "$ENT_FILE"
@@ -161,6 +161,16 @@ workflows:
           IPA_DIR="$CM_BUILD_DIR/ipa"
           mkdir -p "$IPA_DIR"
 
+          # xcconfig applies signing only to targets that respect it (main app)
+          # SPM packages ignore xcconfig and use automatic signing
+          cat > /tmp/signing.xcconfig << EOF
+          CODE_SIGN_STYLE = Manual
+          CODE_SIGN_IDENTITY = Apple Distribution
+          DEVELOPMENT_TEAM = $TEAM_ID
+          PROVISIONING_PROFILE = $PROFILE_UUID
+          PROVISIONING_PROFILE_SPECIFIER =
+          EOF
+
           echo "=== Archiving ==="
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
@@ -168,14 +178,11 @@ workflows:
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
+            -xcconfig /tmp/signing.xcconfig \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE="$PROFILE_UUID" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
             -skipPackagePluginValidation \
-            -skipPackageSignatureValidation
+            -skipPackageSignatureValidation \
+            ONLY_ACTIVE_ARCH=NO
 
           echo "=== Exporting IPA ==="
           cat > /tmp/ExportOptions.plist << EOF
