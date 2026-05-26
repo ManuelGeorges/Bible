@@ -36,43 +36,39 @@ workflows:
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. إنشاء الشهادة والبروفايل بكلمة سر موحدة
+          # 2. إنشاء الشهادة والبروفايل (الأوامر المحدثة)
           export CERT_PASS="codemagic"
           app-store-connect certificates create --type IOS_DISTRIBUTION --save --password "$CERT_PASS"
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           
-          # 3. استيراد الشهادة يدوياً (لأن keychain add-certificates لا تدعم --password)
-          find ~/Library -name "*.p12" | while read cert; do
-            security import "$cert" -k "$CM_KEYCHAIN_PATH" -P "$CERT_PASS" -A
-          done
-          keychain add-certificates
+          # استيراد الشهادات بكلمة السر لضمان فك التشفير
+          keychain add-certificates --password "$CERT_PASS"
           
-          # 4. استخراج الـ UUID بعد فك تشفير البروفايل
+          # 3. استخراج الـ UUID والتحقق من الميزات
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
           security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
           PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
           
-          # استخراج اسم الهوية (Identity) الحقيقي من الـ Keychain
-          CERT_NAME=$(security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" | grep "Distribution" | sed -E 's/.*"([^"]+)".*/\1/' | head -n 1)
+          echo "تم استخراج UUID: $PROV_UUID"
+          echo "تحليل صلاحيات البروفايل:"
+          /usr/libexec/PlistBuddy -c "Print :Entitlements" /tmp/profile.plist
           
-          # إذا لم يجد السكربت الاسم، سنضع اسماً افتراضياً لضمان عدم بقاء الخانة فارغة
-          if [ -z "$CERT_NAME" ]; then CERT_NAME="Apple Distribution"; fi
-          
-          echo "UUID المستخرج: $PROV_UUID"
-          echo "الهوية المستخرجة: $CERT_NAME"
-          
-          # 5. تحديث المشروع برمجياً لإجبار Xcode على التوقيع اليدوي
+          # 4. تحديث المشروع برمجياً بشكل "جذري"
+          # استبدال كل الهويات القديمة بـ Apple Distribution وحقن الـ Team ID
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/CODE_SIGN_IDENTITY = \"[^\"]*\";/CODE_SIGN_IDENTITY = \"Apple Distribution\";/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/\"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]\" = \"[^\"]*\";/\"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]\" = \"Apple Distribution\";/g" "$XCODE_PROJECT/project.pbxproj"
           
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 6. بناء الـ IPA النهائي
+          # 5. بناء الـ IPA النهائي
+          # سنترك xcode-project يستخدم الإعدادات التي حقناها في الخطوة السابقة
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE=$PROV_UUID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='$CERT_NAME' CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE=$PROV_UUID CODE_SIGN_IDENTITY='Apple Distribution'"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
