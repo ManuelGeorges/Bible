@@ -1,5 +1,5 @@
 workflows:
-ios-testflight:
+  ios-testflight:
     name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m1
@@ -46,7 +46,7 @@ ios-testflight:
           echo "PROV_UUID=$PROV_UUID" >> $CM_ENV
           echo "TEAM_ID=$TEAM_ID" >> $CM_ENV
           
-          # إصلاح ملف المشروع برمجياً لإجبار Xcode على استخدام التوقيع اليدوي والـ Team الصحيح
+          # إصلاح ملف المشروع برمجياً لإجبار Xcode على استخدام التوقيع اليدوي
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           
@@ -54,7 +54,7 @@ ios-testflight:
           xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
-          # بناء الـ IPA مع تمرير كل المعرفات بشكل صريح لقطع الطريق على أي خطأ
+          # بناء الـ IPA مع تمرير المعرفات لضمان مطابقة الـ Capabilities
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
