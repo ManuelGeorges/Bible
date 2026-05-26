@@ -10,7 +10,6 @@ import {
   signInWithCredential,
   signInWithPopup
 } from 'firebase/auth';
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
 import { auth } from '../../lib/firebase';
 import styles from './login.module.css';
@@ -22,8 +21,6 @@ const LoginPage = () => {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-
-  const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -65,24 +62,10 @@ const LoginPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({
-          webClientId: WEB_CLIENT_ID,
-        });
-        const idToken = result.credential?.idToken;
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
-          await signInWithCredential(auth, credential);
-        } else {
-          throw new Error("No ID Token");
-        }
-      } else {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      }
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (err) {
-      console.error("Google Auth Error:", err);
-      setError('فشل تسجيل الدخول بواسطة جوجل. تأكد من إعدادات الخدمة.');
+      setError('فشل تسجيل الدخول بواسطة جوجل.');
       setIsSubmitting(false);
     }
   };
@@ -92,23 +75,9 @@ const LoginPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
-        const idToken = result.credential?.idToken;
-        const rawNonce = result.credential?.rawNonce;
-        if (idToken) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({ idToken, rawNonce });
-          await signInWithCredential(auth, credential);
-        } else {
-          throw new Error("No ID Token");
-        }
-      } else {
-        const provider = new OAuthProvider('apple.com');
-        await signInWithPopup(auth, provider);
-      }
+      const provider = new OAuthProvider('apple.com');
+      await signInWithPopup(auth, provider);
     } catch (err) {
-      console.error("Apple Auth Error:", err);
       setError('فشل تسجيل الدخول بواسطة آبل');
       setIsSubmitting(false);
     }

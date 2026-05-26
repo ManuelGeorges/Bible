@@ -1,16 +1,13 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { 
-  getAuth, 
-  initializeAuth, 
-  browserLocalPersistence 
-} from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { 
   initializeFirestore, 
-  memoryLocalCache 
+  persistentLocalCache, 
+  persistentMultipleTabManager 
 } from "firebase/firestore";
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
-import { Capacitor } from '@capacitor/core';
 
+// إعدادات Firebase - تم تحديث الـ API Key ليتطابق مع إعدادات المشروع
 const firebaseConfig = {
   apiKey: "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
   authDomain: "profiles-system.firebaseapp.com",
@@ -21,15 +18,27 @@ const firebaseConfig = {
   measurementId: "G-Q42KEXNB3L"
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const initializeFirebase = () => {
+  if (getApps().length > 0) return getApp();
+  try {
+    return initializeApp(firebaseConfig);
+  } catch (error) {
+    console.error("Firebase Initialization Error:", error);
+    return null;
+  }
+};
 
-export const auth = initializeAuth(app, {
-  persistence: [browserLocalPersistence]
-});
+const app = initializeFirebase();
 
-export const db = initializeFirestore(app, {
-  localCache: memoryLocalCache()
-});
+// تصدير الخدمات بشكل آمن
+export const auth = app ? getAuth(app) : null;
+export const db = app ? initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+}) : null;
+
+export { app };
 
 let remoteConfigInstance = null;
 export const getFirebaseRemoteConfig = async () => {
@@ -44,5 +53,3 @@ export const getFirebaseRemoteConfig = async () => {
     } catch (e) { console.error(e); }
     return null;
 };
-
-export { app };

@@ -8,11 +8,9 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
   onAuthStateChanged,
-  signInWithCredential,
   updateProfile
 } from 'firebase/auth';
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { Capacitor } from '@capacitor-core';
+import { Capacitor } from '@capacitor/core';
 import { auth } from '../../lib/firebase';
 import styles from './signup.module.css';
 import { Apple } from 'lucide-react';
@@ -28,13 +26,10 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && !isSubmitting) {
-        // توجيه كخطة احتياطية إذا كان المستخدم مسجلاً بالفعل
-        router.replace('/');
-      }
+      if (user) router.replace('/');
     });
     return () => unsubscribe();
-  }, [router, isSubmitting]);
+  }, [router]);
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
@@ -60,10 +55,7 @@ export default function SignUpPage() {
       await updateProfile(userCredential.user, {
         displayName: `${firstName} ${lastName}`
       });
-      // التوجيه المباشر يحل مشكلة التعليق في iOS
-      router.replace('/');
     } catch (err) {
-      console.error("Signup Error:", err);
       setError(translateError(err.code));
       setIsSubmitting(false);
     }
@@ -74,25 +66,9 @@ export default function SignUpPage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({
-          webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
-        });
-        const idToken = result.credential?.idToken;
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
-          await signInWithCredential(auth, credential);
-          router.replace('/');
-        } else {
-          setIsSubmitting(false);
-        }
-      } else {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        router.replace('/');
-      }
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (err) {
-      console.error("Google Auth Error:", err);
       setError('فشل التسجيل بواسطة جوجل');
       setIsSubmitting(false);
     }
@@ -103,25 +79,9 @@ export default function SignUpPage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
-        const idToken = result.credential?.idToken;
-        const rawNonce = result.credential?.rawNonce;
-        if (idToken) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({ idToken, rawNonce });
-          await signInWithCredential(auth, credential);
-          router.replace('/');
-        } else {
-          setIsSubmitting(false);
-        }
-      } else {
-        const provider = new OAuthProvider('apple.com');
-        await signInWithPopup(auth, provider);
-        router.replace('/');
-      }
+      const provider = new OAuthProvider('apple.com');
+      await signInWithPopup(auth, provider);
     } catch (err) {
-      console.error("Apple Auth Error:", err);
       setError('فشل التسجيل بواسطة آبل');
       setIsSubmitting(false);
     }
@@ -148,22 +108,14 @@ export default function SignUpPage() {
 
         <div className={styles.socialButtons}>
           <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
-            {isSubmitting ? <span>...</span> : (
-              <>
-                <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-                <span>جوجل</span>
-              </>
-            )}
+            <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+            <span>جوجل</span>
           </button>
 
           {Capacitor.getPlatform() !== 'android' && (
             <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
-              {isSubmitting ? <span>...</span> : (
-                <>
-                  <Apple size={20} />
-                  <span>آبل</span>
-                </>
-              )}
+              <Apple size={20} />
+              <span>آبل</span>
             </button>
           )}
         </div>
