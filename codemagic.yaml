@@ -32,31 +32,37 @@ workflows:
           agvtool new-version -all $(($BUILD_NUMBER + 100))
       - name: Build and Sign IPA
         script: |
+          # 1. تهيئة الـ Keychain وتنظيف أي ملفات قديمة
           keychain initialize
-          rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
+          find ~/Library -name "*.mobileprovision" -delete
           
-          # جلب أو إنشاء الشهادات والبروفايلات (الأوامر المحدثة)
+          # 2. إنشاء الشهادة وجلب البروفايلات (الأوامر المحدثة)
           app-store-connect certificates create --type IOS_DISTRIBUTION --save
-          app-store-connect profiles create --bundle-id "$BUNDLE_ID" --type IOS_APP_STORE --name "Agios Bible TestFlight" --save
           
+          # هذا الأمر سيقوم بإنشاء البروفايل وربطه بالشهادة الجديدة تلقائياً
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          
           keychain add-certificates
           
-          # استخراج UUID البروفايل الجديد
-          PROV_PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
+          # 3. استخراج الـ UUID (البحث في كل المسارات الممكنة التي قد تحفظ فيها الأداة الملف)
+          PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
+          
           if [ -z "$PROV_PROFILE" ]; then
-            echo "خطأ: فشل جلب البروفايل. تأكد من تحديث الـ Key ID الجديد في Codemagic."
+            echo "خطأ: لم يتم العثور على بروفايل التوقيع في السيرفر!"
             exit 1
           fi
-          PROV_UUID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin)
           
-          # إجبار Xcode على التوقيع اليدوي وحقن الـ Team ID
+          echo "تم العثور على البروفايل في: $PROV_PROFILE"
+          PROV_UUID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin)
+          echo "UUID المستخرج: $PROV_UUID"
+          
+          # 4. تحديث إعدادات المشروع برمجياً للتوقيع اليدوي وربط الـ Team ID
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
           
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # بناء الـ IPA
+          # 5. بناء الـ IPA مع تمرير المعرفات بشكل صريح لقطع الطريق على أي خطأ
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
