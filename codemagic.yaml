@@ -32,18 +32,23 @@ workflows:
       - name: Codemagic Code Signing
         script: |
           keychain initialize
-          # جلب ملفات التوقيع. أضفنا --create لضمان تحديث الميزات (Push & Sign In)
+          # 1. مسح أي بروفايلات قديمة مخزنة في السيرفر
+          rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
+          
+          # 2. إنشاء وجلب بروفايل جديد (بما أننا حذفنا القديم يدوياً من موقع أبل، سيقوم بإنشاء واحد نظيف يدعم Push و Sign In)
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          
           keychain add-certificates
-          # تحديث المشروع لاستخدام البروفايلات المجلوبة
+          
+          # 3. إجبار المشروع على استخدام التوقيع اليدوي والبروفايلات الجديدة
           xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
-          # بناء الـ IPA مع تمرير ملف الـ Entitlements بشكل صريح لحل مشكلة الـ Capabilities
+          # بناء الـ IPA مع التأكيد على أن التوقيع يدوي ليتوافق مع البروفايل المجلوب
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
+            --archive-flags "CODE_SIGN_STYLE=Manual"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
