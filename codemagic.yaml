@@ -73,7 +73,7 @@ workflows:
 
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
-          # Remove ALL provisioning profile references so nothing bleeds into SPM packages
+          # Remove ALL provisioning profile references
           content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE_SPECIFIER[^;]*;', '', content)
 
@@ -88,7 +88,9 @@ workflows:
           grep "DEVELOPMENT_TEAM" "$PROJECT_FILE" | head -3
           grep "CODE_SIGN_STYLE" "$PROJECT_FILE" | head -3
           grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
-          grep "PROVISIONING_PROFILE" "$PROJECT_FILE" && echo "⚠️ PROVISIONING_PROFILE still present!" || echo "✅ No PROVISIONING_PROFILE in project file"
+          echo "=== PROVISIONING_PROFILE check ==="
+          grep -n "PROVISIONING_PROFILE" "$PROJECT_FILE" || echo "✅ Clean - no PROVISIONING_PROFILE found"
+          grep -n "1779791972" "$PROJECT_FILE" || echo "✅ Old profile UUID not found"
           grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities NOT found"
           echo "=== Entitlements file ==="
           cat "$ENT_FILE" || echo "❌ Entitlements file not found"
@@ -151,6 +153,11 @@ workflows:
 
           echo "✅ Profile UUID: $PROFILE_UUID"
           echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
+
+      - name: Clear Xcode DerivedData
+        script: |
+          rm -rf ~/Library/Developer/Xcode/DerivedData
+          echo "✅ DerivedData cleared"
 
       - name: Build IPA for TestFlight
         script: |
