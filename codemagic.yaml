@@ -32,33 +32,35 @@ workflows:
           agvtool new-version -all $(($BUILD_NUMBER + 100))
       - name: Build and Sign IPA
         script: |
-          # 1. تهيئة الـ Keychain وتنظيف الملفات القديمة
+          # 1. تهيئة الـ Keychain وتنظيف السيرفر
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. جلب ملفات التوقيع (الشهادات والبروفايلات)
-          # سنكتفي بـ fetch-signing-files لأنها تقوم بإنشاء الشهادة والبروفايل تلقائياً إذا لزم الأمر
+          # 2. إنشاء الشهادة والبروفايل (الأوامر الجديدة)
+          app-store-connect certificates create --type IOS_DISTRIBUTION --save
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
-          # 3. استخراج الـ UUID بطريقة مضمونة 100% (باستخدام grep)
+          # 3. استخراج الـ UUID بطريقة احترافية (فك التشفير ثم القراءة)
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
           if [ -z "$PROV_PROFILE" ]; then
             echo "خطأ: لم يتم العثور على بروفايل التوقيع!"
             exit 1
           fi
           
-          # استخراج الـ UUID باستخدام البحث عن النمط (36 حرف) لضمان عدم حدوث خطأ قراءة
-          PROV_UUID=$(grep -a -A1 "UUID" "$PROV_PROFILE" | grep -oE "[-A-Z0-9]{36}" | head -n 1)
+          # فك تشفير الملف وحفظه كـ XML لسهولة القراءة
+          security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
+          PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
+          
           echo "تم استخراج UUID بنجاح: $PROV_UUID"
           
-          # 4. تحديث إعدادات المشروع برمجياً للتوقيع اليدوي وربط الـ Team ID
+          # 4. تحديث إعدادات المشروع برمجياً
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
           
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 5. بناء الـ IPA النهائي مع تمرير المعرفات بشكل صريح
+          # 5. بناء الـ IPA مع تمرير كل شيء لـ Xcode بشكل صريح
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
