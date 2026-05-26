@@ -24,6 +24,11 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  // دالة مساعدة لإظهار رسالة للمستخدم (تنبيه)
+  const showAlert = (msg) => {
+    if (typeof window !== 'undefined') alert(msg);
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
@@ -31,32 +36,29 @@ export default function SignUpPage() {
     return () => unsubscribe();
   }, [router]);
 
-  const translateError = (code) => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'لا يوجد اتصال بالإنترنت. يرجى المحاولة لاحقاً.';
-    }
-    switch (code) {
-      case 'auth/email-already-in-use': return 'هذا البريد الإلكتروني مسجل بالفعل.';
-      case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
-      case 'auth/weak-password': return 'كلمة المرور ضعيفة (6 أحرف على الأقل).';
-      case 'auth/network-request-failed': return 'خطأ في الاتصال بالشبكة.';
-      default: return 'حدث خطأ، حاول مرة أخرى.';
-    }
-  };
-
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
+    
     setError(null);
     setIsSubmitting(true);
+    showAlert("بدء عملية التسجيل...");
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      showAlert("تم إنشاء الحساب في Firebase، جاري تحديث الاسم...");
+      
       await updateProfile(userCredential.user, {
         displayName: `${firstName} ${lastName}`
       });
+      
+      showAlert("تمت العملية بنجاح! جاري التوجيه للرئيسية...");
+      window.location.replace('/');
     } catch (err) {
-      setError(translateError(err.code));
+      const msg = `خطأ في التسجيل: ${err.message || err.code}`;
+      showAlert(msg);
+      setError(msg);
       setIsSubmitting(false);
     }
   };
@@ -65,11 +67,17 @@ export default function SignUpPage() {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    showAlert("جاري فتح نافذة جوجل...");
+
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      showAlert("تم نجاح تسجيل الدخول بجوجل!");
+      window.location.replace('/');
     } catch (err) {
-      setError('فشل التسجيل بواسطة جوجل');
+      const msg = `خطأ جوجل: ${err.message}`;
+      showAlert(msg);
+      setError(msg);
       setIsSubmitting(false);
     }
   };
@@ -78,11 +86,17 @@ export default function SignUpPage() {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    showAlert("جاري فتح نافذة آبل...");
+
     try {
       const provider = new OAuthProvider('apple.com');
       await signInWithPopup(auth, provider);
+      showAlert("تم نجاح تسجيل الدخول بآبل!");
+      window.location.replace('/');
     } catch (err) {
-      setError('فشل التسجيل بواسطة آبل');
+      const msg = `خطأ آبل: ${err.message}`;
+      showAlert(msg);
+      setError(msg);
       setIsSubmitting(false);
     }
   };
@@ -100,7 +114,7 @@ export default function SignUpPage() {
           <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           {error && <div className={styles.errorBox}>{error}</div>}
           <button type="submit" className={styles.button} disabled={isSubmitting}>
-            {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
+            {isSubmitting ? 'جاري التنفيذ...' : 'إنشاء حساب'}
           </button>
         </form>
 

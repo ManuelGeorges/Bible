@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  OAuthProvider,
   onAuthStateChanged,
-  signInWithCredential,
-  signInWithPopup
+  signInWithPopup,
+  OAuthProvider
 } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
 import { auth } from '../../lib/firebase';
@@ -22,6 +21,10 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const showAlert = (msg) => {
+    if (typeof window !== 'undefined') alert(msg);
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
@@ -30,17 +33,15 @@ const LoginPage = () => {
   }, [router]);
 
   const translateError = (code) => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'لا يوجد اتصال بالإنترنت. يرجى الاتصال ثم المحاولة.';
-    }
     switch (code) {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
       case 'auth/invalid-credential': return 'خطأ في البريد الإلكتروني أو كلمة المرور.';
-      case 'auth/too-many-requests': return 'تم حظر المحاولات مؤقتاً. حاول لاحقاً.';
+      case 'auth/too-many-requests': return 'تم حظر المحاولات مؤقتاً.';
       case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
-      case 'auth/popup-closed-by-user': return 'تم إغلاق نافذة تسجيل الدخول.';
-      default: return 'حدث خطأ، حاول مرة أخرى.';
+      case 'auth/popup-closed-by-user': return 'تم إغلاق نافذة التسجيل.';
+      case 'auth/network-request-failed': return 'خطأ في الشبكة، تأكد من الاتصال.';
+      default: return 'حدث خطأ: ' + code;
     }
   };
 
@@ -49,10 +50,16 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    showAlert("بدء تسجيل الدخول بالبريد...");
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      showAlert("تم الدخول بنجاح!");
+      window.location.replace('/');
     } catch (err) {
-      setError(translateError(err.code));
+      const msg = translateError(err.code);
+      showAlert("خطأ: " + msg);
+      setError(msg);
       setIsSubmitting(false);
     }
   };
@@ -61,11 +68,17 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    showAlert("جاري فتح نافذة جوجل...");
+
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      showAlert("تم نجاح تسجيل الدخول بجوجل!");
+      window.location.replace('/');
     } catch (err) {
-      setError('فشل تسجيل الدخول بواسطة جوجل.');
+      const msg = "خطأ جوجل: " + err.message;
+      showAlert(msg);
+      setError(msg);
       setIsSubmitting(false);
     }
   };
@@ -74,11 +87,17 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    showAlert("جاري فتح نافذة آبل...");
+
     try {
       const provider = new OAuthProvider('apple.com');
       await signInWithPopup(auth, provider);
+      showAlert("تم نجاح تسجيل الدخول بآبل!");
+      window.location.replace('/');
     } catch (err) {
-      setError('فشل تسجيل الدخول بواسطة آبل');
+      const msg = "خطأ آبل: " + err.message;
+      showAlert(msg);
+      setError(msg);
       setIsSubmitting(false);
     }
   };
