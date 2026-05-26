@@ -68,7 +68,6 @@ workflows:
 
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
-          # Strip conflicting manual signing settings — let xcodebuild flags take over
           content = re.sub(r'\s*CODE_SIGN_STYLE = [^;]*;', '', content)
           content = re.sub(r'\s*CODE_SIGN_IDENTITY[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
@@ -106,7 +105,7 @@ workflows:
             --enable-sign-in-with-apple \
             --enable-push-notifications || echo "⚠️ Could not update capabilities (may already be enabled)"
 
-          echo "✅ ASC API key ready"
+          echo "✅ ASC API key ready at /tmp/asc_key.p8"
 
       - name: Clear Xcode DerivedData
         script: |
@@ -133,12 +132,15 @@ workflows:
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             -allowProvisioningUpdates \
+            -authenticationKeyPath /tmp/asc_key.p8 \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             -skipPackagePluginValidation \
             -skipPackageSignatureValidation \
             ONLY_ACTIVE_ARCH=NO
 
           echo "=== Exporting IPA ==="
-          cat > /tmp/ExportOptions.plist << EOF
+          cat > /tmp/ExportOptions.plist << PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -155,13 +157,16 @@ workflows:
             <string>automatic</string>
           </dict>
           </plist>
-          EOF
+          PLIST
 
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$IPA_DIR" \
             -exportOptionsPlist /tmp/ExportOptions.plist \
-            -allowProvisioningUpdates
+            -allowProvisioningUpdates \
+            -authenticationKeyPath /tmp/asc_key.p8 \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
 
           echo "=== IPA output ==="
           ls -la "$IPA_DIR"
