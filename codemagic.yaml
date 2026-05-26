@@ -1,4 +1,5 @@
-workflows:ios-testflight:
+workflows:
+ios-testflight:
     name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m1
