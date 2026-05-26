@@ -5,7 +5,7 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       groups:
-        - ios-secrets # اسم المجموعة التي تحتوي على مفاتيح Apple في Codemagic
+        - ios-secrets
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -25,7 +25,6 @@ workflows:
           npx cap sync ios
       - name: Increment Build Number
         script: |
-          # هذه الخطوة تزيد رقم الـ Build تلقائياً بناءً على رقم العملية في Codemagic
           cd ios/App
           agvtool new-version -all $(($BUILD_NUMBER + 100))
       - name: Codemagic Code Signing
