@@ -36,13 +36,12 @@ workflows:
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. إنشاء وجلب التوقيع
-          # نستخدم كلمة سر للملف لضمان إمكانية فك تشفيره لاحقاً
+          # 2. إنشاء الشهادة والبروفايل بكلمة سر لضمان فك التشفير
           export CERT_PASS="codemagic"
           app-store-connect certificates create --type IOS_DISTRIBUTION --save --password "$CERT_PASS"
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           
-          # استيراد الشهادات يدوياً باستخدام كلمة السر التي حددناها
+          # استيراد الشهادات يدوياً باستخدام كلمة السر
           find ~/Library -name "*.p12" -exec security import {} -k "$CM_KEYCHAIN_PATH" -P "$CERT_PASS" -A \;
           keychain add-certificates
           
@@ -50,14 +49,10 @@ workflows:
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
           security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
           PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
+          echo "UUID المستخرج: $PROV_UUID"
           
-          # التأكد من اسم الشهادة في الـ Keychain
-          security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH"
-          
-          echo "UUID: $PROV_UUID"
-          
-          # 4. تحديث المشروع برمجياً بشكل شامل
-          # إجبار المشروع على التوقيع اليدوي واستخدام "Apple Distribution" كـ Identity
+          # 4. تحديث المشروع برمجياً بشكل "عدواني" لحل تعارض الأسماء
+          # نحول كل شيء لـ Apple Distribution ونلغي التوقيع التلقائي
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
@@ -67,11 +62,11 @@ workflows:
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
           # 5. بناء الـ IPA
-          # نمرر الهوية 'Apple Distribution' والـ UUID بشكل صريح جداً
+          # نمرر الهوية Apple Distribution والـ UUID بشكل صريح ونلغي أي تعارض
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE=$PROV_UUID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
