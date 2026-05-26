@@ -73,7 +73,6 @@ workflows:
 
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
-          # Remove ALL provisioning profile references
           content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE_SPECIFIER[^;]*;', '', content)
 
@@ -90,7 +89,6 @@ workflows:
           grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
           echo "=== PROVISIONING_PROFILE check ==="
           grep -n "PROVISIONING_PROFILE" "$PROJECT_FILE" || echo "✅ Clean - no PROVISIONING_PROFILE found"
-          grep -n "1779791972" "$PROJECT_FILE" || echo "✅ Old profile UUID not found"
           grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities NOT found"
           echo "=== Entitlements file ==="
           cat "$ENT_FILE" || echo "❌ Entitlements file not found"
@@ -114,6 +112,13 @@ workflows:
           fi
 
           printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
+
+          echo "=== Clearing ALL old provisioning profiles ==="
+          rm -rf "$HOME/Library/MobileDevice/Provisioning Profiles/"
+          rm -rf "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles/"
+          mkdir -p "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"
+          echo "✅ Old profiles cleared"
 
           echo "=== Enabling Push + Sign In with Apple on App ID ==="
           APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
@@ -141,8 +146,8 @@ workflows:
 
           echo "✅ Found profile: $PROFILE_PATH"
 
-          echo "=== Profile capabilities ==="
-          security cms -D -i "$PROFILE_PATH" | grep -E "aps-environment|com.apple.developer.applesignin" -A1 || echo "⚠️ No push/signin caps found in profile"
+          echo "=== All installed profiles ==="
+          find "$HOME/Library" -name "*.mobileprovision" 2>/dev/null
 
           PROFILE_UUID=$(python3 -c "
           import plistlib, subprocess
