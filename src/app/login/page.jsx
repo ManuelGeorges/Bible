@@ -23,6 +23,9 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  // هذا هو الـ Web Client ID الصحيح من Firebase Console الخاص بمشروعك
+  const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
@@ -66,7 +69,7 @@ const LoginPage = () => {
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({
-          webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
+          webClientId: WEB_CLIENT_ID,
         });
         
         const idToken = result.credential?.idToken;
@@ -82,8 +85,8 @@ const LoginPage = () => {
         await signInWithPopup(auth, provider);
       }
     } catch (err) {
-      console.error(err);
-      setError('فشل تسجيل الدخول بواسطة جوجل');
+      console.error("Google Auth Error:", err);
+      setError('فشل تسجيل الدخول بواسطة جوجل. تأكد من إعدادات الخدمة.');
       setIsSubmitting(false);
     }
   };
@@ -112,7 +115,7 @@ const LoginPage = () => {
         await signInWithPopup(auth, provider);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Apple Auth Error:", err);
       setError('فشل تسجيل الدخول بواسطة آبل');
       setIsSubmitting(false);
     }
