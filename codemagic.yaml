@@ -47,17 +47,11 @@ workflows:
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
 
-          # Leave CODE_SIGN_STYLE as Automatic — let Xcode resolve signing
-          # Only set it for the main app target via command line at build time
-
           team_id = '$TEAM_ID'
           content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
           content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
           if 'DEVELOPMENT_TEAM' not in content:
               content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
-
-          content = content.replace('\"iPhone Developer\"', '\"Apple Distribution\"')
-          content = content.replace('\"iPhone Distribution\"', '\"Apple Distribution\"')
 
           target_id = '504EC3031FED79650016851F'
           caps_str = '''SystemCapabilities = {
@@ -74,12 +68,11 @@ workflows:
 
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
-          # Remove any hardcoded provisioning profile references
+          # Strip everything that could conflict with automatic signing
+          content = re.sub(r'\s*CODE_SIGN_STYLE = [^;]*;', '', content)
+          content = re.sub(r'\s*CODE_SIGN_IDENTITY[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE_SPECIFIER[^;]*;', '', content)
-
-          # Remove any hardcoded CODE_SIGN_STYLE so xcodebuild flag takes effect cleanly
-          content = re.sub(r'\s*CODE_SIGN_STYLE = [^;]*;', '', content)
 
           with open(path, 'w') as f: f.write(content)
           "
@@ -90,10 +83,11 @@ workflows:
 
           echo "=== Verifying Xcode Patch ==="
           grep "DEVELOPMENT_TEAM" "$PROJECT_FILE" | head -3
-          grep "CODE_SIGN_STYLE" "$PROJECT_FILE" | head -3
-          grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
-          echo "=== PROVISIONING_PROFILE check ==="
+          echo "=== Signing settings check (should all be empty) ==="
+          grep -n "CODE_SIGN_STYLE" "$PROJECT_FILE" || echo "✅ Clean - no CODE_SIGN_STYLE found"
+          grep -n "CODE_SIGN_IDENTITY" "$PROJECT_FILE" || echo "✅ Clean - no CODE_SIGN_IDENTITY found"
           grep -n "PROVISIONING_PROFILE" "$PROJECT_FILE" || echo "✅ Clean - no PROVISIONING_PROFILE found"
+          grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
           grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities NOT found"
           echo "=== Entitlements file ==="
           cat "$ENT_FILE" || echo "❌ Entitlements file not found"
@@ -188,7 +182,6 @@ workflows:
             -destination "generic/platform=iOS" \
             COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             -skipPackagePluginValidation \
             -skipPackageSignatureValidation \
