@@ -50,12 +50,12 @@ workflows:
             sed -i '' 's/.iOS(.v[0-9]*)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
           fi
           
-          # 2. Set Signing to Manual
+          # 2. Set Signing to Manual so Codemagic can manage it via API
           sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           
-          # 3. Inject SystemCapabilities using Python for precision
-          # This tells Xcode that Push and Apple Sign In are officially requested
+          # 3. Inject SystemCapabilities to satisfy Xcode requirements for Push and Apple Sign In
+          # This tells Xcode that these capabilities are explicitly enabled for the target.
           python3 -c "
           import os
           path = 'ios/App/App.xcodeproj/project.pbxproj'
@@ -74,8 +74,8 @@ workflows:
 
       - name: Fetch Profiles and Code Sign
         script: |
-          # Use the bundle ID explicitly to ensure the API fetches the correct profile
-          xcode-project use-profiles --bundle-id "$BUNDLE_ID"
+          # Fetch profiles automatically using API keys (no unrecognized flags)
+          xcode-project use-profiles
 
       - name: Build IPA for TestFlight
         script: |
