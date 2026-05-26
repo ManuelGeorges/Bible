@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   OAuthProvider,
   onAuthStateChanged,
@@ -24,12 +25,23 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // دالة مساعدة لإظهار رسالة للمستخدم (تنبيه)
   const showAlert = (msg) => {
     if (typeof window !== 'undefined') alert(msg);
   };
 
   useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          router.replace('/');
+        }
+      })
+      .catch((err) => {
+        if (err.code !== 'auth/null-user') {
+          showAlert("خطأ في نتيجة التحويل: " + err.message);
+        }
+      });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
     });
@@ -39,24 +51,24 @@ export default function SignUpPage() {
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
+    if (!firstName || !lastName) { alert('يرجى إدخال الاسم كاملًا'); return; }
     
     setError(null);
     setIsSubmitting(true);
-    showAlert("بدء عملية التسجيل...");
+    showAlert("بدء إنشاء الحساب...");
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      showAlert("تم إنشاء الحساب في Firebase، جاري تحديث الاسم...");
+      showAlert("تم إنشاء الحساب، جاري تحديث الاسم...");
       
       await updateProfile(userCredential.user, {
         displayName: `${firstName} ${lastName}`
       });
       
-      showAlert("تمت العملية بنجاح! جاري التوجيه للرئيسية...");
-      window.location.replace('/');
+      showAlert("تمت العملية بنجاح! جاري الانتقال للرئيسية...");
+      router.replace('/');
     } catch (err) {
-      const msg = `خطأ في التسجيل: ${err.message || err.code}`;
+      const msg = `خطأ (${err.code}): ${err.message}`;
       showAlert(msg);
       setError(msg);
       setIsSubmitting(false);
@@ -65,38 +77,28 @@ export default function SignUpPage() {
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
-    setError(null);
     setIsSubmitting(true);
-    showAlert("جاري فتح نافذة جوجل...");
+    showAlert("جاري التحويل لصفحة جوجل...");
 
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      showAlert("تم نجاح تسجيل الدخول بجوجل!");
-      window.location.replace('/');
+      await signInWithRedirect(auth, provider);
     } catch (err) {
-      const msg = `خطأ جوجل: ${err.message}`;
-      showAlert(msg);
-      setError(msg);
+      showAlert("خطأ جوجل: " + err.message);
       setIsSubmitting(false);
     }
   };
 
   const handleAppleAuth = async () => {
     if (isSubmitting) return;
-    setError(null);
     setIsSubmitting(true);
-    showAlert("جاري فتح نافذة آبل...");
+    showAlert("جاري التحويل لصفحة آبل...");
 
     try {
       const provider = new OAuthProvider('apple.com');
-      await signInWithPopup(auth, provider);
-      showAlert("تم نجاح تسجيل الدخول بآبل!");
-      window.location.replace('/');
+      await signInWithRedirect(auth, provider);
     } catch (err) {
-      const msg = `خطأ آبل: ${err.message}`;
-      showAlert(msg);
-      setError(msg);
+      showAlert("خطأ آبل: " + err.message);
       setIsSubmitting(false);
     }
   };
