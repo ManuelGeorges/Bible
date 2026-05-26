@@ -93,9 +93,8 @@ workflows:
           grep "CODE_SIGN_STYLE" "$PROJECT_FILE" | head -3
           grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
           grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities NOT found"
-
           echo "=== Entitlements file ==="
-          cat "$ENT_FILE" || echo "❌ Entitlements file not found at $ENT_FILE"
+          cat "$ENT_FILE" || echo "❌ Entitlements file not found"
 
       - name: Initialize Keychain
         script: keychain initialize
@@ -111,28 +110,32 @@ workflows:
 
           keychain add-certificates
 
-          echo "=== Profiles downloaded ==="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "❌ No profiles folder found"
+          echo "=== Profiles folder ==="
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          ls -la "$PROFILES_DIR" || echo "❌ No profiles folder"
 
           echo "=== Profile details ==="
-          for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
-            echo "--- File: $f ---"
-            security cms -D -i "$f" | grep -E "Name|UUID|TeamIdentifier|Entitlements|aps-environment|com.apple.developer.applesignin" -A2
+          for f in "$PROFILES_DIR"/*.mobileprovision; do
+            echo "--- $f ---"
+            security cms -D -i "$f" | grep -E "Name|UUID|TeamIdentifier|aps-environment|com.apple.developer.applesignin" -A1
           done
 
-          echo "=== Certificates in Keychain ==="
+          echo "=== Certificates ==="
           security find-identity -v -p codesigning
 
-          echo "=== Running use-profiles ==="
-          xcode-project use-profiles --verbose || true
+          echo "=== Extracting UUID ==="
+          PROFILE_PATH=$(ls "$PROFILES_DIR"/*.mobileprovision 2>/dev/null | head -1)
+          if [ -z "$PROFILE_PATH" ]; then
+            echo "❌ No .mobileprovision file found!"
+            exit 1
+          fi
 
-          echo "=== Extracting Profile UUID ==="
-          PROFILE_UUID=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -1 | xargs -I{} python3 -c "
+          PROFILE_UUID=$(python3 -c "
           import plistlib, subprocess, sys
-          out = subprocess.check_output(['security', 'cms', '-D', '-i', sys.argv[1]])
+          out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH'])
           p = plistlib.loads(out)
           print(p['UUID'])
-          " {})
+          ")
 
           echo "✅ Profile UUID: $PROFILE_UUID"
           echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
@@ -142,22 +145,70 @@ workflows:
           echo "=== Build environment ==="
           echo "PROFILE_UUID: $PROFILE_UUID"
           echo "TEAM_ID: $TEAM_ID"
-          echo "BUNDLE_ID: $BUNDLE_ID"
 
-          echo "=== Final pbxproj signing settings ==="
-          grep -E "CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM" ios/App/App.xcodeproj/project.pbxproj | head -20
+          ARCHIVE_PATH="$CM_BUILD_DIR/App.xcarchive"
+          IPA_DIR="$CM_BUILD_DIR/ipa"
+          mkdir -p "$IPA_DIR"
 
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --config Release \
-            --xcarg "PROVISIONING_PROFILE=$PROFILE_UUID" \
-            --xcarg "PROVISIONING_PROFILE_SPECIFIER=" \
-            --xcarg "CODE_SIGN_IDENTITY=Apple Distribution" \
-            --xcarg "DEVELOPMENT_TEAM=$TEAM_ID"
+          echo "=== Archiving ==="
+          xcodebuild archive \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE="$PROFILE_UUID" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | xcpretty || xcodebuild archive \
+              -project "$XCODE_PROJECT" \
+              -scheme "$XCODE_SCHEME" \
+              -configuration Release \
+              -archivePath "$ARCHIVE_PATH" \
+              CODE_SIGN_STYLE=Manual \
+              CODE_SIGN_IDENTITY="Apple Distribution" \
+              PROVISIONING_PROFILE="$PROFILE_UUID" \
+              PROVISIONING_PROFILE_SPECIFIER="" \
+              DEVELOPMENT_TEAM="$TEAM_ID" \
+              COMPILER_INDEX_STORE_ENABLE=NO
+
+          echo "=== Exporting IPA ==="
+          cat > /tmp/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>$TEAM_ID</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$BUNDLE_ID</key>
+              <string>$PROFILE_UUID</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$IPA_DIR" \
+            -exportOptionsPlist /tmp/ExportOptions.plist
+
+          echo "=== IPA output ==="
+          ls -la "$IPA_DIR"
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - $CM_BUILD_DIR/ipa/*.ipa
 
     publishing:
       app_store_connect:
