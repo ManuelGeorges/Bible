@@ -23,15 +23,14 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // هذا هو الـ Web Client ID الصحيح من Firebase Console الخاص بمشروعك
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace('/');
+      if (user && !isSubmitting) router.replace('/');
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, isSubmitting]);
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
@@ -55,6 +54,8 @@ const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      setIsSubmitting(false);
+      router.replace('/');
     } catch (err) {
       setError(translateError(err.code));
       setIsSubmitting(false);
@@ -65,24 +66,25 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({
           webClientId: WEB_CLIENT_ID,
         });
-        
         const idToken = result.credential?.idToken;
-
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
+          setIsSubmitting(false);
+          router.replace('/');
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
+        setIsSubmitting(false);
+        router.replace('/');
       }
     } catch (err) {
       console.error("Google Auth Error:", err);
@@ -95,24 +97,25 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
         const idToken = result.credential?.idToken;
         const rawNonce = result.credential?.rawNonce;
-
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({
-            idToken: idToken,
-            rawNonce: rawNonce,
-          });
+          const credential = provider.credential({ idToken, rawNonce });
           await signInWithCredential(auth, credential);
+          setIsSubmitting(false);
+          router.replace('/');
+        } else {
+          throw new Error("No ID Token");
         }
       } else {
         const provider = new OAuthProvider('apple.com');
         await signInWithPopup(auth, provider);
+        setIsSubmitting(false);
+        router.replace('/');
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
@@ -126,20 +129,20 @@ const LoginPage = () => {
       <div className={styles.card}>
         <h1 className={styles.title}>تسجيل الدخول</h1>
         <form onSubmit={handleAuth} className={styles.form}>
-          <input 
-            type="email" 
-            placeholder="البريد الإلكتروني" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
+          <input
+            type="email"
+            placeholder="البريد الإلكتروني"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className={styles.input}
             disabled={isSubmitting}
             required
           />
-          <input 
-            type="password" 
-            placeholder="كلمة المرور" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
+          <input
+            type="password"
+            placeholder="كلمة المرور"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className={styles.input}
             disabled={isSubmitting}
             required
@@ -153,21 +156,13 @@ const LoginPage = () => {
         <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
 
         <div className={styles.socialButtons}>
-          <button
-            onClick={handleGoogleAuth}
-            className={styles.googleButton}
-            disabled={isSubmitting}
-          >
+          <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
             <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
             <span>جوجل</span>
           </button>
 
           {Capacitor.getPlatform() !== 'android' && (
-            <button
-              onClick={handleAppleAuth}
-              className={styles.appleButton}
-              disabled={isSubmitting}
-            >
+            <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
               <Apple size={20} />
               <span>آبل</span>
             </button>
