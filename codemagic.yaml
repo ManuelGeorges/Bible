@@ -118,8 +118,6 @@ workflows:
           PROFILES_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
           echo "Xcode UserData:"
           ls -la "$PROFILES_DIR" 2>/dev/null || echo "❌ Not found"
-          echo "MobileDevice:"
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" 2>/dev/null || echo "❌ Not found"
 
           echo "=== Profile details ==="
           for f in "$PROFILES_DIR"/*.mobileprovision; do
@@ -157,18 +155,22 @@ workflows:
           IPA_DIR="$CM_BUILD_DIR/ipa"
           mkdir -p "$IPA_DIR"
 
+          KEYCHAIN_PATH=$(ls "$HOME/Library/codemagic-cli-tools/keychains/"*.keychain-db 2>/dev/null | head -1)
+          echo "Keychain: $KEYCHAIN_PATH"
+
           echo "=== Archiving ==="
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
+            -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE="$PROFILE_UUID" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH"
 
           echo "=== Exporting IPA ==="
           cat > /tmp/ExportOptions.plist << EOF
@@ -180,10 +182,6 @@ workflows:
             <string>app-store-connect</string>
             <key>teamID</key>
             <string>$TEAM_ID</string>
-            <key>uploadBitcode</key>
-            <false/>
-            <key>uploadSymbols</key>
-            <true/>
             <key>signingStyle</key>
             <string>manual</string>
             <key>provisioningProfiles</key>
