@@ -47,7 +47,8 @@ workflows:
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
 
-          content = re.sub(r'CODE_SIGN_STYLE = Automatic;', 'CODE_SIGN_STYLE = Manual;', content)
+          # Leave CODE_SIGN_STYLE as Automatic — let Xcode resolve signing
+          # Only set it for the main app target via command line at build time
 
           team_id = '$TEAM_ID'
           content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
@@ -73,8 +74,12 @@ workflows:
 
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
+          # Remove any hardcoded provisioning profile references
           content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE_SPECIFIER[^;]*;', '', content)
+
+          # Remove any hardcoded CODE_SIGN_STYLE so xcodebuild flag takes effect cleanly
+          content = re.sub(r'\s*CODE_SIGN_STYLE = [^;]*;', '', content)
 
           with open(path, 'w') as f: f.write(content)
           "
@@ -182,11 +187,9 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_STYLE=Automatic \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE="$PROFILE_UUID" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
             -skipPackagePluginValidation \
             -skipPackageSignatureValidation \
             ONLY_ACTIVE_ARCH=NO
@@ -206,12 +209,7 @@ workflows:
             <key>uploadSymbols</key>
             <true/>
             <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>$BUNDLE_ID</key>
-              <string>$PROFILE_UUID</string>
-            </dict>
+            <string>automatic</string>
           </dict>
           </plist>
           EOF
