@@ -77,7 +77,7 @@ workflows:
           with open(path, 'w') as f: f.write(content)
           "
 
-          # Remove any hardcoded provisioning profile specifiers so SPM packages don't inherit them
+          # Remove hardcoded provisioning profile specifiers so SPM packages don't inherit them
           sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' "$PROJECT_FILE"
 
           if [ -f "$ENT_FILE" ]; then
@@ -112,6 +112,13 @@ workflows:
 
           printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
 
+          echo "=== Enabling Push + Sign In with Apple on App ID ==="
+          APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
+          app-store-connect bundles update \
+            "$BUNDLE_ID" \
+            --enable-sign-in-with-apple \
+            --enable-push-notifications || echo "⚠️ Could not update capabilities (may already be enabled)"
+
           echo "=== Fetching signing files ==="
           APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
           app-store-connect fetch-signing-files \
@@ -130,6 +137,9 @@ workflows:
           fi
 
           echo "✅ Found profile: $PROFILE_PATH"
+
+          echo "=== Profile capabilities ==="
+          security cms -D -i "$PROFILE_PATH" | grep -E "aps-environment|com.apple.developer.applesignin" -A1 || echo "⚠️ No push/signin caps found in profile"
 
           PROFILE_UUID=$(python3 -c "
           import plistlib, subprocess
@@ -165,8 +175,7 @@ workflows:
             PROVISIONING_PROFILE="$PROFILE_UUID" \
             PROVISIONING_PROFILE_SPECIFIER="" \
             -skipPackagePluginValidation \
-            "PROVISIONING_PROFILE[sdk=iphoneos*]"="$PROFILE_UUID" \
-            "CODE_SIGN_IDENTITY[sdk=iphoneos*]"="Apple Distribution"
+            -skipPackageSignatureValidation
 
           echo "=== Exporting IPA ==="
           cat > /tmp/ExportOptions.plist << EOF
