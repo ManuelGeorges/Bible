@@ -5,12 +5,21 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       node: 22
-      groups:
-        - ios-secrets
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
+        # App Store Connect API Keys
+        APP_STORE_CONNECT_ISSUER_ID: "f458a0dc-007e-4a1b-88d9-40b42981095d"
+        APP_STORE_CONNECT_KEY_IDENTIFIER: "MN275R95N4"
+        APP_STORE_CONNECT_PRIVATE_KEY: |
+          -----BEGIN PRIVATE KEY-----
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgllhAeHQA43x283qD
+          UeXfVU1QhYvURPTUcazt8b2KLrqgCgYIKoZIzj0DAQehRANCAAQV9v/nzcRClJZL
+          UfRyMcdolKCFB5i5/BkJ98E9zAL+fh5UokGF6OXzD/J2Vi/e06JAqPA/LsnZUCzr
+          q/a+XVjD
+          -----END PRIVATE KEY-----
+        # معرف الفريق (Team ID)
         TEAM_ID: "XMBVV283C4"
     cache:
       cache_paths:
@@ -35,143 +44,69 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Patch Xcode Project (Capabilities & Signing)
+      - name: Ultimate CI Patch (Target-Specific Signing)
         script: |
           PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
           ENT_FILE="ios/App/App/App.entitlements"
-
-          # 1. Force iOS 15.0 Deployment Target
+          
+          # 1. Force iOS 15.0 Target
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' "$PROJECT_FILE"
-
-          # 2. Comprehensive Python Patch for Signing & Capabilities
+          
+          # 2. Python Patch to fix only the main App target and inject capabilities
           python3 -c "
           import re, os
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
           team_id = '$TEAM_ID'
+          target_id = '504EC3031FED79650016851F' # ID for 'App' target
           
-          # Force Manual Signing Style and Team ID in all configurations
-          content = re.sub(r'ProvisioningStyle = [^;]*;', 'ProvisioningStyle = Manual;', content)
-          content = re.sub(r'CODE_SIGN_STYLE = [^;]*;', 'CODE_SIGN_STYLE = Manual;', content)
+          # Force Team ID and manual signing for the MAIN app only
+          # This prevents conflicts with SPM libraries
+          pattern = rf'({target_id} = \{{[^}}]*?ProvisioningStyle = )\w+;'
+          content = re.sub(pattern, r'\1Manual;', content)
+          
+          # Inject Capabilities into TargetAttributes
+          caps = 'SystemCapabilities = { com.apple.Push = { enabled = 1; }; com.apple.AppleSignIn = { enabled = 1; }; };'
+          if 'SystemCapabilities' not in content:
+              pattern_caps = rf'({target_id} = \{{[^}}]*?ProvisioningStyle = Manual;)'
+              content = re.sub(pattern_caps, rf'\\1\n\t\t\t\t\t\t{caps}', content, flags=re.DOTALL)
+          
+          # Globally set Team ID in build settings to satisfy Xcode 15
           content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
           if 'DEVELOPMENT_TEAM' not in content:
               content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
-
-          # Force Apple Distribution identity for Release
-          content = content.replace('\"iPhone Developer\"', '\"Apple Distribution\"')
-          content = content.replace('\"iPhone Distribution\"', '\"Apple Distribution\"')
           
-          # Targeted Capability Injection for main App target
-          target_id = '504EC3031FED79650016851F'
-          caps_str = '''SystemCapabilities = {
-                          com.apple.AppleSignIn = { enabled = 1; };
-                          com.apple.Push = { enabled = 1; };
-                      };'''
-          if 'SystemCapabilities' not in content:
-              pattern = rf'({target_id}\s*=\s*\{{[^}}]*?ProvisioningStyle = Manual;)'
-              content = re.sub(pattern, rf'\\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
-
-          # Fix Entitlements path strictly
+          # Fix Entitlements reference
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
           
           with open(path, 'w') as f: f.write(content)
           "
           
-          if [ -f "$ENT_FILE" ]; then
-            sed -i '' 's/development/production/g' "$ENT_FILE"
+          # 3. Patch Entitlements file to Production
+          if [ -f \"$ENT_FILE\" ]; then
+            sed -i '' 's/development/production/g' \"$ENT_FILE\"
           fi
 
-      - name: Initialize Keychain
+      - name: Set up Keychain
         script: keychain initialize
 
-      - name: Setup Certificate and Provisioning Profile
+      - name: Fetch and Link Profiles
         script: |
-          # Generate one-time key if secret is missing (for fresh setup)
-          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
-            openssl genrsa -out /tmp/cert_key.pem 2048
-            openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
-            export CERT_KEY_PATH="/tmp/cert_key_pkcs8.pem"
-          else
-            printf '%s\n' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key_pkcs8.pem
-            export CERT_KEY_PATH="/tmp/cert_key_pkcs8.pem"
-          fi
-
-          # Fetch and create fresh signing files
-          printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
-          APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --certificate-key @file:$CERT_KEY_PATH --create
-          
+          # Generate/Fetch a profile that specifically has Push/SignIn enabled
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
-          
-          # Extract Profile Info to inject into Xcode
-          PROFILE_PATH=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
-          PROFILE_NAME=$(python3 -c "import plistlib, subprocess; out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH']); p = plistlib.loads(out); print(p['Name'])")
-          echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $CM_ENV
-          echo "✅ Profile found: $PROFILE_NAME"
-
-      - name: Inject Profile Specifier into Project
-        script: |
-          # حقن اسم ملف التعريف مباشرة في إعدادات Xcode لضمان الربط
-          python3 -c "
-          import re, os
-          path = 'ios/App/App.xcodeproj/project.pbxproj'
-          with open(path, 'r') as f: content = f.read()
-          profile_name = os.environ.get('PROVISIONING_PROFILE_NAME')
-          content = re.sub(r'PROVISIONING_PROFILE_SPECIFIER = [^;]*;', f'PROVISIONING_PROFILE_SPECIFIER = \"{profile_name}\";', content)
-          if 'PROVISIONING_PROFILE_SPECIFIER' not in content:
-              content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"{profile_name}\";')
-          with open(path, 'w') as f: f.write(content)
-          "
+          xcode-project use-profiles
 
       - name: Build IPA for TestFlight
         script: |
-          ARCHIVE_PATH="$CM_BUILD_DIR/App.xcarchive"
-          IPA_DIR="$CM_BUILD_DIR/ipa"
-          mkdir -p "$IPA_DIR"
-
-          # الأرشفة مع السماح بتحديثات التوقيع وتجاوز مشاكل الـ SPM
-          xcodebuild archive \
-            -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            -archivePath "$ARCHIVE_PATH" \
-            -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates \
-            -skipPackagePluginValidation \
-            -skipPackageSignatureValidation
-
-          # إنشاء ملف التصدير
-          cat > /tmp/ExportOptions.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>$TEAM_ID</string>
-            <key>uploadBitcode</key>
-            <false/>
-            <key>uploadSymbols</key>
-            <true/>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>$BUNDLE_ID</key>
-              <string>$PROVISIONING_PROFILE_NAME</string>
-            </dict>
-          </dict>
-          </plist>
-          EOF
-
-          xcodebuild -exportArchive \
-            -archivePath "$ARCHIVE_PATH" \
-            -exportPath "$IPA_DIR" \
-            -exportOptionsPlist /tmp/ExportOptions.plist
+          # Use xcode-project build-ipa which is optimized for Codemagic environment
+          xcode-project build-ipa \
+            --project \"$XCODE_PROJECT\" \
+            --scheme \"$XCODE_SCHEME\" \
+            --config Release
 
     artifacts:
-      - $CM_BUILD_DIR/ipa/*.ipa
+      - build/ios/ipa/*.ipa
 
     publishing:
       app_store_connect:
