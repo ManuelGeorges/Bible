@@ -3,7 +3,6 @@ workflows:
     name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m1
-    # تفعيل الربط الذي قمت بإنشائه في واجهة Codemagic
     integrations:
       app_store_connect: "Agios App Store Key"
     environment:
@@ -33,14 +32,18 @@ workflows:
       - name: Codemagic Code Signing
         script: |
           keychain initialize
+          # هذا الأمر يغنيك عن الماك؛ فهو ينشئ الشهادات والبروفايلات برمجياً
+          # تأكدنا من إضافة --create لضمان شمول الميزات الجديدة (Push & Sign In)
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
-          xcode-project use-profiles
+          # إجبار Xcode على التوقيع اليدوي واستخدام الملفات التي جلبناها
+          xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --export-method app-store
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
