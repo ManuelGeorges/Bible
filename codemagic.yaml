@@ -32,35 +32,42 @@ workflows:
           agvtool new-version -all $(($BUILD_NUMBER + 100))
       - name: Build and Sign IPA
         script: |
-          # 1. تهيئة الـ Keychain وتنظيف الملفات القديمة
+          # 1. تهيئة الـ Keychain وتنظيف السيرفر
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. جلب الشهادة والبروفايل (بدون باسوورد لتجنب أخطاء الأدوات)
-          # هذا الأمر سيقوم بإنشاء الشهادة والبروفايل الصحيحين تلقائياً
+          # 2. إنشاء الشهادة والبروفايل بكلمة سر لضمان فك التشفير
+          export CERT_PASS="codemagic"
+          app-store-connect certificates create --type IOS_DISTRIBUTION --save --password "$CERT_PASS"
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          
+          # استيراد الشهادة يدوياً باستخدام كلمة السر لضمان قبولها في الـ Keychain
+          find ~/Library -name "*.p12" -exec security import {} -k "$CM_KEYCHAIN_PATH" -P "$CERT_PASS" -A \;
           keychain add-certificates
           
-          # 3. استخراج الـ UUID للبروفايل الجديد
+          # 3. استخراج الـ UUID بعد فك تشفير البروفايل
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
           security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
           PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
-          echo "تم استخراج UUID: $PROV_UUID"
+          echo "تم استخراج UUID بنجاح: $PROV_UUID"
           
-          # 4. تحديث المشروع برمجياً بشكل بسيط لضمان مطابقة الـ Team
-          # نلغي التوقيع التلقائي ونحقن الـ Team ID
+          # 4. تحديث المشروع برمجياً بشكل "جذري" (تطهير شامل)
+          # استبدال كل الهويات القديمة بـ Apple Distribution وحقن الـ Team ID لضمان المطابقة
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/iPhone Distribution/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/iPhone Developer/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
           
-          # نترك أداة Codemagic تقوم بربط البروفايلات بالمشروع
+          # ربط البروفايل الجديد بالمشروع
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 5. بناء الـ IPA
-          # سنمرر الـ Team والـ UUID فقط، ونترك Xcode يختار هوية التوقيع المناسبة من الـ Keychain
+          # 5. بناء الـ IPA النهائي
+          # نمرر الهوية Apple Distribution والـ UUID بشكل صريح جداً لقطع الطريق على أي تضارب
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE=$PROV_UUID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
