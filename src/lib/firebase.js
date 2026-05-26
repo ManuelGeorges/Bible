@@ -1,13 +1,17 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence
+} from "firebase/auth";
 import { 
   initializeFirestore, 
   persistentLocalCache, 
   persistentMultipleTabManager,
   memoryLocalCache
 } from "firebase/firestore";
-import { getRemoteConfig, isSupported } from "firebase/remote-config";
-import { Capacitor } from '@capacitor/core';
+import { Capacitor } from '@capacitor-core';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
@@ -19,40 +23,31 @@ const firebaseConfig = {
   measurementId: "G-Q42KEXNB3L"
 };
 
-const initializeFirebase = () => {
-  if (getApps().length > 0) return getApp();
-  try {
-    return initializeApp(firebaseConfig);
-  } catch (error) {
-    console.error("Firebase Initialization Error:", error);
-    return null;
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
+// إعداد Auth مع Persistence متعدد لضمان الحفظ على iOS
+const getFirebaseAuth = () => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // نضع browserLocalPersistence أولاً لضمان الحفظ الفوري في iOS
+      return initializeAuth(app, {
+        persistence: [browserLocalPersistence, indexedDBLocalPersistence]
+      });
+    } catch (e) {
+      return getAuth(app);
+    }
   }
+  return getAuth(app);
 };
 
-const app = initializeFirebase();
+export const auth = getFirebaseAuth();
 
-// استخدام الكاش المستمر فقط في الويب، وفي الكاباسيتور نستخدم إعدادات أبسط لتجنب التعليق على iOS
-export const auth = app ? getAuth(app) : null;
-export const db = app ? initializeFirestore(app, {
+export const db = initializeFirestore(app, {
   localCache: Capacitor.isNativePlatform()
     ? memoryLocalCache()
     : persistentLocalCache({
         tabManager: persistentMultipleTabManager()
       })
-}) : null;
+});
 
 export { app };
-
-let remoteConfigInstance = null;
-export const getFirebaseRemoteConfig = async () => {
-    if (typeof window === "undefined" || !app) return null;
-    if (remoteConfigInstance) return remoteConfigInstance;
-    try {
-        const supported = await isSupported();
-        if (supported) {
-            remoteConfigInstance = getRemoteConfig(app);
-            return remoteConfigInstance;
-        }
-    } catch (e) { console.error(e); }
-    return null;
-};

@@ -8,11 +8,14 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
   onAuthStateChanged,
+  signInWithCredential,
   updateProfile
 } from 'firebase/auth';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { Capacitor } from '@capacitor-core';
 import { auth } from '../../lib/firebase';
 import styles from './signup.module.css';
-import { Apple } from 'lucide-react'; 
+import { Apple } from 'lucide-react';
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState('');
@@ -23,37 +26,114 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  // دالة توجيه محسنة لنظام iOS مع تأخير لضمان حفظ الجلسة
+  const safeRedirect = async (path) => {
+    if (Capacitor.getPlatform() === 'ios') {
+      // تأخير بسيط (500ms) لضمان أن Firebase انتهى من كتابة بيانات الجلسة في IndexedDB
+      await new Promise(resolve => setTimeout(resolve, 500));
+      window.location.href = path;
+    } else {
+      router.replace(path);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace('/');
+      // التوجيه التلقائي فقط إذا وجد مستخدم ولم نكن في وسط عملية إرسال يدوي
+      if (user && !isSubmitting) {
+        safeRedirect('/');
+      }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [isSubmitting]);
+
+  const translateError = (code) => {
+    if (typeof window !== 'undefined' && !navigator.onLine) {
+      return 'لا يوجد اتصال بالإنترنت.';
+    }
+    switch (code) {
+      case 'auth/email-already-in-use': return 'هذا البريد الإلكتروني مسجل بالفعل.';
+      case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
+      case 'auth/weak-password': return 'كلمة المرور ضعيفة.';
+      case 'auth/network-request-failed': return 'خطأ في الاتصال بالشبكة.';
+      default: return 'حدث خطأ، حاول مرة أخرى.';
+    }
+  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
     setError(null);
     setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: `${firstName} ${lastName}` });
-      router.replace('/');
+      await updateProfile(userCredential.user, {
+        displayName: `${firstName} ${lastName}`
+      });
+      // ننتظر قليلاً قبل التوجيه لضمان حفظ الـ Profile والـ Session
+      await safeRedirect('/');
     } catch (err) {
-      setError('حدث خطأ، حاول مرة أخرى.');
+      console.error("Signup Error:", err);
+      setError(translateError(err.code));
       setIsSubmitting(false);
     }
   };
 
-  const handleSocialAuth = async (provider) => {
+  const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
     try {
-      await signInWithPopup(auth, provider);
-      router.replace('/');
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
+        });
+        const idToken = result.credential?.idToken;
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          await signInWithCredential(auth, credential);
+          await safeRedirect('/');
+        } else {
+          setIsSubmitting(false);
+        }
+      } else {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        await safeRedirect('/');
+      }
     } catch (err) {
-      setError('فشل التسجيل');
+      console.error("Google Auth Error:", err);
+      setError('فشل التسجيل بواسطة جوجل');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleAuth = async () => {
+    if (isSubmitting) return;
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithApple();
+        const idToken = result.credential?.idToken;
+        const rawNonce = result.credential?.rawNonce;
+        if (idToken) {
+          const provider = new OAuthProvider('apple.com');
+          const credential = provider.credential({ idToken, rawNonce });
+          await signInWithCredential(auth, credential);
+          await safeRedirect('/');
+        } else {
+          setIsSubmitting(false);
+        }
+      } else {
+        const provider = new OAuthProvider('apple.com');
+        await signInWithPopup(auth, provider);
+        await safeRedirect('/');
+      }
+    } catch (err) {
+      console.error("Apple Auth Error:", err);
+      setError('فشل التسجيل بواسطة آبل');
       setIsSubmitting(false);
     }
   };
@@ -61,16 +141,47 @@ export default function SignUpPage() {
   return (
     <div className={`${styles.container} ${styles.rtl}`}>
       <div className={styles.card}>
-        <h1 className={styles.title}>إنشاء حساب</h1>
+        <h1 className={styles.title}>إنشاء حساب جديد</h1>
         <form onSubmit={handleAuth} className={styles.form}>
-          <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
-          <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          <div className={styles.nameRow}>
+            <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+            <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          </div>
           <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
-          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.invalidPassword)} className={styles.input} disabled={isSubmitting} required />
-          <button type="submit" className={styles.button} disabled={isSubmitting}>إنشاء حساب</button>
+          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          {error && <div className={styles.errorBox}>{error}</div>}
+          <button type="submit" className={styles.button} disabled={isSubmitting}>
+            {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
+          </button>
         </form>
-        <button onClick={() => handleSocialAuth(new GoogleAuthProvider())} className={styles.googleButton}>جوجل</button>
-        <button onClick={() => handleSocialAuth(new OAuthProvider('apple.com'))} className={styles.appleButton}>آبل</button>
+
+        <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
+
+        <div className={styles.socialButtons}>
+          <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
+            {isSubmitting ? <span>...</span> : (
+              <>
+                <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+                <span>جوجل</span>
+              </>
+            )}
+          </button>
+
+          {Capacitor.getPlatform() !== 'android' && (
+            <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
+              {isSubmitting ? <span>...</span> : (
+                <>
+                  <Apple size={20} />
+                  <span>آبل</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+
+        <p className={styles.toggleMode}>
+          لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
+        </p>
       </div>
     </div>
   );
