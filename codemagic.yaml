@@ -3,9 +3,12 @@ workflows:
     name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m1
+    # تفعيل الربط الذي قمت بإنشائه في واجهة Codemagic
+    integrations:
+      app_store_connect: "Agios App Store Key"
     environment:
       groups:
-        - ios-secrets # تأكد أن هذا هو اسم المجموعة في إعدادات Codemagic
+        - ios-secrets
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -42,8 +45,5 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        # وضعنا المعرفات مباشرة لتخطي خطأ الـ Validation
-        issuer_id: f458a0dc-007e-4a1b-88d9-40b42981095d
-        key_id: RRT834L4Z8
-        private_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        auth: integration
         submit_to_testflight: true
