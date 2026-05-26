@@ -20,6 +20,24 @@ export default function CapacitorFeatures() {
   const { theme, setTheme } = useTheme();
   const hasSetup = useRef(false);
 
+  // دالة موحدة للتعامل مع التوجيه من الإشعارات أو الروابط
+  const handleNavigation = (path) => {
+    if (!path) return;
+
+    try {
+      // إذا كان رابطاً كاملاً يبدأ بـ http، نفتحه في المتصفح، وإلا نوجه داخلياً
+      if (path.startsWith('http')) {
+        window.open(path, '_blank');
+      } else {
+        // التأكد من أن المسار يبدأ بـ /
+        const targetPath = path.startsWith('/') ? path : `/${path}`;
+        router.push(targetPath);
+      }
+    } catch (e) {
+      console.error("Navigation Error:", e);
+    }
+  };
+
   useEffect(() => {
     if (!localStorage.getItem('theme')) {
       setTheme('system');
@@ -58,6 +76,35 @@ export default function CapacitorFeatures() {
     if (platform === 'web' || platform === 'electron' || hasSetup.current) return;
     hasSetup.current = true;
 
+    // 1. تسجيل مستمعات الإشعارات والروابط فوراً
+    const setupListeners = async () => {
+      // روابط Deep Links (مثلاً agios://bible)
+      App.addListener('appUrlOpen', (data) => {
+        const path = data.url.split('://')[1];
+        if (path) handleNavigation(path);
+      });
+
+      // الإشعارات المحلية
+      LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
+        const url = notification.notification.extra?.url;
+        handleNavigation(url);
+      });
+
+      // إشعارات الـ Push
+      let pushPerms = await PushNotifications.checkPermissions().catch(() => ({ receive: 'prompt' }));
+      if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions().catch(() => ({ receive: 'denied' }));
+
+      if (pushPerms.receive === 'granted') {
+        await PushNotifications.register().catch(() => {});
+
+        PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+          // جلب الرابط من الـ data payload (تأكد أنك ترسل مفتاح 'url' في الـ custom data)
+          const url = notification.notification.data?.url;
+          handleNavigation(url);
+        });
+      }
+    };
+
     const handleAppUpdate = async () => {
       try {
         const remoteConfig = await getFirebaseRemoteConfig().catch(() => null);
@@ -68,14 +115,6 @@ export default function CapacitorFeatures() {
         const minRequiredVersion = getNumber(remoteConfig, 'min_required_version') || 0;
         const appInfo = await App.getInfo().catch(() => ({ build: '0' }));
         const currentVersionCode = parseInt(appInfo.build || '0') || 0;
-
-        try {
-          await AppUpdate.addListener('onFlexibleUpdateStateChanged', async (state) => {
-            if (state.installStatus === 11) {
-              await AppUpdate.completeFlexibleUpdate().catch(() => {});
-            }
-          });
-        } catch (e) {}
 
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
         
@@ -95,68 +134,43 @@ export default function CapacitorFeatures() {
           }
         }
       } catch (e) {
-        console.error("Update Block Error Safe Bypassed:", e);
+        console.error("Update Logic Error:", e);
       }
     };
 
-    const setupUIAndNotifications = async () => {
+    const init = async () => {
       try {
         await KeepAwake.keepAwake().catch(() => {});
         await FirebaseCrashlytics.setCrashlyticsCollectionEnabled({ enabled: true }).catch(() => {});
 
-        await LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
-          const url = notification.notification.extra?.url;
-          if (url) router.push(url);
-        });
-
-        let pushPerms = await PushNotifications.checkPermissions().catch(() => ({ receive: 'prompt' }));
-        if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions().catch(() => ({ receive: 'denied' }));
-        if (pushPerms.receive === 'granted') {
-          await PushNotifications.register().catch(() => {});
-          await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-            const url = notification.notification.data?.url;
-            if (url) router.push(url);
-          });
-        }
+        await setupListeners();
+        await handleAppUpdate();
+        await syncNotifications().catch(() => {});
       } catch (e) {
-        console.error("UI/Notification Error:", e);
+        console.error("Init Error:", e);
       }
     };
 
-    const handleReviewLogic = () => {
-      const interval = setInterval(async () => {
-        const totalSeconds = parseInt(localStorage.getItem('total_usage_seconds') || '0');
-        const newTotal = totalSeconds + 30;
-        localStorage.setItem('total_usage_seconds', newTotal.toString());
-
-        const alreadyAsked = localStorage.getItem('review_asked') === 'true';
-        
-        if (newTotal >= 1800 && !alreadyAsked) {
-          try {
-            await AppReview.requestReview();
-            localStorage.setItem('review_asked', 'true');
-            clearInterval(interval);
-          } catch (e) {
-            console.error("Review Error:", e);
-          }
-        }
-      }, 30000);
-
-      return interval;
-    };
-
-    const init = async () => {
-      await handleAppUpdate();
-      await setupUIAndNotifications();
-      await syncNotifications().catch(() => {});
-    };
-
     init();
-    const reviewInterval = handleReviewLogic();
+
+    // منطق تقييم التطبيق
+    const interval = setInterval(async () => {
+      const totalSeconds = parseInt(localStorage.getItem('total_usage_seconds') || '0');
+      const newTotal = totalSeconds + 30;
+      localStorage.setItem('total_usage_seconds', newTotal.toString());
+
+      if (newTotal >= 1800 && localStorage.getItem('review_asked') !== 'true') {
+        try {
+          await AppReview.requestReview();
+          localStorage.setItem('review_asked', 'true');
+        } catch (e) {}
+      }
+    }, 30000);
 
     return () => {
-      clearInterval(reviewInterval);
+      clearInterval(interval);
       try {
+        App.removeAllListeners();
         LocalNotifications.removeAllListeners();
         PushNotifications.removeAllListeners();
       } catch (e) {}
