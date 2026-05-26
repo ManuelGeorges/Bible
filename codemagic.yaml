@@ -35,173 +35,119 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Patch Xcode Project
+      - name: Patch Xcode Project (Capabilities & Signing)
         script: |
           PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
           ENT_FILE="ios/App/App/App.entitlements"
 
+          # 1. Force iOS 15.0 Deployment Target
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' "$PROJECT_FILE"
 
+          # 2. Comprehensive Python Patch for Signing & Capabilities
           python3 -c "
-          import re
+          import re, os
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
-
-          # Leave CODE_SIGN_STYLE as Automatic — let Xcode resolve signing
-          # Only set it for the main app target via command line at build time
-
           team_id = '$TEAM_ID'
-          content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
+          
+          # Force Manual Signing Style and Team ID in all configurations
+          content = re.sub(r'ProvisioningStyle = [^;]*;', 'ProvisioningStyle = Manual;', content)
+          content = re.sub(r'CODE_SIGN_STYLE = [^;]*;', 'CODE_SIGN_STYLE = Manual;', content)
           content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
           if 'DEVELOPMENT_TEAM' not in content:
               content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
 
+          # Force Apple Distribution identity for Release
           content = content.replace('\"iPhone Developer\"', '\"Apple Distribution\"')
           content = content.replace('\"iPhone Distribution\"', '\"Apple Distribution\"')
-
+          
+          # Targeted Capability Injection for main App target
           target_id = '504EC3031FED79650016851F'
           caps_str = '''SystemCapabilities = {
-                          com.apple.AppleSignIn = {
-                              enabled = 1;
-                          };
-                          com.apple.Push = {
-                              enabled = 1;
-                          };
+                          com.apple.AppleSignIn = { enabled = 1; };
+                          com.apple.Push = { enabled = 1; };
                       };'''
           if 'SystemCapabilities' not in content:
               pattern = rf'({target_id}\s*=\s*\{{[^}}]*?ProvisioningStyle = Manual;)'
-              content = re.sub(pattern, rf'\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
+              content = re.sub(pattern, rf'\\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
 
+          # Fix Entitlements path strictly
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
-
-          # Remove any hardcoded provisioning profile references
-          content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
-          content = re.sub(r'\s*PROVISIONING_PROFILE_SPECIFIER[^;]*;', '', content)
-
-          # Remove any hardcoded CODE_SIGN_STYLE so xcodebuild flag takes effect cleanly
-          content = re.sub(r'\s*CODE_SIGN_STYLE = [^;]*;', '', content)
-
+          
           with open(path, 'w') as f: f.write(content)
           "
-
+          
           if [ -f "$ENT_FILE" ]; then
             sed -i '' 's/development/production/g' "$ENT_FILE"
           fi
-
-          echo "=== Verifying Xcode Patch ==="
-          grep "DEVELOPMENT_TEAM" "$PROJECT_FILE" | head -3
-          grep "CODE_SIGN_STYLE" "$PROJECT_FILE" | head -3
-          grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
-          echo "=== PROVISIONING_PROFILE check ==="
-          grep -n "PROVISIONING_PROFILE" "$PROJECT_FILE" || echo "✅ Clean - no PROVISIONING_PROFILE found"
-          grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities NOT found"
-          echo "=== Entitlements file ==="
-          cat "$ENT_FILE" || echo "❌ Entitlements file not found"
 
       - name: Initialize Keychain
         script: keychain initialize
 
       - name: Setup Certificate and Provisioning Profile
         script: |
+          # Generate one-time key if secret is missing (for fresh setup)
           if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
-            echo "=== CERTIFICATE_PRIVATE_KEY not set — generating one time key ==="
             openssl genrsa -out /tmp/cert_key.pem 2048
-            openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
-              -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
-            echo "====== COPY THIS KEY INTO CODEMAGIC SECRETS AS CERTIFICATE_PRIVATE_KEY ======"
-            cat /tmp/cert_key_pkcs8.pem
-            echo "====== END OF KEY ======"
+            openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
+            export CERT_KEY_PATH="/tmp/cert_key_pkcs8.pem"
           else
-            echo "✅ CERTIFICATE_PRIVATE_KEY found, using stored key"
             printf '%s\n' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key_pkcs8.pem
+            export CERT_KEY_PATH="/tmp/cert_key_pkcs8.pem"
           fi
 
+          # Fetch and create fresh signing files
           printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
-
-          echo "=== Clearing ALL old provisioning profiles ==="
-          rm -rf "$HOME/Library/MobileDevice/Provisioning Profiles/"
-          rm -rf "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles/"
-          mkdir -p "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"
-          echo "✅ Old profiles cleared"
-
-          echo "=== Enabling Push + Sign In with Apple on App ID ==="
           APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
-          app-store-connect bundles update \
-            "$BUNDLE_ID" \
-            --enable-sign-in-with-apple \
-            --enable-push-notifications || echo "⚠️ Could not update capabilities (may already be enabled)"
-
-          echo "=== Fetching signing files ==="
-          APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
-          app-store-connect fetch-signing-files \
-            "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key @file:/tmp/cert_key_pkcs8.pem \
-            --create
-
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --certificate-key @file:$CERT_KEY_PATH --create
+          
           keychain add-certificates
+          
+          # Extract Profile Info to inject into Xcode
+          PROFILE_PATH=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
+          PROFILE_NAME=$(python3 -c "import plistlib, subprocess; out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH']); p = plistlib.loads(out); print(p['Name'])")
+          echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> $CM_ENV
+          echo "✅ Profile found: $PROFILE_NAME"
 
-          echo "=== Finding profile ==="
-          PROFILE_PATH=$(find "$HOME/Library" -name "*.mobileprovision" 2>/dev/null | head -1)
-          if [ -z "$PROFILE_PATH" ]; then
-            echo "❌ No .mobileprovision file found!"
-            exit 1
-          fi
-
-          echo "✅ Found profile: $PROFILE_PATH"
-
-          echo "=== All installed profiles ==="
-          find "$HOME/Library" -name "*.mobileprovision" 2>/dev/null
-
-          PROFILE_UUID=$(python3 -c "
-          import plistlib, subprocess
-          out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH'])
-          p = plistlib.loads(out)
-          print(p['UUID'])
-          ")
-
-          echo "✅ Profile UUID: $PROFILE_UUID"
-          echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
-
-      - name: Clear Xcode DerivedData
+      - name: Inject Profile Specifier into Project
         script: |
-          rm -rf ~/Library/Developer/Xcode/DerivedData
-          echo "✅ DerivedData cleared"
+          # حقن اسم ملف التعريف مباشرة في إعدادات Xcode لضمان الربط
+          python3 -c "
+          import re, os
+          path = 'ios/App/App.xcodeproj/project.pbxproj'
+          with open(path, 'r') as f: content = f.read()
+          profile_name = os.environ.get('PROVISIONING_PROFILE_NAME')
+          content = re.sub(r'PROVISIONING_PROFILE_SPECIFIER = [^;]*;', f'PROVISIONING_PROFILE_SPECIFIER = \"{profile_name}\";', content)
+          if 'PROVISIONING_PROFILE_SPECIFIER' not in content:
+              content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"{profile_name}\";')
+          with open(path, 'w') as f: f.write(content)
+          "
 
       - name: Build IPA for TestFlight
         script: |
-          echo "=== Build environment ==="
-          echo "PROFILE_UUID: $PROFILE_UUID"
-          echo "TEAM_ID: $TEAM_ID"
-
           ARCHIVE_PATH="$CM_BUILD_DIR/App.xcarchive"
           IPA_DIR="$CM_BUILD_DIR/ipa"
           mkdir -p "$IPA_DIR"
 
-          echo "=== Archiving ==="
+          # الأرشفة مع السماح بتحديثات التوقيع وتجاوز مشاكل الـ SPM
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
+            -allowProvisioningUpdates \
             -skipPackagePluginValidation \
-            -skipPackageSignatureValidation \
-            ONLY_ACTIVE_ARCH=NO
+            -skipPackageSignatureValidation
 
-          echo "=== Exporting IPA ==="
+          # إنشاء ملف التصدير
           cat > /tmp/ExportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store-connect</string>
+            <string>app-store</string>
             <key>teamID</key>
             <string>$TEAM_ID</string>
             <key>uploadBitcode</key>
@@ -209,7 +155,12 @@ workflows:
             <key>uploadSymbols</key>
             <true/>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$BUNDLE_ID</key>
+              <string>$PROVISIONING_PROFILE_NAME</string>
+            </dict>
           </dict>
           </plist>
           EOF
@@ -218,9 +169,6 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$IPA_DIR" \
             -exportOptionsPlist /tmp/ExportOptions.plist
-
-          echo "=== IPA output ==="
-          ls -la "$IPA_DIR"
 
     artifacts:
       - $CM_BUILD_DIR/ipa/*.ipa
