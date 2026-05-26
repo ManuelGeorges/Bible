@@ -11,7 +11,7 @@ import {
   signInWithPopup
 } from 'firebase/auth';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { Capacitor } from '@capacitor-core';
+import { Capacitor } from '@capacitor/core';
 import { auth } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
@@ -25,35 +25,22 @@ const LoginPage = () => {
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
-  // دالة توجيه آمنة خاصة بنظام iOS مع تأخير لضمان حفظ الجلسة في الذاكرة
-  const safeRedirect = async (path) => {
-    if (Capacitor.getPlatform() === 'ios') {
-      // ننتظر نصف ثانية لضمان أن Firebase قام بكتابة الـ Token في IndexedDB
-      await new Promise(resolve => setTimeout(resolve, 500));
-      window.location.href = path;
-    } else {
-      router.replace(path);
-    }
-  };
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && !isSubmitting) {
-        safeRedirect('/');
-      }
+      if (user) router.replace('/');
     });
     return () => unsubscribe();
-  }, [isSubmitting]);
+  }, [router]);
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'لا يوجد اتصال بالإنترنت.';
+      return 'لا يوجد اتصال بالإنترنت. يرجى الاتصال ثم المحاولة.';
     }
     switch (code) {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
       case 'auth/invalid-credential': return 'خطأ في البريد الإلكتروني أو كلمة المرور.';
-      case 'auth/too-many-requests': return 'تم حظر المحاولات مؤقتاً.';
+      case 'auth/too-many-requests': return 'تم حظر المحاولات مؤقتاً. حاول لاحقاً.';
       case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
       case 'auth/popup-closed-by-user': return 'تم إغلاق نافذة تسجيل الدخول.';
       default: return 'حدث خطأ، حاول مرة أخرى.';
@@ -67,9 +54,7 @@ const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      await safeRedirect('/');
     } catch (err) {
-      console.error("Login Error:", err);
       setError(translateError(err.code));
       setIsSubmitting(false);
     }
@@ -88,18 +73,16 @@ const LoginPage = () => {
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
-          await safeRedirect('/');
         } else {
-          setIsSubmitting(false);
+          throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        await safeRedirect('/');
       }
     } catch (err) {
       console.error("Google Auth Error:", err);
-      setError('فشل تسجيل الدخول');
+      setError('فشل تسجيل الدخول بواسطة جوجل. تأكد من إعدادات الخدمة.');
       setIsSubmitting(false);
     }
   };
@@ -117,18 +100,16 @@ const LoginPage = () => {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({ idToken, rawNonce });
           await signInWithCredential(auth, credential);
-          await safeRedirect('/');
         } else {
-          setIsSubmitting(false);
+          throw new Error("No ID Token");
         }
       } else {
         const provider = new OAuthProvider('apple.com');
         await signInWithPopup(auth, provider);
-        await safeRedirect('/');
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
-      setError('فشل تسجيل الدخول');
+      setError('فشل تسجيل الدخول بواسطة آبل');
       setIsSubmitting(false);
     }
   };
@@ -166,22 +147,14 @@ const LoginPage = () => {
 
         <div className={styles.socialButtons}>
           <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
-            {isSubmitting ? <span>...</span> : (
-              <>
-                <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-                <span>جوجل</span>
-              </>
-            )}
+            <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+            <span>جوجل</span>
           </button>
 
           {Capacitor.getPlatform() !== 'android' && (
             <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
-               {isSubmitting ? <span>...</span> : (
-                <>
-                  <Apple size={20} />
-                  <span>آبل</span>
-                </>
-              )}
+              <Apple size={20} />
+              <span>آبل</span>
             </button>
           )}
         </div>

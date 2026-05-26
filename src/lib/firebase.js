@@ -1,17 +1,15 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import {
-  getAuth,
-  initializeAuth,
-  indexedDBLocalPersistence,
-  browserLocalPersistence
+import { 
+  getAuth, 
+  initializeAuth, 
+  browserLocalPersistence 
 } from "firebase/auth";
 import { 
   initializeFirestore, 
-  persistentLocalCache, 
-  persistentMultipleTabManager,
-  memoryLocalCache
+  memoryLocalCache 
 } from "firebase/firestore";
-import { Capacitor } from '@capacitor-core';
+import { getRemoteConfig, isSupported } from "firebase/remote-config";
+import { Capacitor } from '@capacitor/core';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
@@ -25,29 +23,26 @@ const firebaseConfig = {
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// إعداد Auth مع Persistence متعدد لضمان الحفظ على iOS
-const getFirebaseAuth = () => {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      // نضع browserLocalPersistence أولاً لضمان الحفظ الفوري في iOS
-      return initializeAuth(app, {
-        persistence: [browserLocalPersistence, indexedDBLocalPersistence]
-      });
-    } catch (e) {
-      return getAuth(app);
-    }
-  }
-  return getAuth(app);
-};
-
-export const auth = getFirebaseAuth();
+export const auth = initializeAuth(app, {
+  persistence: [browserLocalPersistence]
+});
 
 export const db = initializeFirestore(app, {
-  localCache: Capacitor.isNativePlatform()
-    ? memoryLocalCache()
-    : persistentLocalCache({
-        tabManager: persistentMultipleTabManager()
-      })
+  localCache: memoryLocalCache()
 });
+
+let remoteConfigInstance = null;
+export const getFirebaseRemoteConfig = async () => {
+    if (typeof window === "undefined" || !app) return null;
+    if (remoteConfigInstance) return remoteConfigInstance;
+    try {
+        const supported = await isSupported();
+        if (supported) {
+            remoteConfigInstance = getRemoteConfig(app);
+            return remoteConfigInstance;
+        }
+    } catch (e) { console.error(e); }
+    return null;
+};
 
 export { app };

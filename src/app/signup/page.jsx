@@ -26,35 +26,24 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // دالة توجيه محسنة لنظام iOS مع تأخير لضمان حفظ الجلسة
-  const safeRedirect = async (path) => {
-    if (Capacitor.getPlatform() === 'ios') {
-      // تأخير بسيط (500ms) لضمان أن Firebase انتهى من كتابة بيانات الجلسة في IndexedDB
-      await new Promise(resolve => setTimeout(resolve, 500));
-      window.location.href = path;
-    } else {
-      router.replace(path);
-    }
-  };
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // التوجيه التلقائي فقط إذا وجد مستخدم ولم نكن في وسط عملية إرسال يدوي
       if (user && !isSubmitting) {
-        safeRedirect('/');
+        // توجيه كخطة احتياطية إذا كان المستخدم مسجلاً بالفعل
+        router.replace('/');
       }
     });
     return () => unsubscribe();
-  }, [isSubmitting]);
+  }, [router, isSubmitting]);
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'لا يوجد اتصال بالإنترنت.';
+      return 'لا يوجد اتصال بالإنترنت. يرجى المحاولة لاحقاً.';
     }
     switch (code) {
       case 'auth/email-already-in-use': return 'هذا البريد الإلكتروني مسجل بالفعل.';
       case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
-      case 'auth/weak-password': return 'كلمة المرور ضعيفة.';
+      case 'auth/weak-password': return 'كلمة المرور ضعيفة (6 أحرف على الأقل).';
       case 'auth/network-request-failed': return 'خطأ في الاتصال بالشبكة.';
       default: return 'حدث خطأ، حاول مرة أخرى.';
     }
@@ -71,8 +60,8 @@ export default function SignUpPage() {
       await updateProfile(userCredential.user, {
         displayName: `${firstName} ${lastName}`
       });
-      // ننتظر قليلاً قبل التوجيه لضمان حفظ الـ Profile والـ Session
-      await safeRedirect('/');
+      // التوجيه المباشر يحل مشكلة التعليق في iOS
+      router.replace('/');
     } catch (err) {
       console.error("Signup Error:", err);
       setError(translateError(err.code));
@@ -93,14 +82,14 @@ export default function SignUpPage() {
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
           await signInWithCredential(auth, credential);
-          await safeRedirect('/');
+          router.replace('/');
         } else {
           setIsSubmitting(false);
         }
       } else {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        await safeRedirect('/');
+        router.replace('/');
       }
     } catch (err) {
       console.error("Google Auth Error:", err);
@@ -122,14 +111,14 @@ export default function SignUpPage() {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({ idToken, rawNonce });
           await signInWithCredential(auth, credential);
-          await safeRedirect('/');
+          router.replace('/');
         } else {
           setIsSubmitting(false);
         }
       } else {
         const provider = new OAuthProvider('apple.com');
         await signInWithPopup(auth, provider);
-        await safeRedirect('/');
+        router.replace('/');
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
