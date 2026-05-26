@@ -36,35 +36,36 @@ workflows:
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. إنشاء الشهادة والبروفايل (الأوامر الجديدة)
+          # 2. جلب الشهادات والبروفايلات
+          # إنشاء شهادة جديدة وجلب الملفات
           app-store-connect certificates create --type IOS_DISTRIBUTION --save
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          
+          # استيراد الشهادات يدوياً بكلمة سر فارغة لحل مشكلة Unable to decode
+          for cert in $(find ~/Library -name "*.p12"); do
+            security import "$cert" -k "$CM_KEYCHAIN_PATH" -P "" -A || true
+          done
+          
           keychain add-certificates
           
-          # 3. استخراج الـ UUID بطريقة احترافية (فك التشفير ثم القراءة)
+          # 3. استخراج الـ UUID بعد فك التشفير
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
-          if [ -z "$PROV_PROFILE" ]; then
-            echo "خطأ: لم يتم العثور على بروفايل التوقيع!"
-            exit 1
-          fi
-          
-          # فك تشفير الملف وحفظه كـ XML لسهولة القراءة
           security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
           PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
+          echo "UUID المستخرج: $PROV_UUID"
           
-          echo "تم استخراج UUID بنجاح: $PROV_UUID"
-          
-          # 4. تحديث إعدادات المشروع برمجياً
+          # 4. تحديث المشروع برمجياً (تغيير الـ Identity لـ Apple Distribution)
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/CODE_SIGN_IDENTITY = \"iPhone Distribution\";/CODE_SIGN_IDENTITY = \"Apple Distribution\";/g" "$XCODE_PROJECT/project.pbxproj"
           
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 5. بناء الـ IPA مع تمرير كل شيء لـ Xcode بشكل صريح
+          # 5. بناء الـ IPA
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE=$PROV_UUID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
