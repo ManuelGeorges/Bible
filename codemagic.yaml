@@ -1,5 +1,4 @@
-workflows:
-  ios-testflight:
+workflows:ios-testflight:
     name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m1
@@ -32,23 +31,33 @@ workflows:
       - name: Codemagic Code Signing
         script: |
           keychain initialize
-          # 1. مسح أي بروفايلات قديمة مخزنة في السيرفر
           rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
           
-          # 2. إنشاء وجلب بروفايل جديد (بما أننا حذفنا القديم يدوياً من موقع أبل، سيقوم بإنشاء واحد نظيف يدعم Push و Sign In)
+          # جلب أو إنشاء بروفايل جديد (سيحتوي على الميزات الجديدة تلقائياً)
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          
           keychain add-certificates
           
-          # 3. إجبار المشروع على استخدام التوقيع اليدوي والبروفايلات الجديدة
+          # استخراج الـ UUID والـ Team ID بدقة احترافية
+          PROV_PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
+          PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< $(security cms -D -i "$PROV_PROFILE"))
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin <<< $(security cms -D -i "$PROV_PROFILE"))
+          
+          echo "PROV_UUID=$PROV_UUID" >> $CM_ENV
+          echo "TEAM_ID=$TEAM_ID" >> $CM_ENV
+          
+          # إصلاح ملف المشروع برمجياً لإجبار Xcode على استخدام التوقيع اليدوي والـ Team الصحيح
+          sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
+          
+          # استخدام البروفايلات المجلوبة
           xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
-          # بناء الـ IPA مع التأكيد على أن التوقيع يدوي ليتوافق مع البروفايل المجلوب
+          # بناء الـ IPA مع تمرير كل المعرفات بشكل صريح لقطع الطريق على أي خطأ
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "CODE_SIGN_STYLE=Manual"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID PROVISIONING_PROFILE_SPECIFIER=$PROV_UUID CODE_SIGN_STYLE=Manual CODE_SIGN_ENTITLEMENTS=App/App.entitlements"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
