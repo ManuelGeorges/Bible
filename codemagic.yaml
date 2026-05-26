@@ -19,6 +19,8 @@ workflows:
           UfRyMcdolKCFB5i5/BkJ98E9zAL+fh5UokGF6OXzD/J2Vi/e06JAqPA/LsnZUCzr
           q/a+XVjD
           -----END PRIVATE KEY-----
+        # هام: ضع هنا الـ Team ID من موقع أبل (مثلاً: 4C5D6E7F8G) لضمان العمل 100%
+        TEAM_ID: "XMBVV283C4"
     cache:
       cache_paths:
         - node_modules
@@ -42,43 +44,61 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Patch iOS Project for CI
+      - name: Ultimate Project Patch for CI
         script: |
-          # 1. Force iOS 15.0 Deployment Target
-          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' ios/App/App.xcodeproj/project.pbxproj
-          if [ -f "ios/App/CapApp-SPM/Package.swift" ]; then
-            sed -i '' 's/.iOS(.v[0-9]*)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
-          fi
+          PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
+          ENT_FILE="ios/App/App/App.entitlements"
           
-          # 2. Force Manual Signing Style
-          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
+          # 1. Force Deployment Target to iOS 15.0
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' "$PROJECT_FILE"
           
-          # 3. Robust Capability Injection using Python
+          # 2. Comprehensive Python Patch for Xcode project internals
           python3 -c "
-          import re
-          path = 'ios/App/App.xcodeproj/project.pbxproj'
+          import re, os
+          path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
           
-          # Find the target ID for 'App'
-          target_match = re.search(r'([A-F0-9]{24}) /\* App \*/ = \{', content)
-          if target_match:
-              tid = target_match.group(1)
-              caps = 'SystemCapabilities = { com.apple.Push = { enabled = 1; }; com.apple.AppleSignIn = { enabled = 1; }; };'
-              if 'SystemCapabilities' not in content:
-                  # Inject into TargetAttributes section
-                  pattern = rf'({tid}\s*=\s*\{{[^}}]*?ProvisioningStyle = Manual;)'
-                  content = re.sub(pattern, rf'\1 {caps}', content, flags=re.DOTALL)
+          # Force Manual Signing across all configurations
+          content = re.sub(r'ProvisioningStyle = [^;]*;', 'ProvisioningStyle = Manual;', content)
+          content = re.sub(r'CODE_SIGN_STYLE = [^;]*;', 'CODE_SIGN_STYLE = Manual;', content)
           
-          # Force Entitlements and remove any auto-generated team IDs that might conflict
+          # Inject Team ID if provided
+          team_id = '$TEAM_ID'
+          if team_id and team_id != 'YOUR_TEAM_ID_HERE':
+              content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
+              content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
+              if 'DEVELOPMENT_TEAM' not in content:
+                  content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
+
+          # Force Apple Distribution identity for Release builds
+          content = content.replace('\"iPhone Developer\"', '\"Apple Distribution\"')
+          content = content.replace('\"iPhone Distribution\"', '\"Apple Distribution\"')
+          
+          # Targeted Capability Injection for the main App target (ID: 504EC3031FED79650016851F)
+          target_id = '504EC3031FED79650016851F'
+          caps_str = '''SystemCapabilities = {
+          							com.apple.AppleSignIn = {
+          								enabled = 1;
+          							};
+          							com.apple.Push = {
+          								enabled = 1;
+          							};
+          						};'''
+          
+          # Find TargetAttributes section and inject capabilities
+          if 'SystemCapabilities' not in content:
+              pattern = rf'({target_id}\s*=\s*\{{[^}}]*?ProvisioningStyle = Manual;)'
+              content = re.sub(pattern, rf'\\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
+          
+          # Enforce Entitlements file path
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
           
           with open(path, 'w') as f: f.write(content)
           "
           
-          # 4. Fix Entitlements for Production
-          if [ -f "ios/App/App/App.entitlements" ]; then
-            sed -i '' 's/development/production/g' ios/App/App/App.entitlements
+          # 3. Patch Entitlements file to Production for APS
+          if [ -f \"$ENT_FILE\" ]; then
+            sed -i '' 's/development/production/g' \"$ENT_FILE\"
           fi
 
       - name: Set up Keychain
@@ -86,7 +106,7 @@ workflows:
 
       - name: Fetch Profiles and Code Sign
         script: |
-          # Fetch profiles automatically using API keys
+          # سيقوم هذا الأمر بإنشاء البروفايلات المتوافقة مع الـ API تلقائياً
           xcode-project use-profiles
 
       - name: Build IPA for TestFlight
