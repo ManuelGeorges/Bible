@@ -10,13 +10,13 @@ workflows:
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
         APP_STORE_CONNECT_ISSUER_ID: "f458a0dc-007e-4a1b-88d9-40b42981095d"
-        APP_STORE_CONNECT_KEY_IDENTIFIER: "MN275R95N4"
+        APP_STORE_CONNECT_KEY_IDENTIFIER: "295K9933JP"
         APP_STORE_CONNECT_PRIVATE_KEY: |
           -----BEGIN PRIVATE KEY-----
-          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgllhAeHQA43x283qD
-          UeXfVU1QhYvURPTUcazt8b2KLrqgCgYIKoZIzj0DAQehRANCAAQV9v/nzcRClJZL
-          UfRyMcdolKCFB5i5/BkJ98E9zAL+fh5UokGF6OXzD/J2Vi/e06JAqPA/LsnZUCzr
-          q/a+XVjD
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgpwcrVDjfjhZ4/Lwc
+          YBh6Y5BEN4qLg9KK9iXAoi18WvmgCgYIKoZIzj0DAQehRANCAAQwlRZUPQBRc7nz
+          WsR71RpKbSqRCpOxWTU8FXbMLS1payrCQ7sUayi0rVjWvTiiK/vM+JXf1Fnzy3wp
+          VaufLrTu
           -----END PRIVATE KEY-----
         TEAM_ID: "XMBVV283C4"
     cache:
