@@ -34,11 +34,15 @@ workflows:
           keychain initialize
           rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
           
-          # جلب أو إنشاء بروفايل جديد (سيحتوي على الميزات الجديدة تلقائياً)
+          # 1. إنشاء شهادة توزيع جديدة (لأنك حذفت القديمة)
+          app-store-connect create-certificate --type IOS_DISTRIBUTION --save
+          
+          # 2. إنشاء وجلب بروفايل جديد يربط الشهادة بالـ Bundle ID والميزات (Push & Sign In)
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          
           keychain add-certificates
           
-          # استخراج الـ UUID والـ Team ID بدقة احترافية
+          # 3. استخراج الـ UUID والـ Team ID برمجياً لضمان الدقة
           PROV_PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
           PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< $(security cms -D -i "$PROV_PROFILE"))
           TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin <<< $(security cms -D -i "$PROV_PROFILE"))
@@ -46,11 +50,10 @@ workflows:
           echo "PROV_UUID=$PROV_UUID" >> $CM_ENV
           echo "TEAM_ID=$TEAM_ID" >> $CM_ENV
           
-          # إصلاح ملف المشروع برمجياً لإجبار Xcode على استخدام التوقيع اليدوي
+          # 4. إصلاح ملف المشروع برمجياً لإجبار Xcode على استخدام التوقيع اليدوي
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           
-          # استخدام البروفايلات المجلوبة
           xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
