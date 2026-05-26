@@ -5,7 +5,7 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       groups:
-        - ios-secrets
+        - ios-secrets # تأكد أن هذا هو اسم المجموعة في إعدادات Codemagic
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -30,6 +30,7 @@ workflows:
       - name: Codemagic Code Signing
         script: |
           keychain initialize
+          # سيستخدم المتغيرات التي أضفتها أنت في ios-secrets تلقائياً
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
@@ -42,5 +43,8 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        auth: integration
+        # قمنا باستبدال auth: integration بالمتغيرات التي أضفتها يدوياً
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        private_key: $APP_STORE_CONNECT_PRIVATE_KEY
         submit_to_testflight: true
