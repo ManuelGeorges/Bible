@@ -45,4 +45,3 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        beta_build_description: "Build $BUILD_NUMBER uploaded via Codemagic"
