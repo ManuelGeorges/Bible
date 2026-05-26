@@ -12,6 +12,7 @@ workflows:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
+        TEAM_ID: "XMBVV283C4" # الـ Team ID الخاص بك
       node: latest
       xcode: latest
       cocoapods: default
@@ -31,33 +32,32 @@ workflows:
           agvtool new-version -all $(($BUILD_NUMBER + 100))
       - name: Build and Sign IPA
         script: |
-          # 1. تهيئة الـ Keychain وتنظيف البروفايلات القديمة
+          # 1. تهيئة الـ Keychain وتنظيف البروفايلات القديمة في السيرفر
           keychain initialize
           rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
           
-          # 2. إنشاء الشهادة والبروفايل (بما أنك حذفتهم، سيتم إنشاؤهم الآن بدعم Push و Sign In)
+          # 2. إنشاء الشهادة والبروفايل (بما أنك حذفتهم، سيتم إنشاؤهم الآن بدعم الميزات الحالية)
           app-store-connect create-certificate --type IOS_DISTRIBUTION --save
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
-          # 3. استخراج المعرفات UUID و Team ID محلياً لاستخدامها فوراً
+          # 3. استخراج الـ UUID الخاص بالبروفايل الجديد لربطه بـ Xcode
           PROV_PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
           if [ -z "$PROV_PROFILE" ]; then
-            echo "خطأ: لم يتم العثور على بروفايل التوقيع!"
+            echo "خطأ: لم يتم العثور على بروفايل التوقيع في السيرفر!"
             exit 1
           fi
           
           PROV_UUID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin)
-          TEAM_ID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin)
+          echo "تم جلب بروفايل جديد بنجاح: $PROV_UUID"
           
-          echo "تم العثور على Team ID: $TEAM_ID"
-          echo "تم العثور على Profile UUID: $PROV_UUID"
-          
-          # 4. تحديث إعدادات المشروع برمجياً للتوقيع اليدوي
+          # 4. تحديث إعدادات المشروع برمجياً للتوقيع اليدوي وربط الـ Team ID
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
+          sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
+          
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 5. بناء الـ IPA مع تمرير كل المعرفات المطلوبة لـ Xcode
+          # 5. بناء الـ IPA مع تمرير المعرفات بشكل صريح لقطع الطريق على أي خطأ
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
