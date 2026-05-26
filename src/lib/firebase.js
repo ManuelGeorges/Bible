@@ -3,11 +3,12 @@ import { getAuth } from "firebase/auth";
 import { 
   initializeFirestore, 
   persistentLocalCache, 
-  persistentMultipleTabManager 
+  persistentMultipleTabManager,
+  memoryLocalCache
 } from "firebase/firestore";
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
+import { Capacitor } from '@capacitor/core';
 
-// إعدادات Firebase - تم تحديث الـ API Key ليتطابق مع إعدادات المشروع
 const firebaseConfig = {
   apiKey: "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
   authDomain: "profiles-system.firebaseapp.com",
@@ -30,12 +31,14 @@ const initializeFirebase = () => {
 
 const app = initializeFirebase();
 
-// تصدير الخدمات بشكل آمن
+// استخدام الكاش المستمر فقط في الويب، وفي الكاباسيتور نستخدم إعدادات أبسط لتجنب التعليق على iOS
 export const auth = app ? getAuth(app) : null;
 export const db = app ? initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
+  localCache: Capacitor.isNativePlatform()
+    ? memoryLocalCache()
+    : persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
 }) : null;
 
 export { app };

@@ -8,14 +8,13 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
   onAuthStateChanged,
-  signInWithCredential
+  signInWithCredential,
+  updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
-import { auth, db } from '../../lib/firebase';
+import { auth } from '../../lib/firebase';
 import styles from './signup.module.css';
-import { getCairoIsoString } from '../../lib/dateUtils';
 import { Apple } from 'lucide-react';
 
 export default function SignUpPage() {
@@ -33,23 +32,6 @@ export default function SignUpPage() {
     });
     return () => unsubscribe();
   }, [router]);
-
-  const handleUserData = async (user) => {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      const [fName, ...lName] = (user.displayName || "مستخدم جديد").split(' ');
-      await setDoc(userRef, {
-        firstName: fName,
-        lastName: lName.join(' ') || '',
-        email: user.email,
-        createdAt: getCairoIsoString(),
-        favorites: { verses: {} },
-        completedChapters: {},
-        completedPlans: {}
-      });
-    }
-  };
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
@@ -72,16 +54,13 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        firstName,
-        lastName,
-        email: userCredential.user.email,
-        createdAt: getCairoIsoString(),
-        favorites: { verses: {} },
-        completedChapters: {},
-        completedPlans: {}
+      // تحديث الاسم في ملف التعريف الشخصي فقط، وسيقوم UserTracker بإنشاء مستند Firestore
+      await updateProfile(userCredential.user, {
+        displayName: `${firstName} ${lastName}`
       });
+      router.push('/');
     } catch (err) {
+      console.error("Signup Error:", err);
       setError(translateError(err.code));
       setIsSubmitting(false);
     }
@@ -99,18 +78,18 @@ export default function SignUpPage() {
         const idToken = result.credential?.idToken;
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
+          await signInWithCredential(auth, credential);
+          router.push('/');
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        await signInWithPopup(auth, provider);
+        router.push('/');
       }
     } catch (err) {
-      console.error(err);
+      console.error("Google Auth Error:", err);
       setError('فشل التسجيل بواسطة جوجل');
       setIsSubmitting(false);
     }
@@ -128,15 +107,15 @@ export default function SignUpPage() {
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({ idToken, rawNonce });
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
+          await signInWithCredential(auth, credential);
+          router.push('/');
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new OAuthProvider('apple.com');
-        const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        await signInWithPopup(auth, provider);
+        router.push('/');
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
@@ -151,11 +130,11 @@ export default function SignUpPage() {
         <h1 className={styles.title}>إنشاء حساب جديد</h1>
         <form onSubmit={handleAuth} className={styles.form}>
           <div className={styles.nameRow}>
-            <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} />
-            <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} />
+            <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+            <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           </div>
-          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} />
-          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} />
+          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           {error && <div className={styles.errorBox}>{error}</div>}
           <button type="submit" className={styles.button} disabled={isSubmitting}>
             {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
@@ -167,13 +146,13 @@ export default function SignUpPage() {
         <div className={styles.socialButtons}>
           <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
             <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-            <span>{isSubmitting ? '...' : 'جوجل'}</span>
+            <span>جوجل</span>
           </button>
 
           {Capacitor.getPlatform() !== 'android' && (
             <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
               <Apple size={20} />
-              <span>{isSubmitting ? '...' : 'آبل'}</span>
+              <span>آبل</span>
             </button>
           )}
         </div>

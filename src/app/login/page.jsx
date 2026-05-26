@@ -10,13 +10,11 @@ import {
   signInWithCredential,
   signInWithPopup
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
-import { auth, db } from '../../lib/firebase';
+import { auth } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
-import { getCairoIsoString } from '../../lib/dateUtils';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -29,27 +27,13 @@ const LoginPage = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace('/');
+      if (user) {
+        // إذا وجد مستخدم، نوجهه للرئيسية فوراً
+        router.replace('/');
+      }
     });
     return () => unsubscribe();
   }, [router]);
-
-  const handleUserData = async (user) => {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      const [fName, ...lName] = (user.displayName || "مستخدم جديد").split(' ');
-      await setDoc(userRef, {
-        firstName: fName,
-        lastName: lName.join(' ') || '',
-        email: user.email,
-        createdAt: getCairoIsoString(),
-        favorites: { verses: {} },
-        completedChapters: {},
-        completedPlans: {}
-      });
-    }
-  };
 
   const translateError = (code) => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
@@ -73,7 +57,9 @@ const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // التوجيه سيتم تلقائياً عبر onAuthStateChanged
     } catch (err) {
+      console.error("Login Error:", err);
       setError(translateError(err.code));
       setIsSubmitting(false);
     }
@@ -91,19 +77,18 @@ const LoginPage = () => {
         const idToken = result.credential?.idToken;
         if (idToken) {
           const credential = GoogleAuthProvider.credential(idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
+          await signInWithCredential(auth, credential);
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        await signInWithPopup(auth, provider);
       }
+      // التوجيه سيتم تلقائياً عبر onAuthStateChanged
     } catch (err) {
       console.error("Google Auth Error:", err);
-      setError('فشل تسجيل الدخول بواسطة جوجل. تأكد من إعدادات الخدمة.');
+      setError('فشل تسجيل الدخول بواسطة جوجل');
       setIsSubmitting(false);
     }
   };
@@ -120,16 +105,15 @@ const LoginPage = () => {
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({ idToken, rawNonce });
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
+          await signInWithCredential(auth, credential);
         } else {
           throw new Error("No ID Token");
         }
       } else {
         const provider = new OAuthProvider('apple.com');
-        const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        await signInWithPopup(auth, provider);
       }
+      // التوجيه سيتم تلقائياً عبر onAuthStateChanged
     } catch (err) {
       console.error("Apple Auth Error:", err);
       setError('فشل تسجيل الدخول بواسطة آبل');
