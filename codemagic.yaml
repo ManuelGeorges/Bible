@@ -92,7 +92,7 @@ workflows:
       - name: Initialize Keychain
         script: keychain initialize
 
-- name: Auto-Create Certificate and Provisioning Profile
+      - name: Auto-Create Certificate and Provisioning Profile
         script: |
           echo "=== Checking env vars ==="
           echo "ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID"
