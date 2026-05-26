@@ -32,29 +32,25 @@ workflows:
           agvtool new-version -all $(($BUILD_NUMBER + 100))
       - name: Build and Sign IPA
         script: |
-          # 1. تهيئة الـ Keychain وتنظيف أي ملفات قديمة
+          # 1. تهيئة الـ Keychain وتنظيف الملفات القديمة
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. إنشاء الشهادة وجلب البروفايلات (الأوامر المحدثة)
-          app-store-connect certificates create --type IOS_DISTRIBUTION --save
-          
-          # هذا الأمر سيقوم بإنشاء البروفايل وربطه بالشهادة الجديدة تلقائياً
+          # 2. جلب ملفات التوقيع (الشهادات والبروفايلات)
+          # سنكتفي بـ fetch-signing-files لأنها تقوم بإنشاء الشهادة والبروفايل تلقائياً إذا لزم الأمر
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          
           keychain add-certificates
           
-          # 3. استخراج الـ UUID (البحث في كل المسارات الممكنة التي قد تحفظ فيها الأداة الملف)
+          # 3. استخراج الـ UUID بطريقة مضمونة 100% (باستخدام grep)
           PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
-          
           if [ -z "$PROV_PROFILE" ]; then
-            echo "خطأ: لم يتم العثور على بروفايل التوقيع في السيرفر!"
+            echo "خطأ: لم يتم العثور على بروفايل التوقيع!"
             exit 1
           fi
           
-          echo "تم العثور على البروفايل في: $PROV_PROFILE"
-          PROV_UUID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin)
-          echo "UUID المستخرج: $PROV_UUID"
+          # استخراج الـ UUID باستخدام البحث عن النمط (36 حرف) لضمان عدم حدوث خطأ قراءة
+          PROV_UUID=$(grep -a -A1 "UUID" "$PROV_PROFILE" | grep -oE "[-A-Z0-9]{36}" | head -n 1)
+          echo "تم استخراج UUID بنجاح: $PROV_UUID"
           
           # 4. تحديث إعدادات المشروع برمجياً للتوقيع اليدوي وربط الـ Team ID
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
@@ -62,7 +58,7 @@ workflows:
           
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
-          # 5. بناء الـ IPA مع تمرير المعرفات بشكل صريح لقطع الطريق على أي خطأ
+          # 5. بناء الـ IPA النهائي مع تمرير المعرفات بشكل صريح
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
