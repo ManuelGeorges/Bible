@@ -44,44 +44,48 @@ workflows:
 
       - name: Patch iOS Project for CI
         script: |
-          # 1. Force iOS 15.0 for plugin compatibility
+          # 1. Force iOS 15.0 Deployment Target
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' ios/App/App.xcodeproj/project.pbxproj
           if [ -f "ios/App/CapApp-SPM/Package.swift" ]; then
             sed -i '' 's/.iOS(.v[0-9]*)/.iOS(.v15)/g' ios/App/CapApp-SPM/Package.swift
           fi
           
-          # 2. Set Signing to Manual so Codemagic can manage it via API
+          # 2. Set Signing to Manual
           sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
           
-          # 3. Inject SystemCapabilities to satisfy Xcode requirements for Push and Apple Sign In
-          # This tells Xcode that these capabilities are explicitly enabled for the target.
+          # 3. Inject SystemCapabilities using Python (Robust Regex)
+          # This explicitly tells Xcode that Push and Apple Sign In are REQUIRED.
           python3 -c "
-          import os
+          import re
           path = 'ios/App/App.xcodeproj/project.pbxproj'
           with open(path, 'r') as f: content = f.read()
-          cap_block = 'SystemCapabilities = { com.apple.Push = { enabled = 1; }; com.apple.AppleSignIn = { enabled = 1; }; };'
+          target_id = '504EC3031FED79650016851F'
+          cap_block = '\n\t\t\t\t\t\tSystemCapabilities = {\n\t\t\t\t\t\t\tcom.apple.Push = { enabled = 1; };\n\t\t\t\t\t\t\tcom.apple.AppleSignIn = { enabled = 1; };\n\t\t\t\t\t\t};'
           if 'SystemCapabilities' not in content:
-              content = content.replace('ProvisioningStyle = Manual;', f'ProvisioningStyle = Manual; {cap_block}')
+              # البحث عن مكان حقن القدرات داخل TargetAttributes
+              pattern = rf'({target_id} = \{{[^}}]*?ProvisioningStyle = Manual;)'
+              content = re.sub(pattern, rf'\1{cap_block}', content, flags=re.DOTALL)
               with open(path, 'w') as f: f.write(content)
           "
           
-          # 4. Fix Entitlements path
+          # 4. Fix Entitlements path and Production setting
           sed -i '' 's|CODE_SIGN_ENTITLEMENTS = [^;]*;|CODE_SIGN_ENTITLEMENTS = App/App.entitlements;|g' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/development/production/g' ios/App/App/App.entitlements
 
       - name: Set up Keychain
         script: keychain initialize
 
       - name: Fetch Profiles and Code Sign
         script: |
-          # Fetch profiles automatically using API keys (no unrecognized flags)
+          # Fetch profiles automatically using API keys
           xcode-project use-profiles
 
       - name: Build IPA for TestFlight
         script: |
           xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
+            --project \"$XCODE_PROJECT\" \
+            --scheme \"$XCODE_SCHEME\" \
             --config Release
 
     artifacts:
