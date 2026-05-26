@@ -47,7 +47,6 @@ workflows:
           PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
           ENT_FILE="ios/App/App/App.entitlements"
 
-          # Force Deployment Target to iOS 15.0
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' "$PROJECT_FILE"
 
           python3 -c "
@@ -55,22 +54,18 @@ workflows:
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
 
-          # Force Manual Signing
           content = re.sub(r'ProvisioningStyle = [^;]*;', 'ProvisioningStyle = Manual;', content)
           content = re.sub(r'CODE_SIGN_STYLE = [^;]*;', 'CODE_SIGN_STYLE = Manual;', content)
 
-          # Inject Team ID
           team_id = '$TEAM_ID'
           content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
           content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
           if 'DEVELOPMENT_TEAM' not in content:
               content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
 
-          # Force Apple Distribution identity
           content = content.replace('\"iPhone Developer\"', '\"Apple Distribution\"')
           content = content.replace('\"iPhone Distribution\"', '\"Apple Distribution\"')
 
-          # Inject SystemCapabilities for Push + Sign In with Apple
           target_id = '504EC3031FED79650016851F'
           caps_str = '''SystemCapabilities = {
                           com.apple.AppleSignIn = {
@@ -84,28 +79,30 @@ workflows:
               pattern = rf'({target_id}\s*=\s*\{{[^}}]*?ProvisioningStyle = Manual;)'
               content = re.sub(pattern, rf'\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
 
-          # Enforce Entitlements path
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
           with open(path, 'w') as f: f.write(content)
           "
 
-          # Patch Entitlements to Production APS environment
           if [ -f "$ENT_FILE" ]; then
             sed -i '' 's/development/production/g' "$ENT_FILE"
           fi
 
-          # Verify patch
-          echo "=== Verifying patch ==="
+          echo "=== Verifying Xcode Patch ==="
           grep "DEVELOPMENT_TEAM" "$PROJECT_FILE" | head -3
           grep "CODE_SIGN_STYLE" "$PROJECT_FILE" | head -3
-          grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities not found"
+          grep "CODE_SIGN_ENTITLEMENTS" "$PROJECT_FILE" | head -3
+          grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities NOT found"
+
+          echo "=== Entitlements file ==="
+          cat "$ENT_FILE" || echo "❌ Entitlements file not found at $ENT_FILE"
 
       - name: Initialize Keychain
         script: keychain initialize
 
       - name: Auto-Create Certificate and Provisioning Profile
         script: |
+          echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files \
             "$BUNDLE_ID" \
             --type IOS_APP_STORE \
@@ -113,14 +110,51 @@ workflows:
             --delete
 
           keychain add-certificates
-          xcode-project use-profiles
+
+          echo "=== Profiles downloaded ==="
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "❌ No profiles folder found"
+
+          echo "=== Profile details ==="
+          for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
+            echo "--- File: $f ---"
+            security cms -D -i "$f" | grep -E "Name|UUID|TeamIdentifier|Entitlements|aps-environment|com.apple.developer.applesignin" -A2
+          done
+
+          echo "=== Certificates in Keychain ==="
+          security find-identity -v -p codesigning
+
+          echo "=== Running use-profiles ==="
+          xcode-project use-profiles --verbose || true
+
+          echo "=== Extracting Profile UUID ==="
+          PROFILE_UUID=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -1 | xargs -I{} python3 -c "
+          import plistlib, subprocess, sys
+          out = subprocess.check_output(['security', 'cms', '-D', '-i', sys.argv[1]])
+          p = plistlib.loads(out)
+          print(p['UUID'])
+          " {})
+
+          echo "✅ Profile UUID: $PROFILE_UUID"
+          echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
 
       - name: Build IPA for TestFlight
         script: |
+          echo "=== Build environment ==="
+          echo "PROFILE_UUID: $PROFILE_UUID"
+          echo "TEAM_ID: $TEAM_ID"
+          echo "BUNDLE_ID: $BUNDLE_ID"
+
+          echo "=== Final pbxproj signing settings ==="
+          grep -E "CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM" ios/App/App.xcodeproj/project.pbxproj | head -20
+
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --config Release
+            --config Release \
+            --xcarg "PROVISIONING_PROFILE=$PROFILE_UUID" \
+            --xcarg "PROVISIONING_PROFILE_SPECIFIER=" \
+            --xcarg "CODE_SIGN_IDENTITY=Apple Distribution" \
+            --xcarg "DEVELOPMENT_TEAM=$TEAM_ID"
 
     artifacts:
       - build/ios/ipa/*.ipa
