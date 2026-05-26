@@ -29,35 +29,35 @@ workflows:
         script: |
           cd ios/App
           agvtool new-version -all $(($BUILD_NUMBER + 100))
-      - name: Codemagic Code Signing
+      - name: Build and Sign IPA
         script: |
+          # 1. تهيئة الـ Keychain وتنظيف البروفايلات القديمة
           keychain initialize
           rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
           
-          # 1. إنشاء شهادة توزيع جديدة (لأنك حذفت القديمة)
+          # 2. إنشاء الشهادة والبروفايل (بما أنك حذفتهم، سيتم إنشاؤهم الآن بدعم Push و Sign In)
           app-store-connect create-certificate --type IOS_DISTRIBUTION --save
-          
-          # 2. إنشاء وجلب بروفايل جديد يربط الشهادة بالـ Bundle ID والميزات (Push & Sign In)
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          
           keychain add-certificates
           
-          # 3. استخراج الـ UUID والـ Team ID برمجياً لضمان الدقة
+          # 3. استخراج المعرفات UUID و Team ID محلياً لاستخدامها فوراً
           PROV_PROFILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -n 1)
-          PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< $(security cms -D -i "$PROV_PROFILE"))
-          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin <<< $(security cms -D -i "$PROV_PROFILE"))
+          if [ -z "$PROV_PROFILE" ]; then
+            echo "خطأ: لم يتم العثور على بروفايل التوقيع!"
+            exit 1
+          fi
           
-          echo "PROV_UUID=$PROV_UUID" >> $CM_ENV
-          echo "TEAM_ID=$TEAM_ID" >> $CM_ENV
+          PROV_UUID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin)
+          TEAM_ID=$(security cms -D -i "$PROV_PROFILE" | /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin)
           
-          # 4. إصلاح ملف المشروع برمجياً لإجبار Xcode على استخدام التوقيع اليدوي
+          echo "تم العثور على Team ID: $TEAM_ID"
+          echo "تم العثور على Profile UUID: $PROV_UUID"
+          
+          # 4. تحديث إعدادات المشروع برمجياً للتوقيع اليدوي
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
-          sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
-          
           xcode-project use-profiles --project "$XCODE_PROJECT"
-      - name: Build IPA
-        script: |
-          # بناء الـ IPA مع تمرير المعرفات لضمان مطابقة الـ Capabilities
+          
+          # 5. بناء الـ IPA مع تمرير كل المعرفات المطلوبة لـ Xcode
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
