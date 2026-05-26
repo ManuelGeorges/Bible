@@ -68,7 +68,7 @@ workflows:
 
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
 
-          # Strip everything that could conflict with automatic signing
+          # Strip conflicting manual signing settings — let xcodebuild flags take over
           content = re.sub(r'\s*CODE_SIGN_STYLE = [^;]*;', '', content)
           content = re.sub(r'\s*CODE_SIGN_IDENTITY[^;]*;', '', content)
           content = re.sub(r'\s*PROVISIONING_PROFILE[^;]*;', '', content)
@@ -95,29 +95,9 @@ workflows:
       - name: Initialize Keychain
         script: keychain initialize
 
-      - name: Setup Certificate and Provisioning Profile
+      - name: Setup ASC API Key
         script: |
-          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
-            echo "=== CERTIFICATE_PRIVATE_KEY not set — generating one time key ==="
-            openssl genrsa -out /tmp/cert_key.pem 2048
-            openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
-              -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
-            echo "====== COPY THIS KEY INTO CODEMAGIC SECRETS AS CERTIFICATE_PRIVATE_KEY ======"
-            cat /tmp/cert_key_pkcs8.pem
-            echo "====== END OF KEY ======"
-          else
-            echo "✅ CERTIFICATE_PRIVATE_KEY found, using stored key"
-            printf '%s\n' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key_pkcs8.pem
-          fi
-
           printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
-
-          echo "=== Clearing ALL old provisioning profiles ==="
-          rm -rf "$HOME/Library/MobileDevice/Provisioning Profiles/"
-          rm -rf "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles/"
-          mkdir -p "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"
-          echo "✅ Old profiles cleared"
 
           echo "=== Enabling Push + Sign In with Apple on App ID ==="
           APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
@@ -126,37 +106,7 @@ workflows:
             --enable-sign-in-with-apple \
             --enable-push-notifications || echo "⚠️ Could not update capabilities (may already be enabled)"
 
-          echo "=== Fetching signing files ==="
-          APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/asc_key.p8)" \
-          app-store-connect fetch-signing-files \
-            "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key @file:/tmp/cert_key_pkcs8.pem \
-            --create
-
-          keychain add-certificates
-
-          echo "=== Finding profile ==="
-          PROFILE_PATH=$(find "$HOME/Library" -name "*.mobileprovision" 2>/dev/null | head -1)
-          if [ -z "$PROFILE_PATH" ]; then
-            echo "❌ No .mobileprovision file found!"
-            exit 1
-          fi
-
-          echo "✅ Found profile: $PROFILE_PATH"
-
-          echo "=== All installed profiles ==="
-          find "$HOME/Library" -name "*.mobileprovision" 2>/dev/null
-
-          PROFILE_UUID=$(python3 -c "
-          import plistlib, subprocess
-          out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH'])
-          p = plistlib.loads(out)
-          print(p['UUID'])
-          ")
-
-          echo "✅ Profile UUID: $PROFILE_UUID"
-          echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
+          echo "✅ ASC API key ready"
 
       - name: Clear Xcode DerivedData
         script: |
@@ -166,7 +116,6 @@ workflows:
       - name: Build IPA for TestFlight
         script: |
           echo "=== Build environment ==="
-          echo "PROFILE_UUID: $PROFILE_UUID"
           echo "TEAM_ID: $TEAM_ID"
 
           ARCHIVE_PATH="$CM_BUILD_DIR/App.xcarchive"
@@ -183,6 +132,7 @@ workflows:
             COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$TEAM_ID" \
+            -allowProvisioningUpdates \
             -skipPackagePluginValidation \
             -skipPackageSignatureValidation \
             ONLY_ACTIVE_ARCH=NO
@@ -210,7 +160,8 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$IPA_DIR" \
-            -exportOptionsPlist /tmp/ExportOptions.plist
+            -exportOptionsPlist /tmp/ExportOptions.plist \
+            -allowProvisioningUpdates
 
           echo "=== IPA output ==="
           ls -la "$IPA_DIR"
@@ -221,6 +172,6 @@ workflows:
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
