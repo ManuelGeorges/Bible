@@ -1,116 +1,48 @@
 workflows:
-  ios-release:
-    name: Build iOS Release (TestFlight)
+  ios-testflight:
+    name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
-      node: 22
+      groups:
+        - ios-secrets # اسم المجموعة التي تحتوي على مفاتيح Apple في Codemagic
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
-        # App Store Connect API Keys
-        APP_STORE_CONNECT_ISSUER_ID: "f458a0dc-007e-4a1b-88d9-40b42981095d"
-        APP_STORE_CONNECT_KEY_IDENTIFIER: "MN275R95N4"
-        APP_STORE_CONNECT_PRIVATE_KEY: |
-          -----BEGIN PRIVATE KEY-----
-          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgllhAeHQA43x283qD
-          UeXfVU1QhYvURPTUcazt8b2KLrqgCgYIKoZIzj0DAQehRANCAAQV9v/nzcRClJZL
-          UfRyMcdolKCFB5i5/BkJ98E9zAL+fh5UokGF6OXzD/J2Vi/e06JAqPA/LsnZUCzr
-          q/a+XVjD
-          -----END PRIVATE KEY-----
-        # معرف الفريق (Team ID)
-        TEAM_ID: "XMBVV283C4"
-    cache:
-      cache_paths:
-        - node_modules
-        - ~/.npm
-
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: 'main'
-
+      node: latest
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Install Dependencies
+      - name: Install dependencies
         script: |
-          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
-
-      - name: Build Next.js Static Export
-        script: npm run build:mobile
-
-      - name: Capacitor Sync
+          npm install
+      - name: Build web project
+        script: |
+          npm run build:mobile
+      - name: Sync Capacitor
         script: |
           npx cap sync ios
-
-      - name: Ultimate CI Patch (Target-Specific Signing)
+      - name: Increment Build Number
         script: |
-          PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
-          ENT_FILE="ios/App/App/App.entitlements"
-          
-          # 1. Force iOS 15.0 Target
-          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' "$PROJECT_FILE"
-          
-          # 2. Python Patch to fix only the main App target and inject capabilities
-          python3 -c "
-          import re, os
-          path = '$PROJECT_FILE'
-          with open(path, 'r') as f: content = f.read()
-          team_id = '$TEAM_ID'
-          target_id = '504EC3031FED79650016851F' # ID for 'App' target
-          
-          # Force Team ID and manual signing for the MAIN app only
-          # This prevents conflicts with SPM libraries
-          pattern = rf'({target_id} = \{{[^}}]*?ProvisioningStyle = )\w+;'
-          content = re.sub(pattern, r'\1Manual;', content)
-          
-          # Inject Capabilities into TargetAttributes
-          caps = 'SystemCapabilities = { com.apple.Push = { enabled = 1; }; com.apple.AppleSignIn = { enabled = 1; }; };'
-          if 'SystemCapabilities' not in content:
-              pattern_caps = rf'({target_id} = \{{[^}}]*?ProvisioningStyle = Manual;)'
-              content = re.sub(pattern_caps, rf'\\1\n\t\t\t\t\t\t{caps}', content, flags=re.DOTALL)
-          
-          # Globally set Team ID in build settings to satisfy Xcode 15
-          content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
-          if 'DEVELOPMENT_TEAM' not in content:
-              content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
-          
-          # Fix Entitlements reference
-          content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
-          
-          with open(path, 'w') as f: f.write(content)
-          "
-          
-          # 3. Patch Entitlements file to Production
-          if [ -f \"$ENT_FILE\" ]; then
-            sed -i '' 's/development/production/g' \"$ENT_FILE\"
-          fi
-
-      - name: Set up Keychain
-        script: keychain initialize
-
-      - name: Fetch and Link Profiles
+          # هذه الخطوة تزيد رقم الـ Build تلقائياً بناءً على رقم العملية في Codemagic
+          cd ios/App
+          agvtool new-version -all $(($BUILD_NUMBER + 100))
+      - name: Codemagic Code Signing
         script: |
-          # Generate/Fetch a profile that specifically has Push/SignIn enabled
+          keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
-
-      - name: Build IPA for TestFlight
+      - name: Build IPA
         script: |
-          # Use xcode-project build-ipa which is optimized for Codemagic environment
           xcode-project build-ipa \
-            --project \"$XCODE_PROJECT\" \
-            --scheme \"$XCODE_SCHEME\" \
-            --config Release
-
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
-
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
         submit_to_testflight: true
+        beta_build_description: "Build $BUILD_NUMBER uploaded via Codemagic"
