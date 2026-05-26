@@ -77,6 +77,9 @@ workflows:
           with open(path, 'w') as f: f.write(content)
           "
 
+          # Remove any hardcoded provisioning profile specifiers so SPM packages don't inherit them
+          sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' "$PROJECT_FILE"
+
           if [ -f "$ENT_FILE" ]; then
             sed -i '' 's/development/production/g' "$ENT_FILE"
           fi
@@ -92,13 +95,20 @@ workflows:
       - name: Initialize Keychain
         script: keychain initialize
 
-      - name: Auto-Create Certificate and Provisioning Profile
+      - name: Setup Certificate and Provisioning Profile
         script: |
-          echo "=== Generating private key ==="
-          openssl genrsa -out /tmp/cert_key.pem 2048
-          openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
-            -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
-          echo "✅ Private key generated"
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "=== CERTIFICATE_PRIVATE_KEY not set — generating one time key ==="
+            openssl genrsa -out /tmp/cert_key.pem 2048
+            openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
+              -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
+            echo "====== COPY THIS KEY INTO CODEMAGIC SECRETS AS CERTIFICATE_PRIVATE_KEY ======"
+            cat /tmp/cert_key_pkcs8.pem
+            echo "====== END OF KEY ======"
+          else
+            echo "✅ CERTIFICATE_PRIVATE_KEY found, using stored key"
+            printf '%s\n' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key_pkcs8.pem
+          fi
 
           printf '%s\n' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/asc_key.p8
 
@@ -148,12 +158,15 @@ workflows:
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
             PROVISIONING_PROFILE="$PROFILE_UUID" \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            -skipPackagePluginValidation \
+            "PROVISIONING_PROFILE[sdk=iphoneos*]"="$PROFILE_UUID" \
+            "CODE_SIGN_IDENTITY[sdk=iphoneos*]"="Apple Distribution"
 
           echo "=== Exporting IPA ==="
           cat > /tmp/ExportOptions.plist << EOF
