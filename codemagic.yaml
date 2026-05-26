@@ -9,7 +9,6 @@ workflows:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
-        # App Store Connect API Keys
         APP_STORE_CONNECT_ISSUER_ID: "f458a0dc-007e-4a1b-88d9-40b42981095d"
         APP_STORE_CONNECT_KEY_IDENTIFIER: "MN275R95N4"
         APP_STORE_CONNECT_PRIVATE_KEY: |
@@ -19,7 +18,6 @@ workflows:
           UfRyMcdolKCFB5i5/BkJ98E9zAL+fh5UokGF6OXzD/J2Vi/e06JAqPA/LsnZUCzr
           q/a+XVjD
           -----END PRIVATE KEY-----
-        # هام: ضع هنا الـ Team ID من موقع أبل (مثلاً: 4C5D6E7F8G) لضمان العمل 100%
         TEAM_ID: "XMBVV283C4"
     cache:
       cache_paths:
@@ -34,7 +32,7 @@ workflows:
 
     scripts:
       - name: Install Dependencies
-        script: | 
+        script: |
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
       - name: Build Next.js Static Export
@@ -44,69 +42,76 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Ultimate Project Patch for CI
+      - name: Patch Xcode Project
         script: |
           PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
           ENT_FILE="ios/App/App/App.entitlements"
-          
-          # 1. Force Deployment Target to iOS 15.0
+
+          # Force Deployment Target to iOS 15.0
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' "$PROJECT_FILE"
-          
-          # 2. Comprehensive Python Patch for Xcode project internals
+
           python3 -c "
-          import re, os
+          import re
           path = '$PROJECT_FILE'
           with open(path, 'r') as f: content = f.read()
-          
-          # Force Manual Signing across all configurations
+
+          # Force Manual Signing
           content = re.sub(r'ProvisioningStyle = [^;]*;', 'ProvisioningStyle = Manual;', content)
           content = re.sub(r'CODE_SIGN_STYLE = [^;]*;', 'CODE_SIGN_STYLE = Manual;', content)
-          
-          # Inject Team ID if provided
-          team_id = '$TEAM_ID'
-          if team_id and team_id != 'YOUR_TEAM_ID_HERE':
-              content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
-              content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
-              if 'DEVELOPMENT_TEAM' not in content:
-                  content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
 
-          # Force Apple Distribution identity for Release builds
+          # Inject Team ID
+          team_id = '$TEAM_ID'
+          content = re.sub(r'DevelopmentTeam = [^;]*;', f'DevelopmentTeam = {team_id};', content)
+          content = re.sub(r'DEVELOPMENT_TEAM = [^;]*;', f'DEVELOPMENT_TEAM = {team_id};', content)
+          if 'DEVELOPMENT_TEAM' not in content:
+              content = content.replace('buildSettings = {', f'buildSettings = {{\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};')
+
+          # Force Apple Distribution identity
           content = content.replace('\"iPhone Developer\"', '\"Apple Distribution\"')
           content = content.replace('\"iPhone Distribution\"', '\"Apple Distribution\"')
-          
-          # Targeted Capability Injection for the main App target (ID: 504EC3031FED79650016851F)
+
+          # Inject SystemCapabilities for Push + Sign In with Apple
           target_id = '504EC3031FED79650016851F'
           caps_str = '''SystemCapabilities = {
-          							com.apple.AppleSignIn = {
-          								enabled = 1;
-          							};
-          							com.apple.Push = {
-          								enabled = 1;
-          							};
-          						};'''
-          
-          # Find TargetAttributes section and inject capabilities
+                          com.apple.AppleSignIn = {
+                              enabled = 1;
+                          };
+                          com.apple.Push = {
+                              enabled = 1;
+                          };
+                      };'''
           if 'SystemCapabilities' not in content:
               pattern = rf'({target_id}\s*=\s*\{{[^}}]*?ProvisioningStyle = Manual;)'
-              content = re.sub(pattern, rf'\\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
-          
-          # Enforce Entitlements file path
+              content = re.sub(pattern, rf'\1\n\t\t\t\t\t\t{caps_str}', content, flags=re.DOTALL)
+
+          # Enforce Entitlements path
           content = re.sub(r'CODE_SIGN_ENTITLEMENTS = [^;]*;', 'CODE_SIGN_ENTITLEMENTS = App/App.entitlements;', content)
-          
+
           with open(path, 'w') as f: f.write(content)
           "
-          
-          # 3. Patch Entitlements file to Production for APS
-          if [ -f \"$ENT_FILE\" ]; then
-            sed -i '' 's/development/production/g' \"$ENT_FILE\"
+
+          # Patch Entitlements to Production APS environment
+          if [ -f "$ENT_FILE" ]; then
+            sed -i '' 's/development/production/g' "$ENT_FILE"
           fi
 
-      - name: Set up Keychain
+          # Verify patch
+          echo "=== Verifying patch ==="
+          grep "DEVELOPMENT_TEAM" "$PROJECT_FILE" | head -3
+          grep "CODE_SIGN_STYLE" "$PROJECT_FILE" | head -3
+          grep "SystemCapabilities" "$PROJECT_FILE" && echo "✅ Capabilities injected" || echo "⚠️ Capabilities not found"
+
+      - name: Initialize Keychain
         script: keychain initialize
 
-      - name: Fetch Profiles and Code Sign
+      - name: Auto-Create Certificate and Provisioning Profile
         script: |
-          # سيقوم هذا الأمر بإنشاء البروفايلات المتوافقة مع الـ API تلقائياً
+          app-store-connect fetch-signing-files \
+            "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+          keychain add-certificates
           xcode-project use-profiles
 
       - name: Build IPA for TestFlight
@@ -118,3 +123,9 @@ workflows:
 
     artifacts:
       - build/ios/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
