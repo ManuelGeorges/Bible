@@ -101,10 +101,17 @@ workflows:
 
       - name: Auto-Create Certificate and Provisioning Profile
         script: |
+          echo "=== Generating private key ==="
+          openssl genrsa -out /tmp/cert_key.pem 2048
+          openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
+            -in /tmp/cert_key.pem -out /tmp/cert_key_pkcs8.pem
+          echo "✅ Private key generated"
+
           echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files \
             "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key @file:/tmp/cert_key_pkcs8.pem \
             --create \
             --delete
 
@@ -131,7 +138,7 @@ workflows:
           fi
 
           PROFILE_UUID=$(python3 -c "
-          import plistlib, subprocess, sys
+          import plistlib, subprocess
           out = subprocess.check_output(['security', 'cms', '-D', '-i', '$PROFILE_PATH'])
           p = plistlib.loads(out)
           print(p['UUID'])
@@ -161,18 +168,7 @@ workflows:
             PROVISIONING_PROFILE="$PROFILE_UUID" \
             PROVISIONING_PROFILE_SPECIFIER="" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            | xcpretty || xcodebuild archive \
-              -project "$XCODE_PROJECT" \
-              -scheme "$XCODE_SCHEME" \
-              -configuration Release \
-              -archivePath "$ARCHIVE_PATH" \
-              CODE_SIGN_STYLE=Manual \
-              CODE_SIGN_IDENTITY="Apple Distribution" \
-              PROVISIONING_PROFILE="$PROFILE_UUID" \
-              PROVISIONING_PROFILE_SPECIFIER="" \
-              DEVELOPMENT_TEAM="$TEAM_ID" \
-              COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO
 
           echo "=== Exporting IPA ==="
           cat > /tmp/ExportOptions.plist << EOF
