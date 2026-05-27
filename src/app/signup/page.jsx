@@ -24,16 +24,14 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
   const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
-    setIsIOS(Capacitor.getPlatform() === 'ios');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // منع التوجيه التلقائي إذا كنا نقوم بعملية يدوية جارية لضمان اكتمال المزامنة وحفظ البيانات
+      // نمنع التوجيه التلقائي طالما هناك عملية يدوية جارية لمنع مقاطعة حفظ البيانات
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -66,53 +64,22 @@ export default function SignUpPage() {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
-  // وظيفة لضمان مزامنة نسخة الـ JS SDK مع الدخول النيتيف (Native)
-  const syncAuthAndRedirect = async (nativeResult) => {
-    let user = auth.currentUser;
-
-    // 1. محاولة الانتظار حتى يتعرف الـ SDK على المستخدم تلقائياً
-    if (!user) {
-      user = await new Promise((resolve) => {
-        let attempts = 0;
-        const interval = setInterval(() => {
-          attempts++;
-          if (auth.currentUser || attempts > 10) {
-            clearInterval(interval);
-            resolve(auth.currentUser);
-          }
-        }, 200);
+  // وظيفة لضمان مزامنة الـ Firebase JS SDK مع الدخول النيتيف قبل الانتقال
+  const waitForAuthSync = () => {
+    return new Promise((resolve) => {
+      if (auth.currentUser) return resolve(auth.currentUser);
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          unsubscribe();
+          resolve(user);
+        }
       });
-    }
-
-    // 2. مزامنة يدوية إجبارية إذا لزم الأمر لضمان الربط 100% في الـ WebView
-    if (!user && nativeResult?.credential) {
-      try {
-        const isApple = !!nativeResult.credential.nonce;
-        const credential = isApple
-          ? new OAuthProvider('apple.com').credential({
-              idToken: nativeResult.credential.idToken,
-              rawNonce: nativeResult.credential.nonce
-            })
-          : GoogleAuthProvider.credential(nativeResult.credential.idToken);
-
-        const userCredential = await signInWithCredential(auth, credential);
-        user = userCredential.user;
-      } catch (e) {
-        console.warn("Manual sync overlap handled");
-        user = auth.currentUser || nativeResult?.user;
-      }
-    }
-
-    const finalUser = user || nativeResult?.user;
-    if (finalUser) {
-      await handleUserData(finalUser);
-      // تأخير بسيط لضمان ثبات الجلسة في الـ WebView قبل التوجيه
+      // توقيت احتياطي (5 ثواني) لضمان عدم تعليق التطبيق
       setTimeout(() => {
-        router.replace('/');
-      }, 600);
-    } else {
-      throw new Error("فشل مزامنة الجلسة");
-    }
+        unsubscribe();
+        resolve(auth.currentUser);
+      }, 5000);
+    });
   };
 
   const handleGoogleAuth = async () => {
@@ -121,12 +88,18 @@ export default function SignUpPage() {
     updateSubmitting(true);
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        await syncAuthAndRedirect(result);
+        await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
       } else {
-        const result = await signInWithPopup(auth, new GoogleAuthProvider());
-        await handleUserData(result.user);
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      }
+
+      // ننتظر حتى تكتمل المزامنة في الـ WebView
+      const syncedUser = await waitForAuthSync();
+      if (syncedUser) {
+        await handleUserData(syncedUser);
         router.replace('/');
+      } else {
+        throw new Error("فشل مزامنة بيانات المستخدم.");
       }
     } catch (err) {
       console.error(err);
@@ -142,19 +115,30 @@ export default function SignUpPage() {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
-        await syncAuthAndRedirect(result);
+        await FirebaseAuthentication.signInWithApple();
       } else {
         const provider = new OAuthProvider('apple.com');
-        const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        await signInWithPopup(auth, provider);
+      }
+
+      // ننتظر حتى تكتمل المزامنة في الـ WebView
+      const syncedUser = await waitForAuthSync();
+      if (syncedUser) {
+        await handleUserData(syncedUser);
         router.replace('/');
+      } else {
+        throw new Error("فشل مزامنة بيانات المستخدم.");
       }
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-      setError('فشل التسجيل بواسطة آبل.');
+
+      let errorMsg = 'فشل التسجيل بواسطة آبل.';
+      if (Capacitor.getPlatform() === 'ios') {
+          errorMsg = `فشل التسجيل (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
+      }
+      setError(errorMsg);
     }
   };
 
@@ -185,27 +169,28 @@ export default function SignUpPage() {
           </div>
           <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+
           {error && <div className={styles.errorBox}>{error}</div>}
+
           <button type="submit" className={styles.button} disabled={isSubmitting}>
             {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
           </button>
         </form>
 
-        {!isIOS && (
-          <>
-            <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
-            <div className={styles.socialButtons}>
-              <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
-                <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-                <span>جوجل</span>
-              </button>
-              <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
-                <Apple size={20} />
-                <span>آبل</span>
-              </button>
-            </div>
-          </>
-        )}
+        <div className={styles.divider}>
+          <span className={styles.dividerText}>أو</span>
+        </div>
+
+        <div className={styles.socialButtons}>
+          <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
+            <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+            <span>جوجل</span>
+          </button>
+          <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
+            <Apple size={20} />
+            <span>آبل</span>
+          </button>
+        </div>
 
         <p className={styles.toggleMode}>
           لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
@@ -213,4 +198,4 @@ export default function SignUpPage() {
       </div>
     </div>
   );
-}
+        }
