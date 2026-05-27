@@ -12,7 +12,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { Capacitor } from '@capacitor-core';
+import { Capacitor } from '@capacitor/core';
 import { auth, db } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
