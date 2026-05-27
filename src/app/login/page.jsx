@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,12 @@ import { Capacitor } from '@capacitor/core';
 import { auth, db } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
+
+const generateNonce = () => {
+  const array = new Uint8Array(16);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+};
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -72,7 +78,6 @@ const LoginPage = () => {
       }
       router.replace('/');
     } catch (err) {
-      console.error(err);
       setError('فشل تسجيل الدخول بواسطة جوجل.');
       setIsSubmitting(false);
     }
@@ -82,15 +87,16 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    const rawNonce = generateNonce();
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
+        const result = await FirebaseAuthentication.signInWithApple({ nonce: rawNonce });
         const idToken = result.credential?.idToken;
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: idToken,
-            rawNonce: result.credential?.rawNonce,
+            rawNonce: rawNonce,
           });
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
