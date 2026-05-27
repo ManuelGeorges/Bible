@@ -31,7 +31,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // لا توجه تلقائياً إذا كانت هناك عملية يدوية جارية لمنع مقاطعة handleUserData
+      // التوجيه يتم فقط عند وجود مستخدم وانتهاء العمليات اليدوية
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -65,7 +65,7 @@ export default function SignUpPage() {
   };
 
   const handleGoogleAuth = async () => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     setError(null);
     updateSubmitting(true);
     try {
@@ -82,7 +82,7 @@ export default function SignUpPage() {
         const result = await signInWithPopup(auth, new GoogleAuthProvider());
         await handleUserData(result.user);
       }
-      router.replace('/');
+      // أزلنا router.replace هنا
     } catch (err) {
       console.error(err);
       setError('فشل التسجيل بواسطة جوجل.');
@@ -91,10 +91,9 @@ export default function SignUpPage() {
   };
 
   const handleAppleAuth = async () => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     setError(null);
     updateSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
@@ -114,29 +113,25 @@ export default function SignUpPage() {
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
       }
-      router.replace('/');
+      // أزلنا router.replace هنا
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-      let errorMsg = 'فشل التسجيل بواسطة آبل.';
-      if (Capacitor.getPlatform() === 'ios') {
-          errorMsg = `فشل التسجيل (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
-      }
-      setError(errorMsg);
+      setError('فشل التسجيل بواسطة آبل.');
     }
   };
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
     setError(null);
     updateSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await handleUserData(userCredential.user);
-      router.replace('/');
+      // أزلنا router.replace هنا
     } catch (err) {
       setError('حدث خطأ في إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.');
       updateSubmitting(false);
