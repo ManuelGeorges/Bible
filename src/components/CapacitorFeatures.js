@@ -14,6 +14,7 @@ import { AppReview } from '@capawesome/capacitor-app-review';
 import { fetchAndActivate, getNumber } from 'firebase/remote-config';
 import { getFirebaseRemoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
+import toast from 'react-hot-toast';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
@@ -36,6 +37,55 @@ export default function CapacitorFeatures() {
     } catch (e) {
       console.error("Navigation Error:", e);
     }
+  };
+
+  // رسالة تنبيه بوجود تحديث جاهز للتثبيت
+  const showUpdatePrompt = () => {
+    toast.custom(
+      (t) => (
+        <div
+          className={`${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          } max-w-md w-full bg-white dark:bg-slate-800 shadow-xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 border-2 border-indigo-500/20`}
+          dir="rtl"
+        >
+          <div className="flex-1">
+            <div className="flex items-start">
+              <div className="ml-3 flex-1">
+                <p className="text-base font-bold text-gray-900 dark:text-white">
+                  تحديث جديد جاهز! ✨
+                </p>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  تم تحميل التحديث بنجاح. هل تود إعادة تشغيل التطبيق الآن لتجربة الميزات الجديدة؟
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={async () => {
+                  toast.dismiss(t.id);
+                  try {
+                    await AppUpdate.completeFlexibleUpdate();
+                  } catch (e) {
+                    console.error("Complete Update Error:", e);
+                  }
+                }}
+                className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors"
+              >
+                تحديث الآن
+              </button>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                ليس الآن
+              </button>
+            </div>
+          </div>
+        </div>
+      ),
+      { duration: Infinity, position: 'bottom-center' }
+    );
   };
 
   useEffect(() => {
@@ -76,9 +126,9 @@ export default function CapacitorFeatures() {
     if (platform === 'web' || platform === 'electron' || hasSetup.current) return;
     hasSetup.current = true;
 
-    // 1. تسجيل مستمعات الإشعارات والروابط فوراً
+    // 1. تسجيل مستمعات الإشعارات والروابط والتحديثات
     const setupListeners = async () => {
-      // روابط Deep Links (مثلاً agios://bible)
+      // روابط Deep Links
       App.addListener('appUrlOpen', (data) => {
         const path = data.url.split('://')[1];
         if (path) handleNavigation(path);
@@ -90,6 +140,13 @@ export default function CapacitorFeatures() {
         handleNavigation(url);
       });
 
+      // مراقبة حالة التحديث Flexible Update
+      AppUpdate.addListener('onFlexibleUpdateStateChange', (state) => {
+        if (state.installStatus === 11) { // 11 = DOWNLOADED
+          showUpdatePrompt();
+        }
+      });
+
       // إشعارات الـ Push
       let pushPerms = await PushNotifications.checkPermissions().catch(() => ({ receive: 'prompt' }));
       if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions().catch(() => ({ receive: 'denied' }));
@@ -98,7 +155,6 @@ export default function CapacitorFeatures() {
         await PushNotifications.register().catch(() => {});
 
         PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-          // جلب الرابط من الـ data payload (تأكد أنك ترسل مفتاح 'url' في الـ custom data)
           const url = notification.notification.data?.url;
           handleNavigation(url);
         });
@@ -119,15 +175,19 @@ export default function CapacitorFeatures() {
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
         
         if (updateInfo) {
+          // إذا كان التحديث محملاً مسبقاً وجاهزاً
           if (updateInfo.installStatus === 11) {
-            await AppUpdate.completeFlexibleUpdate().catch(() => {});
+            showUpdatePrompt();
             return;
           }
-          if (updateInfo.updateAvailability === 2) {
+
+          if (updateInfo.updateAvailability === 2) { // 2 = UPDATE_AVAILABLE
             if (currentVersionCode < minRequiredVersion) {
+              // تحديث إجباري للنسخ القديمة جداً
               await AppUpdate.performImmediateUpdate().catch(() => {});
             } else {
-              if (updateInfo.installStatus !== 1) {
+              // تحديث مرن في الخلفية للنسخ الحديثة
+              if (updateInfo.installStatus !== 1) { // 1 = PENDING
                 await AppUpdate.startFlexibleUpdate().catch(() => {});
               }
             }
@@ -173,6 +233,8 @@ export default function CapacitorFeatures() {
         App.removeAllListeners();
         LocalNotifications.removeAllListeners();
         PushNotifications.removeAllListeners();
+        // إزالة مستمع التحديثات عند التدمير
+        AppUpdate.removeAllListeners();
       } catch (e) {}
     };
   }, [router]);

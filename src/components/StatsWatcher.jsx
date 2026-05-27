@@ -6,6 +6,8 @@ import { doc, getDoc, setDoc, updateDoc, arrayUnion, collection, getCountFromSer
 import { onAuthStateChanged } from 'firebase/auth';
 import { useBadge } from '../app/context/BadgeContext';
 import { getCairoDate, getCairoDateInfo, getCairoIsoString } from '../lib/dateUtils';
+import { Device } from '@capacitor/device';
+import { Capacitor } from '@capacitor/core';
 
 export default function StatsWatcher() {
   const pathname = usePathname();
@@ -72,6 +74,21 @@ export default function StatsWatcher() {
       const today = getCairoDate();
       const cairoInfo = getCairoDateInfo();
 
+      // جلب معلومات الجهاز
+      let deviceInfo = {};
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const info = await Device.getInfo();
+          deviceInfo = {
+            deviceModel: info.model, // مثلاً SM-A356E
+            deviceManufacturer: info.manufacturer, // مثلاً Samsung
+            deviceOS: info.operatingSystem,
+            deviceOSVersion: info.osVersion,
+            platform: Capacitor.getPlatform()
+          };
+        } catch (e) { console.error("Device Info Error:", e); }
+      }
+
       if (!docSnap.exists()) {
         const coll = collection(db, "users");
         const snapshot = await getCountFromServer(coll);
@@ -88,43 +105,39 @@ export default function StatsWatcher() {
             streak: 1,
             lastActiveDate: today,
             badges: loyaltyBadges,
-            createdAt: getCairoIsoString()
+            createdAt: getCairoIsoString(),
+            ...deviceInfo // إضافة بيانات الجهاز عند الإنشاء
         }, { merge: true });
       } else {
         let data = docSnap.data();
 
+        // تحديث بيانات الجهاز حتى لو المستخدم موجود قديم (عشان لو غير موبايله)
+        const updates = { ...deviceInfo };
+
         if (data.stats) {
           const legacy = data.stats;
-          const migrationUpdates = {
-            totalPoints: data.totalPoints || legacy.total_points || 0,
-            badges: data.badges || legacy.unlocked_badges || [],
-            streak: data.streak || legacy.current_streak || 0,
-            lastActiveDate: data.lastActiveDate || legacy.last_active_date || today,
-            stats: deleteField()
-          };
-          await updateDoc(userRef, migrationUpdates);
-          data = { ...data, ...migrationUpdates };
+          updates.totalPoints = data.totalPoints || legacy.total_points || 0;
+          updates.badges = data.badges || legacy.unlocked_badges || [];
+          updates.streak = data.streak || legacy.current_streak || 0;
+          updates.lastActiveDate = data.lastActiveDate || legacy.last_active_date || today;
+          updates.stats = deleteField();
         }
 
         if (!data.email && user.email) {
-          await updateDoc(userRef, { email: user.email });
+          updates.email = user.email;
         }
 
         const lastActive = data.lastActiveDate;
         let currentStreak = data.streak || 0;
 
         if (lastActive !== today) {
-          // حساب الأمس بتوقيت القاهرة
           const now = new Date();
           const yesterdayObj = new Date(now.getTime() - (24 * 60 * 60 * 1000));
           const yesterdayStr = getCairoDate(yesterdayObj);
 
           let newStreak = (lastActive === yesterdayStr) ? currentStreak + 1 : 1;
-
-          await updateDoc(userRef, {
-            streak: newStreak,
-            lastActiveDate: today
-          });
+          updates.streak = newStreak;
+          updates.lastActiveDate = today;
 
           const consistencyBadges = checkConsistencyBadges(newStreak);
           const currentBadges = data.badges || [];
@@ -133,6 +146,11 @@ export default function StatsWatcher() {
                 await unlockBadge(id, data);
             }
           }
+        }
+
+        // تنفيذ التحديثات في Firestore
+        if (Object.keys(updates).length > 0) {
+            await updateDoc(userRef, updates);
         }
 
         // Plan Badges Logic
@@ -160,7 +178,6 @@ export default function StatsWatcher() {
           }
         }
 
-        // استخدام ساعات توقيت القاهرة للأوسمة المرتبطة بالوقت
         const hours = cairoInfo.hour;
         const minutes = cairoInfo.minute;
 
@@ -179,7 +196,6 @@ export default function StatsWatcher() {
             if (!darkStart) {
                 localStorage.setItem('dark_mode_start', today);
             } else {
-                // حساب الأيام بناءً على القاهرة
                 const startParts = darkStart.split('-').map(Number);
                 const startDate = new Date(startParts[0], startParts[1]-1, startParts[2]);
                 const todayParts = today.split('-').map(Number);

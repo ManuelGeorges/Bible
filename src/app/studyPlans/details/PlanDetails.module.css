@@ -7,103 +7,132 @@
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  background: radial-gradient(circle at top right, var(--color-bg-end), var(--color-bg-start));
+  background: radial-gradient(circle at top right, var(--color-bg-start), var(--color-bg-end));
 }
 
 .title {
-  font-size: clamp(1.8rem, 8vw, 3rem);
+  font-size: clamp(2rem, 8vw, 3.5rem);
   font-weight: 900;
   text-align: center;
-  margin-bottom: 2rem;
-  background: var(--btn-bg);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin-bottom: 1.5rem;
+  color: var(--color-text-primary);
   font-family: 'Cairo', sans-serif;
-  filter: drop-shadow(0 10px 20px var(--color-shadow-medium));
+  letter-spacing: -0.5px;
+}
+
+.descriptionWrapper {
+  width: 100%;
+  max-width: 850px;
+  background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-right: 6px solid var(--color-accent);
+  padding: 2rem;
+  border-radius: 16px 32px 32px 16px;
+  margin-bottom: 2.5rem;
+  box-shadow: var(--glass-shadow);
+  animation: slideUp 0.7s var(--transition-smooth) both;
+}
+
+.description {
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  line-height: 1.9;
+  font-weight: 500;
+  margin: 0;
+  white-space: pre-wrap;
+  text-align: justify;
 }
 
 .progressWrapper {
   width: 100%;
-  max-width: 900px;
+  max-width: 850px;
   background: var(--color-card-bg);
-  backdrop-filter: blur(15px);
-  padding: 2rem;
-  border-radius: 28px;
+  backdrop-filter: blur(var(--glass-blur));
+  padding: 1.5rem 2.5rem;
+  border-radius: 32px;
   border: 1px solid var(--color-border);
-  margin-bottom: 2.5rem;
-  box-shadow: 0 15px 35px var(--color-shadow-medium);
+  margin-bottom: 3rem;
+  box-shadow: var(--glass-shadow);
+  position: sticky;
+  top: 80px;
+  z-index: 10;
 }
 
 .progressInfo {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 1.2rem;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .progressInfo span:first-child {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-text-secondary);
-  font-size: 1rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .progressInfo span:last-child {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: var(--color-accent);
-  line-height: 1;
 }
 
 .progressBar {
   width: 100%;
-  height: 12px;
-  background: var(--color-bg-start);
+  height: 14px;
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 100px;
   overflow: hidden;
   border: 1px solid var(--color-border);
 }
 
+[data-theme='dark'] .progressBar {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .progressFill {
   height: 100%;
-  background: var(--btn-bg);
+  background: linear-gradient(90deg, var(--color-accent), var(--btn-hover));
   border-radius: 100px;
-  transition: width 1.2s var(--transition-bounce);
-  box-shadow: 0 0 15px var(--color-accent);
+  transition: width 1.5s var(--transition-bounce);
+  box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.3);
 }
 
 .readingsList {
   width: 100%;
-  max-width: 900px;
+  max-width: 850px;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1.5rem;
   list-style: none;
   padding: 0;
 }
 
 .readingItem {
   background: var(--color-card-bg);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--color-border);
-  border-radius: 24px;
-  padding: 1.5rem;
+  border-radius: 28px;
+  padding: 1.8rem;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  transition: var(--transition-smooth);
+  gap: 2rem;
+  transition: all 0.4s var(--transition-smooth);
   animation: slideUp 0.6s var(--transition-smooth) both;
 }
 
 .readingItem:hover {
-  transform: translateY(-5px) scale(1.01);
+  transform: translateY(-8px);
   border-color: var(--color-accent);
-  box-shadow: 0 12px 30px var(--color-shadow-medium);
+  box-shadow: 0 20px 40px var(--color-shadow-medium);
 }
 
 .readingItem.completed {
   border-color: #10b981;
-  background: rgba(16, 185, 129, 0.05);
-  opacity: 0.8;
+  background: rgba(16, 185, 129, 0.03);
 }
 
 .dayHeader {
@@ -111,43 +140,53 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 90px;
-  padding: 12px;
-  background: var(--color-bg-end);
-  border-radius: 18px;
+  min-width: 110px;
+  padding: 1.2rem;
+  background: var(--color-bg-start);
+  border-radius: 22px;
   border: 1px solid var(--color-border);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .dayLabel {
   font-weight: 900;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: var(--color-accent);
+  margin-bottom: 4px;
 }
 
 .booksGrid {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.8rem;
 }
 
 .bookLink {
-  background: var(--color-bg-start);
+  background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
-  padding: 0.6rem 1.2rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 16px;
+  font-size: 1rem;
   font-weight: 700;
   text-decoration: none;
-  transition: var(--transition-smooth);
+  transition: all 0.3s var(--transition-smooth);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .bookLink:hover {
   background: var(--btn-bg);
   color: var(--btn-text);
   border-color: transparent;
-  transform: translateY(-2px);
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 10px 20px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.bookDone {
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.05) !important;
 }
 
 .checkboxContainer {
@@ -156,64 +195,104 @@
   justify-content: center;
 }
 
+/* Custom Checkbox Styling */
 .checkboxContainer input[type="checkbox"] {
   appearance: none;
-  width: 42px;
-  height: 42px;
-  background: var(--color-bg-end);
-  border: 2px solid var(--color-border);
-  border-radius: 14px;
+  -webkit-appearance: none;
+  width: 48px;
+  height: 48px;
+  background: var(--color-bg-start);
+  border: 3px solid #cbd5e1; /* Much clearer in light mode */
+  border-radius: 16px;
   cursor: pointer;
   position: relative;
-  transition: var(--transition-bounce);
+  transition: all 0.3s var(--transition-bounce);
+  display: grid;
+  place-content: center;
+}
+
+[data-theme='dark'] .checkboxContainer input[type="checkbox"] {
+  border-color: #475569;
+  background: var(--color-bg-end);
+}
+
+.checkboxContainer input[type="checkbox"]:hover {
+  border-color: var(--color-accent);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.1);
 }
 
 .checkboxContainer input[type="checkbox"]:checked {
   background: #10b981;
   border-color: #10b981;
-  transform: rotate(5deg);
+  transform: rotate(3deg) scale(1.05);
 }
 
-.checkboxContainer input[type="checkbox"]:checked::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
+.checkboxContainer input[type="checkbox"]::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform-origin: center;
 }
 
-.checkboxContainer input[type="checkbox"]:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+.checkboxContainer input[type="checkbox"]:checked::before {
+  transform: scale(1);
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
+  from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {
-  .container { padding: 1rem; }
+  .container { padding: 1.5rem 1rem; }
+  .title { margin-top: 1rem; }
+
   .readingItem {
     flex-direction: column;
-    padding: 1.2rem;
-    gap: 1rem;
+    padding: 1.5rem;
+    gap: 1.5rem;
     text-align: center;
+    border-radius: 32px;
   }
+
   .dayHeader {
     width: 100%;
     flex-direction: row;
-    gap: 15px;
+    gap: 20px;
     min-width: auto;
+    padding: 1rem;
   }
-  .booksGrid { justify-content: center; width: 100%; }
-  .bookLink { width: calc(50% - 0.5rem); text-align: center; }
+
+  .dayLabel { margin-bottom: 0; }
+
+  .booksGrid {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .bookLink {
+    width: 100%;
+    text-align: center;
+    padding: 1rem;
+  }
+
   .checkboxContainer {
     width: 100%;
-    border-top: 1px dashed var(--color-border);
-    padding-top: 15px;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+  }
+
+  .progressWrapper {
+    padding: 1.2rem 1.5rem;
+    top: 70px;
+  }
+
+  .progressInfo span:last-child {
+    font-size: 1.8rem;
   }
 }

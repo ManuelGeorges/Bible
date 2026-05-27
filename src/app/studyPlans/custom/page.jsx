@@ -3,16 +3,15 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '../../../lib/firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCairoIsoString } from '../../../lib/dateUtils';
+import { ArrowRight, Sparkles, Calendar, BookOpen, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
-if (!apiKey) {
-  console.error("Gemini API Key is missing or undefined!");
-}
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export default function CustomPlanForm() {
@@ -21,18 +20,24 @@ export default function CustomPlanForm() {
     const [formData, setFormData] = useState({
         mood: '',
         duration: '',
+        customDays: '',
         level: ''
     });
 
     const durations = [
-        { id: '3', label: '3 أيام (سريعة)' },
-        { id: '7', label: 'أسبوع (متوسطة)' },
-        { id: '14', label: 'أسبوعين (عميقة)' }
+        { id: '3', label: '3 أيام' },
+        { id: '7', label: 'أسبوع' },
+        { id: '14', label: 'أسبوعين' },
+        { id: '30', label: 'شهر' },
+        { id: '90', label: '3 أشهر' },
+        { id: '180', label: '6 أشهر' },
+        { id: 'custom', label: 'مدة مخصصة' }
     ];
 
-    const levels = [
-        { id: 'beginner', label: 'مبتدئ (أصحاح واحد)' },
-        { id: 'advanced', label: 'متقدم (عدة أصحاحات)' }
+    const intensities = [
+        { id: '1', label: 'أصحاح يومياً' },
+        { id: '2', label: 'أصحاحين يومياً' },
+        { id: '3', label: '3 أصحاحات يومياً' }
     ];
 
     const handleSelect = (field, value) => {
@@ -41,13 +46,15 @@ export default function CustomPlanForm() {
 
     const cleanPlanData = (plan) => {
         if (!plan.readings || !Array.isArray(plan.readings)) return plan;
-        const cleanedReadings = plan.readings.map(reading => ({
-            ...reading,
-            books: Array.isArray(reading.books)
-                ? reading.books.map(book => book.replace(/إنجيل\s+/g, '').replace(/سفر\s+/g, '').trim())
-                : []
-        }));
-        return { ...plan, readings: cleanedReadings };
+        return {
+            ...plan,
+            readings: plan.readings.map(reading => ({
+                ...reading,
+                books: Array.isArray(reading.books)
+                    ? reading.books.map(book => book.replace(/إنجيل\s+/g, '').replace(/سفر\s+/g, '').trim())
+                    : []
+            }))
+        };
     };
 
     const generatePlanWithAI = async (data) => {
@@ -56,46 +63,42 @@ export default function CustomPlanForm() {
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
+            const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
+            const intensityLabel = intensities.find(i => i.id === data.level)?.label || 'أصحاح واحد يومياً';
+
             const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
 
 ### [بيانات الحالة]
 - مدخلات المستخدم: "${data.mood}"
-- مدة البرنامج: "${data.duration}" أيام.
-- الكثافة: "${data.level === 'beginner' ? 'أصحاح واحد يومياً' : 'عدة أصحاحات موضوعية'}".
+- مدة البرنامج: "${durationDays}" أيام.
+- الكثافة: "${intensityLabel}".
 
 ### [قالب المخرجات JSON فقط]
 {
   "title": "عنوان ملهم",
-  "description": "رسالة قصيرة",
-  "duration": "${data.duration} أيام",
+  "description": "رسالة قصيرة ملهمة تشجع المستخدم بناءً على حالته",
+  "duration": "${durationDays} أيام",
   "readings": [
     { "day": 1, "books": ["اسم_السفر رقم_الأصحاح"] }
   ]
 }
 
 قائمة الأسفار المتاحة: [${allowedBooks}]
-ملاحظة: يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية قبل أو بعد القالب.`;
+ملاحظة هامة:
+1. يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية.
+2. يجب أن يحتوي مصفوفة readings على عدد كائنات يساوي تماماً عدد الأيام (${durationDays}).
+3. إذا كان الموضوع متخصصاً جداً، ابدأ به ثم توسع لأسفار ومفاهيم روحية مرتبطة لضمان اكتمال الخطة بجودة عالية.`;
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-3.1-flash-lite",
+                model: "gemini-1.5-flash",
                 generationConfig: { temperature: 0.7 }
             });
 
             const result = await model.generateContent(prompt);
             const responseText = result.response.text();
-
-            if (!responseText) throw new Error("No response from Gemini");
-
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) throw new Error("Format Error: No JSON found in AI response");
-
-            const parsedPlan = JSON.parse(jsonMatch[0]);
-
-            if (!parsedPlan.readings || !Array.isArray(parsedPlan.readings)) {
-                throw new Error("Missing readings in AI response");
-            }
-
-            return parsedPlan;
+            if (!jsonMatch) throw new Error("Format Error");
+            return JSON.parse(jsonMatch[0]);
         } catch (e) {
             console.error("Gemini Error:", e);
             return null;
@@ -105,13 +108,26 @@ export default function CustomPlanForm() {
     const handleSubmit = async () => {
         if (loading) return;
 
+        const actualDuration = formData.duration === 'custom' ? parseInt(formData.customDays) : parseInt(formData.duration);
+
         if (!formData.mood.trim() || !formData.duration || !formData.level) {
             toast.error('من فضلك أكمل البيانات أولاً');
             return;
         }
 
-        if (formData.mood.trim().length < 5) {
-            toast.error("الوصف قصير جداً، من فضلك اكتب كلمات أكثر.");
+        if (formData.duration === 'custom') {
+            if (!formData.customDays || actualDuration <= 0) {
+                toast.error('من فضلك حدد عدد الأيام');
+                return;
+            }
+            if (actualDuration > 180) {
+                toast.error('الحد الأقصى للمدة المخصصة هو 180 يوماً لضمان جودة الخطة');
+                return;
+            }
+        }
+
+        if (formData.mood.trim().length < 10) {
+            toast.error("الوصف قصير جداً، أخبرنا بمزيد من التفاصيل لنصمم خطة أفضل.");
             return;
         }
 
@@ -120,32 +136,13 @@ export default function CustomPlanForm() {
             return;
         }
 
-        // Check Rate Limit (3 requests per minute)
-        const requestTimes = JSON.parse(localStorage.getItem('aiStudyPlanTimestamps') || '[]');
-        const now = Date.now();
-        const oneMinute = 60000;
-        const recentRequests = requestTimes.filter(time => now - time < oneMinute);
-
-        if (recentRequests.length >= 3) {
-            const oldestInWindow = Math.min(...recentRequests);
-            const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
-            toast.error(`برجاء الانتظار ${remaining} ثانية قبل إنشاء خطة جديدة.`);
-            return;
-        }
-
         setLoading(true);
 
         try {
             const userRef = doc(db, 'users', auth.currentUser.uid);
-
-            // Generate the plan
             const rawPlan = await generatePlanWithAI(formData);
 
-            if (rawPlan && rawPlan.readings && rawPlan.readings.length > 0) {
-                // Update local storage timestamps
-                const updatedRequests = [...recentRequests, Date.now()];
-                localStorage.setItem('aiStudyPlanTimestamps', JSON.stringify(updatedRequests));
-
+            if (rawPlan && rawPlan.readings) {
                 const plan = cleanPlanData(rawPlan);
                 const planId = `ai_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
 
@@ -166,10 +163,9 @@ export default function CustomPlanForm() {
                 toast.success("تم إنشاء خطتك بنجاح!");
                 router.push(`/studyPlans/details?id=${planId}&type=custom`);
             } else {
-                throw new Error("فشل الذكاء الاصطناعي في تكوين خطة صحيحة");
+                throw new Error("فشل الذكاء الاصطناعي في تكوين الخطة");
             }
         } catch (error) {
-            console.error("Submit Error:", error);
             toast.error(error.message || 'حدث خطأ أثناء إنشاء الخطة');
         } finally {
             setLoading(false);
@@ -181,31 +177,50 @@ export default function CustomPlanForm() {
             {loading && (
                 <div className={styles.loadingOverlay}>
                     <div className={styles.spinner}></div>
-                    <h2 className={styles.sectionTitle}>جاري تصميم خطتك الروحية...</h2>
+                    <h2 className={styles.sectionTitle}>أجيوس يصمم لك رحلة روحية خاصة...</h2>
+                    <p className={styles.loadingSub}>قد يستغرق هذا بضع ثوانٍ</p>
                 </div>
             )}
 
+            <div className={styles.topNav}>
+                <Link href="/studyPlans" className={styles.backBtn}>
+                    <ArrowRight size={20} /> العودة للخطط
+                </Link>
+            </div>
+
             <div className={styles.formCard}>
                 <div className={styles.header}>
+                    <div className={styles.iconCircle}>
+                        <Sparkles className={styles.sparkleIcon} />
+                    </div>
                     <h1 className={styles.mainTitle}>مُصمم الخطط الذكي</h1>
-                    <p>أخبر أجيوس بما يدور في قلبك اليوم</p>
+                    <p className={styles.subtitle}>أخبر "أجيوس" بما يمر به قلبك اليوم، وسيقترح لك قراءات كتابية مخصصة.</p>
                 </div>
 
                 <div className={styles.questionGroup}>
-                    <label className={styles.questionLabel}>بماذا تشعر حالياً؟ أو ما الذي تبحث عنه؟</label>
-                    <textarea
-                        className={styles.textInput}
-                        rows="4"
-                        maxLength={500}
-                        disabled={loading}
-                        placeholder="مثلاً: حاسس اني قلقان من المستقبل.."
-                        value={formData.mood}
-                        onChange={(e) => handleSelect('mood', e.target.value)}
-                    ></textarea>
+                    <label className={styles.questionLabel}>
+                        <MessageCircle size={18} /> بماذا تشعر حالياً؟ أو ما الموضوع الذي تبحث عنه؟
+                    </label>
+                    <div className={styles.inputWrapper}>
+                        <textarea
+                            className={styles.textInput}
+                            rows="4"
+                            maxLength={500}
+                            disabled={loading}
+                            placeholder="مثلاً: أشعر بالقلق من المستقبل، أو أريد دراسة عن الصبر.."
+                            value={formData.mood}
+                            onChange={(e) => handleSelect('mood', e.target.value)}
+                        ></textarea>
+                        <div className={`${styles.charCount} ${formData.mood.length > 450 ? styles.limit : ''}`}>
+                            {formData.mood.length}/500
+                        </div>
+                    </div>
                 </div>
 
                 <div className={styles.questionGroup}>
-                    <label className={styles.questionLabel}>ما هي المدة المفضلة للخطة؟</label>
+                    <label className={styles.questionLabel}>
+                        <Calendar size={18} /> ما هي المدة المفضلة للخطة؟
+                    </label>
                     <div className={styles.optionsGrid}>
                         {durations.map(d => (
                             <button
@@ -219,12 +234,30 @@ export default function CustomPlanForm() {
                             </button>
                         ))}
                     </div>
+
+                    {formData.duration === 'custom' && (
+                        <div className={styles.customDaysInputWrapper}>
+                            <input
+                                type="number"
+                                className={styles.customDaysInput}
+                                placeholder="مثلاً: 40"
+                                value={formData.customDays}
+                                onChange={(e) => handleSelect('customDays', e.target.value)}
+                                min="1"
+                                max="180"
+                            />
+                            <span className={styles.inputSuffix}>يوماً</span>
+                            <p className={styles.limitHint}>(الحد الأقصى 180 يوماً)</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.questionGroup}>
-                    <label className={styles.questionLabel}>مستوى القراءة</label>
+                    <label className={styles.questionLabel}>
+                        <BookOpen size={18} /> كم أصحاحاً تود قراءته يومياً؟
+                    </label>
                     <div className={styles.optionsGrid}>
-                        {levels.map(l => (
+                        {intensities.map(l => (
                             <button
                                 key={l.id}
                                 type="button"
@@ -243,7 +276,7 @@ export default function CustomPlanForm() {
                     onClick={handleSubmit}
                     disabled={loading}
                 >
-                    {loading ? 'جاري الإنشاء...' : 'إنشاء خطتي الخاصة ✨'}
+                    {loading ? 'جاري التحضير...' : 'ابدأ رحلتي المخصصة ✨'}
                 </button>
             </div>
         </div>

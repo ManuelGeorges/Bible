@@ -27,7 +27,22 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
     } catch (err) {
       lastError = err;
       const errorMsg = err.message?.toLowerCase() || "";
-      const isRetryable = errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('503') || errorMsg.includes('overloaded') || errorMsg.includes('busy') || errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('fetch');
+      // توسيع نطاق الأخطاء القابلة لإعادة المحاولة لتشمل أخطاء الخادم والشبكة الشائعة
+      const isRetryable =
+        errorMsg.includes('429') ||
+        errorMsg.includes('quota') ||
+        errorMsg.includes('500') ||
+        errorMsg.includes('502') ||
+        errorMsg.includes('503') ||
+        errorMsg.includes('504') ||
+        errorMsg.includes('overloaded') ||
+        errorMsg.includes('busy') ||
+        errorMsg.includes('timeout') ||
+        errorMsg.includes('deadline') ||
+        errorMsg.includes('network') ||
+        errorMsg.includes('fetch') ||
+        errorMsg.includes('connection') ||
+        errorMsg.includes('stream');
 
       if (attempt < maxAttempts - 1 && isRetryable) {
         const delay = baseDelayMs * Math.pow(2, attempt);
@@ -49,6 +64,7 @@ function AnalysisContent() {
   const verses = searchParams.get('verses');
 
   const [analysis, setAnalysis] = useState('');
+  const analysisRef = useRef(''); // تتبع النص الحالي لتجنب مشاكل Closures
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('');
@@ -69,7 +85,6 @@ function AnalysisContent() {
     const now = Date.now();
     const oneMinute = 60000;
 
-    // Filter for requests within the last minute
     const recentRequests = requestTimes.filter(time => now - time < oneMinute);
 
     if (recentRequests.length >= 3) {
@@ -83,8 +98,8 @@ function AnalysisContent() {
     setIsLoading(true);
     setError(null);
     setAnalysis('');
+    analysisRef.current = '';
 
-    // Update request times immediately when starting
     const updatedRequests = [...recentRequests, now];
     localStorage.setItem('aiRequestTimestamps', JSON.stringify(updatedRequests));
 
@@ -113,14 +128,27 @@ ${targetText}
 
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-lite" });
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash-lite",
+        generationConfig: {
+          maxOutputTokens: 2048,
+        }
+      });
 
       const result = await model.generateContentStream(prompt);
       let text = '';
       for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        text += chunkText;
-        setAnalysis(text);
+        try {
+          const chunkText = chunk.text();
+          text += chunkText;
+          setAnalysis(text);
+          analysisRef.current = text;
+        } catch (e) {
+          console.error("Stream chunk error:", e);
+          // إذا كان لدينا نص كافٍ، نعتبره نجاحاً جزئياً بدلاً من الفشل الكامل
+          if (text.length > 200) break;
+          throw e;
+        }
       }
       return text;
     };
@@ -129,14 +157,20 @@ ${targetText}
       setStatus('مساعد آجيوس الذكي يقوم بتحليل النص الآن...');
       await withRetry(
         attemptGeneration,
-        () => setStatus('مساعد آجيوس الذكي يقوم بتحليل النص الآن...'),
+        (attempt) => setStatus(`محاولة ${convertToArabicNumber(attempt)}: مساعد آجيوس الذكي يقوم بتحليل النص...`),
         5
       );
       setIsLoading(false);
     } catch (e) {
-      console.error(e);
-      setError('حدث خطأ أثناء تحميل التحليل. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.');
-      setIsLoading(false);
+      console.error("Final Analysis Error:", e);
+      // إذا فشل تماماً ولكن لدينا نص (ربما انقطع الاتصال في النهاية)، لا نظهر صفحة الخطأ
+      if (analysisRef.current.length > 100) {
+        setIsLoading(false);
+        toast.error("انقطع الاتصال، قد يكون التحليل غير مكتمل");
+      } else {
+        setError('حدث خطأ أثناء تحميل التحليل. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+        setIsLoading(false);
+      }
     }
   };
 
@@ -319,7 +353,7 @@ ${targetText}
                <div className={styles.loadingBarProgress}></div>
             </div>
           </div>
-        ) : error ? (
+        ) : (error && !analysis) ? (
           <div className={styles.errorWrapper}>
             <AlertCircle size={50} className={styles.errorIcon} />
             <h3>عذراً، حدث خطأ</h3>

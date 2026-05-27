@@ -243,7 +243,13 @@ function PlanDetailsContent() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>{plan.title}</h1>
-      
+
+      {plan.description && (
+        <div className={styles.descriptionWrapper}>
+          <p className={styles.description}>{plan.description}</p>
+        </div>
+      )}
+
       <div className={styles.progressWrapper}>
         <div className={styles.progressInfo}>
           <span>نسبة الإنجاز</span>

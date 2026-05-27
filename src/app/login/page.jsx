@@ -22,21 +22,26 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
+    setIsIOS(Capacitor.getPlatform() === 'ios');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // منع التوجيه التلقائي إذا كنا في عملية تسجيل دخول جارية يدوياً
-      // هذا يضمن أن كود المعالجة الخاص بنا سيكمل عمله ويقوم بالتوجيه بعد مزامنة البيانات
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
     });
     return () => unsubscribe();
   }, [router]);
+
+  const updateSubmitting = (val) => {
+    setIsSubmitting(val);
+    isSubmittingRef.current = val;
+  };
 
   const handleUserData = async (user) => {
     if (!db || !user) return;
@@ -58,23 +63,16 @@ const LoginPage = () => {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
-  const updateSubmitting = (val) => {
-    setIsSubmitting(val);
-    isSubmittingRef.current = val;
-  };
-
-  // وظيفة لانتظار تزامن الـ Firebase JS SDK مع الدخول النيتيف (لحل مشكلة الرجوع للهوم بدون تسجيل)
-  const waitForAuthSync = async () => {
+  const waitForAuthSync = () => {
     return new Promise((resolve) => {
       if (auth.currentUser) return resolve(auth.currentUser);
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        if (auth.currentUser || attempts > 25) { // ننتظر حتى 5 ثوانٍ كحد أقصى
-          clearInterval(interval);
-          resolve(auth.currentUser);
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          unsubscribe();
+          resolve(user);
         }
-      }, 200);
+      });
+      setTimeout(() => { unsubscribe(); resolve(auth.currentUser); }, 5000);
     });
   };
 
@@ -83,21 +81,18 @@ const LoginPage = () => {
     setError(null);
     updateSubmitting(true);
     try {
-      let finalUser = null;
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        // ننتظر حتى تكتمل المزامنة في الـ WebView
-        finalUser = await waitForAuthSync() || result.user;
+        await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
       } else {
-        const result = await signInWithPopup(auth, new GoogleAuthProvider());
-        finalUser = result.user;
+        await signInWithPopup(auth, new GoogleAuthProvider());
       }
 
-      if (finalUser) {
-        await handleUserData(finalUser);
+      const user = await waitForAuthSync();
+      if (user) {
+        await handleUserData(user);
         router.replace('/');
       } else {
-        throw new Error("فشل الحصول على بيانات المستخدم بعد الدخول.");
+        throw new Error("فشل مزامنة بيانات المستخدم.");
       }
     } catch (err) {
       console.error(err);
@@ -112,31 +107,25 @@ const LoginPage = () => {
     updateSubmitting(true);
 
     try {
-      let finalUser = null;
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
-        // ننتظر حتى تكتمل المزامنة في الـ WebView
-        finalUser = await waitForAuthSync() || result.user;
+        await FirebaseAuthentication.signInWithApple();
       } else {
         const provider = new OAuthProvider('apple.com');
-        const result = await signInWithPopup(auth, provider);
-        finalUser = result.user;
+        await signInWithPopup(auth, provider);
       }
 
-      if (finalUser) {
-        await handleUserData(finalUser);
+      const user = await waitForAuthSync();
+      if (user) {
+        await handleUserData(user);
         router.replace('/');
       } else {
-        throw new Error("فشل الحصول على بيانات المستخدم بعد الدخول.");
+        throw new Error("فشل مزامنة بيانات المستخدم.");
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
       let msg = 'فشل تسجيل الدخول بواسطة آبل.';
-      if (Capacitor.getPlatform() === 'ios') {
-        msg = `فشل تسجيل الدخول (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
-      }
       setError(msg);
     }
   };
@@ -168,17 +157,23 @@ const LoginPage = () => {
             {isSubmitting ? 'جاري الدخول...' : 'دخول'}
           </button>
         </form>
-        <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
-        <div className={styles.socialButtons}>
-          <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
-            <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-            <span>جوجل</span>
-          </button>
-          <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
-            <Apple size={20} />
-            <span>آبل</span>
-          </button>
-        </div>
+
+        {!isIOS && (
+          <>
+            <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
+            <div className={styles.socialButtons}>
+              <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
+                <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+                <span>جوجل</span>
+              </button>
+              <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
+                <Apple size={20} />
+                <span>آبل</span>
+              </button>
+            </div>
+          </>
+        )}
+
         <p className={styles.toggleMode}>
           ليس لديك حساب؟ <span onClick={() => router.push('/signup')} className={styles.link}>إنشاء حساب</span>
         </p>
