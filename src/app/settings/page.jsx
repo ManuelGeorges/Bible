@@ -1,14 +1,19 @@
 "use client"
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
-  Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette
+  Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
+  Trash2
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
+import { getAuth, deleteUser } from 'firebase/auth';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import styles from './Settings.module.css'
 
 const Settings = () => {
@@ -34,6 +39,7 @@ const Settings = () => {
     appSuggestionsTime: '12:00',
     updateAlerts: true
   })
+  const router = useRouter()
 
   useEffect(() => {
     const initSettings = async () => {
@@ -146,6 +152,50 @@ const Settings = () => {
       console.error(err)
     }
   }
+
+  const handleDeleteAccount = async () => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) return;
+
+    // 1. التحقق الاستباقي من "حداثة" تسجيل الدخول
+    const lastSignInTime = new Date(currentUser.metadata.lastSignInTime).getTime();
+    const now = new Date().getTime();
+    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000); // 5 دقائق
+
+    if (!isFreshSession) {
+      alert("لدواعي أمنية، يتطلب حذف الحساب تسجيل دخول حديث. يرجى تسجيل الخروج ثم الدخول مرة أخرى والمحاولة مجدداً.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك من السحابة."
+    );
+
+    if (confirmed) {
+      try {
+        const userId = currentUser.uid;
+
+        // 2. محاولة حذف المستخدم من Auth أولاً
+        await deleteUser(currentUser);
+
+        // 3. إذا نجح حذف الـ Auth، نقوم بحذف بيانات Firestore
+        const userDocRef = doc(db, 'users', userId);
+        await deleteDoc(userDocRef);
+
+        alert("تم حذف الحساب والبيانات بنجاح.");
+        router.push('/intro');
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        if (error.code === 'auth/requires-recent-login') {
+          alert("انتهت صلاحية الجلسة الأمنية. يرجى إعادة تسجيل الدخول ثم المحاولة مرة أخرى.");
+        } else {
+          alert("حدث خطأ أثناء حذف الحساب. يرجى المحاولة لاحقاً.");
+        }
+      }
+    }
+  };
 
   if (!mounted) return null
 
@@ -465,6 +515,19 @@ const Settings = () => {
           </div>
         </div>
       )}
+
+      <div className={styles.section + ' ' + styles.deleteSection}>
+        <h2 className={styles.sectionTitle}>
+          <Trash2 size={22} color="#ef4444" /> إدارة الحساب
+        </h2>
+        <p className={styles.subText} style={{ marginBottom: '15px' }}>
+          يمكنك حذف حسابك نهائياً من هنا. يرجى العلم أنه سيتم مسح جميع بياناتك ولا يمكن استعادتها.
+        </p>
+        <button className={styles.deleteButton} onClick={handleDeleteAccount}>
+          <Trash2 size={20} />
+          <span>حذف الحساب نهائياً</span>
+        </button>
+      </div>
 
       {showPermissionModal && (
         <div className={styles.modalOverlay}>
