@@ -254,21 +254,41 @@
   margin-top: 20px;
 }
 
-.deleteButton {
+.accountButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.logoutButton, .deleteButton {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 15px;
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 14px;
   border-radius: 16px;
   cursor: pointer;
   font-weight: 700;
   font-family: 'Cairo', sans-serif;
   transition: all 0.3s ease;
+}
+
+.logoutButton {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.logoutButton:hover {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.deleteButton {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .deleteButton:hover {

@@ -126,8 +126,20 @@
   margin-top: 0;
 }
 
-.paragraph {
+.paragraphWrapper {
+  position: relative;
   margin-bottom: 1.8rem;
+  padding: 10px;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.paragraphWrapper:hover {
+  background: rgba(0, 71, 171, 0.02);
+}
+
+.paragraph {
+  margin-bottom: 0;
   font-size: 1.25rem;
   line-height: 2.2;
   text-align: justify;
@@ -137,6 +149,38 @@
 .paragraph strong {
   color: var(--color-accent);
   font-weight: 800;
+}
+
+.paragraphActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+
+.paragraphWrapper:hover .paragraphActions {
+  opacity: 1;
+}
+
+.miniActionBtn {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.miniActionBtn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: rgba(0, 71, 171, 0.05);
 }
 
 .loadingWrapper, .errorWrapper {
@@ -299,4 +343,5 @@
   .title { font-size: 1.15rem; }
   .sectionHeader { font-size: 1.3rem; padding: 12px 18px; }
   .paragraph { font-size: 1.15rem; }
+  .paragraphActions { opacity: 1; }
 }

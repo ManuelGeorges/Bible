@@ -107,11 +107,14 @@ export default function SignUpPage() {
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
       setIsSubmitting(false);
+
+      // تجاهل الإغلاق اليدوي
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
 
       let errorMsg = 'فشل التسجيل بواسطة آبل.';
       if (Capacitor.getPlatform() === 'ios') {
-          errorMsg = 'فشل التسجيل. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.';
+          // إظهار الخطأ التقني لمساعدتنا في تشخيص المشكلة
+          errorMsg = `فشل التسجيل (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
       }
       setError(errorMsg);
     }

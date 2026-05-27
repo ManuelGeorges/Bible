@@ -6,14 +6,14 @@ import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
-  Trash2
+  Trash2, LogOut
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
-import { getAuth, deleteUser } from 'firebase/auth';
+import { signOut, deleteUser, onAuthStateChanged } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { auth, db } from '../../lib/firebase';
 import styles from './Settings.module.css'
 
 const Settings = () => {
@@ -24,6 +24,7 @@ const Settings = () => {
   const [versePerLine, setVersePerLine] = useState(false)
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
+  const [user, setUser] = useState(null)
   const [notifications, setNotifications] = useState({
     verse: true,
     verseTime: '06:00',
@@ -42,6 +43,10 @@ const Settings = () => {
   const router = useRouter()
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
+    })
+
     const initSettings = async () => {
       setMounted(true)
       const native = Capacitor.isNativePlatform()
@@ -80,6 +85,7 @@ const Settings = () => {
       }
     }
     initSettings()
+    return () => unsubscribe()
   }, [])
 
   const handleMasterToggle = async () => {
@@ -153,8 +159,16 @@ const Settings = () => {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/');
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
+  };
+
   const handleDeleteAccount = async () => {
-    const auth = getAuth();
     const currentUser = auth.currentUser;
 
     if (!currentUser) return;
@@ -516,18 +530,27 @@ const Settings = () => {
         </div>
       )}
 
-      <div className={styles.section + ' ' + styles.deleteSection}>
-        <h2 className={styles.sectionTitle}>
-          <Trash2 size={22} color="#ef4444" /> إدارة الحساب
-        </h2>
-        <p className={styles.subText} style={{ marginBottom: '15px' }}>
-          يمكنك حذف حسابك نهائياً من هنا. يرجى العلم أنه سيتم مسح جميع بياناتك ولا يمكن استعادتها.
-        </p>
-        <button className={styles.deleteButton} onClick={handleDeleteAccount}>
-          <Trash2 size={20} />
-          <span>حذف الحساب نهائياً</span>
-        </button>
-      </div>
+      {user && (
+        <div className={styles.section + ' ' + styles.deleteSection}>
+          <h2 className={styles.sectionTitle}>
+            <SettingsIcon size={22} className={styles.iconPrimary} /> إدارة الحساب
+          </h2>
+          <p className={styles.subText} style={{ marginBottom: '15px' }}>
+            يمكنك إدارة حسابك من هنا. يرجى العلم أن حذف الحساب سيؤدي لمسح جميع بياناتك نهائياً.
+          </p>
+          <div className={styles.accountButtons}>
+            <button className={styles.logoutButton} onClick={handleLogout}>
+              <LogOut size={20} />
+              <span>تسجيل الخروج</span>
+            </button>
+
+            <button className={styles.deleteButton} onClick={handleDeleteAccount}>
+              <Trash2 size={20} />
+              <span>حذف الحساب نهائياً</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {showPermissionModal && (
         <div className={styles.modalOverlay}>

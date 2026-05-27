@@ -84,14 +84,13 @@ const LoginPage = () => {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        // استخدام الطريقة النيتيف الخاصة بـ Capacitor (بتاع الكاباسيتور نفسه)
         const result = await FirebaseAuthentication.signInWithApple();
 
         if (result.credential) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: result.credential.idToken,
-            rawNonce: result.credential.nonce, // البلاجن بيولد الـ Nonce نيتيف
+            rawNonce: result.credential.nonce,
           });
 
           const userCredential = await signInWithCredential(auth, credential);
@@ -99,7 +98,6 @@ const LoginPage = () => {
           router.replace('/');
         }
       } else {
-        // طريقة الويب (شغالة معاك تمام)
         const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
@@ -109,12 +107,11 @@ const LoginPage = () => {
       console.error("Apple Auth Error:", err);
       setIsSubmitting(false);
 
-      if (err.message?.includes('cancel') || err.code === '1') return;
+      if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
 
-      // رسالة الخطأ دي بتظهر غالباً لما تكون الـ Capability ناقصة في ملفات الـ iOS
       let msg = 'فشل تسجيل الدخول بواسطة آبل.';
       if (Capacitor.getPlatform() === 'ios') {
-        msg = 'فشل تسجيل الدخول. تأكد من تفعيل "Sign In with Apple" في إعدادات التطبيق وتأكد من تسجيل دخولك بـ iCloud.';
+        msg = `فشل تسجيل الدخول (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
       }
       setError(msg);
     }

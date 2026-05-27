@@ -6,6 +6,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import styles from './analysis.module.css';
 import { ArrowRight, Sparkles, Loader2, AlertCircle, Clock, Copy, Check, Share2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -111,7 +113,7 @@ ${targetText}
 
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
-      const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-lite" });
 
       const result = await model.generateContentStream(prompt);
       let text = '';
@@ -169,19 +171,51 @@ ${targetText}
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!analysis) return;
-    if (navigator.share) {
-      const shareTitle = verses
-        ? `دراسة ${book} ${chapter} : ${verses}`
-        : `دراسة ${book} ${chapter}`;
-      navigator.share({
-        title: shareTitle,
-        text: analysis,
-        url: window.location.href,
-      }).catch(console.error);
-    } else {
-      handleCopy();
+    const shareTitle = verses
+      ? `دراسة ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
+      : `دراسة ${book} ${convertToArabicNumber(chapter)}`;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          title: shareTitle,
+          text: analysis,
+          url: window.location.href,
+          dialogTitle: 'مشاركة التحليل عبر...',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: analysis,
+          url: window.location.href,
+        });
+      } else {
+        handleCopy();
+      }
+    } catch (err) {
+      console.error('Share error', err);
+    }
+  };
+
+  const shareText = async (text) => {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          text: text,
+          dialogTitle: 'مشاركة النص...',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          text: text
+        });
+      } else {
+        navigator.clipboard.writeText(text);
+        toast.success('تم النسخ');
+      }
+    } catch (err) {
+      console.error('Share error', err);
     }
   };
 
@@ -207,9 +241,30 @@ ${targetText}
       });
 
       return (
-        <p key={i} className={styles.paragraph}>
-          {formattedLine}
-        </p>
+        <div key={i} className={styles.paragraphWrapper}>
+          <p className={styles.paragraph}>
+            {formattedLine}
+          </p>
+          <div className={styles.paragraphActions}>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(cleanLine);
+                toast.success('تم نسخ الفقرة');
+              }}
+              className={styles.miniActionBtn}
+              title="نسخ"
+            >
+              <Copy size={14} />
+            </button>
+            <button
+              onClick={() => shareText(cleanLine)}
+              className={styles.miniActionBtn}
+              title="مشاركة"
+            >
+              <Share2 size={14} />
+            </button>
+          </div>
+        </div>
       );
     });
   };
