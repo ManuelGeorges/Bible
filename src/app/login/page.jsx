@@ -34,7 +34,7 @@ const LoginPage = () => {
   }, [router]);
 
   const handleUserData = async (user) => {
-    if (!db) return;
+    if (!db || !user) return;
     try {
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
@@ -60,9 +60,11 @@ const LoginPage = () => {
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        const idToken = result.credential?.idToken;
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
+        // إذا كانت الإضافة قد قامت بتسجيل الدخول تلقائياً
+        if (result.user) {
+          await handleUserData(result.user);
+        } else if (result.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(result.credential.idToken);
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
         }
@@ -72,6 +74,7 @@ const LoginPage = () => {
       }
       router.replace('/');
     } catch (err) {
+      console.error(err);
       setError('فشل تسجيل الدخول بواسطة جوجل.');
       setIsSubmitting(false);
     }
@@ -84,9 +87,14 @@ const LoginPage = () => {
 
     try {
       if (Capacitor.isNativePlatform()) {
+        // بما أن skipNativeAuth: false، الإضافة تقوم بتسجيل الدخول تلقائياً
         const result = await FirebaseAuthentication.signInWithApple();
 
-        if (result.credential) {
+        if (result.user) {
+          // تم تسجيل الدخول تلقائياً بواسطة البلاجن، فقط نحدث بيانات Firestore
+          await handleUserData(result.user);
+        } else if (result.credential) {
+          // في حال لم يتم تسجيل الدخول تلقائياً لأي سبب، نقوم به يدوياً
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: result.credential.idToken,
@@ -95,14 +103,13 @@ const LoginPage = () => {
 
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
-          router.replace('/');
         }
       } else {
         const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
-        router.replace('/');
       }
+      router.replace('/');
     } catch (err) {
       console.error("Apple Auth Error:", err);
       setIsSubmitting(false);

@@ -36,7 +36,7 @@ export default function SignUpPage() {
   }, [router]);
 
   const handleUserData = async (user) => {
-    if (!db) return;
+    if (!db || !user) return;
     try {
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
@@ -62,9 +62,11 @@ export default function SignUpPage() {
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        const idToken = result.credential?.idToken;
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
+        // إذا كانت الإضافة قد قامت بتسجيل الدخول تلقائياً
+        if (result.user) {
+          await handleUserData(result.user);
+        } else if (result.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(result.credential.idToken);
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
         }
@@ -87,8 +89,14 @@ export default function SignUpPage() {
 
     try {
       if (Capacitor.isNativePlatform()) {
+        // الإضافة تقوم بتسجيل الدخول تلقائياً لـ Firebase لأن skipNativeAuth: false
         const result = await FirebaseAuthentication.signInWithApple();
-        if (result.credential) {
+
+        if (result.user) {
+          // تم تسجيل الدخول تلقائياً بواسطة البلاجن، فقط نحدث بيانات Firestore
+          await handleUserData(result.user);
+        } else if (result.credential) {
+          // في حال لم يتم تسجيل الدخول تلقائياً لأي سبب، نقوم به يدوياً
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: result.credential.idToken,
@@ -96,24 +104,21 @@ export default function SignUpPage() {
           });
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
-          router.replace('/');
         }
       } else {
         const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
-        router.replace('/');
       }
+      router.replace('/');
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
       setIsSubmitting(false);
 
-      // تجاهل الإغلاق اليدوي
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
 
       let errorMsg = 'فشل التسجيل بواسطة آبل.';
       if (Capacitor.getPlatform() === 'ios') {
-          // إظهار الخطأ التقني لمساعدتنا في تشخيص المشكلة
           errorMsg = `فشل التسجيل (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
       }
       setError(errorMsg);
