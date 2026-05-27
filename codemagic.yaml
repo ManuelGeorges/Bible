@@ -29,7 +29,7 @@ workflows:
       - name: Increment Build Number
         script: |
           cd ios/App
-          agvtool new-version -all $(($BUILD_NUMBER + 100))
+          agvtool new-version -all $(date +%s)
       - name: Build and Sign IPA
         script: |
           # 1. تهيئة الـ Keychain وتنظيف السيرفر
