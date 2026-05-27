@@ -17,6 +17,12 @@ import { auth, db } from '../../lib/firebase';
 import styles from './signup.module.css';
 import { Apple } from 'lucide-react';
 
+const generateNonce = () => {
+  const array = new Uint8Array(16);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+};
+
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -28,7 +34,6 @@ export default function SignUpPage() {
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
-  // السياسة الموحدة: التوجيه التلقائي عند اكتشاف مستخدم
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
@@ -85,15 +90,16 @@ export default function SignUpPage() {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+    const rawNonce = generateNonce();
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
+        const result = await FirebaseAuthentication.signInWithApple({ nonce: rawNonce });
         const idToken = result.credential?.idToken;
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: idToken,
-            rawNonce: result.credential?.rawNonce,
+            rawNonce: rawNonce,
           });
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
@@ -163,3 +169,6 @@ export default function SignUpPage() {
     </div>
   );
 }
+
+  
+              
