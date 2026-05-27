@@ -8,8 +8,7 @@ import {
   OAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
-  signInWithPopup,
-  signInWithRedirect
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
@@ -83,50 +82,41 @@ const LoginPage = () => {
     setError(null);
     setIsSubmitting(true);
 
-    const provider = new OAuthProvider('apple.com');
-
     try {
-      // 1. محاولة تسجيل الدخول النيتيف (Native) أولاً إذا كنا على تطبيق موبايل
       if (Capacitor.isNativePlatform()) {
-        try {
-          const result = await FirebaseAuthentication.signInWithApple();
-          const idToken = result.credential?.idToken;
-          const rawNonce = result.credential?.nonce;
+        // استخدام الطريقة النيتيف الخاصة بـ Capacitor (بتاع الكاباسيتور نفسه)
+        const result = await FirebaseAuthentication.signInWithApple();
 
-          if (idToken) {
-            const credential = provider.credential({
-              idToken: idToken,
-              rawNonce: rawNonce,
-            });
-            const userCredential = await signInWithCredential(auth, credential);
-            await handleUserData(userCredential.user);
-            router.replace('/');
-            return; // نجاح العملية نخرج من الدالة
-          }
-        } catch (nativeErr) {
-          console.warn("Native Apple Auth failed, trying Web fallback:", nativeErr);
-          // إذا فشل النيتيف (غالباً بسبب عدم وجود Xcode/Capabilities)، هنكمل لطريقة الويب
+        if (result.credential) {
+          const provider = new OAuthProvider('apple.com');
+          const credential = provider.credential({
+            idToken: result.credential.idToken,
+            rawNonce: result.credential.nonce, // البلاجن بيولد الـ Nonce نيتيف
+          });
+
+          const userCredential = await signInWithCredential(auth, credential);
+          await handleUserData(userCredential.user);
+          router.replace('/');
         }
-      }
-
-      // 2. طريقة الويب (Web Flow) كبديل يضمن العمل على كل الأجهزة
-      if (Capacitor.isNativePlatform()) {
-        // في الموبايل يفضل Redirect لأن الـ Popups غالباً بتتحجب
-        await signInWithRedirect(auth, provider);
       } else {
+        // طريقة الويب (شغالة معاك تمام)
+        const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
         router.replace('/');
       }
-
     } catch (err) {
-      console.error("Apple Sign-In Error:", err);
-      if (err.message?.includes('cancel') || err.code?.includes('canceled')) {
-        setIsSubmitting(false);
-        return;
-      }
-      setError('فشل تسجيل الدخول بواسطة آبل. تأكد من إعدادات الـ iCloud.');
+      console.error("Apple Auth Error:", err);
       setIsSubmitting(false);
+
+      if (err.message?.includes('cancel') || err.code === '1') return;
+
+      // رسالة الخطأ دي بتظهر غالباً لما تكون الـ Capability ناقصة في ملفات الـ iOS
+      let msg = 'فشل تسجيل الدخول بواسطة آبل.';
+      if (Capacitor.getPlatform() === 'ios') {
+        msg = 'فشل تسجيل الدخول. تأكد من تفعيل "Sign In with Apple" في إعدادات التطبيق وتأكد من تسجيل دخولك بـ iCloud.';
+      }
+      setError(msg);
     }
   };
 
@@ -162,12 +152,10 @@ const LoginPage = () => {
             <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
             <span>جوجل</span>
           </button>
-          {Capacitor.getPlatform() !== 'android' && (
-            <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
-              <Apple size={20} />
-              <span>آبل</span>
-            </button>
-          )}
+          <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
+            <Apple size={20} />
+            <span>آبل</span>
+          </button>
         </div>
         <p className={styles.toggleMode}>
           ليس لديك حساب؟ <span onClick={() => router.push('/signup')} className={styles.link}>إنشاء حساب</span>
