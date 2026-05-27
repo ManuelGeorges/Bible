@@ -3,7 +3,7 @@ import { getAuth, indexedDBLocalPersistence, initializeAuth } from "firebase/aut
 import { 
   initializeFirestore, 
   persistentLocalCache, 
-  persistentMultipleTabManager 
+  persistentMultipleTabManager
 } from "firebase/firestore";
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
 import { Capacitor } from "@capacitor/core";

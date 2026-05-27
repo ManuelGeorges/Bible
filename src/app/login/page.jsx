@@ -10,9 +10,10 @@ import {
   signInWithCredential,
   signInWithPopup
 } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { Capacitor } from '@capacitor/core';
-import { auth } from '../../lib/firebase';
+import { auth, db } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
 
@@ -32,19 +33,78 @@ const LoginPage = () => {
     return () => unsubscribe();
   }, [router]);
 
-  const translateError = (code) => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'لا يوجد اتصال بالإنترنت. يرجى الاتصال ثم المحاولة.';
+  const handleUserData = async (user) => {
+    if (!db) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        const [fName, ...lName] = (user.displayName || "").split(' ');
+        await setDoc(userRef, {
+          firstName: fName || "مستخدم",
+          lastName: lName.join(' ') || "جديد",
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          favorites: { verses: {} },
+          completedChapters: {},
+          completedPlans: {}
+        }, { merge: true });
+      }
+    } catch (err) { console.error("Firestore Sync Error:", err); }
+  };
+
+  const handleGoogleAuth = async () => {
+    if (isSubmitting) return;
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
+        const idToken = result.credential?.idToken;
+        if (idToken) {
+          const credential = GoogleAuthProvider.credential(idToken);
+          const userCredential = await signInWithCredential(auth, credential);
+          await handleUserData(userCredential.user);
+        }
+      } else {
+        const result = await signInWithPopup(auth, new GoogleAuthProvider());
+        await handleUserData(result.user);
+      }
+      router.replace('/');
+    } catch (err) {
+      console.error(err);
+      setError('فشل تسجيل الدخول بواسطة جوجل.');
+      setIsSubmitting(false);
     }
-    switch (code) {
-      case 'auth/user-not-found':
-      case 'auth/wrong-password':
-      case 'auth/invalid-credential': return 'خطأ في البريد الإلكتروني أو كلمة المرور.';
-      case 'auth/too-many-requests': return 'تم حظر المحاولات مؤقتاً. حاول لاحقاً.';
-      case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
-      case 'auth/popup-closed-by-user': return 'تم إغلاق نافذة تسجيل الدخول.';
-      case 'auth/operation-not-allowed': return 'طريقة تسجيل الدخول هذه غير مفعلة في الإعدادات.';
-      default: return 'حدث خطأ، حاول مرة أخرى.';
+  };
+
+  const handleAppleAuth = async () => {
+    if (isSubmitting) return;
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithApple();
+        const idToken = result.credential?.idToken;
+        if (idToken) {
+          const provider = new OAuthProvider('apple.com');
+          const credential = provider.credential({
+            idToken: idToken,
+            rawNonce: result.credential?.rawNonce,
+          });
+          const userCredential = await signInWithCredential(auth, credential);
+          await handleUserData(userCredential.user);
+        }
+      } else {
+        const provider = new OAuthProvider('apple.com');
+        const result = await signInWithPopup(auth, provider);
+        await handleUserData(result.user);
+      }
+      router.replace('/');
+    } catch (err) {
+      console.error(err);
+      setError('فشل تسجيل الدخول بواسطة آبل.');
+      setIsSubmitting(false);
     }
   };
 
@@ -57,79 +117,7 @@ const LoginPage = () => {
       await signInWithEmailAndPassword(auth, email, password);
       router.replace('/');
     } catch (err) {
-      setError(translateError(err.code));
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    if (isSubmitting) return;
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({
-          webClientId: WEB_CLIENT_ID,
-        });
-        const idToken = result.credential?.idToken;
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
-          await signInWithCredential(auth, credential);
-        }
-      } else {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      }
-      router.replace('/');
-    } catch (err) {
-      console.error("Google Auth Error:", err);
-      setError('فشل تسجيل الدخول بواسطة جوجل.');
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleAppleAuth = async () => {
-    if (isSubmitting) return;
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      if (Capacitor.isNativePlatform()) {
-        // محاولة تسجيل الدخول الأصلي (Native)
-        const result = await FirebaseAuthentication.signInWithApple();
-
-        // إذا نجح الـ Plugin في تسجيل الدخول للـ Firebase تلقائياً
-        if (result.user) {
-          router.replace('/');
-          return;
-        }
-
-        const idToken = result.credential?.idToken;
-        const rawNonce = result.credential?.rawNonce;
-
-        if (idToken) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({
-            idToken: idToken,
-            rawNonce: rawNonce,
-          });
-          await signInWithCredential(auth, credential);
-          router.replace('/');
-        } else {
-            throw new Error("No ID Token");
-        }
-      } else {
-        const provider = new OAuthProvider('apple.com');
-        provider.addScope('email');
-        provider.addScope('name');
-        await signInWithPopup(auth, provider);
-        router.replace('/');
-      }
-    } catch (err) {
-      console.error("Apple Auth Error:", err);
-      // تنبيه المستخدم بالخطأ بشكل أوضح
-      setError('فشل تسجيل الدخول بواسطة آبل. قد يحتاج التطبيق لتحديث من المتجر لتفعيل هذه الخاصية.');
+      setError('خطأ في البريد الإلكتروني أو كلمة المرور.');
       setIsSubmitting(false);
     }
   };

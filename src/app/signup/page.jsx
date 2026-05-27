@@ -26,6 +26,9 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
+
+  // السياسة الموحدة: التوجيه التلقائي عند اكتشاف مستخدم
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
@@ -34,97 +37,46 @@ export default function SignUpPage() {
   }, [router]);
 
   const handleUserData = async (user) => {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      const [fName, ...lName] = (user.displayName || "مستخدم جديد").split(' ');
-      await setDoc(userRef, {
-        firstName: fName || "مستخدم",
-        lastName: lName.join(' ') || "جديد",
-        email: user.email,
-        createdAt: new Date().toISOString(),
-        favorites: { verses: {} },
-        completedChapters: {},
-        completedPlans: {}
-      });
-    }
-  };
-
-  const translateError = (code) => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'لا يوجد اتصال بالإنترنت. يرجى المحاولة لاحقاً.';
-    }
-    switch (code) {
-      case 'auth/email-already-in-use': return 'هذا البريد الإلكتروني مسجل بالفعل.';
-      case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
-      case 'auth/weak-password': return 'كلمة المرور ضعيفة (6 أحرف على الأقل).';
-      case 'auth/network-request-failed': return 'خطأ في الاتصال بالشبكة.';
-      case 'auth/operation-not-allowed': return 'طريقة تسجيل الدخول هذه غير مفعلة.';
-      default: return 'حدث خطأ، حاول مرة أخرى.';
-    }
-  };
-
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
-
-    setError(null);
-    setIsSubmitting(true);
-
+    if (!db) return;
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await setDoc(doc(db, 'users', user.uid), {
-            firstName,
-            lastName,
-            email: user.email,
-            createdAt: new Date().toISOString(),
-            favorites: { verses: {} },
-            completedChapters: {},
-            completedPlans: {}
-        });
-        router.replace('/');
-    } catch (err) {
-        setError(translateError(err.code));
-        setIsSubmitting(false);
-    }
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        const [fName, ...lName] = (user.displayName || "").split(' ');
+        await setDoc(userRef, {
+          firstName: firstName || fName || "مستخدم",
+          lastName: lastName || lName.join(' ') || "جديد",
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          favorites: { verses: {} },
+          completedChapters: {},
+          completedPlans: {}
+        }, { merge: true });
+      }
+    } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({
-          webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
-        });
-
-        if (result.user) {
-          await handleUserData(result.user);
-          router.replace('/');
-          return;
-        }
-
+        const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
         const idToken = result.credential?.idToken;
         if (idToken) {
-            const credential = GoogleAuthProvider.credential(idToken);
-            const userCredential = await signInWithCredential(auth, credential);
-            await handleUserData(userCredential.user);
-            router.replace('/');
+          const credential = GoogleAuthProvider.credential(idToken);
+          const userCredential = await signInWithCredential(auth, credential);
+          await handleUserData(userCredential.user);
         }
       } else {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, new GoogleAuthProvider());
         await handleUserData(result.user);
-        router.replace('/');
       }
+      router.replace('/');
     } catch (err) {
       console.error(err);
-      setError('فشل التسجيل بواسطة جوجل');
+      setError('فشل التسجيل بواسطة جوجل.');
       setIsSubmitting(false);
     }
   };
@@ -133,42 +85,44 @@ export default function SignUpPage() {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
-
-        // إذا نجح التسجيل التلقائي (skipNativeAuth: false)
-        if (result.user) {
-          await handleUserData(result.user);
-          router.replace('/');
-          return;
-        }
-
         const idToken = result.credential?.idToken;
-        const rawNonce = result.credential?.rawNonce;
-
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: idToken,
-            rawNonce: rawNonce,
+            rawNonce: result.credential?.rawNonce,
           });
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
-          router.replace('/');
         }
       } else {
         const provider = new OAuthProvider('apple.com');
-        provider.addScope('email');
-        provider.addScope('name');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
-        router.replace('/');
       }
+      router.replace('/');
     } catch (err) {
-      console.error("Apple Auth Error:", err);
-      setError('فشل التسجيل بواسطة آبل. تأكد من إعدادات الخدمة وتفعيلها في التطبيق.');
+      console.error(err);
+      setError('فشل التسجيل بواسطة آبل.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await handleUserData(userCredential.user);
+      router.replace('/');
+    } catch (err) {
+      setError('حدث خطأ في إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.');
       setIsSubmitting(false);
     }
   };
@@ -189,15 +143,12 @@ export default function SignUpPage() {
             {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
           </button>
         </form>
-
         <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
-
         <div className={styles.socialButtons}>
           <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
             <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
             <span>جوجل</span>
           </button>
-
           {Capacitor.getPlatform() !== 'android' && (
             <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
               <Apple size={20} />
@@ -205,7 +156,6 @@ export default function SignUpPage() {
             </button>
           )}
         </div>
-
         <p className={styles.toggleMode}>
           لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
         </p>
