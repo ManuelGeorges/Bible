@@ -22,14 +22,15 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isSubmittingRef = useRef(false); // لمنع التوجيه التلقائي قبل اكتمال العمليات
+  const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // لا توجه للهوم تلقائياً إذا كانت هناك عملية يدوية جارية (جوجل أو آبل أو إيميل)
+      // منع التوجيه التلقائي إذا كنا في عملية تسجيل دخول جارية يدوياً
+      // هذا يضمن أن كود المعالجة الخاص بنا سيكمل عمله ويقوم بالتوجيه بعد مزامنة البيانات
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -62,25 +63,42 @@ const LoginPage = () => {
     isSubmittingRef.current = val;
   };
 
+  // وظيفة لانتظار تزامن الـ Firebase JS SDK مع الدخول النيتيف (لحل مشكلة الرجوع للهوم بدون تسجيل)
+  const waitForAuthSync = async () => {
+    return new Promise((resolve) => {
+      if (auth.currentUser) return resolve(auth.currentUser);
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (auth.currentUser || attempts > 25) { // ننتظر حتى 5 ثوانٍ كحد أقصى
+          clearInterval(interval);
+          resolve(auth.currentUser);
+        }
+      }, 200);
+    });
+  };
+
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
     updateSubmitting(true);
     try {
+      let finalUser = null;
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        if (result.user) {
-          await handleUserData(result.user);
-        } else if (result.credential?.idToken) {
-          const credential = GoogleAuthProvider.credential(result.credential.idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        }
+        // ننتظر حتى تكتمل المزامنة في الـ WebView
+        finalUser = await waitForAuthSync() || result.user;
       } else {
         const result = await signInWithPopup(auth, new GoogleAuthProvider());
-        await handleUserData(result.user);
+        finalUser = result.user;
       }
-      router.replace('/'); // التوجيه يدوياً هنا بعد ضمان اكتمال handleUserData
+
+      if (finalUser) {
+        await handleUserData(finalUser);
+        router.replace('/');
+      } else {
+        throw new Error("فشل الحصول على بيانات المستخدم بعد الدخول.");
+      }
     } catch (err) {
       console.error(err);
       setError('فشل تسجيل الدخول بواسطة جوجل.');
@@ -94,25 +112,23 @@ const LoginPage = () => {
     updateSubmitting(true);
 
     try {
+      let finalUser = null;
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
-        if (result.user) {
-          await handleUserData(result.user);
-        } else if (result.credential) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({
-            idToken: result.credential.idToken,
-            rawNonce: result.credential.nonce,
-          });
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        }
+        // ننتظر حتى تكتمل المزامنة في الـ WebView
+        finalUser = await waitForAuthSync() || result.user;
       } else {
         const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        finalUser = result.user;
       }
-      router.replace('/'); // التوجيه يدوياً هنا
+
+      if (finalUser) {
+        await handleUserData(finalUser);
+        router.replace('/');
+      } else {
+        throw new Error("فشل الحصول على بيانات المستخدم بعد الدخول.");
+      }
     } catch (err) {
       console.error("Apple Auth Error:", err);
       updateSubmitting(false);

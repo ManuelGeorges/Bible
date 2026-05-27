@@ -31,7 +31,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // لا توجه تلقائياً إذا كانت هناك عملية يدوية جارية لمنع مقاطعة handleUserData
+      // نمنع التوجيه التلقائي طالما هناك عملية يدوية جارية لمنع مقاطعة حفظ البيانات
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -64,25 +64,43 @@ export default function SignUpPage() {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
+  // وظيفة لضمان مزامنة الـ Firebase JS SDK مع الدخول النيتيف قبل الانتقال
+  const waitForAuthSync = () => {
+    return new Promise((resolve) => {
+      if (auth.currentUser) return resolve(auth.currentUser);
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          unsubscribe();
+          resolve(user);
+        }
+      });
+      // توقيت احتياطي (5 ثواني) لضمان عدم تعليق التطبيق
+      setTimeout(() => {
+        unsubscribe();
+        resolve(auth.currentUser);
+      }, 5000);
+    });
+  };
+
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
     updateSubmitting(true);
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        if (result.user) {
-          await handleUserData(result.user);
-        } else if (result.credential?.idToken) {
-          const credential = GoogleAuthProvider.credential(result.credential.idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        }
+        await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
       } else {
-        const result = await signInWithPopup(auth, new GoogleAuthProvider());
-        await handleUserData(result.user);
+        await signInWithPopup(auth, new GoogleAuthProvider());
       }
-      router.replace('/');
+
+      // ننتظر حتى تكتمل المزامنة في الـ WebView
+      const syncedUser = await waitForAuthSync();
+      if (syncedUser) {
+        await handleUserData(syncedUser);
+        router.replace('/');
+      } else {
+        throw new Error("فشل مزامنة بيانات المستخدم.");
+      }
     } catch (err) {
       console.error(err);
       setError('فشل التسجيل بواسطة جوجل.');
@@ -97,28 +115,25 @@ export default function SignUpPage() {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
-        if (result.user) {
-          await handleUserData(result.user);
-        } else if (result.credential) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({
-            idToken: result.credential.idToken,
-            rawNonce: result.credential.nonce,
-          });
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        }
+        await FirebaseAuthentication.signInWithApple();
       } else {
         const provider = new OAuthProvider('apple.com');
-        const result = await signInWithPopup(auth, provider);
-        await handleUserData(result.user);
+        await signInWithPopup(auth, provider);
       }
-      router.replace('/');
+
+      // ننتظر حتى تكتمل المزامنة في الـ WebView
+      const syncedUser = await waitForAuthSync();
+      if (syncedUser) {
+        await handleUserData(syncedUser);
+        router.replace('/');
+      } else {
+        throw new Error("فشل مزامنة بيانات المستخدم.");
+      }
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
+
       let errorMsg = 'فشل التسجيل بواسطة آبل.';
       if (Capacitor.getPlatform() === 'ios') {
           errorMsg = `فشل التسجيل (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
@@ -154,12 +169,18 @@ export default function SignUpPage() {
           </div>
           <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+
           {error && <div className={styles.errorBox}>{error}</div>}
+
           <button type="submit" className={styles.button} disabled={isSubmitting}>
             {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
           </button>
         </form>
-        <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
+
+        <div className={styles.divider}>
+          <span className={styles.dividerText}>أو</span>
+        </div>
+
         <div className={styles.socialButtons}>
           <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
             <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
@@ -170,6 +191,7 @@ export default function SignUpPage() {
             <span>آبل</span>
           </button>
         </div>
+
         <p className={styles.toggleMode}>
           لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
         </p>
