@@ -22,14 +22,13 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isSubmittingRef = useRef(false); // لمنع التوجيه التلقائي قبل اكتمال العمليات
+  const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // لا توجه للهوم تلقائياً إذا كانت هناك عملية يدوية جارية (جوجل أو آبل أو إيميل)
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -63,7 +62,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleAuth = async () => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     setError(null);
     updateSubmitting(true);
     try {
@@ -80,7 +79,6 @@ const LoginPage = () => {
         const result = await signInWithPopup(auth, new GoogleAuthProvider());
         await handleUserData(result.user);
       }
-      router.replace('/'); // التوجيه يدوياً هنا بعد ضمان اكتمال handleUserData
     } catch (err) {
       console.error(err);
       setError('فشل تسجيل الدخول بواسطة جوجل.');
@@ -89,10 +87,9 @@ const LoginPage = () => {
   };
 
   const handleAppleAuth = async () => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     setError(null);
     updateSubmitting(true);
-
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
@@ -112,28 +109,22 @@ const LoginPage = () => {
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
       }
-      router.replace('/'); // التوجيه يدوياً هنا
     } catch (err) {
       console.error("Apple Auth Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-      let msg = 'فشل تسجيل الدخول بواسطة آبل.';
-      if (Capacitor.getPlatform() === 'ios') {
-        msg = `فشل تسجيل الدخول (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
-      }
-      setError(msg);
+      setError('فشل تسجيل الدخول بواسطة آبل.');
     }
   };
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     setError(null);
     updateSubmitting(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       await handleUserData(userCredential.user);
-      router.replace('/');
     } catch (err) {
       setError('خطأ في البريد الإلكتروني أو كلمة المرور.');
       updateSubmitting(false);
