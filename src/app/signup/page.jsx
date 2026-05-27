@@ -31,7 +31,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // التوجيه يتم فقط عند وجود مستخدم وانتهاء العمليات اليدوية
+      // منع التوجيه التلقائي إذا كنا في نص عملية تسجيل دخول يدوية لضمان اكتمال المزامنة وحفظ البيانات
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -64,25 +64,65 @@ export default function SignUpPage() {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
+  const syncAuthAndRedirect = async (nativeResult) => {
+    let user = auth.currentUser;
+
+    // 1. انتظار قصير للمزامنة التلقائية (Web SDK تلقط الجلسة من الـ Native)
+    if (!user) {
+      user = await new Promise((resolve) => {
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          if (auth.currentUser || attempts > 10) {
+            clearInterval(interval);
+            resolve(auth.currentUser);
+          }
+        }, 200);
+      });
+    }
+
+    // 2. مزامنة يدوية إجبارية إذا لزم الأمر لضمان الربط 100%
+    if (!user && nativeResult?.credential) {
+      try {
+        const providerId = nativeResult.credential.nonce ? 'apple.com' : 'google.com';
+        const credential = providerId === 'apple.com'
+          ? new OAuthProvider('apple.com').credential({
+              idToken: nativeResult.credential.idToken,
+              rawNonce: nativeResult.credential.nonce
+            })
+          : GoogleAuthProvider.credential(nativeResult.credential.idToken);
+
+        const userCredential = await signInWithCredential(auth, credential);
+        user = userCredential.user;
+      } catch (e) {
+        console.warn("Sync overlap handled");
+        user = auth.currentUser;
+      }
+    }
+
+    const finalUser = user || nativeResult?.user;
+    if (finalUser) {
+      await handleUserData(finalUser);
+      // تأخير بسيط لضمان ثبات الجلسة في الـ WebView قبل التوجيه
+      setTimeout(() => router.replace('/'), 500);
+    } else {
+      throw new Error("فشل مزامنة الجلسة");
+    }
+  };
+
   const handleGoogleAuth = async () => {
-    if (isSubmittingRef.current) return;
+    if (isSubmitting) return;
     setError(null);
     updateSubmitting(true);
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        if (result.user) {
-          await handleUserData(result.user);
-        } else if (result.credential?.idToken) {
-          const credential = GoogleAuthProvider.credential(result.credential.idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        }
+        await syncAuthAndRedirect(result);
       } else {
         const result = await signInWithPopup(auth, new GoogleAuthProvider());
         await handleUserData(result.user);
+        router.replace('/');
       }
-      // أزلنا router.replace هنا
     } catch (err) {
       console.error(err);
       setError('فشل التسجيل بواسطة جوجل.');
@@ -91,29 +131,20 @@ export default function SignUpPage() {
   };
 
   const handleAppleAuth = async () => {
-    if (isSubmittingRef.current) return;
+    if (isSubmitting) return;
     setError(null);
     updateSubmitting(true);
+
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
-        if (result.user) {
-          await handleUserData(result.user);
-        } else if (result.credential) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({
-            idToken: result.credential.idToken,
-            rawNonce: result.credential.nonce,
-          });
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
-        }
+        await syncAuthAndRedirect(result);
       } else {
         const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
+        router.replace('/');
       }
-      // أزلنا router.replace هنا
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
       updateSubmitting(false);
@@ -124,14 +155,14 @@ export default function SignUpPage() {
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    if (isSubmittingRef.current) return;
+    if (isSubmitting) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
     setError(null);
     updateSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await handleUserData(userCredential.user);
-      // أزلنا router.replace هنا
+      router.replace('/');
     } catch (err) {
       setError('حدث خطأ في إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.');
       updateSubmitting(false);
