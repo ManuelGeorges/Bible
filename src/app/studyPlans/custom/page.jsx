@@ -90,7 +90,7 @@ export default function CustomPlanForm() {
 3. إذا كان الموضوع متخصصاً جداً، ابدأ به ثم توسع لأسفار ومفاهيم روحية مرتبطة لضمان اكتمال الخطة بجودة عالية.`;
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-3.1-flash-lite",
                 generationConfig: { temperature: 0.7 }
             });
 
