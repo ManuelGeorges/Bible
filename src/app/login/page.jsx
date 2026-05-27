@@ -8,7 +8,8 @@ import {
   OAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
-  signInWithPopup
+  signInWithPopup,
+  signInWithRedirect
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
@@ -72,7 +73,6 @@ const LoginPage = () => {
       }
       router.replace('/');
     } catch (err) {
-      console.error(err);
       setError('فشل تسجيل الدخول بواسطة جوجل.');
       setIsSubmitting(false);
     }
@@ -82,28 +82,50 @@ const LoginPage = () => {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+
+    const provider = new OAuthProvider('apple.com');
+
     try {
+      // 1. محاولة تسجيل الدخول النيتيف (Native) أولاً إذا كنا على تطبيق موبايل
       if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithApple();
-        const idToken = result.credential?.idToken;
-        if (idToken) {
-          const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({
-            idToken: idToken,
-            rawNonce: result.credential?.rawNonce,
-          });
-          const userCredential = await signInWithCredential(auth, credential);
-          await handleUserData(userCredential.user);
+        try {
+          const result = await FirebaseAuthentication.signInWithApple();
+          const idToken = result.credential?.idToken;
+          const rawNonce = result.credential?.nonce;
+
+          if (idToken) {
+            const credential = provider.credential({
+              idToken: idToken,
+              rawNonce: rawNonce,
+            });
+            const userCredential = await signInWithCredential(auth, credential);
+            await handleUserData(userCredential.user);
+            router.replace('/');
+            return; // نجاح العملية نخرج من الدالة
+          }
+        } catch (nativeErr) {
+          console.warn("Native Apple Auth failed, trying Web fallback:", nativeErr);
+          // إذا فشل النيتيف (غالباً بسبب عدم وجود Xcode/Capabilities)، هنكمل لطريقة الويب
         }
+      }
+
+      // 2. طريقة الويب (Web Flow) كبديل يضمن العمل على كل الأجهزة
+      if (Capacitor.isNativePlatform()) {
+        // في الموبايل يفضل Redirect لأن الـ Popups غالباً بتتحجب
+        await signInWithRedirect(auth, provider);
       } else {
-        const provider = new OAuthProvider('apple.com');
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
+        router.replace('/');
       }
-      router.replace('/');
+
     } catch (err) {
-      console.error(err);
-      setError('فشل تسجيل الدخول بواسطة آبل.');
+      console.error("Apple Sign-In Error:", err);
+      if (err.message?.includes('cancel') || err.code?.includes('canceled')) {
+        setIsSubmitting(false);
+        return;
+      }
+      setError('فشل تسجيل الدخول بواسطة آبل. تأكد من إعدادات الـ iCloud.');
       setIsSubmitting(false);
     }
   };

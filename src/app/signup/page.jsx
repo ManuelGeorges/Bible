@@ -28,7 +28,6 @@ export default function SignUpPage() {
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
-  // السياسة الموحدة: التوجيه التلقائي عند اكتشاف مستخدم
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) router.replace('/');
@@ -85,15 +84,19 @@ export default function SignUpPage() {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
+
     try {
       if (Capacitor.isNativePlatform()) {
+        // نترك البلاجن يولد الـ nonce داخلياً لضمان التوافقية القصوى
         const result = await FirebaseAuthentication.signInWithApple();
         const idToken = result.credential?.idToken;
+        const rawNonce = result.credential?.nonce;
+
         if (idToken) {
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: idToken,
-            rawNonce: result.credential?.rawNonce,
+            rawNonce: rawNonce,
           });
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
@@ -105,8 +108,12 @@ export default function SignUpPage() {
       }
       router.replace('/');
     } catch (err) {
-      console.error(err);
-      setError('فشل التسجيل بواسطة آبل.');
+      console.error("Apple Sign-In Error:", err);
+      if (err.message?.includes('cancel')) {
+        setIsSubmitting(false);
+        return;
+      }
+      setError('فشل التسجيل بواسطة آبل. تأكد من إعدادات الـ iCloud.');
       setIsSubmitting(false);
     }
   };
