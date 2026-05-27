@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   signInWithEmailAndPassword,
@@ -22,13 +22,17 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false); // لمنع التوجيه التلقائي قبل اكتمال العمليات
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace('/');
+      // لا توجه للهوم تلقائياً إذا كانت هناك عملية يدوية جارية (جوجل أو آبل أو إيميل)
+      if (user && !isSubmittingRef.current) {
+        router.replace('/');
+      }
     });
     return () => unsubscribe();
   }, [router]);
@@ -53,14 +57,18 @@ const LoginPage = () => {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
+  const updateSubmitting = (val) => {
+    setIsSubmitting(val);
+    isSubmittingRef.current = val;
+  };
+
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
-    setIsSubmitting(true);
+    updateSubmitting(true);
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        // إذا كانت الإضافة قد قامت بتسجيل الدخول تلقائياً
         if (result.user) {
           await handleUserData(result.user);
         } else if (result.credential?.idToken) {
@@ -72,35 +80,30 @@ const LoginPage = () => {
         const result = await signInWithPopup(auth, new GoogleAuthProvider());
         await handleUserData(result.user);
       }
-      router.replace('/');
+      router.replace('/'); // التوجيه يدوياً هنا بعد ضمان اكتمال handleUserData
     } catch (err) {
       console.error(err);
       setError('فشل تسجيل الدخول بواسطة جوجل.');
-      setIsSubmitting(false);
+      updateSubmitting(false);
     }
   };
 
   const handleAppleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
-    setIsSubmitting(true);
+    updateSubmitting(true);
 
     try {
       if (Capacitor.isNativePlatform()) {
-        // بما أن skipNativeAuth: false، الإضافة تقوم بتسجيل الدخول تلقائياً
         const result = await FirebaseAuthentication.signInWithApple();
-
         if (result.user) {
-          // تم تسجيل الدخول تلقائياً بواسطة البلاجن، فقط نحدث بيانات Firestore
           await handleUserData(result.user);
         } else if (result.credential) {
-          // في حال لم يتم تسجيل الدخول تلقائياً لأي سبب، نقوم به يدوياً
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: result.credential.idToken,
             rawNonce: result.credential.nonce,
           });
-
           const userCredential = await signInWithCredential(auth, credential);
           await handleUserData(userCredential.user);
         }
@@ -109,13 +112,11 @@ const LoginPage = () => {
         const result = await signInWithPopup(auth, provider);
         await handleUserData(result.user);
       }
-      router.replace('/');
+      router.replace('/'); // التوجيه يدوياً هنا
     } catch (err) {
       console.error("Apple Auth Error:", err);
-      setIsSubmitting(false);
-
+      updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-
       let msg = 'فشل تسجيل الدخول بواسطة آبل.';
       if (Capacitor.getPlatform() === 'ios') {
         msg = `فشل تسجيل الدخول (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
@@ -128,13 +129,14 @@ const LoginPage = () => {
     e.preventDefault();
     if (isSubmitting) return;
     setError(null);
-    setIsSubmitting(true);
+    updateSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await handleUserData(userCredential.user);
       router.replace('/');
     } catch (err) {
       setError('خطأ في البريد الإلكتروني أو كلمة المرور.');
-      setIsSubmitting(false);
+      updateSubmitting(false);
     }
   };
 

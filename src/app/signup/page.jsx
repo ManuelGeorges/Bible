@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
@@ -24,16 +24,25 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace('/');
+      // لا توجه تلقائياً إذا كانت هناك عملية يدوية جارية لمنع مقاطعة handleUserData
+      if (user && !isSubmittingRef.current) {
+        router.replace('/');
+      }
     });
     return () => unsubscribe();
   }, [router]);
+
+  const updateSubmitting = (val) => {
+    setIsSubmitting(val);
+    isSubmittingRef.current = val;
+  };
 
   const handleUserData = async (user) => {
     if (!db || !user) return;
@@ -58,11 +67,10 @@ export default function SignUpPage() {
   const handleGoogleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
-    setIsSubmitting(true);
+    updateSubmitting(true);
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
-        // إذا كانت الإضافة قد قامت بتسجيل الدخول تلقائياً
         if (result.user) {
           await handleUserData(result.user);
         } else if (result.credential?.idToken) {
@@ -78,25 +86,21 @@ export default function SignUpPage() {
     } catch (err) {
       console.error(err);
       setError('فشل التسجيل بواسطة جوجل.');
-      setIsSubmitting(false);
+      updateSubmitting(false);
     }
   };
 
   const handleAppleAuth = async () => {
     if (isSubmitting) return;
     setError(null);
-    setIsSubmitting(true);
+    updateSubmitting(true);
 
     try {
       if (Capacitor.isNativePlatform()) {
-        // الإضافة تقوم بتسجيل الدخول تلقائياً لـ Firebase لأن skipNativeAuth: false
         const result = await FirebaseAuthentication.signInWithApple();
-
         if (result.user) {
-          // تم تسجيل الدخول تلقائياً بواسطة البلاجن، فقط نحدث بيانات Firestore
           await handleUserData(result.user);
         } else if (result.credential) {
-          // في حال لم يتم تسجيل الدخول تلقائياً لأي سبب، نقوم به يدوياً
           const provider = new OAuthProvider('apple.com');
           const credential = provider.credential({
             idToken: result.credential.idToken,
@@ -113,10 +117,8 @@ export default function SignUpPage() {
       router.replace('/');
     } catch (err) {
       console.error("Apple Sign-In Error:", err);
-      setIsSubmitting(false);
-
+      updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-
       let errorMsg = 'فشل التسجيل بواسطة آبل.';
       if (Capacitor.getPlatform() === 'ios') {
           errorMsg = `فشل التسجيل (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
@@ -130,14 +132,14 @@ export default function SignUpPage() {
     if (isSubmitting) return;
     if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
     setError(null);
-    setIsSubmitting(true);
+    updateSubmitting(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await handleUserData(userCredential.user);
       router.replace('/');
     } catch (err) {
       setError('حدث خطأ في إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.');
-      setIsSubmitting(false);
+      updateSubmitting(false);
     }
   };
 
@@ -152,18 +154,12 @@ export default function SignUpPage() {
           </div>
           <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
-
           {error && <div className={styles.errorBox}>{error}</div>}
-
           <button type="submit" className={styles.button} disabled={isSubmitting}>
             {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
           </button>
         </form>
-
-        <div className={styles.divider}>
-          <span className={styles.dividerText}>أو</span>
-        </div>
-
+        <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
         <div className={styles.socialButtons}>
           <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
             <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
@@ -174,7 +170,6 @@ export default function SignUpPage() {
             <span>آبل</span>
           </button>
         </div>
-
         <p className={styles.toggleMode}>
           لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
         </p>
