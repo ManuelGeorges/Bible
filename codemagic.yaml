@@ -36,30 +36,27 @@ workflows:
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. جلب التوقيع المحدث من أبل (سيقوم بإنشاء الشهادة والبروفايل تلقائياً)
-          # حذفنا الباسوورد هنا لتجنب خطأ unrecognized arguments
+          # 2. جلب التوقيع المحدث من أبل
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
-          # 3. استخراج الـ UUID بعد فك التشفير (للتأكد فقط)
-          PROV_PROFILE=$(find ~/Library -name "*.mobileprovision" | head -n 1)
-          security cms -D -i "$PROV_PROFILE" > /tmp/profile.plist
-          PROV_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist)
-          echo "تم تجهيز البروفايل: $PROV_UUID"
-          
-          # 4. تطهير ملف المشروع برمجياً (تغيير كل المسميات القديمة لـ Apple Distribution)
-          # هذه الخطوة ستحل مشكلة تعارض الهويات (iPhone vs Apple)
+          # 3. تعديل ملف المشروع برمجياً لتفعيل Sign In with Apple (بديل لـ Xcode)
+          # هذه الأوامر تقوم بربط ملف الاستحقاقات الذي أنشأناه بالمشروع
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
+          
+          # إضافة مرجع ملف الـ Entitlements في إعدادات البناء
+          sed -i '' "/CODE_SIGN_IDENTITY = \"iPhone Distribution\"/a\\
+          CODE_SIGN_ENTITLEMENTS = App/App.entitlements;" "$XCODE_PROJECT/project.pbxproj"
+          
+          # 4. تطهير ملف المشروع برمجياً
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/iPhone Distribution/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
-          sed -i '' "s/iPhone Developer/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
           
-          # 5. ربط البروفايلات بالمشروع بشكل آلي
+          # 5. ربط البروفايلات بالمشروع
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
           # 6. بناء الـ IPA النهائي
-          # سنترك الأداة تستخدم الإعدادات التي حقناها في المشروع لضمان عدم وجود أعلام متعارضة في السجل
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"

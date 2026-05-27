@@ -9,10 +9,11 @@ export default function TopHeader() {
     const pathname = usePathname();
 
     const cleanPath = pathname === '/' ? '/' : pathname.replace(/\/$/, "");
-    const mainPages = ['/', '/bible', '/maps', '/search'];
-    const isMainPage = mainPages.includes(cleanPath);
 
-    if (isMainPage) return null;
+    // إخفاء زر الرجوع فقط في الصفحة الرئيسية
+    const isHomePage = cleanPath === '/';
+
+    if (isHomePage) return null;
 
     return (
         <div className={styles.container}>

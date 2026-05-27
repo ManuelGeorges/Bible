@@ -480,10 +480,7 @@ export default function MapsPage() {
                 <button className={styles.closeJourney} onClick={() => setSelectedJourney(null)}><X size={20} /></button>
               </div>
               <p className={styles.journeyDesc}>{selectedJourney.info}</p>
-              <div className={styles.journeyFooter}>
-                <button className={styles.journeyNavBtn}><ChevronRight size={18} /> المرحلة السابقة</button>
-                <button className={styles.journeyNavBtn}>المرحلة التالية <ChevronLeft size={18} /></button>
-              </div>
+
             </div>
           )}
         </div>

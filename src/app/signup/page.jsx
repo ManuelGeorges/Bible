@@ -103,15 +103,18 @@ export default function SignUpPage() {
           webClientId: '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com',
         });
 
-        const idToken = result.credential?.idToken;
+        if (result.user) {
+          await handleUserData(result.user);
+          router.replace('/');
+          return;
+        }
 
+        const idToken = result.credential?.idToken;
         if (idToken) {
             const credential = GoogleAuthProvider.credential(idToken);
             const userCredential = await signInWithCredential(auth, credential);
             await handleUserData(userCredential.user);
             router.replace('/');
-        } else {
-          throw new Error("No ID Token");
         }
       } else {
         const provider = new GoogleAuthProvider();
@@ -134,6 +137,14 @@ export default function SignUpPage() {
     try {
       if (Capacitor.isNativePlatform()) {
         const result = await FirebaseAuthentication.signInWithApple();
+
+        // إذا نجح التسجيل التلقائي (skipNativeAuth: false)
+        if (result.user) {
+          await handleUserData(result.user);
+          router.replace('/');
+          return;
+        }
+
         const idToken = result.credential?.idToken;
         const rawNonce = result.credential?.rawNonce;
 
@@ -157,7 +168,7 @@ export default function SignUpPage() {
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
-      setError(translateError(err.code) || 'فشل التسجيل بواسطة آبل');
+      setError('فشل التسجيل بواسطة آبل. تأكد من إعدادات الخدمة وتفعيلها في التطبيق.');
       setIsSubmitting(false);
     }
   };
