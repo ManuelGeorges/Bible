@@ -22,14 +22,15 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   const WEB_CLIENT_ID = '900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com';
 
   useEffect(() => {
+    setIsIOS(Capacitor.getPlatform() === 'ios');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // لا توجه تلقائياً إذا كانت هناك عملية تسجيل جارية يدوياً
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -62,7 +63,6 @@ const LoginPage = () => {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
-  // وظيفة حاسمة لضمان مزامنة نسخة الـ JS SDK مع الدخول النيتيف
   const waitForAuthSync = () => {
     return new Promise((resolve) => {
       if (auth.currentUser) return resolve(auth.currentUser);
@@ -126,9 +126,6 @@ const LoginPage = () => {
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
       let msg = 'فشل تسجيل الدخول بواسطة آبل.';
-      if (Capacitor.getPlatform() === 'ios') {
-        msg = `فشل تسجيل الدخول (iOS). كود: ${err.code || 'unknown'} - الرسالة: ${err.message || ''}. تأكد من تفعيل "Sign In with Apple" في Xcode ومن تسجيل دخولك بـ iCloud.`;
-      }
       setError(msg);
     }
   };
@@ -160,17 +157,23 @@ const LoginPage = () => {
             {isSubmitting ? 'جاري الدخول...' : 'دخول'}
           </button>
         </form>
-        <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
-        <div className={styles.socialButtons}>
-          <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
-            <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-            <span>جوجل</span>
-          </button>
-          <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
-            <Apple size={20} />
-            <span>آبل</span>
-          </button>
-        </div>
+
+        {!isIOS && (
+          <>
+            <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
+            <div className={styles.socialButtons}>
+              <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
+                <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
+                <span>جوجل</span>
+              </button>
+              <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
+                <Apple size={20} />
+                <span>آبل</span>
+              </button>
+            </div>
+          </>
+        )}
+
         <p className={styles.toggleMode}>
           ليس لديك حساب؟ <span onClick={() => router.push('/signup')} className={styles.link}>إنشاء حساب</span>
         </p>
