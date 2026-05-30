@@ -24,8 +24,8 @@ import {
   Mountain
 } from 'lucide-react';
 import { getCairoIsoString } from '../../lib/dateUtils';
+import { StorageService, KEYS } from '../../lib/storage';
 
-// تفعيل ميزة النصوص العربية بشكل آمن لتجنب التكرار
 if (typeof window !== 'undefined') {
   if (maplibregl.getRTLTextPluginStatus() === 'unavailable') {
     maplibregl.setRTLTextPlugin(
@@ -49,7 +49,7 @@ const INITIAL_VIEW_STATE = {
   longitude: 35.0,
   latitude: 31.0,
   zoom: 5,
-  pitch: 45, // إضافة زاوية ميل افتراضية لإظهار التضاريس
+  pitch: 45,
   bearing: 0,
 };
 
@@ -69,6 +69,8 @@ export default function MapsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState(null);
   const [visitedPoints, setVisitedPoints] = useState(new Set());
+  const [visitedEras, setVisitedEras] = useState(new Set());
+  const [infoReads, setInfoReads] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapRef = useRef(null);
@@ -85,6 +87,176 @@ export default function MapsPage() {
     "الأناجيل",
     "الكنيسة المبكرة ورحلات الرسل"
   ];
+
+  const unlockBadge = async (badgeId) => {
+    if (user) {
+      try {
+        const userRef = doc(firestore, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const currentBadges = userSnap.data()?.badges || [];
+        if (!currentBadges.includes(badgeId)) {
+          await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+          triggerBadgeUnlock(badgeId);
+        }
+      } catch (e) { console.error(e); }
+    } else {
+      const localBadges = await StorageService.get('local_badges') || [];
+      if (!localBadges.includes(badgeId)) {
+        localBadges.push(badgeId);
+        await StorageService.save('local_badges', localBadges);
+        triggerBadgeUnlock(badgeId);
+      }
+    }
+  };
+
+  const updateUserPoints = async (amount, reason) => {
+    if (user) {
+      try {
+        const userRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+          totalPoints: increment(amount),
+          pointsHistory: arrayUnion({
+            type: 'mapExploration',
+            points: amount,
+            reason: reason,
+            timestamp: getCairoIsoString()
+          })
+        });
+        toast.success(`+${amount} نقطة: ${reason}`);
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+        await StorageService.addPoints(amount);
+        const history = await StorageService.get('points_history') || [];
+        history.push({
+            type: 'mapExploration',
+            points: amount,
+            reason: reason,
+            timestamp: getCairoIsoString()
+        });
+        await StorageService.save('points_history', history);
+        toast.success(`+${amount} نقطة: ${reason}`);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (eraRef.current && !eraRef.current.contains(event.target)) setIsEraOpen(false);
+      if (placeRef.current && !placeRef.current.contains(event.target)) setIsPlaceOpen(false);
+      if (searchRef.current && !searchRef.current.contains(event.target)) setSearchQuery("");
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = auth.onAuthStateChanged(async (u) => {
+      setUser(u);
+      if (u) {
+        getDoc(doc(firestore, 'users', u.uid)).then(snap => {
+          if (snap.exists()) {
+            const data = snap.data();
+            setVisitedPoints(new Set(data.visitedMapPoints || []));
+            setVisitedEras(new Set(data.visitedEras || []));
+            setInfoReads(data.mapInfoReads || 0);
+          }
+        });
+      } else {
+        const localVisited = await StorageService.get('visited_map_points') || [];
+        const localEras = await StorageService.get('visited_eras') || [];
+        const localReads = await StorageService.get('map_info_reads') || 0;
+        setVisitedPoints(new Set(localVisited));
+        setVisitedEras(new Set(localEras));
+        setInfoReads(localReads);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/data/places/places.json');
+        const data = await response.json();
+        setAllPlaces(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleEraSelection = async (era) => {
+    setSelectedEra(era);
+    setIsEraOpen(false);
+    setSelectedPoint(null);
+
+    if (era !== "الحقب الزمنية" && !visitedEras.has(era)) {
+      const newEras = new Set(visitedEras).add(era);
+      setVisitedEras(newEras);
+
+      if (user) {
+        const userRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userRef, { visitedEras: arrayUnion(era) });
+      } else {
+        const localEras = await StorageService.get('visited_eras') || [];
+        localEras.push(era);
+        await StorageService.save('visited_eras', localEras);
+      }
+
+      // Check for Era Traveler Badge (all 7 eras)
+      if (newEras.size === eras.length) {
+        await unlockBadge('era_traveler');
+      }
+    }
+  };
+
+  const handlePointSelection = async (point) => {
+    setSelectedPoint(point);
+    setSelectedJourney(null);
+    if (point) {
+      const pointId = point.id || point.name;
+
+      // 1. Logic for points/visitation
+      if (!visitedPoints.has(pointId)) {
+        const newVisited = new Set(visitedPoints).add(pointId);
+        setVisitedPoints(newVisited);
+        await updateUserPoints(40, `اكتشاف معلم: ${point.name}`);
+
+        if (user) {
+          const userRef = doc(firestore, 'users', user.uid);
+          await updateDoc(userRef, { visitedMapPoints: arrayUnion(pointId) });
+        } else {
+          const localVisited = await StorageService.get('visited_map_points') || [];
+          localVisited.push(pointId);
+          await StorageService.save('visited_map_points', localVisited);
+        }
+
+        // Check Map Badges
+        if (newVisited.size === 5) await unlockBadge('map_pioneer');
+        if (newVisited.size === 20) await unlockBadge('ancient_navigator');
+        // holy_land_pro logic (approximate all points in file)
+        if (newVisited.size >= allPlaces.filter(p => p.type === 'point').length && allPlaces.length > 0) {
+            await unlockBadge('holy_land_pro');
+        }
+      }
+
+      // 2. Logic for Info Reads Badge (info_addict: 50 reads)
+      const newReads = infoReads + 1;
+      setInfoReads(newReads);
+      if (user) {
+        await updateDoc(doc(firestore, 'users', user.uid), { mapInfoReads: increment(1) });
+      } else {
+        await StorageService.save('map_info_reads', newReads);
+      }
+      if (newReads === 50) await unlockBadge('info_addict');
+    }
+  };
 
   const normalizeArabic = (text) => {
     if (!text) return "";
@@ -106,66 +278,6 @@ export default function MapsPage() {
       normalizeArabic(p.era || "").includes(normalizedQuery)
     ).slice(0, 8);
   }, [allPlaces, searchQuery]);
-
-  const updateUserPoints = async (amount, reason) => {
-    if (!user) return;
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      await updateDoc(userRef, {
-        totalPoints: increment(amount),
-        pointsHistory: arrayUnion({
-          type: 'mapExploration',
-          points: amount,
-          reason: reason,
-          timestamp: getCairoIsoString()
-        })
-      });
-      toast.success(`+${amount} نقطة: ${reason}`);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (eraRef.current && !eraRef.current.contains(event.target)) setIsEraOpen(false);
-      if (placeRef.current && !placeRef.current.contains(event.target)) setIsPlaceOpen(false);
-      if (searchRef.current && !searchRef.current.contains(event.target)) setSearchQuery("");
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = auth.onAuthStateChanged((u) => {
-      setUser(u);
-      if (u) {
-        getDoc(doc(firestore, 'users', u.uid)).then(snap => {
-          if (snap.exists()) {
-            setVisitedPoints(new Set(snap.data().visitedMapPoints || []));
-          }
-        });
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/data/places/places.json');
-        const data = await response.json();
-        setAllPlaces(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
 
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',
@@ -196,22 +308,6 @@ export default function MapsPage() {
         properties: { name: p.name, info: p.info }
       }))
   }), [allPlaces, selectedEra]);
-
-  const handlePointSelection = async (point) => {
-    setSelectedPoint(point);
-    setSelectedJourney(null);
-    if (point && user) {
-      const pointId = point.id || point.name;
-      if (!visitedPoints.has(pointId)) {
-        setVisitedPoints(prev => new Set(prev).add(pointId));
-        await updateUserPoints(40, `اكتشاف معلم: ${point.name}`);
-        const userRef = doc(firestore, 'users', user.uid);
-        await updateDoc(userRef, {
-          visitedMapPoints: arrayUnion(pointId)
-        });
-      }
-    }
-  };
 
   const flyToLocation = (place) => {
     mapRef.current?.flyTo({
@@ -256,20 +352,13 @@ export default function MapsPage() {
     }
 
     if (currentStyle === MAP_STYLES.satellite) {
-      map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.8 }); // زيادة التفاصيل الأرضية
-
+      map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.8 });
       if (map.setFog) {
         map.setFog({
           'range': [0.5, 10],
-          'color': '#111625', // لون الغلاف الجوي الداكن لإعطاء عمق
+          'color': '#111625',
           'horizon-blend': 0.2
         });
-      }
-
-      // تحسين ألوان طبقة القمر الصناعي لتقليل البهتان
-      const style = map.getStyle();
-      if (style && style.layers) {
-        const satelliteLayer = style.layers.find(l => l.type === 'raster');
       }
     } else if (currentStyle === MAP_STYLES.topo) {
       map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.5 });
@@ -374,11 +463,11 @@ export default function MapsPage() {
             <ChevronDown size={18} className={isEraOpen ? styles.rotateIcon : ''} />
           </div>
           <ul className={`${styles.dropdownMenu} ${isEraOpen ? styles.open : ''}`}>
-            <li className={styles.dropdownItem} onClick={() => { setSelectedEra("الحقب الزمنية"); setIsEraOpen(false); setSelectedPoint(null); }}>
+            <li className={styles.dropdownItem} onClick={() => handleEraSelection("الحقب الزمنية")}>
               كل الحقب
             </li>
             {eras.map((era) => (
-              <li key={era} className={styles.dropdownItem} onClick={() => { setSelectedEra(era); setIsEraOpen(false); setSelectedPoint(null); }}>
+              <li key={era} className={styles.dropdownItem} onClick={() => handleEraSelection(era)}>
                 {era}
               </li>
             ))}
@@ -480,7 +569,6 @@ export default function MapsPage() {
                 <button className={styles.closeJourney} onClick={() => setSelectedJourney(null)}><X size={20} /></button>
               </div>
               <p className={styles.journeyDesc}>{selectedJourney.info}</p>
-
             </div>
           )}
         </div>

@@ -142,6 +142,27 @@
   transform: translateX(-5px);
 }
 
+.loginBtn {
+  background: linear-gradient(135deg, var(--color-accent) 0%, #4f46e5 100%) !important;
+  color: white !important;
+  margin: 15px 10px !important;
+  width: calc(100% - 20px) !important;
+  justify-content: center !important;
+  border-radius: 18px !important;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25) !important;
+  border: none !important;
+}
+
+.loginBtn:hover {
+  transform: scale(1.03) !important;
+  box-shadow: 0 12px 25px rgba(79, 70, 229, 0.35) !important;
+  background: linear-gradient(135deg, #4f46e5 0%, var(--color-accent) 100%) !important;
+}
+
+.loginBtn .menuItemRight {
+  color: white !important;
+}
+
 .logout {
   color: #ef4444;
 }

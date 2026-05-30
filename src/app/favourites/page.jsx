@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
+import { StorageService, KEYS } from '../../lib/storage';
 
 const HIGHLIGHT_COLORS = [
   '#FFC107', '#FF5722', '#F44336', '#E91E63', '#9C27B0',
@@ -30,20 +31,31 @@ export default function FavouritesPage() {
     return num.toString().split('').map(d => arabicNums[+d] || d).join('');
   };
 
-  const fetchData = useCallback(async (userId) => {
+  const fetchData = useCallback(async (u) => {
     setIsLoading(true);
     try {
-      const userRef = doc(db, 'users', userId);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        const verses = data.favorites?.verses || {};
-        const formatted = Object.entries(verses).map(([key, val]) => ({
+      if (u) {
+        const userRef = doc(db, 'users', u.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          const verses = data.favorites?.verses || {};
+          const formatted = Object.entries(verses).map(([key, val]) => ({
+            id: key,
+            ...val
+          }));
+          setAllData(formatted);
+          setColorLabels(data.favorites?.colorLabels || {});
+        }
+      } else {
+        const localFavs = await StorageService.get(KEYS.FAVORITES) || {};
+        const formatted = Object.entries(localFavs).map(([key, val]) => ({
           id: key,
           ...val
         }));
         setAllData(formatted);
-        setColorLabels(data.favorites?.colorLabels || {});
+        const localLabels = await StorageService.get('color_labels') || {};
+        setColorLabels(localLabels);
       }
     } catch (e) {
       console.error(e);
@@ -55,34 +67,45 @@ export default function FavouritesPage() {
   useEffect(() => {
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (!u) { router.push('/intro'); } 
-      else { setUser(u); fetchData(u.uid); }
+      setUser(u);
+      fetchData(u);
     });
     return () => unsub();
-  }, [router, fetchData]);
+  }, [fetchData]);
 
   const saveColorLabel = async () => {
-    if (!user || !editingColor) return;
+    if (!editingColor) return;
     const newLabels = { ...colorLabels, [editingColor]: tempLabel };
     setColorLabels(newLabels);
-    try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        'favorites.colorLabels': newLabels
-      });
-      setEditingColor(null);
-    } catch (e) {
-      alert("حدث خطأ أثناء حفظ التسمية");
+
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          'favorites.colorLabels': newLabels
+        });
+      } catch (e) {
+        alert("حدث خطأ أثناء حفظ التسمية");
+      }
+    } else {
+      await StorageService.save('color_labels', newLabels);
     }
+    setEditingColor(null);
   };
 
   const handleRemove = async (item) => {
-    if (!user) return;
     setAllData(prev => prev.filter(i => i.id !== item.id));
-    try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        [`favorites.verses.${item.id}`]: deleteField()
-      });
-    } catch (e) { fetchData(user.uid); }
+
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          [`favorites.verses.${item.id}`]: deleteField()
+        });
+      } catch (e) { fetchData(user); }
+    } else {
+      const localFavs = await StorageService.get(KEYS.FAVORITES) || {};
+      delete localFavs[item.id];
+      await StorageService.save(KEYS.FAVORITES, localFavs);
+    }
   };
 
   const filteredItems = allData.filter(item => {
@@ -95,7 +118,13 @@ export default function FavouritesPage() {
 
   return (
     <main className={`${styles.container} ${styles.ar}`}>
-      <h1 className={styles.title}> كنوزي ⭐</h1>
+      <h1 className={styles.title}>تفضيلاتي</h1>
+
+      {!user && (
+        <div className={styles.guestHint}>
+          <p>هذه الكنوز محفوظة على جهازك فقط. سجل دخولك لمزامنتها!</p>
+        </div>
+      )}
 
       <nav className={styles.tabContainer}>
         <div className={`${styles.tab} ${activeTab === 'favourites' ? styles.activeTab : ''}`} onClick={() => { setActiveTab('favourites'); setSelectedColor(null); }}>
@@ -160,15 +189,13 @@ export default function FavouritesPage() {
               <p className={styles.favouriteText}>{item.text}</p>
               {item.note && <div className={styles.userNote}><p>{item.note}</p></div>}
               <div className={styles.favouriteMeta}>
-<span className={styles.favouriteReference}>
-  {item.reference ? (
-    // لو الآية جاية من "آية اليوم" ومعاها مرجع جاهز اعرضه فوراً
-    item.reference
-  ) : (
-    // لو آية قديمة من الكتاب المقدس، اعرضها بالنظام القديم
-    `${item.book} ${convertToArabicNumber((item.ch || 0) + 1)}:${convertToArabicNumber((item.v || 0) + 1)}`
-  )}
-</span>
+                <span className={styles.favouriteReference}>
+                  {item.reference ? (
+                    item.reference
+                  ) : (
+                    `${item.book} ${convertToArabicNumber((item.ch || 0) + 1)}:${convertToArabicNumber((item.v || 0) + 1)}`
+                  )}
+                </span>
               </div>
             </div>
             <button onClick={() => handleRemove(item)} className={styles.removeButton}>✖</button>
@@ -176,6 +203,9 @@ export default function FavouritesPage() {
         ))}
         {activeTab === 'favourites' && !selectedColor && (
           <div className={styles.emptyPrompt}>اختر تصنيفاً من الأعلى لعرض الآيات</div>
+        )}
+        {filteredItems.length === 0 && (selectedColor || activeTab === 'notes') && (
+          <div className={styles.emptyPrompt}>لا توجد عناصر هنا بعد</div>
         )}
       </ul>
     </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, memo, useDeferredValue } from 'react';
 import styles from './BibleBookSelector.module.css';
 import {
     Book, Scroll, Heart, Star, Flame, Music,
@@ -13,116 +13,83 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+// ذاكرة خارجية لحفظ البيانات ومنع التحميل المتكرر (Instant Load)
+let cachedBookNames = null;
+
 const bookIconMap = {
-    // Pentateuch
-    "Gen": <Sun size={28} />,
-    "Exo": <Compass size={28} />,
-    "LEV": <Flame size={28} />,
-    "NUM": <MapPin size={28} />,
-    "DEU": <Scroll size={28} />,
-    // History
-    "JOS": <Sword size={28} />,
-    "JDG": <Shield size={28} />,
-    "RUT": <Heart size={28} />,
-    "1SA": <Crown size={28} />,
-    "2SA": <Crown size={28} />,
-    "1KI": <Landmark size={28} />,
-    "2KI": <Landmark size={28} />,
-    "1CH": <History size={28} />,
-    "2CH": <History size={28} />,
-    "EZR": <Hammer size={28} />,
-    "NEH": <Hammer size={28} />,
-    "EST": <Star size={28} />,
-    // Poetry
-    "JOB": <Anchor size={28} />,
-    "PSA": <Music size={28} />,
-    "PRO": <Lightbulb size={28} />,
-    "ECC": <Wind size={28} />,
-    "SNG": <Heart size={28} />,
-    // Prophets
-    "ISA": <Eye size={28} />,
-    "JER": <Feather size={28} />,
-    "LAM": <Feather size={28} />,
-    "EZK": <Sparkles size={28} />,
-    "DAN": <Ghost size={28} />,
-    "HOS": <Heart size={28} />,
-    "JOL": <Flame size={28} />,
-    "AMO": <Mountain size={28} />,
-    "OBA": <Shield size={28} />,
-    "JON": <Anchor size={28} />,
-    "MIC": <Landmark size={28} />,
-    "NAM": <Sword size={28} />,
-    "HAB": <Lamp size={28} />,
-    "ZEP": <Sun size={28} />,
-    "HAG": <Hammer size={28} />,
-    "ZEC": <Sparkles size={28} />,
-    "MAL": <Star size={28} />,
-    // NT
-    "MAT": <Crown size={28} />,
-    "MRK": <Cross size={28} />,
-    "LUK": <Star size={28} />,
-    "JHN": <Sparkles size={28} />,
-    "ACT": <Users size={28} />,
-    "ROM": <Scroll size={28} />,
-    "1CO": <MessageCircle size={28} />,
-    "2CO": <MessageCircle size={28} />,
-    "GAL": <Feather size={28} />,
-    "EPH": <Shield size={28} />,
-    "PHP": <Heart size={28} />,
-    "COL": <Anchor size={28} />,
-    "1TH": <Wind size={28} />,
-    "2TH": <Wind size={28} />,
-    "1TI": <Landmark size={28} />,
-    "2TI": <Landmark size={28} />,
-    "TIT": <Hammer size={28} />,
-    "PHM": <Feather size={28} />,
-    "HEB": <Scroll size={28} />,
-    "JAS": <Hammer size={28} />,
-    "1PE": <Anchor size={28} />,
-    "2PE": <Anchor size={28} />,
-    "1JN": <Heart size={28} />,
-    "2JN": <Heart size={28} />,
-    "3JN": <Heart size={28} />,
-    "JUD": <Shield size={28} />,
-    "REV": <Eye size={28} />,
+    "Gen": <Sun size={38} />, "Exo": <Compass size={38} />, "LEV": <Flame size={38} />,
+    "NUM": <MapPin size={38} />, "DEU": <Scroll size={38} />, "JOS": <Sword size={38} />,
+    "JDG": <Shield size={38} />, "RUT": <Heart size={38} />, "1SA": <Crown size={38} />,
+    "2SA": <Crown size={38} />, "1KI": <Landmark size={38} />, "2KI": <Landmark size={38} />,
+    "1CH": <History size={38} />, "2CH": <History size={38} />, "EZR": <Hammer size={38} />,
+    "NEH": <Hammer size={38} />, "EST": <Star size={38} />, "JOB": <Anchor size={38} />,
+    "PSA": <Music size={38} />, "PRO": <Lightbulb size={38} />, "ECC": <Wind size={38} />,
+    "SNG": <Heart size={38} />, "ISA": <Eye size={38} />, "JER": <Feather size={38} />,
+    "LAM": <Feather size={38} />, "EZK": <Sparkles size={38} />, "DAN": <Ghost size={38} />,
+    "HOS": <Heart size={38} />, "JOL": <Flame size={38} />, "AMO": <Mountain size={38} />,
+    "OBA": <Shield size={38} />, "JON": <Anchor size={38} />, "MIC": <Landmark size={38} />,
+    "NAM": <Sword size={38} />, "HAB": <Lamp size={38} />, "ZEP": <Sun size={38} />,
+    "HAG": <Hammer size={38} />, "ZEC": <Sparkles size={38} />, "MAL": <Star size={38} />,
+    "MAT": <Crown size={38} />, "MRK": <Cross size={38} />, "LUK": <Star size={38} />,
+    "JHN": <Sparkles size={38} />, "ACT": <Users size={38} />, "ROM": <Scroll size={38} />,
+    "1CO": <MessageCircle size={38} />, "2CO": <MessageCircle size={38} />, "GAL": <Feather size={38} />,
+    "EPH": <Shield size={38} />, "PHP": <Heart size={38} />, "COL": <Anchor size={38} />,
+    "1TH": <Wind size={38} />, "2TH": <Wind size={38} />, "1TI": <Landmark size={38} />,
+    "2TI": <Landmark size={38} />, "TIT": <Hammer size={38} />, "PHM": <Feather size={38} />,
+    "HEB": <Scroll size={38} />, "JAS": <Hammer size={38} />, "1PE": <Anchor size={38} />,
+    "2PE": <Anchor size={38} />, "1JN": <Heart size={38} />, "2JN": <Heart size={38} />,
+    "3JN": <Heart size={38} />, "JUD": <Shield size={38} />, "REV": <Eye size={38} />,
 };
 
-const bookHues = [210, 145, 35, 280, 110, 60, 0, 25, 330, 180, 230, 45];
+const bookColors = [
+    { main: '#be123c', dark: '#881337' }, { main: '#1d4ed8', dark: '#1e3a8a' },
+    { main: '#047857', dark: '#064e3b' }, { main: '#6d28d9', dark: '#4c1d95' },
+    { main: '#c2410c', dark: '#7c2d12' }, { main: '#0e7490', dark: '#164e63' },
+    { main: '#4338ca', dark: '#312e81' }, { main: '#be185d', dark: '#831843' },
+    { main: '#b45309', dark: '#78350f' }, { main: '#0f766e', dark: '#134e4a' },
+    { main: '#4d7c0f', dark: '#365314' }, { main: '#7e22ce', dark: '#581c87' }
+];
 
-const getBookHue = (id) => {
-    if (!id) return 210;
+const getBookColor = (id) => {
+    if (!id) return bookColors[0];
     let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-        hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return bookHues[Math.abs(hash) % bookHues.length];
+    for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    return bookColors[Math.abs(hash) % bookColors.length];
 };
 
 const normalizeArabic = (text) => {
     if (!text) return "";
-    return text
-        .replace(/[أإآ]/g, 'ا')
-        .replace(/ة/g, 'ه')
-        .replace(/ى/g, 'ي')
-        .replace(/[\u064B-\u0652]/g, '') // Remove diacritics
-        .toLowerCase()
-        .trim();
+    return text.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[\u064B-\u0652]/g, '').toLowerCase().trim();
 };
+
+const BookCard = memo(({ book, onBookClick }) => {
+    const colors = getBookColor(book.book_id || book.id);
+    const icon = bookIconMap[book.book_id] || (book.testament === 'OT' ? <Scroll size={32} /> : <Book size={32} />);
+    const router = useRouter();
+
+    // Prefetching: يحمل الصفحة القادمة أول ما المستخدم يلمس الزرار (Native Feeling)
+    const handleTouchStart = () => {
+        router.prefetch(`/bible/chapters?book=${encodeURIComponent(book.name)}`);
+    };
+
+    return (
+        <button
+            className={styles.bookCard}
+            onClick={() => onBookClick(book)}
+            onPointerDown={handleTouchStart}
+            style={{ '--book-main': colors.main, '--book-dark': colors.dark }}
+        >
+            <div className={styles.iconContainer}>{icon}</div>
+            <span className={styles.bookName}>{book.name}</span>
+        </button>
+    );
+});
+
+BookCard.displayName = 'BookCard';
 
 const BookRow = ({ title, books, onBookClick }) => {
     const scrollRef = useRef(null);
-
     if (books.length === 0) return null;
-
-    const scroll = (direction) => {
-        if (scrollRef.current) {
-            const scrollAmount = 300;
-            scrollRef.current.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
 
     return (
         <div className={styles.section}>
@@ -130,36 +97,10 @@ const BookRow = ({ title, books, onBookClick }) => {
                 <h3 className={styles.sectionTitle}>{title}</h3>
             </div>
             <div className={styles.scrollWrapper}>
-                <button className={`${styles.navBtn} ${styles.prevBtn}`} onClick={() => scroll('right')}><ChevronRight size={18} /></button>
-                <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={() => scroll('left')}><ChevronLeft size={18} /></button>
                 <div className={styles.scrollRow} ref={scrollRef}>
-                    {books.map((book, idx) => {
-                        const hue = getBookHue(book.book_id || book.id);
-                        return (
-                            <button
-                                key={book.book_id || idx}
-                                className={styles.bookCard}
-                                onClick={() => onBookClick(book)}
-                                style={{ '--book-hue': hue }}
-                            >
-                                <div className={styles.cardHeader}>
-                                    <BookOpen size={12} className={styles.tinyLogo} />
-                                </div>
-
-                                <div className={styles.iconWrapper}>
-                                    {bookIconMap[book.book_id] || (book.testament === 'OT' ? <Scroll size={28} /> : <Book size={28} />)}
-                                </div>
-
-                                <span className={styles.bookName}>{book.name}</span>
-
-                                <div className={styles.cardFooter}>
-                                    <span className={styles.watermark}>Agios.Bible</span>
-                                </div>
-
-                                <div className={styles.cardOverlay} />
-                            </button>
-                        );
-                    })}
+                    {books.map((book) => (
+                        <BookCard key={book.book_id || book.id} book={book} onBookClick={onBookClick} />
+                    ))}
                 </div>
             </div>
         </div>
@@ -167,39 +108,40 @@ const BookRow = ({ title, books, onBookClick }) => {
 };
 
 export default function BibleBookSelector() {
-    const [bookNames, setBookNames] = useState([]);
+    const [bookNames, setBookNames] = useState(cachedBookNames || []);
     const [searchTerm, setSearchTerm] = useState('');
+    // Deferred Value: بيخلي الواجهة ماتهنجش وانت بتكتب بسرعة في البحث
+    const deferredSearch = useDeferredValue(searchTerm);
     const router = useRouter();
 
     useEffect(() => {
+        if (cachedBookNames) return; // لا تحمل البيانات لو كانت موجودة مسبقاً
+
         fetch('/data/bookNames.json')
             .then(res => res.json())
             .then(data => {
-                if (data && data.ar) {
+                if (data?.ar) {
+                    cachedBookNames = data.ar;
                     setBookNames(data.ar);
                 }
             })
-            .catch(err => console.error("Error loading book names:", err));
+            .catch(err => console.error("Error:", err));
     }, []);
 
     const filteredBooks = useMemo(() => {
-        const normalizedSearch = normalizeArabic(searchTerm);
+        const normalizedSearch = normalizeArabic(deferredSearch);
         if (!normalizedSearch) {
             return {
                 ot: bookNames.filter(b => b.testament === 'OT'),
                 nt: bookNames.filter(b => b.testament === 'NT')
             };
         }
-
-        const filtered = bookNames.filter(book =>
-            normalizeArabic(book.name).includes(normalizedSearch)
-        );
-
+        const filtered = bookNames.filter(book => normalizeArabic(book.name).includes(normalizedSearch));
         return {
             ot: filtered.filter(b => b.testament === 'OT'),
             nt: filtered.filter(b => b.testament === 'NT')
         };
-    }, [bookNames, searchTerm]);
+    }, [bookNames, deferredSearch]);
 
     const handleBookClick = (book) => {
         router.push(`/bible/chapters?book=${encodeURIComponent(book.name)}`);
@@ -208,14 +150,10 @@ export default function BibleBookSelector() {
     return (
         <div className={styles.container}>
             <div className={styles.mainHeader}>
-                <h2 className={styles.title}>
-                    اقرأ الكتاب المقدس
-                </h2>
-                <div className={styles.headerLine} />
-
+                <h2 className={styles.title}><BookOpen size={22} className={styles.titleIcon} />اقرأ الأسفار</h2>
                 <div className={styles.searchWrapper}>
                     <div className={styles.searchContainer}>
-                        <Search className={styles.searchIcon} size={18} />
+                        <Search className={styles.searchIcon} size={20} />
                         <input
                             type="text"
                             placeholder="ابحث عن سفر..."
@@ -223,14 +161,7 @@ export default function BibleBookSelector() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        {searchTerm && (
-                            <button
-                                className={styles.clearSearch}
-                                onClick={() => setSearchTerm('')}
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
+                        {searchTerm && <button className={styles.clearSearch} onClick={() => setSearchTerm('')}><X size={18} /></button>}
                     </div>
                 </div>
             </div>
@@ -238,9 +169,9 @@ export default function BibleBookSelector() {
             <BookRow title="العهد القديم" books={filteredBooks.ot} onBookClick={handleBookClick} />
             <BookRow title="العهد الجديد" books={filteredBooks.nt} onBookClick={handleBookClick} />
 
-            {filteredBooks.ot.length === 0 && filteredBooks.nt.length === 0 && (
+            {filteredBooks.ot.length === 0 && filteredBooks.nt.length === 0 && bookNames.length > 0 && (
                 <div className={styles.noResults}>
-                    لم يتم العثور على نتائج لـ "{searchTerm}"
+                    <p>لم نجد سفراً بهذا الاسم "{searchTerm}"</p>
                 </div>
             )}
         </div>
