@@ -9,57 +9,41 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { 
   User, Mail, Calendar, Share2, LogOut, Trash2,
-  BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon,
-  LogIn, UserPlus, CloudSync
+  BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon 
 } from 'lucide-react';
 import styles from './profile.module.css';
-import { StorageService } from '../../lib/storage';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
   const [userStats, setUserStats] = useState({
     verses: 0,
     chapters: 0,
     plans: 0,
-    joinDate: '',
-    points: 0
+    joinDate: ''
   });
   const router = useRouter();
-
-  const fetchLocalProfile = useCallback(async () => {
-    const localStats = await StorageService.getLocalStats();
-    const localFavs = localStats.favorites || {};
-    const localNotes = localStats.notes || [];
-
-    // محاكاة إحصائيات للضيف
-    setUserStats({
-      verses: Object.keys(localFavs).length,
-      chapters: 0, // يمكن تطويرها لاحقاً لتخزين الفصول محلياً
-      plans: 0,
-      joinDate: 'زائر',
-      points: localStats.points
-    });
-    setLoading(false);
-    setIsGuest(true);
-  }, []);
 
   const fetchProfileData = useCallback(async (currentUser) => {
     try {
       const userDocRef = doc(db, 'users', currentUser.uid);
 
+      // استخدام onSnapshot للمزامنة الحية
       const unsubscribeSnap = onSnapshot(userDocRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUserData(data);
 
+          // حساب الإحصائيات من المسارات الموحدة الجديدة
           const versesCount = data.favorites?.verses ? Object.keys(data.favorites.verses).length : 0;
           const completedChaptersCount = data.completedChapters ? Object.keys(data.completedChapters).filter(k => data.completedChapters[k] === true).length : 0;
+
+          // جمع الخطط الثابتة والذكية معاً
           const staticPlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
           const customPlansCount = data.customPlans ? Object.keys(data.customPlans).length : 0;
 
+          // توحيد عرض تاريخ الانضمام بتوقيت القاهرة
           const registrationDate = currentUser.metadata.creationTime
             ? new Date(currentUser.metadata.creationTime).toLocaleDateString('ar-EG', {
                 year: 'numeric',
@@ -72,12 +56,10 @@ const ProfilePage = () => {
             verses: versesCount,
             chapters: completedChaptersCount,
             plans: staticPlansCount + customPlansCount,
-            joinDate: registrationDate,
-            points: data.totalPoints || 0
+            joinDate: registrationDate
           });
         }
         setLoading(false);
-        setIsGuest(false);
       });
 
       return unsubscribeSnap;
@@ -96,8 +78,8 @@ const ProfilePage = () => {
         setUser(currentUser);
         unsubSnap = await fetchProfileData(currentUser);
       } else {
-        setUser(null);
-        await fetchLocalProfile();
+        router.push('/intro');
+        setLoading(false);
       }
     });
 
@@ -105,7 +87,7 @@ const ProfilePage = () => {
         unsubscribeAuth();
         unsubSnap();
     };
-  }, [router, fetchProfileData, fetchLocalProfile]);
+  }, [router, fetchProfileData]);
 
   const handleShareApp = async () => {
     const shareData = {
@@ -129,17 +111,20 @@ const ProfilePage = () => {
   const handleLogout = async () => {
     const auth = getAuth();
     await signOut(auth);
-    router.push('/');
+    router.push('/intro');
   };
 
   const handleDeleteAccount = async () => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
+
     if (!currentUser) return;
 
+    // 1. التحقق الاستباقي من "حداثة" تسجيل الدخول
+    // Firebase يتطلب تسجيل دخول في آخر 5 دقائق لحذف الحساب
     const lastSignInTime = new Date(currentUser.metadata.lastSignInTime).getTime();
     const now = new Date().getTime();
-    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000);
+    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000); // 5 دقائق
 
     if (!isFreshSession) {
       alert("لدواعي أمنية، يتطلب حذف الحساب تسجيل دخول حديث. يرجى تسجيل الخروج ثم الدخول مرة أخرى والمحاولة مجدداً.");
@@ -153,39 +138,41 @@ const ProfilePage = () => {
     if (confirmed) {
       try {
         const userId = currentUser.uid;
+
+        // 2. محاولة حذف المستخدم من Auth أولاً
         await deleteUser(currentUser);
+
+        // 3. إذا نجح حذف الـ Auth، نقوم بحذف بيانات Firestore
         const userDocRef = doc(db, 'users', userId);
         await deleteDoc(userDocRef);
+
         alert("تم حذف الحساب والبيانات بنجاح.");
-        router.push('/');
+        router.push('/intro');
       } catch (error) {
         console.error("Error deleting user:", error);
-        alert("حدث خطأ أثناء حذف الحساب.");
+        if (error.code === 'auth/requires-recent-login') {
+          alert("انتهت صلاحية الجلسة الأمنية. يرجى إعادة تسجيل الدخول ثم المحاولة مرة أخرى.");
+        } else {
+          alert("حدث خطأ أثناء حذف الحساب. يرجى المحاولة لاحقاً.");
+        }
       }
     }
   };
 
   if (loading) return <div className={styles.loading}>جاري التحميل...</div>;
+  if (!user) return null;
 
   return (
     <div className={styles.container} dir="rtl">
       <div className={styles.profileHeader}>
         <div className={styles.avatarWrapper}>
           <div className={styles.avatar}>
-            {isGuest ? <User size={40} /> : (userData?.displayName?.[0] || user?.displayName?.[0] || <User size={40} />)}
+            {userData?.displayName?.[0] || userData?.firstName?.[0] || user.displayName?.[0] || <User size={40} />}
           </div>
         </div>
-        <h1 className={styles.userName}>
-          {isGuest ? 'حساب زائر' : (userData?.displayName || user?.displayName || 'صديق أجيوس')}
-        </h1>
-        {isGuest ? (
-          <p className={styles.guestHint}>سجل دخولك لحفظ بياناتك في السحابة</p>
-        ) : (
-          <>
-            <p className={styles.userEmail}><Mail size={14} /> {user?.email}</p>
-            <p className={styles.joinDate}><Calendar size={14} /> عضو منذ: {userStats.joinDate}</p>
-          </>
-        )}
+        <h1 className={styles.userName}>{userData?.displayName || userData?.firstName || user.displayName || 'يا صديق'}</h1>
+        <p className={styles.userEmail}><Mail size={14} /> {user.email}</p>
+        <p className={styles.joinDate}><Calendar size={14} /> عضو منذ: {userStats.joinDate}</p>
       </div>
 
       <div className={styles.statsOverview}>
@@ -195,9 +182,9 @@ const ProfilePage = () => {
           <span className={styles.statLabel}>آيات مفضلة</span>
         </div>
         <div className={styles.statBox}>
-          <Trophy className={styles.statIcon} size={20} />
-          <span className={styles.statValue}>{userStats.points}</span>
-          <span className={styles.statLabel}>XP</span>
+          <BookOpen className={styles.statIcon} size={20} />
+          <span className={styles.statValue}>{userStats.chapters}</span>
+          <span className={styles.statLabel}>إصحاح مقروء</span>
         </div>
         <div className={styles.statBox} onClick={() => router.push('/studyPlans')}>
           <Activity className={styles.statIcon} size={20} />
@@ -207,26 +194,6 @@ const ProfilePage = () => {
       </div>
 
       <div className={styles.menuSection}>
-        <h3 className={styles.menuTitle}>الحساب</h3>
-
-        {isGuest ? (
-          <>
-            <button className={`${styles.menuItem} ${styles.loginBtn}`} onClick={() => router.push('/intro')}>
-              <div className={styles.menuItemRight}>
-                <LogIn size={20} />
-                <span>تسجيل الدخول / إنشاء حساب</span>
-              </div>
-            </button>
-          </>
-        ) : (
-          <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
-            <div className={styles.menuItemRight}>
-              <LogOut size={20} />
-              <span>تسجيل الخروج</span>
-            </div>
-          </button>
-        )}
-
         <h3 className={styles.menuTitle}>الخيارات العامة</h3>
         
         <button className={styles.menuItem} onClick={() => router.push('/settings')}>
@@ -235,7 +202,6 @@ const ProfilePage = () => {
             <span>إعدادات التطبيق</span>
           </div>
         </button>
-
         <button className={styles.menuItem} onClick={() => router.push('/points')}>
           <div className={styles.menuItemRight}>
             <Trophy size={20} />
@@ -250,14 +216,19 @@ const ProfilePage = () => {
           </div>
         </button>
 
-        {!isGuest && (
-          <button className={`${styles.menuItem} ${styles.deleteAccount}`} onClick={handleDeleteAccount}>
-            <div className={styles.menuItemRight}>
-              <Trash2 size={20} />
-              <span>حذف الحساب</span>
-            </div>
-          </button>
-        )}
+        <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
+          <div className={styles.menuItemRight}>
+            <LogOut size={20} />
+            <span>تسجيل الخروج</span>
+          </div>
+        </button>
+
+        <button className={`${styles.menuItem} ${styles.deleteAccount}`} onClick={handleDeleteAccount}>
+          <div className={styles.menuItemRight}>
+            <Trash2 size={20} />
+            <span>حذف الحساب</span>
+          </div>
+        </button>
       </div>
 
       <footer className={styles.profileFooter}>

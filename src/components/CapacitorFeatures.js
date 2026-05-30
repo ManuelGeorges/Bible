@@ -104,7 +104,7 @@ export default function CapacitorFeatures() {
           const isDark = 
             theme === 'dark' || 
             (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
+          
           if (isDark) {
             await StatusBar.setStyle({ style: Style.Dark });
             await StatusBar.setBackgroundColor({ color: '#0f172a' });
@@ -167,13 +167,13 @@ export default function CapacitorFeatures() {
         if (!remoteConfig) return;
         remoteConfig.settings.minimumFetchIntervalMillis = 600000;
         await fetchAndActivate(remoteConfig).catch(() => {});
-
+        
         const minRequiredVersion = getNumber(remoteConfig, 'min_required_version') || 0;
         const appInfo = await App.getInfo().catch(() => ({ build: '0' }));
         const currentVersionCode = parseInt(appInfo.build || '0') || 0;
 
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
-
+        
         if (updateInfo) {
           // إذا كان التحديث محملاً مسبقاً وجاهزاً
           if (updateInfo.installStatus === 11) {
@@ -220,14 +220,10 @@ export default function CapacitorFeatures() {
       localStorage.setItem('total_usage_seconds', newTotal.toString());
 
       if (newTotal >= 1800 && localStorage.getItem('review_asked') !== 'true') {
-
         try {
-
           await AppReview.requestReview();
           localStorage.setItem('review_asked', 'true');
         } catch (e) {}
-
-
       }
     }, 30000);
 

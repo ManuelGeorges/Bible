@@ -11,7 +11,6 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { ChevronLeft, Sparkles } from 'lucide-react';
 import { useBadge } from '../context/BadgeContext';
-import { StorageService, KEYS } from '../../lib/storage';
 
 const staticPlans = studyPlansData.plans;
 const filtersList = ['الكل', 'مخصصة', ...new Set(staticPlans.map(plan => plan.type))];
@@ -29,21 +28,12 @@ export default function StudyPlans() {
   const [showScrollHint, setShowScrollHint] = useState(false);
 
   const unlockBadge = async (badgeId, currentBadges) => {
-    if (user) {
-      if (currentBadges?.includes(badgeId)) return;
-      try {
-        const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-        triggerBadgeUnlock(badgeId);
-      } catch (e) { console.error(e); }
-    } else {
-      const localBadges = await StorageService.get('local_badges') || [];
-      if (!localBadges.includes(badgeId)) {
-        localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
-        triggerBadgeUnlock(badgeId);
-      }
-    }
+    if (!user || currentBadges?.includes(badgeId)) return;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+      triggerBadgeUnlock(badgeId);
+    } catch (e) { console.error(e); }
   };
 
   const checkPlanBadges = (userData) => {
@@ -61,11 +51,16 @@ export default function StudyPlans() {
       if (plan.completionPercentage === 100) finishedCount++;
     });
 
+    // أوسمة المواظبة (أيام)
     const dayMilestones = [
-      { d: 365, id: 'plan_streak_365' }, { d: 180, id: 'plan_streak_180' },
-      { d: 90, id: 'plan_streak_90' }, { d: 60, id: 'plan_streak_60' },
-      { d: 30, id: 'plan_streak_30' }, { d: 14, id: 'plan_streak_14' },
-      { d: 7, id: 'plan_streak_7' }, { d: 3, id: 'plan_streak_3' },
+      { d: 365, id: 'plan_streak_365' },
+      { d: 180, id: 'plan_streak_180' },
+      { d: 90, id: 'plan_streak_90' },
+      { d: 60, id: 'plan_streak_60' },
+      { d: 30, id: 'plan_streak_30' },
+      { d: 14, id: 'plan_streak_14' },
+      { d: 7, id: 'plan_streak_7' },
+      { d: 3, id: 'plan_streak_3' },
       { d: 1, id: 'plan_streak_1' }
     ];
 
@@ -73,6 +68,7 @@ export default function StudyPlans() {
       if (totalPlanDays >= m.d) unlockBadge(m.id, currentBadges);
     });
 
+    // أوسمة الإنجاز (خطط)
     if (startedCount >= 1) unlockBadge('plan_start_1', currentBadges);
     if (finishedCount >= 1) unlockBadge('plan_finish_1', currentBadges);
     if (finishedCount >= 3) unlockBadge('plan_finish_3', currentBadges);
@@ -85,28 +81,37 @@ export default function StudyPlans() {
     const auth = getAuth();
     let unsubFirestore = () => {};
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (loggedInUser) => {
-      setUser(loggedInUser);
-      if (loggedInUser) {
+    const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
+      if (!loggedInUser) {
+        router.replace('/intro');
+      } else {
+        setUser(loggedInUser);
         const userRef = doc(db, 'users', loggedInUser.uid);
         unsubFirestore = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setCompletionData(data.completedPlans || {});
             setCustomPlans(data.customPlans || {});
+
+            // تحقق من الأوسمة
             checkPlanBadges(data);
+
+            Object.keys(data.completedPlans || {}).forEach(planId => {
+              const planProgress = data.completedPlans[planId];
+              if (planProgress.completedDays) {
+                const simpleProgress = {};
+                Object.keys(planProgress.completedDays).forEach(day => {
+                  simpleProgress[day] = planProgress.completedDays[day].isCompleted;
+                });
+                localStorage.setItem(`completedDays_${planId}`, JSON.stringify(simpleProgress));
+              }
+            });
+            window.dispatchEvent(new Event('storage'));
           }
           setLoading(false);
-        }, () => setLoading(false));
-      } else {
-        // تحميل البيانات المحلية للضيف
-        const localCompletion = await StorageService.get('local_completed_plans') || {};
-        const localCustom = await StorageService.get('local_custom_plans') || {};
-        const localBadges = await StorageService.get('local_badges') || [];
-        setCompletionData(localCompletion);
-        setCustomPlans(localCustom);
-        checkPlanBadges({ completedPlans: localCompletion, customPlans: localCustom, badges: localBadges });
-        setLoading(false);
+        }, () => {
+          setLoading(false);
+        });
       }
     });
 
@@ -114,7 +119,7 @@ export default function StudyPlans() {
       unsubscribeAuth();
       unsubFirestore();
     };
-  }, []);
+  }, [router]);
 
   const checkScroll = () => {
     if (filterRef.current) {
@@ -157,16 +162,17 @@ export default function StudyPlans() {
           <button 
             onClick={async () => {
               toast.dismiss(t.id);
-              if (user) {
-                const userRef = doc(db, "users", user.uid);
-                await updateDoc(userRef, { [`customPlans.${planId}`]: deleteField() });
-              } else {
-                const localCustom = await StorageService.get('local_custom_plans') || {};
-                delete localCustom[planId];
-                await StorageService.save('local_custom_plans', localCustom);
-                setCustomPlans(localCustom);
+              try {
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, {
+                  [`customPlans.${planId}`]: deleteField()
+                });
+                localStorage.removeItem(`completedDays_${planId}`);
+                window.dispatchEvent(new Event('storage'));
+                toast.success("تم الحذف بنجاح");
+              } catch (error) {
+                toast.error("حدث خطأ أثناء الحذف");
               }
-              toast.success("تم الحذف بنجاح");
             }}
             style={{ 
               background: '#ef4444', color: '#fff', border: 'none', 
@@ -176,12 +182,32 @@ export default function StudyPlans() {
           >
             تأكيد
           </button>
-          <button onClick={() => toast.dismiss(t.id)} style={{ background: 'var(--color-bg-end)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontSize: '1rem' }}>
+          <button 
+            onClick={() => toast.dismiss(t.id)}
+            style={{ 
+              background: 'var(--color-bg-end)', color: 'var(--color-text-primary)', 
+              border: '1px solid var(--color-border)', 
+              padding: '10px 20px', borderRadius: '12px', cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
             تراجع
           </button>
         </div>
       </div>
-    ), { duration: 6000, position: 'top-center', style: { background: 'var(--color-card-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', borderRadius: '20px', minWidth: '300px' } });
+    ), { 
+      duration: 6000, 
+      position: 'top-center',
+      style: {
+        background: 'var(--color-card-bg)',
+        color: 'var(--color-text-primary)',
+        border: '1px solid var(--color-border)',
+        backdropFilter: 'blur(15px)',
+        borderRadius: '20px',
+        minWidth: '300px',
+        boxShadow: '0 20px 40px var(--color-shadow-medium)'
+      }
+    });
   };
 
   const allAvailablePlans = useMemo(() => {
@@ -199,7 +225,11 @@ export default function StudyPlans() {
     activeFilter === 'الكل' ? true : (plan.isCustom ? activeFilter === 'مخصصة' : plan.type === activeFilter)
   );
 
-  if (loading) return <div className={styles.container}><div className={styles.loading}>جاري التحميل...</div></div>;
+  if (loading) return (
+    <div className={styles.container}>
+      <div className={styles.loading}>جاري التحميل...</div>
+    </div>
+  );
 
   return (
     <div className={styles.container}>
@@ -211,41 +241,91 @@ export default function StudyPlans() {
       </div>
 
       <div className={styles.filterWrapper}>
-        <div className={styles.filterSection} ref={filterRef}>
+        <div
+          className={styles.filterSection}
+          ref={filterRef}
+        >
           {filtersList.map(filter => (
-            <button key={filter} className={`${styles.filterButton} ${activeFilter === filter ? styles.activeFilter : ''}`} onClick={() => setActiveFilter(filter)}>
+            <button
+              key={filter}
+              className={`${styles.filterButton} ${activeFilter === filter ? styles.activeFilter : ''}`}
+              onClick={() => setActiveFilter(filter)}
+            >
               {filter}
             </button>
           ))}
         </div>
-        {showScrollHint && <button className={styles.scrollHint} onClick={handleScrollClick} type="button"><ChevronLeft size={22} /></button>}
+        {showScrollHint && (
+          <button
+            className={styles.scrollHint}
+            onClick={handleScrollClick}
+            type="button"
+            aria-label="عرض المزيد من الأقسام"
+          >
+            <ChevronLeft size={22} />
+          </button>
+        )}
       </div>
 
       <div className={styles.plansGrid}>
         {filteredPlans.length > 0 ? (
           filteredPlans.map(plan => {
             const progress = plan.isCustom 
-              ? { percent: plan.completionPercentage || 0, done: Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length }
-              : { percent: completionData[plan.id]?.completionPercentage || 0, done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length };
+              ? { 
+                  percent: plan.completionPercentage || 0, 
+                  done: Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length 
+                }
+              : { 
+                  percent: completionData[plan.id]?.completionPercentage || 0, 
+                  done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length 
+                };
 
             const hasStarted = progress.done > 0;
-            const planUrl = plan.isCustom ? `/studyPlans/details?id=${plan.id}&type=custom` : `/studyPlans/details?id=${plan.id}`;
+
+            const planUrl = plan.isCustom
+              ? `/studyPlans/details?id=${plan.id}&type=custom`
+              : `/studyPlans/details?id=${plan.id}`;
 
             return (
               <div key={plan.id} className={`${styles.card} ${plan.isCustom ? styles.customCard : ''}`}>
-                {plan.isCustom && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
+                {plan.isCustom && (
+                  <button 
+                    className={styles.deleteBtn}
+                    onClick={(e) => handleDeletePlan(e, plan.id)}
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                )}
+                
                 <div className={styles.cardContent}>
                   {plan.isCustom && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
                   <h3 className={styles.cardTitle}>{plan.title}</h3>
                   <p className={styles.cardType}>{plan.isCustom ? 'خطة شخصية' : plan.type}</p>
-                  {hasStarted && <div className={styles.progressContainer}><div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${progress.percent}%` }}></div></div><span className={styles.percentageText}>{progress.percent}% مكتمل</span></div>}
-                  <Link href={planUrl} className={styles.cardButton}>{hasStarted ? 'متابعة' : 'ابدأ الآن'}</Link>
+                  
+                  {hasStarted && (
+                    <div className={styles.progressContainer}>
+                      <div className={styles.progressBar}>
+                        <div className={styles.progressFill} style={{ width: `${progress.percent}%` }}></div>
+                      </div>
+                      <span className={styles.percentageText}>{progress.percent}% مكتمل</span>
+                    </div>
+                  )}
+
+                  <Link 
+                    href={planUrl} 
+                    className={styles.cardButton}
+                  >
+                    {hasStarted ? 'متابعة' : 'ابدأ الآن'}
+                  </Link>
                 </div>
               </div>
             );
           })
         ) : (
-          <div className={styles.emptyState}><h3>لا توجد خطط حالياً</h3></div>
+          <div className={styles.emptyState}>
+            <h3>لا توجد خطط حالياً</h3>
+          </div>
         )}
       </div>
     </div>

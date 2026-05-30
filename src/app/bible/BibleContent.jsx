@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './Bible.module.css';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, updateDoc, increment, arrayUnion, deleteField } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -15,9 +15,6 @@ import { useBadge } from '../context/BadgeContext';
 import { useAudio } from '../context/AudioContext';
 import studyPlansData from '../studyPlans/studyPlansData.json';
 import { getCairoIsoString } from '../../lib/dateUtils';
-
-// Local-first imports
-import { StorageService, KEYS } from '../../lib/storage';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -77,6 +74,8 @@ export default function BibleContent() {
   const [currentNoteText, setCurrentNoteText] = useState('');
   const [targetVerseKey, setTargetVerseKey] = useState(null);
 
+  const lastTap = useRef(0);
+  const tapCount = useRef(0);
   const longPressTimer = useRef(null);
   const isMoving = useRef(false);
   const isLongPressActive = useRef(false);
@@ -86,24 +85,16 @@ export default function BibleContent() {
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
   const unlockBadge = async (badgeId) => {
-    if (user) {
-      try {
-        const userRef = doc(firestore, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        const currentBadges = userSnap.data()?.badges || [];
-        if (!currentBadges.includes(badgeId)) {
-          await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-          triggerBadgeUnlock(badgeId);
-        }
-      } catch (e) { console.error(e); }
-    } else {
-      const localBadges = await StorageService.get('local_badges') || [];
-      if (!localBadges.includes(badgeId)) {
-        localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
+    if (!user) return;
+    try {
+      const userRef = doc(firestore, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const currentBadges = userSnap.data()?.badges || [];
+      if (!currentBadges.includes(badgeId)) {
+        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
         triggerBadgeUnlock(badgeId);
       }
-    }
+    } catch (e) { console.error(e); }
   };
 
   const saveLastRead = useCallback(async (bookIdx, chapIdx) => {
@@ -117,7 +108,6 @@ export default function BibleContent() {
     };
 
     localStorage.setItem('lastReadLocation', JSON.stringify(lastReadData));
-    await StorageService.save(KEYS.LAST_READ, lastReadData);
 
     if (user) {
       const userRef = doc(firestore, 'users', user.uid);
@@ -267,42 +257,27 @@ export default function BibleContent() {
 
     return () => {
         window.removeEventListener('storage', syncAppSettings);
-        mediaQuery.removeEventListener('change', handleThemeChange);
+        mediaQuery.addEventListener('change', handleThemeChange);
     };
   }, []);
 
   const updateUserPoints = async (amount, reason, type = 'general', isNegative = false) => {
-    if (user) {
-        const finalAmount = isNegative ? -amount : amount;
-        const userRef = doc(firestore, 'users', user.uid);
-        try {
-          await updateDoc(userRef, {
-            totalPoints: increment(finalAmount),
-            pointsHistory: arrayUnion({
-              type: type,
-              points: finalAmount,
-              reason: reason,
-              timestamp: getCairoIsoString()
-            })
-          });
-          if (!isNegative) toast.success(`${reason}: +${amount} نقطة ✨`);
-        } catch (e) {
-          console.error(e);
-        }
-    } else {
-        const finalAmount = isNegative ? -amount : amount;
-        if (!isNegative) {
-            await StorageService.addPoints(amount);
-            const history = await StorageService.get('points_history') || [];
-            history.push({
-              type: type,
-              points: finalAmount,
-              reason: reason,
-              timestamp: getCairoIsoString()
-            });
-            await StorageService.save('points_history', history);
-            toast.success(`${reason}: +${amount} نقطة`);
-        }
+    if (!user) return;
+    const finalAmount = isNegative ? -amount : amount;
+    const userRef = doc(firestore, 'users', user.uid);
+    try {
+      await updateDoc(userRef, {
+        totalPoints: increment(finalAmount),
+        pointsHistory: arrayUnion({
+          type: type,
+          points: finalAmount,
+          reason: reason,
+          timestamp: getCairoIsoString()
+        })
+      });
+      if (!isNegative) toast.success(`${reason}: +${amount} نقطة ✨`);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -334,14 +309,9 @@ export default function BibleContent() {
       }
 
       updateUserPoints(15, "مشاركة آية", 'share');
-
       unlockBadge('share_1');
-
-      const history = user
-        ? (await getDoc(doc(firestore, 'users', user.uid))).data()?.pointsHistory || []
-        : await StorageService.get('points_history') || [];
-
-      const shares = history.filter(h => h.type === 'share').length;
+      const userSnap = await getDoc(doc(firestore, 'users', user.uid));
+      const shares = (userSnap.data()?.pointsHistory || []).filter(h => h.type === 'share').length;
       if (shares >= 50) unlockBadge('social_influencer');
 
     } catch (err) {
@@ -349,17 +319,13 @@ export default function BibleContent() {
     }
   };
 
-  const saveBibleData = useCallback(async (v, c) => {
-    await StorageService.save(KEYS.FAVORITES, v);
-    await StorageService.save(KEYS.COMPLETED_PLANS, c); // Note: Should probably be KEYS.COMPLETED_CHAPTERS but keeping consistency with current code
-
-    if (user && firestore) {
-      const userRef = doc(firestore, 'users', user.uid);
-      await updateDoc(userRef, {
-        "favorites.verses": v,
-        "completedChapters": c
-      });
-    }
+  const saveToFirestore = useCallback(async (v, c) => {
+    if (!user || !firestore) return;
+    const userRef = doc(firestore, 'users', user.uid);
+    await updateDoc(userRef, {
+      "favorites.verses": v,
+      "completedChapters": c
+    });
   }, [user]);
 
   useEffect(() => {
@@ -376,17 +342,16 @@ export default function BibleContent() {
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
-
-        // جلب آخر قراءة من التخزين المحلي الجديد
-        const savedLastRead = await StorageService.get(KEYS.LAST_READ);
+        const savedLastRead = localStorage.getItem('lastReadLocation');
 
         if (bParam) {
           const idx = names.findIndex(b => b.name === decodeURIComponent(bParam));
           if (idx !== -1) setSelectedBookIndex(idx);
           if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
         } else if (savedLastRead) {
-          setSelectedBookIndex(savedLastRead.bookIndex);
-          setSelectedChapterIndex(savedLastRead.chapterIndex);
+          const parsed = JSON.parse(savedLastRead);
+          setSelectedBookIndex(parsed.bookIndex);
+          setSelectedChapterIndex(parsed.chapterIndex);
         }
         setIsLoading(false);
       } catch (e) { setIsLoading(false); }
@@ -395,27 +360,26 @@ export default function BibleContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    const initUserData = async () => {
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      setUser(currentUser);
-
-      if (currentUser) {
-        const s = await getDoc(doc(firestore, 'users', currentUser.uid));
-        if (s.exists()) {
-          const data = s.data();
-          setFavouriteVerses(data.favorites?.verses || {});
-          setCompletedChapters(data.completedChapters || {});
+    if (auth) {
+      const unsub = auth.onAuthStateChanged((u) => {
+        setUser(u);
+        if (u) {
+          getDoc(doc(firestore, 'users', u.uid)).then(s => {
+            if (s.exists()) {
+              const data = s.data();
+              setFavouriteVerses(data.favorites?.verses || {});
+              setCompletedChapters(data.completedChapters || {});
+              if (!searchParams.get('book') && data.lastRead) {
+                setSelectedBookIndex(data.lastRead.bookIndex);
+                setSelectedChapterIndex(data.lastRead.chapterIndex);
+              }
+            }
+          });
         }
-      } else {
-        const localStats = await StorageService.getLocalStats();
-        setFavouriteVerses(localStats.favorites || {});
-        const localCompleted = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
-        setCompletedChapters(localCompleted);
-      }
-    };
-    initUserData();
-  }, []);
+      });
+      return unsub;
+    }
+  }, [searchParams]);
 
   const copyVerse = (text, index) => {
     const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
@@ -448,84 +412,58 @@ export default function BibleContent() {
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
-  const highlightSelected = async (color) => {
+  const highlightSelected = (color) => {
+    if (!user) { router.push('/intro'); return; }
+
     const firstVerseKey = selectedVerses.length > 0 ? `${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}` : null;
     const isAlreadyThisColor = firstVerseKey && favouriteVerses[firstVerseKey]?.color === color;
     const targetColor = isAlreadyThisColor ? null : color;
 
-    const next = { ...favouriteVerses };
-    let newlyAddedCount = 0;
-
-    selectedVerses.forEach(sv => {
-      const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
-      if (targetColor) {
-        if (!next[key]) newlyAddedCount++;
-        next[key] = {
-          text: sv.text,
-          book: getBookName(selectedBookIndex),
-          ch: selectedChapterIndex,
-          v: sv.index,
-          color: targetColor,
-          dateAdded: getCairoIsoString(),
-          synced: !!user
-        };
-      } else {
-        delete next[key];
+    setFavouriteVerses(prev => {
+      const next = { ...prev };
+      let newlyAddedCount = 0;
+      selectedVerses.forEach(sv => {
+        const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
+        if (targetColor) {
+          if (!next[key]) newlyAddedCount++;
+          next[key] = { ...next[key], text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: targetColor, dateAdded: getCairoIsoString() };
+        } else { delete next[key]; }
+      });
+      if (newlyAddedCount > 0) {
+        updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة", 'favouriteVerse');
+        const count = Object.keys(next).length;
+        if (count >= 1) unlockBadge('fav_1');
+        if (count >= 20) unlockBadge('fav_20');
+        if (count >= 100) unlockBadge('fav_100');
       }
+      saveToFirestore(next, completedChapters);
+      return next;
     });
-
-    setFavouriteVerses(next);
-    if (newlyAddedCount > 0) {
-      updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة", 'favouriteVerse');
-      const count = Object.keys(next).length;
-      if (count >= 1) unlockBadge('fav_1');
-      if (count >= 20) unlockBadge('fav_20');
-      if (count >= 100) unlockBadge('fav_100');
-    }
-    await saveBibleData(next, completedChapters);
-
     setCopiedMessage(targetColor ? 'تم التظليل ✨' : 'تم حذف التظليل 🗑️');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
   const openNoteEditor = (key) => {
+    if (!user) { router.push('/intro'); return; }
     setTargetVerseKey(key);
     setCurrentNoteText(favouriteVerses[key]?.note || '');
     setIsNoteModalOpen(true);
     setActiveMenu(null);
   };
 
-  const saveNote = async () => {
-    const next = { ...favouriteVerses };
-    if (!next[targetVerseKey]) {
-      const [b, c, v] = targetVerseKey.split('-');
-      next[targetVerseKey] = {
-        text: bibleData[b].chapters[c][v],
-        book: getBookName(b),
-        ch: parseInt(c),
-        v: parseInt(v),
-        color: '#FFC107',
-        dateAdded: getCairoIsoString(),
-        synced: !!user
-      };
-    }
-    next[targetVerseKey].note = currentNoteText;
-    next[targetVerseKey].noteDate = getCairoIsoString();
-    next[targetVerseKey].synced = !!user;
-
-    if (!user) {
-        await StorageService.addNote({
-            verseKey: targetVerseKey,
-            text: currentNoteText,
-            book: next[targetVerseKey].book,
-            reference: `${next[targetVerseKey].book} ${next[targetVerseKey].v + 1}:${next[targetVerseKey].ch + 1}`
-        });
-    }
-
-    setFavouriteVerses(next);
-    await saveBibleData(next, completedChapters);
-
+  const saveNote = () => {
+    setFavouriteVerses(prev => {
+      const next = { ...prev };
+      if (!next[targetVerseKey]) {
+        const [b, c, v] = targetVerseKey.split('-');
+        next[targetVerseKey] = { text: bibleData[b].chapters[c][v], book: getBookName(b), ch: parseInt(c), v: parseInt(v), color: '#FFC107', dateAdded: getCairoIsoString() };
+      }
+      next[targetVerseKey].note = currentNoteText;
+      next[targetVerseKey].noteDate = getCairoIsoString();
+      saveToFirestore(next, completedChapters);
+      return next;
+    });
     setIsNoteModalOpen(false);
     updateUserPoints(5, "كتابة تأمل شخصي", 'favouriteVerse');
     setCopiedMessage('تم حفظ ملاحظتك 📝');
@@ -565,136 +503,126 @@ export default function BibleContent() {
   const handleTouchEnd = (e, v, i) => {
     clearTimeout(longPressTimer.current);
     if (isLongPressActive.current || isMoving.current) return;
-
-    if (selectedVerses.length > 0) {
+    const now = Date.now();
+    if (now - lastTap.current < 350) {
+      tapCount.current++;
+    } else {
+      tapCount.current = 1;
+    }
+    lastTap.current = now;
+    if (tapCount.current === 2) {
+      setTimeout(() => { if (tapCount.current === 2) copyVerse(v, i); }, 200);
+    } else if (selectedVerses.length > 0) {
       toggleVerseSelection(v, i);
     }
   };
 
   const updateStudyPlanProgress = async (planId, planType, day) => {
-    const newDayData = {
-      isCompleted: true,
-      dateCompleted: getCairoIsoString()
-    };
+    if (!user) return;
+    const userRef = doc(firestore, 'users', user.uid);
+    try {
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+      const userData = userSnap.data();
 
-    if (user) {
-      const userRef = doc(firestore, 'users', user.uid);
-      try {
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) return;
-        const userData = userSnap.data();
+      const fieldPath = planType === 'custom'
+        ? `customPlans.${planId}`
+        : `completedPlans.${planId}`;
 
-        const fieldPath = planType === 'custom'
-          ? `customPlans.${planId}`
-          : `completedPlans.${planId}`;
-
-        const planData = planType === 'custom'
-          ? userData.customPlans?.[planId]
-          : userData.completedPlans?.[planId] || { completedDays: {} };
-
-        const currentCompletedDays = planData.completedDays || {};
-        if (currentCompletedDays[day]?.isCompleted) return;
-
-        const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
-
-        let totalDays = 0;
-        if (planType === 'custom') {
-          totalDays = planData.readings?.length || 0;
-        } else {
-          const staticPlan = allPlans.find(p => p.id === parseInt(planId));
-          totalDays = staticPlan?.readings?.length || 0;
-        }
-
-        const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
-        const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
-
-        await updateDoc(userRef, {
-          [`${fieldPath}.completedDays`]: newCompletedDays,
-          [`${fieldPath}.completionPercentage`]: percentage
-        });
-        toast.success("تم تحديث تقدمك في الخطة الدراسية ✅");
-      } catch (e) {
-        console.error("Error updating study plan:", e);
-      }
-    } else {
-      const storageKey = planType === 'custom' ? 'local_custom_plans' : 'local_completed_plans';
-      const allData = await StorageService.get(storageKey) || {};
-
-      let planData = allData[planId];
-      if (!planData) {
-        if (planType !== 'custom') {
-          const staticPlan = allPlans.find(p => p.id === parseInt(planId));
-          planData = { ...staticPlan, completedDays: {}, completionPercentage: 0 };
-        } else return;
-      }
+      const planData = planType === 'custom'
+        ? userData.customPlans?.[planId]
+        : userData.completedPlans?.[planId] || { completedDays: {} };
 
       const currentCompletedDays = planData.completedDays || {};
+
       if (currentCompletedDays[day]?.isCompleted) return;
 
-      const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
-      const totalDays = planData.readings?.length || 0;
+      const newCompletedDays = {
+        ...currentCompletedDays,
+        [day]: {
+          isCompleted: true,
+          dateCompleted: getCairoIsoString()
+        }
+      };
+
+      let totalDays = 0;
+      if (planType === 'custom') {
+        totalDays = planData.readings?.length || 0;
+      } else {
+        const staticPlan = allPlans.find(p => p.id === parseInt(planId));
+        totalDays = staticPlan?.readings?.length || 0;
+      }
+
       const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
       const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
 
-      allData[planId] = { ...planData, completedDays: newCompletedDays, completionPercentage: percentage };
-      await StorageService.save(storageKey, allData);
+      await updateDoc(userRef, {
+        [`${fieldPath}.completedDays`]: newCompletedDays,
+        [`${fieldPath}.completionPercentage`]: percentage
+      });
+
+      toast.success("تم تحديث تقدمك في الخطة الدراسية ✅");
+    } catch (e) {
+      console.error("Error updating study plan:", e);
     }
   };
 
   const toggleChapterCompletion = async () => {
+    if (!user) { router.push('/intro'); return; }
     const key = `${selectedBookIndex}-${selectedChapterIndex}`;
 
     if (completedChapters[key]) {
       const next = { ...completedChapters, [key]: false };
       setCompletedChapters(next);
-      await saveBibleData(favouriteVerses, next);
+      saveToFirestore(favouriteVerses, next);
       updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
       toast.error("تم إلغاء تحديد الإصحاح");
     } else {
       const next = { ...completedChapters, [key]: true };
       setCompletedChapters(next);
-      await saveBibleData(favouriteVerses, next);
+      saveToFirestore(favouriteVerses, next);
       updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
 
       const planId = searchParams.get('planId');
       const planType = searchParams.get('planType');
       const day = searchParams.get('day');
+
       if (planId && day) {
         updateStudyPlanProgress(planId, planType, parseInt(day));
       }
 
-      // Check "Avid Reader" Badges
       const completedCount = Object.keys(next).filter(k => next[k]).length;
       if (completedCount >= 10) unlockBadge('reader_10');
       if (completedCount >= 50) unlockBadge('reader_50');
+      if (completedCount >= 100) unlockBadge('reader_100');
+      if (completedCount >= 250) unlockBadge('reader_250');
       if (completedCount >= 100) unlockBadge('reader_100');
       if (completedCount >= 250) unlockBadge('reader_250');
       if (completedCount >= 500) unlockBadge('reader_500');
       if (completedCount >= 594) unlockBadge('reader_594');
       if (completedCount >= 1189) unlockBadge('bible_finisher');
 
-      const otChaptersTotal = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
-      const ntChaptersTotal = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
+      const otChapters = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
+      const ntChapters = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
 
-      const otCompletedCount = Object.keys(next).filter(k => {
-        const bIdx = parseInt(k.split('-')[0]);
-        return next[k] && bookNamesData[bIdx]?.type === 'old';
+      const otCompleted = Object.keys(next).filter(k => {
+        const bookIdx = parseInt(k.split('-')[0]);
+        return next[k] && bookNamesData[bookIdx]?.type === 'old';
+      }).length;
+      const ntCompleted = Object.keys(next).filter(k => {
+        const bookIdx = parseInt(k.split('-')[0]);
+        return next[k] && bookNamesData[bookIdx]?.type === 'new';
       }).length;
 
-      const ntCompletedCount = Object.keys(next).filter(k => {
-        const bIdx = parseInt(k.split('-')[0]);
-        return next[k] && bookNamesData[bIdx]?.type === 'new';
-      }).length;
-
-      if (otCompletedCount === otChaptersTotal && otChaptersTotal > 0) unlockBadge('testament_old');
-      if (ntCompletedCount === ntChaptersTotal && ntCompletedCount > 0) unlockBadge('testament_new');
+      if (otCompleted === otChapters && otChapters > 0) unlockBadge('testament_old');
+      if (ntCompleted === ntChapters && ntChapters > 0) unlockBadge('testament_new');
     }
   };
 
   if (isLoading || !bibleData || !bookNamesData.length) return <div className={styles.loading}>جاري التحميل...</div>;
 
-  const chaptersList = bibleData[selectedBookIndex]?.chapters || [];
-  const versesList = chaptersList[selectedChapterIndex] || [];
+  const chapters = bibleData[selectedBookIndex]?.chapters || [];
+  const verses = chapters[selectedChapterIndex] || [];
 
   return (
     <div dir="rtl" className={styles.container}>
@@ -783,7 +711,7 @@ export default function BibleContent() {
           </div>
 
           <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
-            {versesList.map((v, i) => {
+            {verses.map((v, i) => {
               const verseNumber = (i + 1).toString();
               const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
               const annotation = favouriteVerses[key];
@@ -845,7 +773,7 @@ export default function BibleContent() {
           </button>
         </div>
 
-        <button disabled={selectedChapterIndex === chaptersList.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
+        <button disabled={selectedChapterIndex === chapters.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
       </div>
     </div>
   );

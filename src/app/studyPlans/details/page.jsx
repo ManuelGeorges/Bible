@@ -11,7 +11,6 @@ import { db } from '../../../lib/firebase';
 import toast from 'react-hot-toast';
 import { useBadge } from '../../context/BadgeContext';
 import { getCairoIsoString } from '../../../lib/dateUtils';
-import { StorageService, KEYS } from '../../../lib/storage';
 
 const allPlans = studyPlansData.plans;
 
@@ -30,51 +29,13 @@ function PlanDetailsContent() {
   const [bookNames, setBookNames] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadLocalData = useCallback(async () => {
-    const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
-    setCompletedChapters(localChapters);
-
-    const localCompletedPlans = await StorageService.get('local_completed_plans') || {};
-    const localCustomPlans = await StorageService.get('local_custom_plans') || {};
-    const localBadges = await StorageService.get('local_badges') || [];
-    const localStreak = await StorageService.get('userStreak') || 0;
-
-    setUserData({
-      completedPlans: localCompletedPlans,
-      customPlans: localCustomPlans,
-      badges: localBadges,
-      userStreak: localStreak
-    });
-
-    if (planType === 'custom') {
-      const aiPlan = localCustomPlans[planId];
-      if (aiPlan) {
-        setPlan(aiPlan);
-        setCompletedDays(aiPlan.completedDays || {});
-      }
-    } else {
-      const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
-      setPlan(staticPlan);
-      setCompletedDays(localCompletedPlans[planId]?.completedDays || {});
-    }
-  }, [planId, planType]);
-
   const unlockBadge = useCallback(async (badgeId, currentBadges) => {
-    if (user) {
-      if (currentBadges?.includes(badgeId)) return;
-      try {
-        const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-        triggerBadgeUnlock(badgeId);
-      } catch (e) { console.error(e); }
-    } else {
-      const localBadges = await StorageService.get('local_badges') || [];
-      if (!localBadges.includes(badgeId)) {
-        localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
-        triggerBadgeUnlock(badgeId);
-      }
-    }
+    if (!user || currentBadges?.includes(badgeId)) return;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+      triggerBadgeUnlock(badgeId);
+    } catch (e) { console.error(e); }
   }, [user, triggerBadgeUnlock]);
 
   const checkAndUnlockBadges = useCallback((data) => {
@@ -92,11 +53,16 @@ function PlanDetailsContent() {
       if (p.completionPercentage === 100) finishedCount++;
     });
 
+    // أوسمة المواظبة (أيام)
     const dayMilestones = [
-      { d: 365, id: 'plan_streak_365' }, { d: 180, id: 'plan_streak_180' },
-      { d: 90, id: 'plan_streak_90' }, { d: 60, id: 'plan_streak_60' },
-      { d: 30, id: 'plan_streak_30' }, { d: 14, id: 'plan_streak_14' },
-      { d: 7, id: 'plan_streak_7' }, { d: 3, id: 'plan_streak_3' },
+      { d: 365, id: 'plan_streak_365' },
+      { d: 180, id: 'plan_streak_180' },
+      { d: 90, id: 'plan_streak_90' },
+      { d: 60, id: 'plan_streak_60' },
+      { d: 30, id: 'plan_streak_30' },
+      { d: 14, id: 'plan_streak_14' },
+      { d: 7, id: 'plan_streak_7' },
+      { d: 3, id: 'plan_streak_3' },
       { d: 1, id: 'plan_streak_1' }
     ];
 
@@ -104,18 +70,7 @@ function PlanDetailsContent() {
       if (totalPlanDays >= m.d) unlockBadge(m.id, currentBadges);
     });
 
-    const userStreak = data.userStreak || 0;
-    const streakMilestones = [
-      { s: 365, id: 'streak_365' }, { s: 180, id: 'streak_180' },
-      { s: 90, id: 'streak_90' }, { s: 60, id: 'streak_60' },
-      { s: 30, id: 'streak_30' }, { s: 15, id: 'streak_15' },
-      { s: 7, id: 'streak_7' }, { s: 3, id: 'streak_3' }
-    ];
-
-    streakMilestones.forEach(m => {
-      if (userStreak >= m.s) unlockBadge(m.id, currentBadges);
-    });
-
+    // أوسمة الإنجاز (خطط)
     if (startedCount >= 1) unlockBadge('plan_start_1', currentBadges);
     if (finishedCount >= 1) unlockBadge('plan_finish_1', currentBadges);
     if (finishedCount >= 3) unlockBadge('plan_finish_3', currentBadges);
@@ -137,7 +92,7 @@ function PlanDetailsContent() {
     const auth = getAuth();
     let unsubSnap = () => {};
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (loggedInUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (loggedInUser) => {
       setUser(loggedInUser);
       
       if (loggedInUser) {
@@ -164,7 +119,10 @@ function PlanDetailsContent() {
           setLoading(false);
         });
       } else {
-        await loadLocalData();
+        if (planType !== 'custom') {
+          const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
+          setPlan(staticPlan);
+        }
         setLoading(false);
       }
     });
@@ -173,25 +131,17 @@ function PlanDetailsContent() {
       unsubscribeAuth();
       unsubSnap();
     };
-  }, [planId, planType, loadLocalData]);
-
-  useEffect(() => {
-    if (!user) {
-      const handleFocus = () => {
-        loadLocalData();
-      };
-      window.addEventListener('focus', handleFocus);
-      return () => window.removeEventListener('focus', handleFocus);
-    }
-  }, [user, loadLocalData]);
+  }, [planId, planType]);
 
   const isReadingDone = (readingStr) => {
     if (!bookNames.length || !completedChapters) return false;
+
     try {
       const trimmed = readingStr.trim();
       const parts = trimmed.split(' ');
       const chaptersPart = parts.pop();
       const bookName = parts.join(' ');
+
       const bookIndex = bookNames.findIndex(b => b.name === bookName);
       if (bookIndex === -1) return false;
 
@@ -204,8 +154,11 @@ function PlanDetailsContent() {
       } else {
         chaptersToNodes.push(Number(chaptersPart));
       }
+
       return chaptersToNodes.every(c => completedChapters[`${bookIndex}-${c - 1}`]);
-    } catch (e) { return false; }
+    } catch (e) {
+      return false;
+    }
   };
 
   const isDayAutoCompleted = (reading) => {
@@ -214,6 +167,11 @@ function PlanDetailsContent() {
   };
 
   const handleCheck = async (day) => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لحفظ تقدمك");
+      return;
+    }
+
     const isCurrentlyManual = completedDays[day]?.isCompleted;
     let newCompletedDays = { ...completedDays };
 
@@ -236,40 +194,42 @@ function PlanDetailsContent() {
 
     setCompletedDays(newCompletedDays);
 
-    const updatedUserData = { ...userData };
-    if (planType === 'custom') {
-        updatedUserData.customPlans = updatedUserData.customPlans || {};
-        updatedUserData.customPlans[planId] = { ...(updatedUserData.customPlans[planId] || plan), completedDays: newCompletedDays, completionPercentage: percentage };
-    } else {
-        updatedUserData.completedPlans = updatedUserData.completedPlans || {};
-        updatedUserData.completedPlans[planId] = { completedDays: newCompletedDays, completionPercentage: percentage };
-    }
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const fieldPath = planType === 'custom' 
+        ? `customPlans.${planId}` 
+        : `completedPlans.${planId}`;
 
-    if (user) {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const fieldPath = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
-        await updateDoc(userRef, {
-          [`${fieldPath}.completedDays`]: newCompletedDays,
-          [`${fieldPath}.completionPercentage`]: percentage
-        });
+      const updateData = {
+        [`${fieldPath}.completedDays`]: newCompletedDays,
+        [`${fieldPath}.completionPercentage`]: percentage
+      };
+
+      await updateDoc(userRef, updateData);
+
+      // بعد التحديث مباشرة، نتحقق من الأوسمة
+      if (userData) {
+        // تحديث البيانات محلياً للتحقق من الأوسمة فوراً
+        const updatedUserData = { ...userData };
+        if (planType === 'custom') {
+            updatedUserData.customPlans[planId] = {
+                ...updatedUserData.customPlans[planId],
+                completedDays: newCompletedDays,
+                completionPercentage: percentage
+            };
+        } else {
+            updatedUserData.completedPlans = updatedUserData.completedPlans || {};
+            updatedUserData.completedPlans[planId] = {
+                ...updatedUserData.completedPlans[planId],
+                completedDays: newCompletedDays,
+                completionPercentage: percentage
+            };
+        }
         checkAndUnlockBadges(updatedUserData);
-      } catch (e) {
-        console.error(e);
-        toast.error("حدث خطأ أثناء مزامنة البيانات");
       }
-    } else {
-      if (planType === 'custom') {
-        const localCustom = await StorageService.get('local_custom_plans') || {};
-        localCustom[planId] = updatedUserData.customPlans[planId];
-        await StorageService.save('local_custom_plans', localCustom);
-      } else {
-        const localCompletion = await StorageService.get('local_completed_plans') || {};
-        localCompletion[planId] = updatedUserData.completedPlans[planId];
-        await StorageService.save('local_completed_plans', localCompletion);
-      }
-      setUserData(updatedUserData);
-      checkAndUnlockBadges(updatedUserData);
+    } catch (e) {
+      console.error(e);
+      toast.error("حدث خطأ أثناء مزامنة البيانات");
     }
   };
 
@@ -283,18 +243,26 @@ function PlanDetailsContent() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>{plan.title}</h1>
+
       {plan.description && (
         <div className={styles.descriptionWrapper}>
           <p className={styles.description}>{plan.description}</p>
         </div>
       )}
+
       <div className={styles.progressWrapper}>
         <div className={styles.progressInfo}>
           <span>نسبة الإنجاز</span>
           <span>%{progressPercentage}</span>
         </div>
         <div className={styles.progressBar}>
-          <div className={styles.progressFill} style={{ width: `${progressPercentage}%`, backgroundColor: progressPercentage === 100 ? '#4CAF50' : '' }}></div>
+          <div 
+            className={styles.progressFill} 
+            style={{ 
+              width: `${progressPercentage}%`,
+              backgroundColor: progressPercentage === 100 ? '#4CAF50' : ''
+            }}
+          ></div>
         </div>
       </div>
 
@@ -314,6 +282,7 @@ function PlanDetailsContent() {
                     id={`day-${reading.day}`}
                     checked={isCompleted || false}
                     onChange={() => handleCheck(reading.day)}
+                    title={isAuto ? "تم الإتمام تلقائياً من قراءات الكتاب" : "تحديد كتم الإنجاز يدوياً"}
                   />
                 </div>
               </div>
@@ -323,8 +292,14 @@ function PlanDetailsContent() {
                   const parts = b.trim().split(' ');
                   const chapterNum = parts.pop();
                   const bookName = parts.join(' ');
+                  
                   return (
-                    <Link key={i} href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum.split('-')[0]}&planId=${planId}&planType=${planType}&day=${reading.day}`} className={`${styles.bookLink} ${isDone ? styles.bookDone : ''}`}>
+                    <Link 
+                      key={i} 
+                      href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum.split('-')[0]}&planId=${planId}&planType=${planType}&day=${reading.day}`}
+                      className={`${styles.bookLink} ${isDone ? styles.bookDone : ''}`}
+                      style={isDone ? { borderColor: '#10b981', color: '#10b981' } : {}}
+                    >
                       {b} {isDone && '✓'}
                     </Link>
                   );

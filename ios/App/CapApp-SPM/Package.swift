@@ -28,7 +28,6 @@ let package = Package(
         .package(name: "CapawesomeCapacitorAppReview", path: "../../../node_modules/@capawesome/capacitor-app-review"),
         .package(name: "CapawesomeCapacitorAppUpdate", path: "../../../node_modules/@capawesome/capacitor-app-update"),
         .package(name: "CapacitorNativeSettings", path: "../../../node_modules/capacitor-native-settings")
-
     ],
     targets: [
         .target(
@@ -41,7 +40,6 @@ let package = Package(
                 .product(name: "CapacitorFirebaseAuthentication", package: "CapacitorFirebaseAuthentication"),
                 .product(name: "CapacitorApp", package: "CapacitorApp"),
                 .product(name: "CapacitorBrowser", package: "CapacitorBrowser"),
-
                 .product(name: "CapacitorFilesystem", package: "CapacitorFilesystem"),
                 .product(name: "CapacitorLocalNotifications", package: "CapacitorLocalNotifications"),
                 .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),

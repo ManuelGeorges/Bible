@@ -10,8 +10,6 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
     { name: 'خطط القراءة', icon: <BookOpen size={20} />, href: '/studyPlans' },
     { name: 'الملف الشخصي', icon: <User size={20} />, href: '/profile' },
     { name: 'الإعدادات', icon: <Settings size={20} />, href: '/settings' }, 
-    { name: 'الانجازات', icon: <Coins size={20} />, href: '/points' }, 
-
   ];
 
   return (
@@ -31,6 +29,13 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
               <span className={styles.itemText}>{item.name}</span>
             </Link>
           ))}
+          
+          {user && (
+            <Link href="/points" className={styles.gridItem} onClick={onClose}>
+              <div className={styles.iconWrapper}><Coins size={20} /></div>
+              <span className={styles.itemText}>النقاط</span>
+            </Link>
+          )}
         </div>
 
         <div className={styles.bottomDivider} />

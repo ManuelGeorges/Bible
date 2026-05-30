@@ -10,7 +10,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCairoIsoString } from '../../../lib/dateUtils';
 import { ArrowRight, Sparkles, Calendar, BookOpen, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { StorageService } from '../../../lib/storage';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -132,39 +131,34 @@ export default function CustomPlanForm() {
             return;
         }
 
+        if (!auth.currentUser) {
+            toast.error('يجب تسجيل الدخول أولاً');
+            return;
+        }
+
         setLoading(true);
 
         try {
+            const userRef = doc(db, 'users', auth.currentUser.uid);
             const rawPlan = await generatePlanWithAI(formData);
 
             if (rawPlan && rawPlan.readings) {
                 const plan = cleanPlanData(rawPlan);
                 const planId = `ai_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
-                const currentUser = auth.currentUser;
 
-                const newPlanObject = {
-                    ...plan,
-                    id: planId,
-                    type: 'custom',
-                    createdAt: getCairoIsoString(),
-                    completedDays: {},
-                    completionPercentage: 0
-                };
-
-                if (currentUser) {
-                    const userRef = doc(db, 'users', currentUser.uid);
-                    await setDoc(userRef, {
-                        lastAIGenerated: serverTimestamp(),
-                        customPlans: {
-                            [planId]: newPlanObject
+                await setDoc(userRef, {
+                    lastAIGenerated: serverTimestamp(),
+                    customPlans: {
+                        [planId]: {
+                            ...plan,
+                            id: planId,
+                            type: 'custom',
+                            createdAt: getCairoIsoString(),
+                            completedDays: {},
+                            completionPercentage: 0
                         }
-                    }, { merge: true });
-                } else {
-                    // Save to local storage for guest
-                    const localCustom = await StorageService.get('local_custom_plans') || {};
-                    localCustom[planId] = newPlanObject;
-                    await StorageService.save('local_custom_plans', localCustom);
-                }
+                    }
+                }, { merge: true });
 
                 toast.success("تم إنشاء خطتك بنجاح!");
                 router.push(`/studyPlans/details?id=${planId}&type=custom`);

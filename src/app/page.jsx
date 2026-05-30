@@ -33,10 +33,6 @@ import { useBadge } from './context/BadgeContext';
 import BibleBookSelector from '../components/BibleBookSelector';
 import { getCairoDate, getCairoDateInfo, getCairoYesterday, getCairoIsoString } from '../lib/dateUtils';
 
-// Local-first Imports
-import { StorageService, KEYS } from '../lib/storage';
-import { syncLocalDataToFirebase } from '../lib/SyncService';
-
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const staticPlans = studyPlansData.plans;
@@ -63,6 +59,7 @@ const formatReference = (ref) => {
     if (!ref) return "";
     const rlm = "\u200F";
     const lrm = "\u200E";
+    // إزالة الأقواس الحالية لتجنب التكرار وللتحكم في الاتجاه يدوياً
     const cleanRef = ref.replace(/[()]/g, '').trim();
     const parts = cleanRef.split(' ');
     if (parts.length < 2) return ref;
@@ -112,47 +109,19 @@ const LandingPage = () => {
     };
 
     const unlockBadge = async (badgeId) => {
-        if (user) {
-          try {
-            const userRef = doc(firestore, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-            const currentBadges = userSnap.data()?.badges || [];
-            if (!currentBadges.includes(badgeId)) {
-              await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-              triggerBadgeUnlock(badgeId);
-            }
-          } catch (e) { console.error(e); }
-        } else {
-            const localBadges = await StorageService.get('local_badges') || [];
-            if (!localBadges.includes(badgeId)) {
-                localBadges.push(badgeId);
-                await StorageService.save('local_badges', localBadges);
-                triggerBadgeUnlock(badgeId);
-                setUserBadges([...localBadges]);
-            }
-        }
+        if (!user) return;
+        try {
+          const userRef = doc(firestore, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          const currentBadges = userSnap.data()?.badges || [];
+          if (!currentBadges.includes(badgeId)) {
+            await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+            triggerBadgeUnlock(badgeId);
+          }
+        } catch (e) { console.error(e); }
     };
 
-    const checkTimeBadges = useCallback(async () => {
-        const now = new Date();
-        const hour = now.getHours();
-        const minute = now.getMinutes();
-
-        if (hour < 7) await unlockBadge('early_bird');
-        if (hour === 3 && minute === 0) await unlockBadge('ghost_user');
-        if (hour >= 0 && hour < 4) await unlockBadge('night_owl');
-    }, [user]);
-
-    const checkStreakBadges = useCallback(async (streak) => {
-        const streakTargets = [3, 7, 15, 30, 60, 90, 180, 365];
-        for (const target of streakTargets) {
-            if (streak >= target) {
-                await unlockBadge(`streak_${target}`);
-            }
-        }
-    }, [user]);
-
-    const calculatePlanStats = useCallback((planOrId, isCustom, customPlanData, completionData) => {
+    const calculatePlanStats = useCallback((planOrId, isCustom, customPlanData, serverCompletion) => {
         let completedDays = {};
         let totalDays = 0;
 
@@ -163,7 +132,7 @@ const LandingPage = () => {
             const plan = typeof planOrId === 'object' ? planOrId : staticPlans.find(p => p.id === planOrId);
             totalDays = plan?.readings?.length || 0;
             const planId = plan?.id || planOrId;
-            completedDays = completionData?.[planId]?.completedDays || {};
+            completedDays = serverCompletion?.[planId]?.completedDays || {};
         }
 
         const daysDone = Object.values(completedDays).filter(d => d.isCompleted || d === true).length;
@@ -177,6 +146,7 @@ const LandingPage = () => {
         const { month, day, key: dateKey } = getCairoDateInfo();
 
         try {
+            // استخدام مسارات مطلقة لضمان العمل في Capacitor iOS
             const [verseRes, questRes] = await Promise.all([
                 fetch('/data/dailyVerses.json'),
                 fetch('/data/dailyQuestions.json')
@@ -194,15 +164,9 @@ const LandingPage = () => {
             setDailyQuestion(todayQuest);
 
             let answered = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
-
             if (loggedInUser) {
                 const userSnap = await getDoc(doc(firestore, 'users', loggedInUser.uid));
                 if (userSnap.exists() && userSnap.data().answeredQuestions?.[dateKey]?.answered) {
-                    answered = true;
-                }
-            } else {
-                const localQuestions = await StorageService.get('answered_questions') || {};
-                if (localQuestions[dateKey]?.answered) {
                     answered = true;
                 }
             }
@@ -215,12 +179,12 @@ const LandingPage = () => {
         }
     }, []);
 
+    // جلب البيانات الأساسية فور التحميل بغض النظر عن حالة المستخدم
     useEffect(() => {
         setMounted(true);
         fetchDailyContent(null);
         fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
-        checkTimeBadges();
-    }, [fetchDailyContent, checkTimeBadges]);
+    }, [fetchDailyContent]);
 
     useEffect(() => {
         const fetchRemoteConfig = async () => {
@@ -259,28 +223,31 @@ const LandingPage = () => {
 
     useEffect(() => {
         let unsubSnap = null;
-        const unsubAuth = auth?.onAuthStateChanged(async (u) => {
+        const unsubAuth = auth?.onAuthStateChanged((u) => {
             setUser(u);
 
+            // تحديث حالة الإجابة إذا سجل المستخدم دخوله
             if (u) {
-                await syncLocalDataToFirebase(u);
-
                 const { key: dateKey } = getCairoDateInfo();
                 getDoc(doc(firestore, 'users', u.uid)).then(userSnap => {
                     if (userSnap.exists() && userSnap.data().answeredQuestions?.[dateKey]?.answered) {
                         setHasAnswered(true);
                     }
                 });
+            }
 
-                if (unsubSnap) { unsubSnap(); unsubSnap = null; }
+            if (unsubSnap) {
+                unsubSnap();
+                unsubSnap = null;
+            }
 
+            if (u) {
                 unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
                         setRawUserData(data);
                         const streak = data.streak || 0;
                         setUserStats({ points: data.totalPoints || 0, streak: streak });
-                        checkStreakBadges(streak);
 
                         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
                             window.AgiosScannerNative.updateUserStats(streak);
@@ -324,7 +291,7 @@ const LandingPage = () => {
                         );
 
                         const goals = [
-                            { id: 'dailyLogin', label: 'التفاعل اليومي', completed: data.lastActiveDate === today },
+                            { id: 'dailyLogin', label: 'تسجيل الدخول', completed: data.lastActiveDate === today },
                             { id: 'dailyQuestion', label: 'سؤال التحدي', completed: !!data.answeredQuestions?.[today]?.answered },
                             { id: 'mapExploration', label: 'استكشاف الخريطة', completed: completedTodayTypes.has('mapExploration') },
                             { id: 'share', label: 'المشاركة اليومية', completed: completedTodayTypes.has('share') },
@@ -335,63 +302,9 @@ const LandingPage = () => {
                     }
                 }, (error) => console.error("Snapshot error:", error));
             } else {
-                const localStats = await StorageService.getLocalStats();
-                const localHistory = await StorageService.get('points_history') || [];
-                const localAnswered = await StorageService.get('answered_questions') || {};
-                const localStaticCompletion = await StorageService.get('local_completed_plans') || {};
-                const localCustomPlans = await StorageService.get('local_custom_plans') || {};
-                const localBadges = await StorageService.get('local_badges') || [];
-                const localLastRead = await StorageService.get(KEYS.LAST_READ);
-                const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
-
-                setUserStats({ points: localStats.points, streak: localStats.streak });
-                checkStreakBadges(localStats.streak);
-                setFavouriteVerses(localStats.favorites || {});
-                setUserBadges(localBadges);
-                setLastRead(localLastRead);
-
-                const activeStatic = staticPlans
-                    .map(plan => {
-                        const stats = calculatePlanStats(plan, false, null, localStaticCompletion);
-                        return { ...plan, stats };
-                    })
-                    .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
-
-                const activeCustom = Object.values(localCustomPlans)
-                    .map(plan => {
-                        const stats = calculatePlanStats(plan, true, plan, null);
-                        return { ...plan, isCustom: true, stats };
-                    })
-                    .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
-
-                setStartedPlans([...activeCustom, ...activeStatic]);
-
-                const today = getCairoDate();
-                const completedTodayTypes = new Set(
-                    localHistory.filter(h => getCairoDate(new Date(h.timestamp)) === today).map(h => h.type)
-                );
-
-                const lastActive = await StorageService.get(KEYS.LAST_ACTIVE);
-
-                const goals = [
-                    { id: 'dailyLogin', label: 'التفاعل اليومي', completed: lastActive === today },
-                    { id: 'dailyQuestion', label: 'سؤال التحدي', completed: !!localAnswered[today]?.answered },
-                    { id: 'mapExploration', label: 'استكشاف الخريطة', completed: completedTodayTypes.has('mapExploration') },
-                    { id: 'share', label: 'المشاركة اليومية', completed: completedTodayTypes.has('share') },
-                    { id: 'completedChapter', label: 'قراءة أصحاح', completed: completedTodayTypes.has('completedChapter') },
-                    { id: 'favouriteVerse', label: 'تظليل آية', completed: completedTodayTypes.has('favouriteVerse') },
-                ];
-                setDailyGoals(goals);
-
-                setRawUserData({
-                    streak: localStats.streak,
-                    completedChapters: localChapters,
-                    completedQuizzes: await StorageService.get('completed_quizzes') || [],
-                    favorites: { verses: localStats.favorites || {} },
-                    visitedMapPoints: await StorageService.get('visited_map_points') || [],
-                    pointsHistory: localHistory,
-                    badges: localBadges
-                });
+                setStartedPlans([]);
+                setDailyGoals([]);
+                setRawUserData(null);
             }
         });
 
@@ -399,190 +312,136 @@ const LandingPage = () => {
             unsubAuth?.();
             if (unsubSnap) unsubSnap();
         };
-    }, [calculatePlanStats, checkStreakBadges]);
+    }, [calculatePlanStats]);
+
+    useEffect(() => {
+        if (user && startedPlans.length > 0) {
+            const summary = {
+                count: startedPlans.length,
+                mainPlanTitle: startedPlans[0].title,
+                remainingDays: startedPlans[0].stats.totalDays - startedPlans[0].stats.daysDone
+            };
+            localStorage.setItem('studyPlansSummary', JSON.stringify(summary));
+            if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateStudySummary) {
+                window.AgiosScannerNative.updateStudySummary(JSON.stringify(summary));
+            }
+        }
+    }, [startedPlans, user]);
 
     const handleShareSuccess = async () => {
-        if (user) {
-            const userRef = doc(firestore, 'users', user.uid);
-            await updateDoc(userRef, {
-                totalPoints: increment(10),
-                pointsHistory: arrayUnion({
-                    type: 'share',
-                    points: 10,
-                    reason: 'مشاركة آية اليوم من الصفحة الرئيسية',
-                    timestamp: getCairoIsoString()
-                })
-            });
-            const userSnap = await getDoc(userRef);
-            const history = userSnap.data()?.pointsHistory || [];
-            const shareCount = history.filter(h => h.type === 'share').length;
-            if (shareCount >= 1) await unlockBadge('share_1');
-            if (shareCount >= 50) await unlockBadge('social_influencer');
-        } else {
-            await StorageService.addPoints(10);
-            const history = await StorageService.get('points_history') || [];
-            history.push({
+        if (!user) return;
+        const userRef = doc(firestore, 'users', user.uid);
+        await updateDoc(userRef, {
+            totalPoints: increment(10),
+            pointsHistory: arrayUnion({
                 type: 'share',
                 points: 10,
                 reason: 'مشاركة آية اليوم من الصفحة الرئيسية',
                 timestamp: getCairoIsoString()
-            });
-            await StorageService.save('points_history', history);
-            setUserStats(prev => ({ ...prev, points: prev.points + 10 }));
-
-            const shareCount = history.filter(h => h.type === 'share').length;
-            if (shareCount >= 1) await unlockBadge('share_1');
-            if (shareCount >= 50) await unlockBadge('social_influencer');
-        }
+            })
+        });
         toast.success('أحسنت! تم تسجيل المشاركة اليومية +10 نقاط 📢');
     };
 
     const handleOptionClick = async (index) => {
+        if (!user) { router.push('/intro'); return; }
         if (hasAnswered || !dailyQuestion) return;
 
         const dateKey = getCairoDate();
         const yesterdayStr = getCairoYesterday();
-        const isCorrect = index === dailyQuestion.answerIndex;
 
         setSelectedAnswer(index);
         setHasAnswered(true);
         localStorage.setItem(`questionAnswered_${dateKey}`, 'true');
+        const isCorrect = index === dailyQuestion.answerIndex;
+        const userRef = doc(firestore, 'users', user.uid);
 
-        if (user) {
-            const userRef = doc(firestore, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-            const userData = userSnap.data() || {};
-            let qStreak = userData.questionStreak || 0;
-            const lastQDate = userData.lastQuestionDate;
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data() || {};
+        let qStreak = userData.questionStreak || 0;
+        const lastQDate = userData.lastQuestionDate;
 
-            if (lastQDate === yesterdayStr) { qStreak += 1; }
-            else if (lastQDate !== dateKey) { qStreak = 1; }
+        if (lastQDate === yesterdayStr) {
+            qStreak += 1;
+        } else if (lastQDate !== dateKey) {
+            qStreak = 1;
+        }
 
-            const updatePayload = {
-                [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: getCairoIsoString() },
-                questionStreak: qStreak,
-                lastQuestionDate: dateKey
-            };
+        const updatePayload = {
+            [`answeredQuestions.${dateKey}`]: { answered: true, correct: isCorrect, timestamp: getCairoIsoString() },
+            questionStreak: qStreak,
+            lastQuestionDate: dateKey
+        };
 
-            if (isCorrect) {
-                toast.success('إجابة صحيحة! 🎉');
-                await updateDoc(userRef, {
-                    ...updatePayload,
-                    totalPoints: increment(20),
-                    correctAnswersCount: increment(1),
-                    pointsHistory: arrayUnion({
-                        type: 'dailyQuestion',
-                        points: 20,
-                        reason: 'إجابة صحيحة على سؤال اليوم',
-                        timestamp: getCairoIsoString()
-                    })
-                });
-            } else {
-                toast.error('إجابة خاطئة 😔');
-                await updateDoc(userRef, updatePayload);
-            }
-            if (qStreak >= 30) await unlockBadge('verse_sync');
-        } else {
-            const localQuestions = await StorageService.get('answered_questions') || {};
-            localQuestions[dateKey] = { answered: true, correct: isCorrect, timestamp: getCairoIsoString() };
-            await StorageService.save('answered_questions', localQuestions);
-
-            if (Object.keys(localQuestions).length >= 30) await unlockBadge('verse_sync');
-
-            if (isCorrect) {
-                toast.success('إجابة صحيحة! 🎉');
-                await StorageService.addPoints(20);
-                const history = await StorageService.get('points_history') || [];
-                history.push({
+        if (isCorrect) {
+            toast.success('إجابة صحيحة! 🎉');
+            await updateDoc(userRef, {
+                ...updatePayload,
+                totalPoints: increment(20),
+                correctAnswersCount: increment(1),
+                pointsHistory: arrayUnion({
                     type: 'dailyQuestion',
                     points: 20,
                     reason: 'إجابة صحيحة على سؤال اليوم',
                     timestamp: getCairoIsoString()
-                });
-                await StorageService.save('points_history', history);
-                setUserStats(prev => ({ ...prev, points: prev.points + 20 }));
-            } else {
-                toast.error('إجابة خاطئة 😔');
-            }
+                })
+            });
+        } else {
+            toast.error('إجابة خاطئة 😔');
+            await updateDoc(userRef, updatePayload);
+        }
+
+        if (qStreak >= 30) {
+            await unlockBadge('verse_sync');
         }
     };
 
     const toggleFavorite = async () => {
+        if (!user) { router.push('/intro'); return; }
         if (!dailyVerse) return;
         const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
-
-        const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
-        const parts = cleanRef.split(' ');
-        const rawNumbers = parts[parts.length - 1];
-        const bookName = parts.slice(0, -1).join(' ');
-        const [rawCh, rawV] = rawNumbers.split(':');
-        const convertNumbers = (str) => str?.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '') || "";
-
-        const verseData = {
-            text: dailyVerse.verse,
-            reference: formatReference(dailyVerse.reference),
-            book: bookName,
-            ch: convertNumbers(rawCh),
-            v: convertNumbers(rawV),
-            color: '#FFC107',
-            dateAdded: getCairoIsoString()
-        };
-
-        if (user) {
-            const userRef = doc(db, 'users', user.uid);
-            let newFavs = { ...favouriteVerses };
-            if (newFavs[verseKey]) {
-                delete newFavs[verseKey];
-                setFavouriteVerses(newFavs);
-                await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
-                toast.error('تم الحذف من كنوزك');
-            } else {
-                newFavs[verseKey] = verseData;
-                setFavouriteVerses(newFavs);
-                await updateDoc(userRef, {
-                    totalPoints: increment(5),
-                    [`favorites.verses.${verseKey}`]: verseData,
-                    pointsHistory: arrayUnion({
-                        type: 'favouriteVerse',
-                        points: 5,
-                        reason: 'تظليل آية اليوم من الصفحة الرئيسية',
-                        timestamp: getCairoIsoString()
-                    })
-                });
-                toast.success('رائع! تمت الإضافة لتفضيلاتك +5 نقاط ');
-
-                const favCount = Object.keys(newFavs).length;
-                if (favCount >= 1) await unlockBadge('fav_1');
-                if (favCount >= 20) await unlockBadge('fav_20');
-                if (favCount >= 100) await unlockBadge('fav_100');
-            }
+        const userRef = doc(db, 'users', user.uid);
+        let newFavs = { ...favouriteVerses };
+        if (newFavs[verseKey]) {
+            delete newFavs[verseKey];
+            setFavouriteVerses(newFavs);
+            await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
+            toast.error('تم الحذف من كنوزك');
         } else {
-            const updatedFavs = await StorageService.toggleFavorite(verseKey, verseData);
-            setFavouriteVerses(updatedFavs);
-            if (updatedFavs[verseKey]) {
-                await StorageService.addPoints(5);
-                const history = await StorageService.get('points_history') || [];
-                history.push({
+            const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
+            const parts = cleanRef.split(' ');
+            const rawNumbers = parts[parts.length - 1];
+            const bookName = parts.slice(0, -1).join(' ');
+            const [rawCh, rawV] = rawNumbers.split(':');
+            const convertNumbers = (str) => str?.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '') || "";
+
+            const verseData = {
+                text: dailyVerse.verse,
+                reference: formatReference(dailyVerse.reference),
+                book: bookName,
+                ch: convertNumbers(rawCh),
+                v: convertNumbers(rawV),
+                color: '#FFC107',
+                dateAdded: getCairoIsoString()
+            };
+            newFavs[verseKey] = verseData;
+            setFavouriteVerses(newFavs);
+            await updateDoc(userRef, {
+                totalPoints: increment(5),
+                [`favorites.verses.${verseKey}`]: verseData,
+                pointsHistory: arrayUnion({
                     type: 'favouriteVerse',
                     points: 5,
                     reason: 'تظليل آية اليوم من الصفحة الرئيسية',
                     timestamp: getCairoIsoString()
-                });
-                await StorageService.save('points_history', history);
-                setUserStats(prev => ({ ...prev, points: prev.points + 5 }));
-                toast.success('رائع! تمت الإضافة +5 نقاط ');
-
-                const favCount = Object.keys(updatedFavs).length;
-                if (favCount >= 1) await unlockBadge('fav_1');
-                if (favCount >= 20) await unlockBadge('fav_20');
-                if (favCount >= 100) await unlockBadge('fav_100');
-            } else {
-                toast.error('تم الحذف من تفضيلاتك ');
-            }
+                })
+            });
+            toast.success('رائع! تمت الإضافة لكنوزك +5 نقاط ⭐');
         }
     };
 
     const handleGoalClick = (goalId) => {
+        if (!user) { router.push('/intro'); return; }
         switch (goalId) {
             case 'dailyQuestion':
                 document.getElementById('daily-question')?.scrollIntoView({ behavior: 'smooth' });
@@ -598,7 +457,7 @@ const LandingPage = () => {
                 router.push('/bible');
                 break;
             case 'dailyLogin':
-                router.push(user ? '/profile' : '/intro');
+                router.push('/profile');
                 break;
             default:
                 break;
@@ -607,11 +466,11 @@ const LandingPage = () => {
 
     const quickLinks = [
         { name: 'الكتاب المقدس', icon: <BookOpenText size={24} />, path: '/bible', color: '#6366f1' },
-        { name: 'الخرائط', icon: <Map size={24} />, path: '/maps', color: '#10b981' },
-        { name: 'البحث', icon: <Search size={24} />, path: '/search', color: '#f59e0b' },
-        { name: 'الخطط الدراسية', icon: <BookMarked size={24} />, path: '/studyPlans', color: '#ec4899' },
-        { name: 'المسابقات', icon: <Trophy size={24} />, path: '/competitions', color: '#8b5cf6' },
-        { name: 'المفضلة', icon: <Heart size={24} />, path: '/favourites', color: '#ef4444' },
+        { name: 'الخرائط', icon: <Map size={24} />, path: user ? '/maps' : '/intro', color: '#10b981' },
+        { name: 'البحث', icon: <Search size={24} />, path: user ? '/search' : '/intro', color: '#f59e0b' },
+        { name: 'الخطط الدراسية', icon: <BookMarked size={24} />, path: user ? '/studyPlans' : '/intro', color: '#ec4899' },
+        { name: 'المسابقات', icon: <Trophy size={24} />, path: user ? '/competitions' : '/intro', color: '#8b5cf6' },
+        { name: 'المفضلة', icon: <Heart size={24} />, path: user ? '/favourites' : '/intro', color: '#ef4444' },
     ];
 
     const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);
@@ -620,7 +479,6 @@ const LandingPage = () => {
         if (!badgesData || !rawUserData) return { acquired: [], near: [] };
 
         const allBadges = badgesData.badge_families.flatMap(f => f.badges.map(b => ({ ...b, family_name: f.family_name })));
-
         const acquired = allBadges
             .filter(b => userBadges.includes(b.id))
             .sort((a, b) => {
@@ -630,13 +488,13 @@ const LandingPage = () => {
             .slice(0, 5);
 
         const stats = {
-            streak: rawUserData?.streak || 0,
-            chapters: Object.keys(rawUserData?.completedChapters || {}).filter(k => rawUserData.completedChapters[k]).length,
-            quizzes: (rawUserData?.completedQuizzes || []).length,
-            perfectQuizzes: (rawUserData?.completedQuizzes || []).filter(q => q.score === q.total).length,
-            favorites: Object.keys(rawUserData?.favorites?.verses || {}).length,
-            maps: (rawUserData?.visitedMapPoints || []).length,
-            shares: (rawUserData?.pointsHistory || []).filter(h => h.type === 'share').length
+            streak: rawUserData.streak || 0,
+            chapters: Object.keys(rawUserData.completedChapters || {}).filter(k => rawUserData.completedChapters[k]).length,
+            quizzes: (rawUserData.completedQuizzes || []).length,
+            perfectQuizzes: (rawUserData.completedQuizzes || []).filter(q => q.score === q.total).length,
+            favorites: Object.keys(rawUserData.favorites?.verses || {}).length,
+            maps: (rawUserData.visitedMapPoints || []).length,
+            shares: (rawUserData.pointsHistory || []).filter(h => h.type === 'share').length
         };
 
         const near = allBadges
@@ -694,7 +552,11 @@ const LandingPage = () => {
                     </div>
                     <div className={styles.topActions}>
                         {mounted && (
-                            <button onClick={toggleTheme} className={styles.iconCircle} aria-label="Toggle Theme">
+                            <button
+                                onClick={toggleTheme}
+                                className={styles.iconCircle}
+                                aria-label="Toggle Theme"
+                            >
                                 {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                             </button>
                         )}
@@ -704,16 +566,18 @@ const LandingPage = () => {
                     </div>
                 </div>
 
-                <div className={styles.statsRow}>
-                    <Link href={user ? "/points" : "/intro"} className={styles.statPill}>
-                        <Award size={16} />
-                        <span>{userStats.points} XP</span>
-                    </Link>
-                    <div className={styles.statPill}>
-                        <Flame size={16} color="#ff4500" />
-                        <span>{userStats.streak} يوم</span>
+                {user && (
+                    <div className={styles.statsRow}>
+                        <Link href="/points" className={styles.statPill}>
+                            <Award size={16} />
+                            <span>{userStats.points} XP</span>
+                        </Link>
+                        <div className={styles.statPill}>
+                            <Flame size={16} color="#ff4500" />
+                            <span>{userStats.streak} يوم</span>
+                        </div>
                     </div>
-                </div>
+                )}
             </header>
 
             {remoteNews.length > 0 && (
@@ -774,7 +638,7 @@ const LandingPage = () => {
                 </div>
             )}
 
-            {(user || dailyGoals.length > 0) && (
+            {user && (
                 <section className={styles.dailyGoalsSummary}>
                     <div className={styles.goalsHeader}>
                         <div className={styles.goalsTitle}><Award size={18} color="#f59e0b" /><span>مهام اليوم</span></div>
@@ -811,7 +675,7 @@ const LandingPage = () => {
 
             <BibleBookSelector />
 
-            {(highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
+            {user && (highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
                 <section className={styles.badgesHighlightSection}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.sectionTitleWithIcon}>
@@ -871,6 +735,7 @@ const LandingPage = () => {
             {lastRead && (
                 <button
                     onClick={() => {
+                        if (!user) { router.push('/intro'); return; }
                         router.push(`/bible?book=${encodeURIComponent(lastRead.bookName)}&chapter=${lastRead.chapterIndex + 1}`)
                     }}
                     className={styles.lastReadBar}
@@ -895,6 +760,7 @@ const LandingPage = () => {
                             <span className={styles.verseRef}>{formattedDailyRef}</span>
                             <div className={styles.verseActions}>
                                 <button onClick={() => {
+                                    if (!user) { router.push('/intro'); return; }
                                     navigator.clipboard.writeText(`"${dailyVerse?.verse}" ${formattedDailyRef}`);
                                     toast.success('تم النسخ');
                                 }} className={`${styles.glassBtn} ${styles.copyBtn}`}>نسخ</button>
@@ -903,6 +769,7 @@ const LandingPage = () => {
                                 </button>
                                 <button
                                     onClick={() => {
+                                        if (!user) { router.push('/intro'); return; }
                                         const cleanRef = dailyVerse?.reference?.replace(/[()]/g, '').trim();
                                         const parts = cleanRef.split(' ');
                                         const rawNumbers = parts[parts.length - 1];
@@ -949,7 +816,7 @@ const LandingPage = () => {
             <section className={styles.aiFeaturesSection}>
                 <h2 className={styles.sectionTitle}>جرب مميزات الذكاء الاصطناعي</h2>
                 <div className={styles.aiFeaturesGrid}>
-                    <Link href="/search?type=derivatives" className={styles.aiFeatureCard}>
+                    <Link href={user ? "/search?type=derivatives" : "/intro"} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                             <Search size={24} />
                         </div>
@@ -959,7 +826,7 @@ const LandingPage = () => {
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
-                    <Link href="/search?type=semantic" className={styles.aiFeatureCard}>
+                    <Link href={user ? "/search?type=semantic" : "/intro"} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
                             <Sparkles size={24} />
                         </div>
@@ -969,7 +836,7 @@ const LandingPage = () => {
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
-                    <Link href="/studyPlans/custom" className={styles.aiFeatureCard}>
+                    <Link href={user ? "/studyPlans/custom" : "/intro"} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
                             <Wand2 size={24} />
                         </div>
@@ -979,7 +846,7 @@ const LandingPage = () => {
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
-                    <Link href="/bible" className={styles.aiFeatureCard}>
+                    <Link href={user ? "/bible" : "/intro"} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
                             <BrainCircuit size={24} />
                         </div>
@@ -1007,6 +874,14 @@ const LandingPage = () => {
                         ))}
                     </div>
                 </section>
+            )}
+
+            {!user && (
+                <div className={styles.guestBanner}>
+                    <LogIn size={24} />
+                    <div className={styles.guestText}><h3>سجل الآن</h3><p>احفظ تقدمك ونافس أصدقاءك</p></div>
+                    <Link href="/intro" className={styles.loginLink}>دخول</Link>
+                </div>
             )}
         </main>
     );

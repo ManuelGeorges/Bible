@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, useTransition } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { allQuestions } from './questionsData';
 import styles from './competitions.module.css';
@@ -10,16 +10,10 @@ import { doc, getDoc, updateDoc, arrayUnion, increment, onSnapshot } from 'fireb
 import { onAuthStateChanged } from 'firebase/auth';
 import { useBadge } from '../context/BadgeContext';
 import { getCairoIsoString } from '../../lib/dateUtils';
-import { StorageService, KEYS } from '../../lib/storage';
-import { HapticService } from '../../lib/hapticsService';
 
-// 1. تحسين الـ Normalize مع إضافة Cache للسرعة القصوى
-const normalizationCache = new Map();
 const normalizeArabic = (text) => {
   if (typeof text !== 'string') return '';
-  if (normalizationCache.has(text)) return normalizationCache.get(text);
-
-  const result = text
+  return text
     .trim()
     .replace(/[\u064B-\u0652]/g, "")
     .replace(/[أإآ]/g, 'ا')
@@ -28,32 +22,11 @@ const normalizeArabic = (text) => {
     .replace(/[ة]/g, 'ه')
     .replace(/[ء]/g, '')
     .replace(/\s+/g, ' ');
-
-  normalizationCache.set(text, result);
-  return result;
 };
 
-// 2. فهرسة الأسئلة مسبقاً (Pre-indexing) خارج الـ Component لمنع تكرار العملية
-const INDEXED_QUESTIONS = new Map();
-allQuestions.forEach(q => {
-  const normCat = normalizeArabic(q.category);
-  if (!INDEXED_QUESTIONS.has(normCat)) INDEXED_QUESTIONS.set(normCat, []);
-
-  // حفظ الإجابات مخزنة بصيغة Normalized لتقليل وقت المعالجة أثناء المسابقة
-  INDEXED_QUESTIONS.get(normCat).push({
-    ...q,
-    normCorrectAnswer: normalizeArabic(q.correctAnswer),
-    options: q.options.map(opt => ({
-      original: opt,
-      normalized: normalizeArabic(opt)
-    }))
-  });
-});
-
-export default function CompetitionsPage() {
+export default function HomePage() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [isPending, startTransition] = useTransition(); // لضمان سلاسة الـ UI أثناء التنقل
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
 
@@ -81,9 +54,12 @@ export default function CompetitionsPage() {
   useEffect(() => {
     let unsubSnap = null;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
+        router.push('/intro');
+        setAuthLoading(false);
+      } else {
+        setUser(currentUser);
         const userRef = doc(db, "users", currentUser.uid);
         unsubSnap = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -93,14 +69,9 @@ export default function CompetitionsPage() {
           }
           setAuthLoading(false);
         }, (error) => {
+          console.error("Error in onSnapshot:", error);
           setAuthLoading(false);
         });
-      } else {
-        const localQuizzes = await StorageService.get('completed_quizzes') || [];
-        const localBadges = await StorageService.get('local_badges') || [];
-        setCompletedQuizzes(localQuizzes);
-        setUserBadges(localBadges);
-        setAuthLoading(false);
       }
     });
 
@@ -108,56 +79,69 @@ export default function CompetitionsPage() {
       unsubscribeAuth();
       if (unsubSnap) unsubSnap();
     };
-  }, []);
-
-  const unlockBadge = useCallback(async (badgeId) => {
-    if (userBadges.includes(badgeId)) return;
-
-    if (user) {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-        triggerBadgeUnlock(badgeId);
-        setUserBadges(prev => [...prev, badgeId]);
-        HapticService.success(); // اهتزاز عند فتح وسام جديد
-      } catch (e) { console.error(e); }
-    } else {
-      const localBadges = await StorageService.get('local_badges') || [];
-      if (!localBadges.includes(badgeId)) {
-        localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
-        triggerBadgeUnlock(badgeId);
-        setUserBadges(localBadges);
-        HapticService.success();
-      }
-    }
-  }, [user, userBadges, triggerBadgeUnlock]);
+  }, [router]);
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const res = await fetch('/data/bookNames.json');
+        if (!res.ok) throw new Error('Failed to fetch book names');
         const data = await res.json();
         setBookNamesData((data.ar || []).map(b => ({ ...b, name: b.name.trim() })));
-      } catch (e) { console.error(e); }
-      finally { setIsLoading(false); }
+      } catch (e) {
+        console.error("Error loading book names:", e);
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadInitialData();
   }, []);
 
-  const handleAnswer = useCallback(async (selectedOption) => {
-    if (quizState.answered || questions.length === 0) return;
-
-    const currentQuestion = questions[quizState.currentIndex];
-    // المقارنة الآن تتم بـ O(1) لأن القيم جاهزة مسبقاً
-    const correct = selectedOption.normalized === currentQuestion.normCorrectAnswer;
-    const newStreak = correct ? quizState.streak + 1 : 0;
-
-    if (correct) {
-      HapticService.success();
-    } else {
-      HapticService.error();
+  const unlockBadge = async (badgeId) => {
+    if (!user || (userBadges && userBadges.includes(badgeId))) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        badges: arrayUnion(badgeId)
+      });
+      triggerBadgeUnlock(badgeId);
+      setUserBadges(prev => [...prev, badgeId]);
+    } catch (e) {
+      console.error(e);
     }
+  };
+
+  const loadQuestionsByCategory = (categoryName) => {
+    const cleanName = normalizeArabic(categoryName);
+    let filtered = allQuestions.filter(q => {
+      const qCat = normalizeArabic(q.category);
+      return (qCat === cleanName || qCat.includes(cleanName) || cleanName.includes(qCat));
+    });
+
+    if (filtered.length === 0) {
+      alert("عذراً، لا توجد أسئلة متوفرة حالياً لهذه الفئة.");
+      return;
+    }
+
+    setQuestions(filtered);
+    setQuizState({
+      category: categoryName,
+      currentIndex: 0,
+      score: 0,
+      answered: false,
+      isCorrect: null,
+      showResults: false,
+      streak: 0,
+      startTime: Date.now(),
+    });
+    setUserAnswer('');
+  };
+
+  const handleAnswer = async (answer) => {
+    if (quizState.answered || questions.length === 0) return;
+    const current = questions[quizState.currentIndex];
+    const correct = normalizeArabic(answer) === normalizeArabic(current.correctAnswer);
+    const newStreak = correct ? quizState.streak + 1 : 0;
 
     setQuizState(prev => ({
       ...prev,
@@ -168,87 +152,9 @@ export default function CompetitionsPage() {
     }));
 
     if (newStreak === 10) await unlockBadge('rapid_10');
-  }, [quizState.answered, quizState.currentIndex, quizState.streak, questions, unlockBadge]);
-
-  const finalizeQuiz = async (record, isPerfect) => {
-    let pointsToAdd = 30;
-    let reason = `إكمال مسابقة: ${record.category}`;
-    if (isPerfect) {
-      pointsToAdd += 50;
-      reason = `العلامة الكاملة: ${record.category}`;
-      HapticService.success();
-    }
-
-    const updatedHistory = [record, ...completedQuizzes.filter(q => q.category !== record.category)];
-
-    if (user) {
-      const userRef = doc(db, "users", user.uid);
-      try {
-        await updateDoc(userRef, {
-          completedQuizzes: updatedHistory,
-          totalPoints: increment(pointsToAdd),
-          pointsHistory: arrayUnion({
-            type: 'quiz',
-            points: pointsToAdd,
-            reason: reason,
-            timestamp: getCairoIsoString()
-          })
-        });
-      } catch (e) { console.error(e); }
-    } else {
-      setCompletedQuizzes(updatedHistory);
-      await StorageService.save('completed_quizzes', updatedHistory);
-      await StorageService.addPoints(pointsToAdd);
-      const history = await StorageService.get('points_history') || [];
-      history.push({ type: 'quiz', points: pointsToAdd, reason: reason, timestamp: getCairoIsoString() });
-      await StorageService.save('points_history', history);
-    }
-
-    // Badge Logic for all users
-    if (updatedHistory.length >= 1) await unlockBadge('quiz_first');
-    if (updatedHistory.length >= 3) await unlockBadge('scholar_3');
-    if (updatedHistory.length >= 10) await unlockBadge('scholar_10');
-    if (updatedHistory.length >= 30) await unlockBadge('scholar_30');
-    if (updatedHistory.length >= 50) await unlockBadge('scholar_50');
-    if (updatedHistory.length >= 73) await unlockBadge('bible_master');
-
-    const perfectCount = updatedHistory.filter(q => q.score === q.total).length;
-    if (isPerfect) await unlockBadge('perfect_1');
-    if (perfectCount >= 10) await unlockBadge('perfect_10');
-    if (perfectCount >= 73) await unlockBadge('perfect_all');
-
-    const duration = (Date.now() - quizState.startTime) / 1000;
-    if (isPerfect && duration < 30) await unlockBadge('speed_demon');
   };
 
-  const loadQuestionsByCategory = useCallback((categoryName) => {
-    HapticService.light();
-    startTransition(() => {
-      const cleanName = normalizeArabic(categoryName);
-      const filtered = INDEXED_QUESTIONS.get(cleanName) || [];
-
-      if (filtered.length === 0) {
-        alert("عذراً، لا توجد أسئلة متوفرة حالياً لهذه الفئة.");
-        return;
-      }
-
-      setQuestions(filtered);
-      setQuizState({
-        category: categoryName,
-        currentIndex: 0,
-        score: 0,
-        answered: false,
-        isCorrect: null,
-        showResults: false,
-        streak: 0,
-        startTime: Date.now(),
-      });
-      setUserAnswer('');
-    });
-  }, []);
-
   const nextQuestion = async () => {
-    HapticService.light();
     if (quizState.currentIndex + 1 < questions.length) {
       setQuizState(prev => ({
         ...prev,
@@ -271,8 +177,54 @@ export default function CompetitionsPage() {
     }
   };
 
+  const finalizeQuiz = async (record, isPerfect) => {
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    const updatedHistory = [record, ...completedQuizzes.filter(q => q.category !== record.category)];
+    
+    let pointsToAdd = 30; 
+    let reason = `إكمال مسابقة: ${record.category}`;
+    
+    if (isPerfect) {
+      pointsToAdd += 50;
+      reason = `العلامة الكاملة: ${record.category}`;
+    }
+
+    try {
+      await updateDoc(userRef, {
+        completedQuizzes: updatedHistory,
+        totalPoints: increment(pointsToAdd),
+        pointsHistory: arrayUnion({
+          type: 'quiz',
+          points: pointsToAdd,
+          reason: reason,
+          timestamp: getCairoIsoString()
+        })
+      });
+
+      if (updatedHistory.length >= 1) await unlockBadge('quiz_first');
+      if (updatedHistory.length >= 3) await unlockBadge('scholar_3');
+      if (updatedHistory.length >= 10) await unlockBadge('scholar_10');
+      if (updatedHistory.length >= 30) await unlockBadge('scholar_30');
+      if (updatedHistory.length >= 50) await unlockBadge('scholar_50');
+      if (updatedHistory.length >= 73) await unlockBadge('bible_master');
+
+      const perfectCount = updatedHistory.filter(q => q.score === q.total).length;
+      if (isPerfect) await unlockBadge('perfect_1');
+      if (perfectCount >= 10) await unlockBadge('perfect_10');
+      if (perfectCount >= 73) await unlockBadge('perfect_all');
+
+      const duration = (Date.now() - quizState.startTime) / 1000;
+      if (isPerfect && duration < 30) {
+        await unlockBadge('speed_demon');
+      }
+
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const resetQuiz = () => {
-    HapticService.medium();
     setQuizState({ category: null, currentIndex: 0, score: 0, answered: false, isCorrect: null, showResults: false, streak: 0, startTime: null });
     setQuestions([]);
     setUserAnswer('');
@@ -281,24 +233,26 @@ export default function CompetitionsPage() {
   if (authLoading || isLoading) return <div className={styles.loading}>جاري التحميل...</div>;
 
   return (
-    <div dir="rtl" className={styles.mainContainer} style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 0.2s' }}>
+    <div dir="rtl" className={styles.mainContainer}>
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
       
       <header className={styles.header}>
         <h1 className={styles.title}>مسابقات أجيوس</h1>
-        <p className={styles.userBadge}>أهلاً، {user?.displayName || 'ضيف أجيوس'}</p>
+        {user && <p className={styles.userBadge}>أهلاً، {user.displayName || 'مستخدم أجيوس'}</p>}
       </header>
 
       {!quizState.category && (
         <div className={styles.controls}>
           <div className={styles.customSelectWrapper} ref={categoryRef}>
-            <div className={styles.selectTrigger} onClick={() => { HapticService.selection(); setIsCategoryOpen(!isCategoryOpen); }}>
+            <div className={styles.selectTrigger} onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
               {quizState.category || "اختر سفراً للبدء"}
             </div>
             <AnimatePresence>
               {isCategoryOpen && (
                 <motion.ul
-                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   className={styles.dropdownMenu}
                 >
                   {bookNamesData.map((book, i) => (
@@ -323,7 +277,7 @@ export default function CompetitionsPage() {
 
             {completedQuizzes.length > 0 && (
               <div className={styles.historyContainer}>
-                <h3>سجل نتائجك {user ? '☁️' : '📱'}</h3>
+                <h3>سجل نتائجك ☁️</h3>
                 {completedQuizzes.map((quiz, idx) => (
                   <div key={idx} className={styles.historyItem}>
                     <div className={styles.historyInfo}>
@@ -356,9 +310,9 @@ export default function CompetitionsPage() {
                   <button 
                     key={i} 
                     disabled={quizState.answered}
-                    className={`${styles.optionButton} ${quizState.answered ? (opt.normalized === questions[quizState.currentIndex].normCorrectAnswer ? styles.correctAnswer : (opt.original === userAnswer ? styles.incorrectAnswer : '')) : ''}`}
-                    onClick={() => { setUserAnswer(opt.original); handleAnswer(opt); }}
-                  >{opt.original}</button>
+                    className={`${styles.optionButton} ${quizState.answered ? (normalizeArabic(opt) === normalizeArabic(questions[quizState.currentIndex].correctAnswer) ? styles.correctAnswer : (normalizeArabic(opt) === normalizeArabic(userAnswer) ? styles.incorrectAnswer : '')) : ''}`}
+                    onClick={() => { setUserAnswer(opt); handleAnswer(opt); }}
+                  >{opt}</button>
                 ))}
               </div>
               

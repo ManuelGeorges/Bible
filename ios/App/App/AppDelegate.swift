@@ -39,18 +39,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // 3. ربط الـ Device Token بـ Capacitor ليعمل Firebase Cloud Messaging (FCM)
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
-
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
-
-
-
-
-
-
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
@@ -144,7 +137,6 @@ class AgiosNotificationHelper {
 
     func refreshAllNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-
             let idsToRemove = requests.filter { $0.identifier.hasPrefix("agios_") }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)
 
@@ -172,7 +164,6 @@ class AgiosNotificationHelper {
             enabled = json[norm] as? Bool ?? true
             let timeKey = norm + "Time"
             if let timeStr = json[timeKey] as? String, timeStr.contains(":") {
-
                 let p = timeStr.components(separatedBy: ":")
                 if p.count == 2 {
                     hour = Int(p[0]) ?? defH
@@ -189,10 +180,6 @@ class AgiosNotificationHelper {
         content.sound = .default
 
         var components = DateComponents()
-
-
-
-
         components.hour = hour
         components.minute = minute
 
@@ -200,6 +187,7 @@ class AgiosNotificationHelper {
         let request = UNNotificationRequest(identifier: "agios_\(norm)", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
+
     private func normalize(_ type: String) -> String {
         let low = type.lowercased()
         if low.contains("verse") { return "verse" }

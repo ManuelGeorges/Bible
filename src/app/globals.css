@@ -11,17 +11,20 @@
 
   color-scheme: light dark;
 
-  /* Colors */
+  /* Light Mode */
   --color-bg-start: #f0f4f8;
   --color-bg-end: #dbeafe;
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
+
   --color-card-bg: rgba(255, 255, 255, 0.7);
   --color-border: rgba(226, 232, 240, 0.5);
+
   --glass-blur: 12px;
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
   --color-accent: #1e3a8a;
-  --btn-bg: #1e3a8a;
+  --btn-bg: #1e3a8a; /* Deep Navy Blue */
   --btn-text: #ffffff;
   --btn-hover: #1e40af;
   --color-accent-gold: #ffd700;
@@ -29,118 +32,57 @@
 }
 
 [data-theme='dark'] {
+  /* Dark Mode */
   --color-bg-start: #020617;
   --color-bg-end: #0f172a;
   --color-text-primary: #f8fafc;
   --color-text-secondary: #94a3b8;
+
   --color-card-bg: rgba(30, 41, 59, 0.4);
   --color-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 20px;
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+
   --color-accent: #38bdf8;
-  --btn-bg: #2563eb;
+  --btn-bg: #2563eb; /* Strong Clear Blue */
   --btn-text: #ffffff;
   --btn-hover: #3b82f6;
   --color-shadow-medium: rgba(0, 0, 0, 0.4);
 }
 
-/* ============================================================
-   NATIVE CORE RESET (Making it feel like an App)
-   ============================================================ */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-
-  /* منع اللون الأزرق عند اللمس */
-  -webkit-tap-highlight-color: transparent;
-
-  /* منع سحب العناصر والصور */
   -webkit-user-drag: none;
+}
 
-  /* تسريع الاستجابة للمس */
-  touch-action: manipulation;
+html {
+  background-color: var(--color-bg-start);
 }
 
 html, body {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
-
-  /* منع اهتزاز الصفحة Pull-to-refresh */
-  overscroll-behavior-y: none;
-
-  /* منع اختيار النصوص في الواجهة */
-  user-select: none;
-  -webkit-user-select: none;
-
-  /* منع قائمة المتصفح عند الضغط المطول */
-  -webkit-touch-callout: none;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: 'Inter', 'Cairo', sans-serif;
-  background-color: var(--color-bg-start);
+  background: radial-gradient(circle at top right, var(--color-bg-start), transparent 40%),
+              radial-gradient(circle at bottom left, var(--color-bg-end), transparent 40%),
+              var(--color-bg-start);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   direction: rtl;
-
-  /* تحسين جودة الخطوط لتشبه الـ Native */
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
-}
 
-/* إخفاء الـ Scrollbars تماماً */
-::-webkit-scrollbar {
-  display: none;
-}
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-/* منع سحب الصور تماماً */
-img {
-  pointer-events: none;
   user-select: none;
-}
-
-/* ============================================================
-   NATIVE INTERACTION EFFECTS
-   ============================================================ */
-
-/* تأثير الضغط (Feedback) للأزرار وكل ما هو قابل للنقر */
-button,
-a,
-[role="button"],
-.clickable {
-  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.1s ease;
-  outline: none !important;
-}
-
-button:active,
-a:active,
-[role="button"]:active,
-.clickable:active {
-  transform: scale(0.96); /* تصغير فيزيائي */
-  opacity: 0.8;
-}
-
-/* استثناء: السماح باختيار النص داخل حقول الإدخال */
-input, textarea {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -webkit-touch-callout: default !important;
-  outline: none;
-}
-
-/* إلغاء الـ Hover في أجهزة اللمس لمنع الـ "Sticky Hover" */
-@media (hover: hover) {
-  button:hover, a:hover {
-    filter: brightness(1.1);
-  }
 }
 
 .liquid-glass {
