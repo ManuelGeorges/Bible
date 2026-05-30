@@ -3,6 +3,7 @@ import Capacitor
 import Firebase
 import UserNotifications
 import WebKit
+import FirebaseMessaging
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
