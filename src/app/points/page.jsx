@@ -14,6 +14,7 @@ import {
 import Badge from '../../components/Badge/Badge';
 import { toast } from 'react-hot-toast';
 import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dateUtils';
+import { StorageService, KEYS } from '../../lib/storage';
 
 const convertToArabicNumber = (num) => {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -34,27 +35,35 @@ const calculateLevel = (points) => {
 };
 
 const awardPoints = async (userId, type, points, reason) => {
-  const userRef = doc(db, 'users', userId);
-  try {
-    await updateDoc(userRef, {
-      totalPoints: increment(points),
-      pointsHistory: arrayUnion({
-        type,
-        points,
-        reason,
-        timestamp: getCairoIsoString()
-      }),
-      lastActiveDate: getCairoDate()
-    });
+  if (userId) {
+    const userRef = doc(db, 'users', userId);
+    try {
+      await updateDoc(userRef, {
+        totalPoints: increment(points),
+        pointsHistory: arrayUnion({
+          type,
+          points,
+          reason,
+          timestamp: getCairoIsoString()
+        }),
+        lastActiveDate: getCairoDate()
+      });
+      return true;
+    } catch (error) {
+      console.error("Error awarding points:", error);
+      return false;
+    }
+  } else {
+    await StorageService.addPoints(points);
+    const history = await StorageService.get('points_history') || [];
+    history.push({ type, points, reason, timestamp: getCairoIsoString() });
+    await StorageService.save('points_history', history);
     return true;
-  } catch (error) {
-    console.error("Error awarding points:", error);
-    return false;
   }
 };
 
-const calculatePointsFromData = (data) => {
-  let totalPoints = data.totalPoints || 0;
+const calculatePointsFromData = (data, isLocal = false) => {
+  let totalPoints = data.totalPoints || data.points || 0;
   const history = [];
   const today = getCairoDate();
 
@@ -69,45 +78,44 @@ const calculatePointsFromData = (data) => {
     studyPlanDay: 30
   };
 
-  if (data.pointsHistory) {
-    const historyArray = Array.isArray(data.pointsHistory) ? data.pointsHistory : Object.values(data.pointsHistory);
-    historyArray.forEach(item => {
-      const ts = item.timestamp?.seconds ? item.timestamp.toDate() : new Date(item.timestamp);
-      history.push({
-        activity: item.type || 'unknown',
-        points: item.points || POINTS_MAP[item.type] || 0,
-        description: item.reason || 'نشاط غير محدد',
-        timestamp: ts,
-        dateStr: getCairoDate(ts)
-      });
+  const historyData = data.pointsHistory || data.history || [];
+  const historyArray = Array.isArray(historyData) ? historyData : Object.values(historyData);
+
+  historyArray.forEach(item => {
+    const ts = item.timestamp?.seconds ? item.timestamp.toDate() : new Date(item.timestamp);
+    history.push({
+      activity: item.type || 'unknown',
+      points: item.points || POINTS_MAP[item.type] || 0,
+      description: item.reason || 'نشاط غير محدد',
+      timestamp: ts,
+      dateStr: getCairoDate(ts)
     });
-  }
+  });
 
-  if (data.answeredQuestions) {
-    Object.entries(data.answeredQuestions).forEach(([dateKey, q]) => {
-      if (q && q.answered) {
-        const qTime = q.timestamp || dateKey;
-        const qDateObj = new Date(qTime);
-        const qDateStr = getCairoDate(qDateObj);
-
-        const exists = history.some(h => h.activity === 'dailyQuestion' && h.dateStr === qDateStr);
-
-        if (!exists) {
-          history.push({
-            activity: 'dailyQuestion',
-            points: q.correct ? 20 : 0,
-            description: q.correct ? `إجابة صحيحة على سؤال يوم ${dateKey}` : `محاولة الإجابة على سؤال يوم ${dateKey}`,
-            timestamp: qDateObj,
-            dateStr: qDateStr
-          });
-        }
+  const answeredQuestions = data.answeredQuestions || {};
+  Object.entries(answeredQuestions).forEach(([dateKey, q]) => {
+    if (q && q.answered) {
+      const qTime = q.timestamp || dateKey;
+      const qDateObj = new Date(qTime);
+      const qDateStr = getCairoDate(qDateObj);
+      const exists = history.some(h => h.activity === 'dailyQuestion' && h.dateStr === qDateStr);
+      if (!exists) {
+        history.push({
+          activity: 'dailyQuestion',
+          points: q.correct ? 20 : 0,
+          description: q.correct ? `إجابة صحيحة على سؤال يوم ${dateKey}` : `محاولة الإجابة على سؤال يوم ${dateKey}`,
+          timestamp: qDateObj,
+          dateStr: qDateStr
+        });
       }
-    });
-  }
+    }
+  });
+
+  const lastActiveDate = data.lastActiveDate || data.lastActive || "";
 
   const dailyGoals = [
-    { id: 'dailyLogin', label: 'تسجيل الدخول اليومي', points: 10, icon: <FaSignInAlt />, completed: data.lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
-    { id: 'dailyQuestion', label: 'حل سؤال التحدي', points: 20, icon: <FaFeatherAlt />, completed: !!data.answeredQuestions?.[today]?.answered },
+    { id: 'dailyLogin', label: 'تسجيل الدخول اليومي', points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
+    { id: 'dailyQuestion', label: 'حل سؤال التحدي', points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
     { id: 'mapExploration', label: 'استكشاف معلم في الخريطة', points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
     { id: 'share', label: 'مشاركة آية أو محتوى', points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
     { id: 'completedChapter', label: 'قراءة أصحاح كامل', points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
@@ -122,9 +130,9 @@ const calculatePointsFromData = (data) => {
     unlockedFromFirestore: data.badges || [],
     streak: data.streak || 0,
     rawStats: {
-      questions: Object.keys(data.answeredQuestions || {}).length,
+      questions: Object.keys(answeredQuestions).length,
       maps: (data.visitedMapPoints || []).length,
-      favorites: Object.keys(data.favorites?.verses || {}).length,
+      favorites: Object.keys(data.favorites?.verses || data.favorites || {}).length,
       chapters: Object.keys(data.completedChapters || {}).filter(k => data.completedChapters[k]).length,
       quizzes: (data.completedQuizzes || []).length,
       perfectQuizzes: (data.completedQuizzes || []).filter(q => q.score === q.total).length,
@@ -144,12 +152,10 @@ const categorizeActivities = (history) => {
     chartData: []
   };
 
-  // استخدام توقيت القاهرة للأيام السبعة الأخيرة
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const dateKey = getCairoDate(d);
-    // الحصول على اسم اليوم بالعربي بناءً على القاهرة
     const label = d.toLocaleDateString('ar-EG', { weekday: 'short', timeZone: 'Africa/Cairo' });
     return { date: dateKey, points: 0, label };
   });
@@ -190,6 +196,7 @@ export default function Points() {
   const [familyFilter, setFamilyFilter] = useState('all');
   const [unlockedOnly, setUnlockedOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
+  const [user, setUser] = useState(null);
 
   const [isRarityOpen, setIsRarityOpen] = useState(false);
   const [isFamilyOpen, setIsFamilyOpen] = useState(false);
@@ -202,10 +209,9 @@ export default function Points() {
   ];
 
   const unlockBadge = async (badgeId, badgeName) => {
-    const auth = getAuth();
-    if (!auth.currentUser) return;
+    if (!user) return;
     try {
-      const userRef = doc(db, 'users', auth.currentUser.uid);
+      const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
       const currentBadges = userSnap.data()?.badges || [];
       if (!currentBadges.includes(badgeId)) {
@@ -215,39 +221,14 @@ export default function Points() {
     } catch (e) { console.error(e); }
   };
 
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleGoalClick = (goalId) => {
-    switch (goalId) {
-      case 'dailyQuestion':
-      case 'share':
-        router.push('/');
-        break;
-      case 'mapExploration':
-        router.push('/maps');
-        break;
-      case 'completedChapter':
-      case 'favouriteVerse':
-        router.push('/bible');
-        break;
-      case 'dailyLogin':
-        router.push('/profile');
-        break;
-      default:
-        break;
-    }
-  };
-
   useEffect(() => {
     fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
   }, []);
 
   useEffect(() => {
     const auth = getAuth();
-    return onAuthStateChanged(auth, (currentUser) => {
+    return onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const unsubFirestore = onSnapshot(userDocRef, (docSnap) => {
@@ -265,19 +246,25 @@ export default function Points() {
         });
         return () => unsubFirestore();
       } else {
+        const localStats = await StorageService.getLocalStats();
+        const localHistory = await StorageService.get('points_history') || [];
+        const localAnswered = await StorageService.get('answered_questions') || {};
+        const localCompleted = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
+
+        const localDataMapped = {
+          ...localStats,
+          history: localHistory,
+          answeredQuestions: localAnswered,
+          completedChapters: localCompleted,
+          lastActiveDate: await StorageService.get(KEYS.LAST_ACTIVE) || ""
+        };
+
+        const newData = calculatePointsFromData(localDataMapped, true);
+        setPointsData(newData);
         setLoading(false);
       }
     });
   }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (activeTab === 'points') {
-        unlockBadge('deep_diver', 'المغرور القديس');
-      }
-    }, 600000); // 10 mins
-    return () => clearTimeout(timer);
-  }, [activeTab]);
 
   const activitiesSummary = useMemo(() => pointsData ? categorizeActivities(pointsData.history) : null, [pointsData]);
   const userUnlockedBadges = useMemo(() => pointsData?.unlockedFromFirestore || [], [pointsData]);
@@ -345,22 +332,13 @@ export default function Points() {
       <h1 className={styles.header}>النقاط والإنجازات</h1>
 
       <nav className={styles.topNav}>
-        <button
-          className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`}
-          onClick={() => handleTabChange('points')}
-        >
+        <button className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`} onClick={() => setActiveTab('points')}>
           <FaChartLine /> النقاط
         </button>
-        <button
-          className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`}
-          onClick={() => handleTabChange('badges')}
-        >
+        <button className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`} onClick={() => setActiveTab('badges')}>
           <FaTrophy /> الأوسمة
         </button>
-        <button
-          className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`}
-          onClick={() => handleTabChange('history')}
-        >
+        <button className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`} onClick={() => setActiveTab('history')}>
           <FaHistory /> السجل
         </button>
       </nav>
@@ -390,30 +368,12 @@ export default function Points() {
               <h3 className={styles.subTitle}>أهداف اليوم</h3>
               <div className={styles.goalsGrid}>
                   {pointsData?.dailyGoals.map(goal => (
-                      <div
-                        key={goal.id}
-                        className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`}
-                        onClick={() => handleGoalClick(goal.id)}
-                        style={{ cursor: 'pointer' }}
-                      >
+                      <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`} onClick={() => handleGoalClick(goal.id)}>
                           <div className={styles.goalIcon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
                           <div className={styles.goalInfo}>
                               <span>{goal.label}</span>
                               <small>+{convertToArabicNumber(goal.points)} نقطة</small>
                           </div>
-                      </div>
-                  ))}
-              </div>
-            </div>
-            <div className={styles.activityChartSection}>
-              <h3 className={styles.subTitle}>نشاطك الأخير</h3>
-              <div className={styles.chartWrapper}>
-                  {activitiesSummary?.chartData.map((d, i) => (
-                      <div key={i} className={styles.chartBarContainer}>
-                          <div className={styles.chartBar} style={{ height: `${Math.min(100, (d.points / 100) * 100)}%` }}>
-                              {d.points > 0 && <span className={styles.barValue}>{convertToArabicNumber(d.points)}</span>}
-                          </div>
-                          <span className={styles.barLabel}>{d.label}</span>
                       </div>
                   ))}
               </div>
@@ -424,44 +384,6 @@ export default function Points() {
 
       {activeTab === 'badges' && (
         <section className={styles.sectionWrapper}>
-          <div className={styles.filterSection}>
-            <h2 className={styles.detailedHeader}>الأوسمة والبطولات</h2>
-            <div className={styles.searchControls}>
-              <div className={styles.searchBox}>
-                <FaSearch className={styles.searchIcon} />
-                <input type="text" placeholder="بحث باسم الوسام..." className={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              </div>
-              <label className={styles.checkboxLabel}>
-                <input type="checkbox" checked={unlockedOnly} onChange={(e) => setUnlockedOnly(e.target.checked)} />
-                <span>المقتنيات فقط</span>
-              </label>
-            </div>
-            <div className={styles.selectGroup}>
-              <div className={styles.customSelectWrapper} ref={rarityRef}>
-                <div className={styles.selectTrigger} onClick={() => { setIsRarityOpen(!isRarityOpen); setIsFamilyOpen(false); }}>
-                  {rarities.find(r => r.id === rarityFilter)?.name}
-                  <FaChevronDown className={`${styles.arrowIcon} ${isRarityOpen ? styles.rotate : ''}`} />
-                </div>
-                <ul className={`${styles.dropdownMenu} ${isRarityOpen ? styles.open : ''}`}>
-                  {rarities.map((r) => (
-                    <li key={r.id} className={`${styles.dropdownItem} ${rarityFilter === r.id ? styles.activeItem : ''}`} onClick={() => { setRarityFilter(r.id); setIsRarityOpen(false); }}>{r.name}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className={styles.customSelectWrapper} ref={familyRef}>
-                <div className={styles.selectTrigger} onClick={() => { setIsFamilyOpen(!isFamilyOpen); setIsRarityOpen(false); }}>
-                  {familyFilter === 'all' ? 'كل الأنواع' : familyFilter}
-                  <FaChevronDown className={`${styles.arrowIcon} ${isFamilyOpen ? styles.rotate : ''}`} />
-                </div>
-                <ul className={`${styles.dropdownMenu} ${isFamilyOpen ? styles.open : ''}`}>
-                  <li className={`${styles.dropdownItem} ${familyFilter === 'all' ? styles.activeItem : ''}`} onClick={() => { setFamilyFilter('all'); setIsFamilyOpen(false); }}>كل الأنواع</li>
-                  {badgesData.badge_families.map(f => (
-                    <li key={f.family_name} className={`${styles.dropdownItem} ${familyFilter === f.family_name ? styles.activeItem : ''}`} onClick={() => { setFamilyFilter(f.family_name); setIsFamilyOpen(false); }}>{f.family_name}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
           <div className={styles.badgesGrid}>
             {filteredBadges.map((family) => (
               <div key={family.family_name} className={styles.familyRow}>
@@ -487,46 +409,17 @@ export default function Points() {
 
       {activeTab === 'history' && (
         <section className={styles.sectionWrapper}>
-          {activitiesSummary && (
-            <div className={styles.activitiesContainer}>
-              <div className={styles.historyHeaderToggle}>
-                <h2 className={styles.detailedHeader}>سجل النشاط </h2>
-                <button className={styles.toggleVisibilityBtn} onClick={() => setShowHistory(!showHistory)}>
-                  {showHistory ? <><FaEyeSlash /> إخفاء</> : <><FaEye /> إظهار</>}
-                </button>
-              </div>
-              {showHistory && (
-                <>
-                  <div className={styles.summaryGrid}>
-                    <div className={styles.summaryCard}><FaSignInAlt className={styles.icon} /><h3>تفاعل</h3><p>+{convertToArabicNumber(activitiesSummary.dailyActions.points)}</p></div>
-                    <div className={styles.summaryCard}><FaBookOpen className={styles.icon} /><h3>دراسة</h3><p>+{convertToArabicNumber(activitiesSummary.reading.points)}</p></div>
-                    <div className={styles.summaryCard}><FaMapMarkedAlt className={styles.icon} /><h3>خرائط</h3><p>+{convertToArabicNumber(activitiesSummary.maps.points)}</p></div>
-                    <div className={styles.summaryCard}><FaTrophy className={styles.icon} /><h3>بونص</h3><p>+{convertToArabicNumber(activitiesSummary.bonuses.points)}</p></div>
-                  </div>
-                  <ul className={styles.activityList}>
-                    {activitiesSummary.filteredHistory.length > 0 ? activitiesSummary.filteredHistory.map((item, i) => (
-                      <li key={i} className={`${styles.activityItem} ${item.points > 0 ? styles.positiveActivity : styles.neutralActivity}`}>
-                        <div className={styles.activityIconWrapper}>
-                          {item.activity === 'share' && <FaShareAlt />}
-                          {item.activity === 'search' && <FaSearch />}
-                          {item.activity === 'mapExploration' && <FaMapMarkedAlt />}
-                          {item.activity === 'dailyLogin' && <FaSignInAlt />}
-                          {item.activity === 'dailyQuestion' && <FaFeatherAlt />}
-                          {item.activity === 'completedChapter' && <FaCheckCircle />}
-                          {item.activity === 'favouriteVerse' && <FaHeart />}
-                        </div>
-                        <div className={styles.activityInfo}>
-                          <p>{item.description}</p>
-                          <span>{item.timestamp.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' })}</span>
-                        </div>
-                        <span className={styles.activityPoints}>{item.points > 0 ? '+' : ''}{convertToArabicNumber(item.points)}</span>
-                      </li>
-                    )) : <p className={styles.noDataSection}>لا توجد بيانات سجل.</p>}
-                  </ul>
-                </>
-              )}
-            </div>
-          )}
+          <ul className={styles.activityList}>
+            {pointsData?.history.length > 0 ? pointsData.history.map((item, i) => (
+              <li key={i} className={styles.activityItem}>
+                <div className={styles.activityInfo}>
+                  <p>{item.description}</p>
+                  <span>{new Date(item.timestamp).toLocaleDateString('ar-EG')}</span>
+                </div>
+                <span className={styles.activityPoints}>+{convertToArabicNumber(item.points)}</span>
+              </li>
+            )) : <p>لا يوجد سجل نشاط حتى الآن.</p>}
+          </ul>
         </section>
       )}
     </div>

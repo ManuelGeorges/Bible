@@ -63,17 +63,52 @@ const LoginPage = () => {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
-  const waitForAuthSync = () => {
-    return new Promise((resolve) => {
-      if (auth.currentUser) return resolve(auth.currentUser);
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          unsubscribe();
-          resolve(user);
-        }
+  // وظيفة لضمان مزامنة نسخة الـ JS SDK مع الدخول النيتيف (Native)
+  const syncAuthAndRedirect = async (nativeResult) => {
+    let user = auth.currentUser;
+
+    // 1. محاولة الانتظار حتى يتعرف الـ SDK على المستخدم تلقائياً
+    if (!user) {
+      user = await new Promise((resolve) => {
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          if (auth.currentUser || attempts > 10) {
+            clearInterval(interval);
+            resolve(auth.currentUser);
+          }
+        }, 200);
       });
-      setTimeout(() => { unsubscribe(); resolve(auth.currentUser); }, 5000);
-    });
+    }
+
+    // 2. مزامنة يدوية إجبارية إذا لزم الأمر لضمان الربط 100% في الـ WebView
+    if (!user && nativeResult?.credential) {
+      try {
+        const isApple = !!nativeResult.credential.nonce;
+        const credential = isApple
+          ? new OAuthProvider('apple.com').credential({
+              idToken: nativeResult.credential.idToken,
+              rawNonce: nativeResult.credential.nonce
+            })
+          : GoogleAuthProvider.credential(nativeResult.credential.idToken);
+
+        const userCredential = await signInWithCredential(auth, credential);
+        user = userCredential.user;
+      } catch (e) {
+        console.warn("Manual sync overlap handled");
+        user = auth.currentUser || nativeResult?.user;
+      }
+    }
+
+    const finalUser = user || nativeResult?.user;
+    if (finalUser) {
+      await handleUserData(finalUser);
+      setTimeout(() => {
+        router.replace('/');
+      }, 600);
+    } else {
+      throw new Error("فشل مزامنة الجلسة");
+    }
   };
 
   const handleGoogleAuth = async () => {
@@ -82,17 +117,12 @@ const LoginPage = () => {
     updateSubmitting(true);
     try {
       if (Capacitor.isNativePlatform()) {
-        await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
+        const result = await FirebaseAuthentication.signInWithGoogle({ webClientId: WEB_CLIENT_ID });
+        await syncAuthAndRedirect(result);
       } else {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-      }
-
-      const user = await waitForAuthSync();
-      if (user) {
-        await handleUserData(user);
+        const result = await signInWithPopup(auth, new GoogleAuthProvider());
+        await handleUserData(result.user);
         router.replace('/');
-      } else {
-        throw new Error("فشل مزامنة بيانات المستخدم.");
       }
     } catch (err) {
       console.error(err);
@@ -108,25 +138,19 @@ const LoginPage = () => {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        await FirebaseAuthentication.signInWithApple();
+        const result = await FirebaseAuthentication.signInWithApple();
+        await syncAuthAndRedirect(result);
       } else {
         const provider = new OAuthProvider('apple.com');
-        await signInWithPopup(auth, provider);
-      }
-
-      const user = await waitForAuthSync();
-      if (user) {
-        await handleUserData(user);
+        const result = await signInWithPopup(auth, provider);
+        await handleUserData(result.user);
         router.replace('/');
-      } else {
-        throw new Error("فشل مزامنة بيانات المستخدم.");
       }
     } catch (err) {
       console.error("Apple Auth Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-      let msg = 'فشل تسجيل الدخول بواسطة آبل.';
-      setError(msg);
+      setError('فشل تسجيل الدخول بواسطة آبل.');
     }
   };
 

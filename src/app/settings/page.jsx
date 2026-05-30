@@ -107,7 +107,7 @@ const Settings = () => {
     }
     setMasterNotifications(nextState)
     localStorage.setItem('masterNotifications', nextState.toString())
-    
+
     if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateSettings) {
         window.AgiosScannerNative.updateSettings(JSON.stringify(notifications), nextState);
     }
@@ -117,17 +117,17 @@ const Settings = () => {
 
   const updateSubSetting = async (key, value) => {
     if (!masterNotifications) return;
-    
+
     const updated = { ...notifications, [key]: value };
     setNotifications(updated);
-    
+
     localStorage.setItem('notificationSettings', JSON.stringify(updated));
-    
+
     if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateSettings) {
         window.AgiosScannerNative.updateSettings(JSON.stringify(updated), masterNotifications);
     }
 
-    await syncNotifications(); 
+    await syncNotifications();
   };
 
   const updateFontSize = (size) => {
