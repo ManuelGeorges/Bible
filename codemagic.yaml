@@ -9,6 +9,7 @@ workflows:
       groups:
         - ios-secrets
       vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
@@ -40,12 +41,9 @@ workflows:
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
-          # 3. تعديل ملف المشروع برمجياً لتفعيل Sign In with Apple (بديل لـ Xcode)
-          # هذه الأوامر تقوم بربط ملف الاستحقاقات الذي أنشأناه بالمشروع
+          # 3. تعديل ملف المشروع برمجياً
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
-          
-          # إضافة مرجع ملف الـ Entitlements في إعدادات البناء
           sed -i '' "/CODE_SIGN_IDENTITY = \"iPhone Distribution\"/a\\
           CODE_SIGN_ENTITLEMENTS = App/App.entitlements;" "$XCODE_PROJECT/project.pbxproj"
           
@@ -58,7 +56,7 @@ workflows:
           
           # 6. بناء الـ IPA النهائي
           xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
+            --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
