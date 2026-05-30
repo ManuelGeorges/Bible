@@ -1,7 +1,6 @@
 import UIKit
 import Capacitor
 import Firebase
-import FirebaseMessaging
 import UserNotifications
 import WebKit
 
@@ -14,7 +13,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         FirebaseApp.configure()
         UNUserNotificationCenter.current().delegate = self
 
-        // تحديث التنبيهات عند تشغيل التطبيق لضمان دقة البيانات الديناميكية
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             AgiosNotificationHelper.shared.refreshAllNotifications()
         }
@@ -35,7 +33,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
-        Messaging.messaging().apnsToken = deviceToken
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -108,14 +105,12 @@ class AgiosNotificationHelper {
 
     func refreshAllNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-            // مسح التنبيهات المجدولة سابقاً لـ agios لتجنب التكرار عند التحديث
             let idsToRemove = requests.filter { $0.identifier.hasPrefix("agios_") }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)
 
             let master = self.getPrefString(key: "masterNotifications") ?? "true"
             if master == "false" { return }
 
-            // جدولة الأيام الـ 7 القادمة لضمان تغيير المحتوى يومياً بنصوص ديناميكية
             for i in 0..<7 {
                 self.scheduleVerse(offset: i)
                 self.scheduleQuestion(offset: i)

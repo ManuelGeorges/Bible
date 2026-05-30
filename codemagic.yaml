@@ -9,13 +9,12 @@ workflows:
       groups:
         - ios-secrets
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.agios.bible"
         TEAM_ID: "XMBVV283C4"
       node: latest
-      xcode: 16.3
+      xcode: latest
       cocoapods: default
     scripts:
       - name: Install dependencies
@@ -27,34 +26,39 @@ workflows:
       - name: Sync Capacitor
         script: |
           npx cap sync ios
-      - name: Install CocoaPods
-        script: |
-          cd ios/App
-          pod install
       - name: Increment Build Number
         script: |
           cd ios/App
           agvtool new-version -all $(date +%s)
       - name: Build and Sign IPA
         script: |
+          # 1. تهيئة الـ Keychain وتنظيف السيرفر
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
+          # 2. جلب التوقيع المحدث من أبل
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
+          # 3. تعديل ملف المشروع برمجياً لتفعيل Sign In with Apple (بديل لـ Xcode)
+          # هذه الأوامر تقوم بربط ملف الاستحقاقات الذي أنشأناه بالمشروع
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
+          
+          # إضافة مرجع ملف الـ Entitlements في إعدادات البناء
           sed -i '' "/CODE_SIGN_IDENTITY = \"iPhone Distribution\"/a\\
           CODE_SIGN_ENTITLEMENTS = App/App.entitlements;" "$XCODE_PROJECT/project.pbxproj"
           
+          # 4. تطهير ملف المشروع برمجياً
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/iPhone Distribution/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
           
+          # 5. ربط البروفايلات بالمشروع
           xcode-project use-profiles --project "$XCODE_PROJECT"
           
+          # 6. بناء الـ IPA النهائي
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
