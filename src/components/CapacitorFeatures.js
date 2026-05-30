@@ -134,6 +134,7 @@ export default function CapacitorFeatures() {
         if (path) handleNavigation(path);
       });
 
+      // الإشعارات المحلية
       LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
         const url = notification.notification.extra?.url;
         handleNavigation(url);
@@ -212,21 +213,17 @@ export default function CapacitorFeatures() {
 
     init();
 
-    // منطق تقييم التطبيق (In-App Review)
+    // منطق تقييم التطبيق
     const interval = setInterval(async () => {
       const totalSeconds = parseInt(localStorage.getItem('total_usage_seconds') || '0');
-      const newTotal = totalSeconds + 30; // زيادة 30 ثانية في كل مرة
+      const newTotal = totalSeconds + 30;
       localStorage.setItem('total_usage_seconds', newTotal.toString());
 
-      // تم تغيير الشرط ليظهر بعد 15 دقيقة (900 ثانية) بدلاً من 30 دقيقة (1800 ثانية)
-      if (newTotal >= 900 && localStorage.getItem('review_asked') !== 'true') {
+      if (newTotal >= 1800 && localStorage.getItem('review_asked') !== 'true') {
         try {
-          // مكتبة AppReview تدعم Android و iOS تلقائياً
           await AppReview.requestReview();
           localStorage.setItem('review_asked', 'true');
-        } catch (e) {
-          console.error("App Review Request Error:", e);
-        }
+        } catch (e) {}
       }
     }, 30000);
 
@@ -236,6 +233,7 @@ export default function CapacitorFeatures() {
         App.removeAllListeners();
         LocalNotifications.removeAllListeners();
         PushNotifications.removeAllListeners();
+        // إزالة مستمع التحديثات عند التدمير
         AppUpdate.removeAllListeners();
       } catch (e) {}
     };
