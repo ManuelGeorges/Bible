@@ -120,12 +120,6 @@ export default function FavouritesPage() {
     <main className={`${styles.container} ${styles.ar}`}>
       <h1 className={styles.title}>تفضيلاتي</h1>
 
-      {!user && (
-        <div className={styles.guestHint}>
-          <p>هذه الكنوز محفوظة على جهازك فقط. سجل دخولك لمزامنتها!</p>
-        </div>
-      )}
-
       <nav className={styles.tabContainer}>
         <div className={`${styles.tab} ${activeTab === 'favourites' ? styles.activeTab : ''}`} onClick={() => { setActiveTab('favourites'); setSelectedColor(null); }}>
           المفضلة

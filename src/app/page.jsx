@@ -598,7 +598,7 @@ const LandingPage = () => {
                 router.push('/bible');
                 break;
             case 'dailyLogin':
-                router.push(user ? '/profile' : '/intro');
+                router.push('/profile');
                 break;
             default:
                 break;
@@ -698,14 +698,14 @@ const LandingPage = () => {
                                 {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                             </button>
                         )}
-                        <Link href={user ? "/points" : "/intro"} className={styles.iconCircle}><Award size={20} /></Link>
-                        <Link href={user ? "/profile" : "/intro"} className={styles.iconCircle}><User size={20} /></Link>
+                        <Link href={"/points"} className={styles.iconCircle}><Award size={20} /></Link>
+                        <Link href={"/profile"} className={styles.iconCircle}><User size={20} /></Link>
                         <Link href="/settings" className={styles.iconCircle}><Settings size={20} /></Link>
                     </div>
                 </div>
 
                 <div className={styles.statsRow}>
-                    <Link href={user ? "/points" : "/intro"} className={styles.statPill}>
+                    <Link href={"/points"} className={styles.statPill}>
                         <Award size={16} />
                         <span>{userStats.points} XP</span>
                     </Link>

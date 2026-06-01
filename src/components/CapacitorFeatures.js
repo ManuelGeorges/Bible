@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Capacitor } from '@capacitor/core';
@@ -14,78 +14,30 @@ import { AppReview } from '@capawesome/capacitor-app-review';
 import { fetchAndActivate, getNumber } from 'firebase/remote-config';
 import { getFirebaseRemoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const hasSetup = useRef(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   // دالة موحدة للتعامل مع التوجيه من الإشعارات أو الروابط
   const handleNavigation = (path) => {
     if (!path) return;
 
     try {
-      // إذا كان رابطاً كاملاً يبدأ بـ http، نفتحه في المتصفح، وإلا نوجه داخلياً
       if (path.startsWith('http')) {
         window.open(path, '_blank');
       } else {
-        // التأكد من أن المسار يبدأ بـ /
         const targetPath = path.startsWith('/') ? path : `/${path}`;
         router.push(targetPath);
       }
     } catch (e) {
       console.error("Navigation Error:", e);
     }
-  };
-
-  // رسالة تنبيه بوجود تحديث جاهز للتثبيت
-  const showUpdatePrompt = () => {
-    toast.custom(
-      (t) => (
-        <div
-          className={`${
-            t.visible ? 'animate-enter' : 'animate-leave'
-          } max-w-md w-full bg-white dark:bg-slate-800 shadow-xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 border-2 border-indigo-500/20`}
-          dir="rtl"
-        >
-          <div className="flex-1">
-            <div className="flex items-start">
-              <div className="ml-3 flex-1">
-                <p className="text-base font-bold text-gray-900 dark:text-white">
-                  تحديث جديد جاهز! ✨
-                </p>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  تم تحميل التحديث بنجاح. هل تود إعادة تشغيل التطبيق الآن لتجربة الميزات الجديدة؟
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={async () => {
-                  toast.dismiss(t.id);
-                  try {
-                    await AppUpdate.completeFlexibleUpdate();
-                  } catch (e) {
-                    console.error("Complete Update Error:", e);
-                  }
-                }}
-                className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors"
-              >
-                تحديث الآن
-              </button>
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                ليس الآن
-              </button>
-            </div>
-          </div>
-        </div>
-      ),
-      { duration: Infinity, position: 'bottom-center' }
-    );
   };
 
   useEffect(() => {
@@ -126,28 +78,23 @@ export default function CapacitorFeatures() {
     if (platform === 'web' || platform === 'electron' || hasSetup.current) return;
     hasSetup.current = true;
 
-    // 1. تسجيل مستمعات الإشعارات والروابط والتحديثات
     const setupListeners = async () => {
-      // روابط Deep Links
       App.addListener('appUrlOpen', (data) => {
         const path = data.url.split('://')[1];
         if (path) handleNavigation(path);
       });
 
-      // الإشعارات المحلية
       LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
         const url = notification.notification.extra?.url;
         handleNavigation(url);
       });
 
-      // مراقبة حالة التحديث Flexible Update
       AppUpdate.addListener('onFlexibleUpdateStateChange', (state) => {
         if (state.installStatus === 11) { // 11 = DOWNLOADED
-          showUpdatePrompt();
+          setShowUpdateModal(true);
         }
       });
 
-      // إشعارات الـ Push
       let pushPerms = await PushNotifications.checkPermissions().catch(() => ({ receive: 'prompt' }));
       if (pushPerms.receive === 'prompt') pushPerms = await PushNotifications.requestPermissions().catch(() => ({ receive: 'denied' }));
 
@@ -175,19 +122,16 @@ export default function CapacitorFeatures() {
         const updateInfo = await AppUpdate.getAppUpdateInfo().catch(() => null);
 
         if (updateInfo) {
-          // إذا كان التحديث محملاً مسبقاً وجاهزاً
           if (updateInfo.installStatus === 11) {
-            showUpdatePrompt();
+            setShowUpdateModal(true);
             return;
           }
 
-          if (updateInfo.updateAvailability === 2) { // 2 = UPDATE_AVAILABLE
+          if (updateInfo.updateAvailability === 2) {
             if (currentVersionCode < minRequiredVersion) {
-              // تحديث إجباري للنسخ القديمة جداً
               await AppUpdate.performImmediateUpdate().catch(() => {});
             } else {
-              // تحديث مرن في الخلفية للنسخ الحديثة
-              if (updateInfo.installStatus !== 1) { // 1 = PENDING
+              if (updateInfo.installStatus !== 1) {
                 await AppUpdate.startFlexibleUpdate().catch(() => {});
               }
             }
@@ -213,21 +157,16 @@ export default function CapacitorFeatures() {
 
     init();
 
-    // منطق تقييم التطبيق
     const interval = setInterval(async () => {
       const totalSeconds = parseInt(localStorage.getItem('total_usage_seconds') || '0');
       const newTotal = totalSeconds + 30;
       localStorage.setItem('total_usage_seconds', newTotal.toString());
 
       if (newTotal >= 1800 && localStorage.getItem('review_asked') !== 'true') {
-
         try {
-
           await AppReview.requestReview();
           localStorage.setItem('review_asked', 'true');
         } catch (e) {}
-
-
       }
     }, 30000);
 
@@ -237,11 +176,64 @@ export default function CapacitorFeatures() {
         App.removeAllListeners();
         LocalNotifications.removeAllListeners();
         PushNotifications.removeAllListeners();
-        // إزالة مستمع التحديثات عند التدمير
         AppUpdate.removeAllListeners();
       } catch (e) {}
     };
   }, [router]);
 
-  return null;
+  return (
+    <AnimatePresence>
+      {showUpdateModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl relative overflow-hidden border border-indigo-500/20"
+            dir="rtl"
+          >
+            {/* Background Glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl"></div>
+
+            <div className="relative z-10 text-center">
+              <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-[2rem] flex items-center justify-center mx-auto mb-6 rotate-3 border border-indigo-200 dark:border-indigo-800">
+                <RefreshCw size={40} className="text-indigo-600 dark:text-indigo-400 animate-spin" style={{ animationDuration: '3s' }} />
+              </div>
+
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">
+                تحديث جديد جاهز! ✨
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+                تم تحميل التحديث بنجاح. هل تود إعادة تشغيل التطبيق الآن لتجربة الميزات الجديدة؟
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={async () => {
+                    setShowUpdateModal(false);
+                    try {
+                      await AppUpdate.completeFlexibleUpdate();
+                    } catch (e) {
+                      console.error("Complete Update Error:", e);
+                    }
+                  }}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Sparkles size={20} />
+                  تحديث الآن
+                </button>
+
+                <button
+                  onClick={() => setShowUpdateModal(false)}
+                  className="w-full py-3 text-slate-500 dark:text-slate-400 font-medium hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                >
+                  ليس الآن، لاحقاً
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
 }

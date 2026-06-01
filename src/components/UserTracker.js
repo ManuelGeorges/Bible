@@ -7,23 +7,23 @@ import { db } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
 import { getCairoDate } from '../lib/dateUtils';
 import { Capacitor } from '@capacitor/core';
+import { StorageService } from '../lib/storage';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 
 export default function UserTracker() {
   useEffect(() => {
-    if (!auth || !db) return;
+    const trackActivity = async (user) => {
+      try {
+        const today = getCairoDate();
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
+        if (user) {
+          // --- منطق المستخدم المسجل ---
           const userRef = doc(db, 'users', user.uid);
-          const today = getCairoDate();
           const userSnap = await getDoc(userRef);
           const userName = user.displayName || 'مستخدم أجيوس';
 
           if (!userSnap.exists()) {
-            // إنشاء حساب جديد لأول مرة
             await setDoc(userRef, {
               displayName: userName,
               email: user.email,
@@ -38,9 +38,9 @@ export default function UserTracker() {
               completedChapters: {},
               completedPlans: {}
             });
+            await StorageService.updateStreak(1);
             toast(`أهلاً بك في أجيوس! 📖`, { icon: '✨' });
           } else {
-            // تحديث بيانات مستخدم موجود
             const userData = userSnap.data();
             const lastLogin = userData.lastLoginDate;
 
@@ -48,17 +48,8 @@ export default function UserTracker() {
               let newStreak = (userData.streak || 0) + 1;
 
               if (lastLogin) {
-                const lastParts = lastLogin.split('-').map(Number);
-                const todayParts = today.split('-').map(Number);
-                const lastDateObj = new Date(lastParts[0], lastParts[1] - 1, lastParts[2]);
-                const todayDateObj = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
-
-                const diffTime = Math.abs(todayDateObj - lastDateObj);
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays > 1) {
-                  newStreak = 1;
-                }
+                const diffDays = calculateDiffDays(lastLogin, today);
+                if (diffDays > 1) newStreak = 1;
               }
 
               const streakBonuses = { 3: 50, 7: 150, 15: 400, 30: 1000, 90: 3000 };
@@ -72,38 +63,71 @@ export default function UserTracker() {
                 90: { id: 'streak_90', name: 'الأسطورة (3 شهور)' }
               };
 
-              let totalDailyAward = 10 + bonusPoints;
-
               let updates = {
                 lastLoginDate: today,
                 streak: newStreak,
-                totalPoints: increment(totalDailyAward),
+                totalPoints: increment(10 + bonusPoints),
                 dailyInteractionPoints: 0
               };
 
-              if (bonusPoints > 0) {
-                toast.success(`بونص الاستمرارية! +${bonusPoints} نقطة 🔥`);
-              }
+              if (bonusPoints > 0) toast.success(`بونص الاستمرارية! +${bonusPoints} نقطة 🔥`);
 
               if (streakMilestones[newStreak] && !userData.badges?.includes(streakMilestones[newStreak].id)) {
                 updates.badges = arrayUnion(streakMilestones[newStreak].id);
-                toast.success(`🎉 مبروك يا ${userName}! حصلت على بادج: ${streakMilestones[newStreak].name}`, { icon: '🔥', duration: 5000 });
+                toast.success(`🎉 مبروك! حصلت على بادج: ${streakMilestones[newStreak].name}`, { icon: '🔥' });
               }
 
               await updateDoc(userRef, updates);
+              await StorageService.updateStreak(newStreak);
               toast(`صباح الخير يا ${userName}! +10 نقاط ☀️`, { icon: '💰' });
-
-              // تحديث الستريك في الواجهة الأصلية إذا كان كاباسيتور
-              if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
-                window.AgiosScannerNative.updateUserStats(newStreak);
-              }
             }
           }
-        } catch (error) {
-          console.error("Tracker Error:", error);
+        } else {
+          // --- منطق الزائر (Locally) ---
+          const localStats = await StorageService.getLocalStats();
+          const lastActive = await StorageService.get('agios_last_active');
+
+          if (lastActive !== today) {
+            let newStreak = (localStats.streak || 0) + 1;
+
+            if (lastActive) {
+              const diffDays = calculateDiffDays(lastActive, today);
+              if (diffDays > 1) newStreak = 1;
+            }
+
+            await StorageService.updateStreak(newStreak);
+            await StorageService.save('agios_last_active', today);
+            await StorageService.addPoints(10);
+
+            toast(`أهلاً بك مجدداً! ستريك اليوم: ${newStreak} 🔥`, { icon: '✨' });
+          }
         }
+
+        // تحديث الستريك في الواجهة الأصلية (Native)
+        if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
+          const currentStreak = user ? (await getDoc(doc(db, 'users', user.uid))).data().streak : (await StorageService.get('agios_streak'));
+          window.AgiosScannerNative.updateUserStats(currentStreak);
+        }
+
+      } catch (error) {
+        console.error("Tracker Error:", error);
       }
-    });
+    };
+
+    const calculateDiffDays = (lastDate, today) => {
+      const lastParts = lastDate.split('-').map(Number);
+      const todayParts = today.split('-').map(Number);
+      const lastDateObj = new Date(lastParts[0], lastParts[1] - 1, lastParts[2]);
+      const todayDateObj = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+      const diffTime = Math.abs(todayDateObj - lastDateObj);
+      return Math.round(diffTime / (1000 * 60 * 60 * 24));
+    };
+
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, trackActivity);
+
+    // تشغيل التتبع لمرة واحدة عند التحميل للزوار في حال لم يتغير Auth
+    if (!auth.currentUser) trackActivity(null);
 
     return () => unsubscribe();
   }, []);
