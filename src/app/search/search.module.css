@@ -458,6 +458,10 @@
   color: #8b5cf6 !important; /* Purple for AI */
 }
 
+.imageActionBtn:hover {
+  color: #38bdf8 !important; /* Sky blue for Image */
+}
+
 .loading {
   text-align: center;
   padding: 40px;
@@ -658,7 +662,7 @@
   flex-wrap: wrap;
 }
 
-.multiCopyBtn, .multiFavBtn, .multiAiBtn {
+.multiCopyBtn, .multiFavBtn, .multiAiBtn, .multiImageBtn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -686,7 +690,12 @@
   color: white;
 }
 
-.multiCopyBtn:hover, .multiFavBtn:hover, .multiAiBtn:hover {
+.multiImageBtn {
+  background-color: #38bdf8;
+  color: white;
+}
+
+.multiCopyBtn:hover, .multiFavBtn:hover, .multiAiBtn:hover, .multiImageBtn:hover {
   filter: brightness(1.1);
   transform: translateY(-2px);
 }

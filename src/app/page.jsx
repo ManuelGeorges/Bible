@@ -25,7 +25,7 @@ import {
     ExternalLink, ShieldCheck, QrCode, BookOpen,
     Scroll, Languages, PartyPopper, Mic, Headphones,
     Video, Music, Church, Sun, Moon, Cloud, Target, MapPin, BrainCircuit,
-    ChevronRight
+    ChevronRight, Check, X, Trash2
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
 import Badge from '../components/Badge/Badge';
@@ -33,7 +33,6 @@ import { useBadge } from './context/BadgeContext';
 import BibleBookSelector from '../components/BibleBookSelector';
 import { getCairoDate, getCairoDateInfo, getCairoYesterday, getCairoIsoString } from '../lib/dateUtils';
 
-// Local-first Imports
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
 
@@ -53,6 +52,13 @@ const LUCIDE_ICONS = {
     'Users': Users, 'People': Users, 'Like': ThumbsUp, 'Share': Share2, 'Music': Music, 'Video': Video, 'Headphones': Headphones,
     'Sun': Sun, 'Moon': Moon, 'Cloud': Cloud, 'Flame': Flame, 'Fire': Flame, 'Target': Target, 'MapPin': MapPin, 'BrainCircuit': BrainCircuit
 };
+
+const HIGHLIGHT_COLORS = [
+  '#FFC107', '#FF5722', '#F44336', '#E91E63', '#9C27B0',
+  '#673AB7', '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4',
+  '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFECB3',
+  '#F8BBD0', '#E1BEE7', '#CFD8DC'
+];
 
 const convertToArabicNumber = (num) => {
     const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -99,6 +105,7 @@ const LandingPage = () => {
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
     const [badgesData, setBadgesData] = useState(null);
     const [rawUserData, setRawUserData] = useState(null);
+    const [showColorPicker, setShowColorPicker] = useState(false);
     const newsRef = useRef(null);
 
     const scrollNews = (direction) => {
@@ -224,6 +231,7 @@ const LandingPage = () => {
 
     useEffect(() => {
         const fetchRemoteConfig = async () => {
+            if (typeof navigator !== 'undefined' && !navigator.onLine) return;
             try {
                 const config = await getFirebaseRemoteConfig();
                 if (config) {
@@ -507,9 +515,28 @@ const LandingPage = () => {
         }
     };
 
-    const toggleFavorite = async () => {
+    const handleUpdateDailyVerse = async (color = null, isDelete = false) => {
         if (!dailyVerse) return;
         const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
+
+        if (isDelete) {
+            if (user) {
+                const userRef = doc(db, 'users', user.uid);
+                let newFavs = { ...favouriteVerses };
+                if (newFavs[verseKey]) {
+                    delete newFavs[verseKey];
+                    setFavouriteVerses(newFavs);
+                    await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
+                    toast.error('تم الحذف من كنوزك');
+                }
+            } else {
+                const updatedFavs = await StorageService.toggleFavorite(verseKey, null);
+                setFavouriteVerses(updatedFavs);
+                toast.error('تم الحذف من تفضيلاتك ');
+            }
+            setShowColorPicker(false);
+            return;
+        }
 
         const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
         const parts = cleanRef.split(' ');
@@ -524,37 +551,34 @@ const LandingPage = () => {
             book: bookName,
             ch: convertNumbers(rawCh),
             v: convertNumbers(rawV),
-            color: '#FFC107',
+            color: color || '#FFC107',
             dateAdded: getCairoIsoString()
         };
 
         if (user) {
             const userRef = doc(db, 'users', user.uid);
             let newFavs = { ...favouriteVerses };
-            if (newFavs[verseKey]) {
-                delete newFavs[verseKey];
-                setFavouriteVerses(newFavs);
-                await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
-                toast.error('تم الحذف من كنوزك');
-            } else {
-                newFavs[verseKey] = verseData;
-                setFavouriteVerses(newFavs);
-                await updateDoc(userRef, {
-                    totalPoints: increment(5),
-                    [`favorites.verses.${verseKey}`]: verseData,
-                    pointsHistory: arrayUnion({
-                        type: 'favouriteVerse',
-                        points: 5,
-                        reason: 'تظليل آية اليوم من الصفحة الرئيسية',
-                        timestamp: getCairoIsoString()
-                    })
-                });
+            const isNew = !newFavs[verseKey];
+            newFavs[verseKey] = verseData;
+            setFavouriteVerses(newFavs);
+            await updateDoc(userRef, {
+                totalPoints: isNew ? increment(5) : increment(0),
+                [`favorites.verses.${verseKey}`]: verseData,
+                pointsHistory: isNew ? arrayUnion({
+                    type: 'favouriteVerse',
+                    points: 5,
+                    reason: 'تظليل آية اليوم من الصفحة الرئيسية',
+                    timestamp: getCairoIsoString()
+                }) : arrayUnion()
+            });
+            if (isNew) {
                 toast.success('رائع! تمت الإضافة لتفضيلاتك +5 نقاط ');
-
                 const favCount = Object.keys(newFavs).length;
                 if (favCount >= 1) await unlockBadge('fav_1');
                 if (favCount >= 20) await unlockBadge('fav_20');
                 if (favCount >= 100) await unlockBadge('fav_100');
+            } else {
+                toast.success('تم تحديث لون التظليل');
             }
         } else {
             const updatedFavs = await StorageService.toggleFavorite(verseKey, verseData);
@@ -580,6 +604,7 @@ const LandingPage = () => {
                 toast.error('تم الحذف من تفضيلاتك ');
             }
         }
+        setShowColorPicker(false);
     };
 
     const handleGoalClick = (goalId) => {
@@ -681,6 +706,8 @@ const LandingPage = () => {
     const toggleTheme = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };
+
+    const dailyVerseKey = `daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`;
 
     return (
         <main className={`${styles.hubContainer} ${styles.rtl}`}>
@@ -891,15 +918,21 @@ const LandingPage = () => {
                     <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>آية اليوم</span></div>
                     {isLoading ? <div className={styles.skeletonText} /> : (
                         <>
-                            <p className={styles.verseText}>"{dailyVerse?.verse}"</p>
+                            <p className={styles.verseText} style={{
+                                backgroundColor: favouriteVerses[dailyVerseKey]?.color ? `${favouriteVerses[dailyVerseKey].color}66` : 'transparent',
+                                borderRadius: '8px',
+                                padding: '4px'
+                            }}>
+                                "{dailyVerse?.verse}"
+                            </p>
                             <span className={styles.verseRef}>{formattedDailyRef}</span>
                             <div className={styles.verseActions}>
                                 <button onClick={() => {
                                     navigator.clipboard.writeText(`"${dailyVerse?.verse}" ${formattedDailyRef}`);
                                     toast.success('تم النسخ');
                                 }} className={`${styles.glassBtn} ${styles.copyBtn}`}>نسخ</button>
-                                <button onClick={toggleFavorite} className={`${styles.glassBtn} ${favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? styles.activeFav : ''}`}>
-                                    {favouriteVerses[`daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`] ? 'مظللة' : 'تظليل'}
+                                <button onClick={() => setShowColorPicker(!showColorPicker)} className={`${styles.glassBtn} ${favouriteVerses[dailyVerseKey] ? styles.activeFav : ''}`}>
+                                    {favouriteVerses[dailyVerseKey] ? 'مظللة' : 'تظليل'}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -925,6 +958,30 @@ const LandingPage = () => {
                                     />
                                 </div>
                             </div>
+
+                            {showColorPicker && (
+                                <div className={styles.dailyColorPalette}>
+                                    <div className={styles.paletteHeader}>
+                                        <span>اختر لون التظليل</span>
+                                        <button onClick={() => setShowColorPicker(false)} className={styles.closePalette}><X size={16} /></button>
+                                    </div>
+                                    <div className={styles.colorsGrid}>
+                                        {HIGHLIGHT_COLORS.map(color => (
+                                            <div
+                                                key={color}
+                                                className={`${styles.colorCircle} ${favouriteVerses[dailyVerseKey]?.color === color ? styles.activeColor : ''}`}
+                                                style={{ backgroundColor: color }}
+                                                onClick={() => handleUpdateDailyVerse(color)}
+                                            >
+                                                {favouriteVerses[dailyVerseKey]?.color === color && <Check size={14} color="white" />}
+                                            </div>
+                                        ))}
+                                        <div className={styles.clearColor} onClick={() => handleUpdateDailyVerse(null, true)} title="حذف التظليل">
+                                            <Trash2 size={16} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
                     <div className={styles.bottomDivider} style={{margin: '20px 0', opacity: 0.1, height: '1px', background: 'var(--color-text-primary)'}} />

@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
-import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart } from 'lucide-react';
+import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Image as ImageIcon } from 'lucide-react';
 import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 
 const apiKeys = [
@@ -528,7 +528,7 @@ ${filterContext}
     {
       "book": "اسم السفر",
       "chapter": رقم الأصحاح,
-      "verses": [رقم الآية, رقم الآية],
+      "verses": [رقم الأية, رقم الآية],
       "title": "عنوان قصير للمقطع (مثلاً: مثل السامري الصالح)",
       "reason": "لماذا هذا شاهد مرتبط ببحث المستخدم؟ (جملة واحدة ملهمة)"
     }
@@ -879,6 +879,18 @@ ${filterContext}
               className={styles.aiActionBtn}
             >
               <Sparkles size={18} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const chapterLabel = convertToArabicNumber(v.chapter + 1);
+                const verseLabel = convertToArabicNumber(v.verse + 1);
+                const refText = `${v.book} ${chapterLabel}:${verseLabel}`;
+                router.push(`/share-preview?verse=${encodeURIComponent(v.text)}&ref=${encodeURIComponent(refText)}`);
+              }}
+              title="تصميم صورة"
+            >
+              <ImageIcon size={18} />
             </button>
             <button onClick={(e) => { e.stopPropagation(); setActiveActionId(activeActionId === vId ? null : vId); setNoteText(savedVerse?.note || ''); }} title="تفضيل">
               {savedVerse ? <span style={{color: savedVerse.color}}>💙</span> : '🤍'}

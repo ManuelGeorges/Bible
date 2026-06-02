@@ -8,7 +8,7 @@ import { doc, getDoc, updateDoc, increment, arrayUnion, deleteField } from "fire
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
@@ -88,7 +88,7 @@ export default function BibleContent() {
   const unlockBadge = async (badgeId) => {
     if (user) {
       try {
-        const userRef = doc(firestore, 'users', user.uid);
+        const userRef = document.getElementById(firestore, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         const currentBadges = userSnap.data()?.badges || [];
         if (!currentBadges.includes(badgeId)) {
@@ -137,17 +137,23 @@ export default function BibleContent() {
         if (nextChapter >= 0 && nextChapter < chapters.length) {
             setDirection(dir);
             setSelectedChapterIndex(nextChapter);
+            setSelectedVerses([]);
+            window.scrollTo(0, 0); // Force scroll to top on nav
             return true;
         } else if (dir > 0 && selectedBookIndex < bookNamesData.length - 1) {
             setDirection(1);
             setSelectedBookIndex(prev => prev + 1);
             setSelectedChapterIndex(0);
+            setSelectedVerses([]);
+            window.scrollTo(0, 0); // Force scroll to top on nav
             return true;
         } else if (dir < 0 && selectedBookIndex > 0) {
             setDirection(-1);
             setSelectedBookIndex(prev => prev - 1);
             const prevBookChapters = bibleData?.[selectedBookIndex - 1]?.chapters || [];
             setSelectedChapterIndex(Math.max(0, prevBookChapters.length - 1));
+            setSelectedVerses([]);
+            window.scrollTo(0, 0); // Force scroll to top on nav
             return true;
         }
         return false;
@@ -157,14 +163,29 @@ export default function BibleContent() {
     return () => setNavigationCallback(null);
   }, [bibleData, selectedBookIndex, selectedChapterIndex, bookNamesData, setNavigationCallback]);
 
+  // التمرير لأعلى عند تغيير الإصحاح (ضمان إضافي)
   useEffect(() => {
-    if (currentVerseId !== -1) {
+    if (!isLoading) {
+      // استخدام setTimeout لضمان حدوث التمرير بعد اكتمال ريندر المحتوى الجديد
+      const timer = setTimeout(() => {
+        window.scrollTo(0, 0);
+        // في حالة وجود scroll container داخلي في الـ CSS
+        document.body.scrollTo(0, 0);
+        document.documentElement.scrollTo(0, 0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedBookIndex, selectedChapterIndex, isLoading]);
+
+  // تعديل: التمرير للآية فقط عند تشغيل الأوديو بشكل نشط، وليس عند مجرد تغيير الإصحاح إذا كان الـ currentVerseId قديماً
+  useEffect(() => {
+    if (isPlaying && currentVerseId !== -1) {
       const element = document.getElementById(`verse-${currentVerseId}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [currentVerseId]);
+  }, [currentVerseId, isPlaying]);
 
   // Audio Sync Logic
   useEffect(() => {
@@ -707,6 +728,24 @@ export default function BibleContent() {
                 const combinedText = selectedVerses.map(v => v.text).join(' ');
                 shareVerse(combinedText, selectedVerses[0].index);
             }} className={styles.actionBtn}><Share2 size={20} /></button>
+
+            {selectedVerses.length === 1 && (
+              <button
+                onClick={() => {
+                  const verseText = selectedVerses[0].text;
+                  const bookName = getBookName(selectedBookIndex);
+                  const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
+                  const verseLabel = convertToArabicNumber(selectedVerses[0].index + 1);
+                  const refText = `${bookName} ${verseLabel}:${chapterLabel}`;
+                  router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
+                }}
+                className={styles.actionBtn}
+                title="تصميم صورة"
+              >
+                <ImageIcon size={20} />
+              </button>
+            )}
+
             <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title="ملاحظة"><MessageSquare size={20} /></button>
             <button
               onClick={() => {
@@ -829,7 +868,7 @@ export default function BibleContent() {
       </AnimatePresence>
 
       <div className={styles.navigation}>
-        <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); }}> « </button>
+        <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> « </button>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           <button
@@ -845,7 +884,7 @@ export default function BibleContent() {
           </button>
         </div>
 
-        <button disabled={selectedChapterIndex === chaptersList.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
+        <button disabled={selectedChapterIndex === chaptersList.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> » </button>
       </div>
     </div>
   );

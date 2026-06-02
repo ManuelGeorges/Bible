@@ -9,7 +9,7 @@ import { doc, onSnapshot, updateDoc, deleteField, arrayUnion } from "firebase/fi
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { ChevronLeft, Sparkles } from 'lucide-react';
+import {Sparkles } from 'lucide-react';
 import { useBadge } from '../context/BadgeContext';
 import { StorageService, KEYS } from '../../lib/storage';
 
@@ -218,7 +218,6 @@ export default function StudyPlans() {
             </button>
           ))}
         </div>
-        {showScrollHint && <button className={styles.scrollHint} onClick={handleScrollClick} type="button"><ChevronLeft size={22} /></button>}
       </div>
 
       <div className={styles.plansGrid}>

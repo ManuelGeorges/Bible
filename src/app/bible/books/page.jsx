@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import styles from './books.module.css';
 import { useRouter } from 'next/navigation';
 import {
-    ChevronRight, Search, Book, Hash, X, ArrowRight,
+     Search, Book, Hash, X, ArrowRight,
     Sun, Compass, Flame, MapPin, Scroll, Sword, Shield, Heart, Crown,
     Landmark, History, Hammer, Star, Anchor, Music, Lightbulb, Wind,
     Eye, Feather, Sparkles, Ghost, Mountain, Lamp, Users, Cross,
@@ -123,9 +123,6 @@ function BooksContent() {
     return (
         <div dir="rtl" className={styles.container}>
             <header className={styles.header}>
-                <button onClick={() => router.back()} className={styles.backBtn}>
-                    <ChevronRight size={24} />
-                </button>
                 <h1 className={styles.title}>اختر السفر</h1>
             </header>
 

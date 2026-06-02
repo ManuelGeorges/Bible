@@ -159,19 +159,22 @@
   transform: translateX(-50%) ;
   width: 92% ;
   max-width: 500px ;
-  background: var(--color-card-bg) ;
-  backdrop-filter: blur(var(--glass-blur)) ;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) ;
-  padding: 10px 15px ;
+  /* جعل الخلفية أكثر بروزاً وغير شفافة تماماً */
+  background: var(--color-bg-end, #0f172a) !important;
+  backdrop-filter: blur(25px) ;
+  -webkit-backdrop-filter: blur(25px) ;
+  padding: 8px 12px ;
   border-radius: 20px ;
   display: flex ;
   flex-direction: row ;
   align-items: center ;
   justify-content: flex-start ;
-  gap: 15px ;
+  gap: 12px ;
   z-index: 9999 ;
-  box-shadow: 0 -4px 25px var(--color-shadow-medium) ;
-  border: 1px solid var(--color-border) ;
+  /* ظل أقوى ليبرز الشريط */
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7) ;
+  /* إطار واضح بلون الأكسنت */
+  border: 1.5px solid var(--color-accent) !important;
   direction: ltr ;
   overflow-x: auto ;
   scrollbar-width: none ;
@@ -189,8 +192,8 @@
 .selectionActions {
   display: flex ;
   flex-direction: row ;
-  gap: 12px ;
-  padding-inline-end: 15px ;
+  gap: 8px ;
+  padding-inline-end: 12px ;
   border-inline-end: 1px solid var(--color-border) ;
   flex-shrink: 0 ;
 }
@@ -204,34 +207,49 @@
 }
 
 .colorDot {
-  width: 32px ;
-  height: 32px ;
+  width: 28px ;
+  height: 28px ;
   border-radius: 50% ;
-  border: 2px solid rgba(255, 255, 255, 0.5) ;
+  border: 2px solid rgba(255, 255, 255, 0.8) ;
   cursor: pointer ;
   flex-shrink: 0 ;
-  transition: transform 0.2s ease ;
+  transition: all 0.2s ease ;
   display: flex ;
   align-items: center ;
   justify-content: center ;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.colorDot:hover {
+  transform: scale(1.15) ;
+  border-color: #ffffff;
 }
 
 .colorDot:active { transform: scale(0.9) ; }
 
 .actionBtn {
-  background: transparent ;
-  border: none ;
+  background: rgba(255, 255, 255, 0.1) ;
+  border: 1px solid rgba(255, 255, 255, 0.15) ;
   cursor: pointer ;
-  color: var(--color-text-primary) ;
+  color: #ffffff !important;
   display: flex ;
   align-items: center ;
   justify-content: center ;
-  padding: 8px ;
+  padding: 7px ;
   border-radius: 10px ;
-  transition: background 0.2s ;
+  transition: all 0.2s ;
 }
 
-.actionBtn:hover { background: rgba(255, 255, 255, 0.1) ; }
+/* تصغير الأيقونات داخل الشريط */
+.actionBtn svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.actionBtn:hover {
+  background: var(--color-accent) ;
+  transform: scale(1.05);
+}
 
 .navigation {
   position: fixed ;
