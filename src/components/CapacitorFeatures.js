@@ -16,7 +16,6 @@ import { getFirebaseRemoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Sparkles } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
@@ -184,52 +183,44 @@ export default function CapacitorFeatures() {
   return (
     <AnimatePresence>
       {showUpdateModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="update-overlay">
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl relative overflow-hidden border border-indigo-500/20"
-            dir="rtl"
+            className="update-modal"
           >
-            {/* Background Glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl"></div>
+            <div className="update-icon-container">
+              <RefreshCw size={40} className="animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
 
-            <div className="relative z-10 text-center">
-              <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-[2rem] flex items-center justify-center mx-auto mb-6 rotate-3 border border-indigo-200 dark:border-indigo-800">
-                <RefreshCw size={40} className="text-indigo-600 dark:text-indigo-400 animate-spin" style={{ animationDuration: '3s' }} />
-              </div>
+            <h2 className="update-title">تحديث جديد متاح!</h2>
+            <p className="update-text">
+              تم تحميل التحديث بنجاح. هل تود إعادة تشغيل التطبيق الآن لتجربة الميزات الجديدة؟
+            </p>
 
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">
-                تحديث جديد جاهز! ✨
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
-                تم تحميل التحديث بنجاح. هل تود إعادة تشغيل التطبيق الآن لتجربة الميزات الجديدة؟
-              </p>
+            <div className="update-actions">
+              <button
+                onClick={async () => {
+                  setShowUpdateModal(false);
+                  try {
+                    await AppUpdate.completeFlexibleUpdate();
+                  } catch (e) {
+                    console.error("Complete Update Error:", e);
+                  }
+                }}
+                className="update-btn-primary clickable flex items-center justify-center gap-2"
+              >
+                <Sparkles size={20} />
+                تحديث الآن
+              </button>
 
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={async () => {
-                    setShowUpdateModal(false);
-                    try {
-                      await AppUpdate.completeFlexibleUpdate();
-                    } catch (e) {
-                      console.error("Complete Update Error:", e);
-                    }
-                  }}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Sparkles size={20} />
-                  تحديث الآن
-                </button>
-
-                <button
-                  onClick={() => setShowUpdateModal(false)}
-                  className="w-full py-3 text-slate-500 dark:text-slate-400 font-medium hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-                >
-                  ليس الآن، لاحقاً
-                </button>
-              </div>
+              <button
+                onClick={() => setShowUpdateModal(false)}
+                className="update-btn-secondary clickable"
+              >
+                ليس الآن، لاحقاً
+              </button>
             </div>
           </motion.div>
         </div>

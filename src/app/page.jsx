@@ -228,7 +228,28 @@ const LandingPage = () => {
         fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
         checkTimeBadges();
     }, [fetchDailyContent, checkTimeBadges]);
+useEffect(() => {
+    const handleDeepLink = (e) => {
+        const path = e.detail?.path;
+        if (!path) return;
+        if (path === '/#daily-verse') {
+            document.getElementById('daily-verse')?.scrollIntoView({ behavior: 'smooth' });
+        } else if (path === '/#daily-question') {
+            document.getElementById('daily-question')?.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
+    window.addEventListener('agiosDeepLink', handleDeepLink);
+
+    if (window.__agiosDeepLink) {
+        setTimeout(() => {
+            handleDeepLink({ detail: { path: window.__agiosDeepLink } });
+            window.__agiosDeepLink = null;
+        }, 600);
+    }
+
+    return () => window.removeEventListener('agiosDeepLink', handleDeepLink);
+}, []);
     useEffect(() => {
         const fetchRemoteConfig = async () => {
             if (typeof navigator !== 'undefined' && !navigator.onLine) return;

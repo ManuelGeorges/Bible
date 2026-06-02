@@ -12,19 +12,19 @@
   color-scheme: light dark;
 
   /* Colors */
-  --color-bg-start: #f0f4f8;
-  --color-bg-end: #dbeafe;
+  --color-bg-start: #f8fafc;
+  --color-bg-end: #f1f5f9;
   --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-card-bg: rgba(255, 255, 255, 0.7);
-  --color-border: rgba(226, 232, 240, 0.5);
-  --glass-blur: 12px;
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  --color-accent: #1e3a8a;
-  --btn-bg: #1e3a8a;
+  --color-text-secondary: #334155;
+  --color-card-bg: rgba(255, 255, 255, 0.85);
+  --color-border: rgba(15, 23, 42, 0.08);
+  --glass-blur: 16px;
+  --glass-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --color-accent: #2563eb;
+  --btn-bg: #2563eb;
   --btn-text: #ffffff;
   --btn-hover: #1e40af;
-  --color-accent-gold: #ffd700;
+  --color-accent-gold: #fbbf24;
   --color-shadow-medium: rgba(0, 0, 0, 0.05);
 }
 
@@ -32,15 +32,15 @@
   --color-bg-start: #020617;
   --color-bg-end: #0f172a;
   --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-card-bg: rgba(30, 41, 59, 0.4);
-  --color-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 20px;
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --color-text-secondary: #cbd5e1;
+  --color-card-bg: rgba(15, 23, 42, 0.8);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 24px;
+  --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   --color-accent: #38bdf8;
-  --btn-bg: #2563eb;
-  --btn-text: #ffffff;
-  --btn-hover: #3b82f6;
+  --btn-bg: #38bdf8;
+  --btn-text: #020617;
+  --btn-hover: #7dd3fc;
   --color-shadow-medium: rgba(0, 0, 0, 0.4);
 }
 
@@ -163,4 +163,134 @@ input, textarea {
 
 .sr-only {
   display: none;
+}
+
+/* ============================================================
+   EXCELLENT & READABLE UPDATE POPUP STYLE
+   ============================================================ */
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: 24px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.update-modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--color-border);
+  border-radius: 36px;
+  padding: 40px 28px;
+  text-align: center;
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
+  direction: rtl;
+  animation: modalPop var(--transition-bounce) 0.5s;
+}
+
+/* Decorative subtle glow inside the modal for depth */
+.update-modal::before {
+  content: '';
+  position: absolute;
+  top: -15%;
+  left: -15%;
+  width: 130%;
+  height: 130%;
+  background: radial-gradient(circle at center, var(--color-accent) 0%, transparent 65%);
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.update-icon-container {
+  width: 76px;
+  height: 76px;
+  background: linear-gradient(135deg, var(--color-accent) 0%, #6366f1 100%);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 28px;
+  color: white;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.2);
+  transform: rotate(-3deg);
+}
+
+.update-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.update-text {
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 36px;
+  font-weight: 500;
+  padding: 0 8px;
+}
+
+.update-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.update-btn-primary {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 18px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.update-btn-primary:active {
+  transform: scale(0.97);
+  filter: brightness(0.95);
+}
+
+.update-btn-secondary {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  padding: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.update-btn-secondary:hover {
+  opacity: 1;
+  color: var(--color-text-primary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.92) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
 }
