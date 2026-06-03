@@ -52,8 +52,8 @@ export default function CapacitorFeatures() {
     const updateStatusBar = async () => {
       try {
         if (platform === 'android') {
-          const isDark = 
-            theme === 'dark' || 
+          const isDark =
+            theme === 'dark' ||
             (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
           if (isDark) {
@@ -99,6 +99,11 @@ export default function CapacitorFeatures() {
 
       if (pushPerms.receive === 'granted') {
         await PushNotifications.register().catch(() => {});
+
+        // عند وصول إشعار والتطبيق مفتوح (هام لـ iOS)
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('Push received:', notification);
+        });
 
         PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
           const url = notification.notification.data?.url;

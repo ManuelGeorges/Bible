@@ -3,22 +3,38 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import BadgeUnlockModal from '../../components/BadgeUnlockModal/BadgeUnlockModal';
 import { AnimatePresence } from 'framer-motion';
+import { StorageService, KEYS } from '../../lib/storage';
 
 const BadgeContext = createContext();
 
 export const BadgeProvider = ({ children }) => {
   const [unlockedBadge, setUnlockedBadge] = useState(null);
   const [badgesData, setBadgesData] = useState(null);
+  const [shownBadges, setShownBadges] = useState(new Set());
 
   useEffect(() => {
+    // Load badges configuration
     fetch('/data/badges.json')
       .then(res => res.json())
       .then(data => setBadgesData(data))
       .catch(err => console.error("Failed to load badges data:", err));
+
+    // Load already shown badges from storage
+    const loadShownBadges = async () => {
+      try {
+        const stored = await StorageService.get(KEYS.SHOWN_BADGES);
+        if (stored && Array.isArray(stored)) {
+          setShownBadges(new Set(stored));
+        }
+      } catch (err) {
+        console.error("Failed to load shown badges:", err);
+      }
+    };
+    loadShownBadges();
   }, []);
 
   const triggerBadgeUnlock = useCallback((badgeId) => {
-    if (!badgesData) return;
+    if (!badgesData || shownBadges.has(badgeId)) return;
 
     for (const family of badgesData.badge_families) {
       const badge = family.badges.find(b => b.id === badgeId);
@@ -27,9 +43,21 @@ export const BadgeProvider = ({ children }) => {
         return;
       }
     }
-  }, [badgesData]);
+  }, [badgesData, shownBadges]);
 
-  const closeReached = () => setUnlockedBadge(null);
+  const closeReached = async () => {
+    if (unlockedBadge) {
+      const badgeId = unlockedBadge.id;
+      setShownBadges(prev => {
+        const newSet = new Set(prev);
+        newSet.add(badgeId);
+        // Save to storage
+        StorageService.save(KEYS.SHOWN_BADGES, Array.from(newSet));
+        return newSet;
+      });
+    }
+    setUnlockedBadge(null);
+  };
 
   return (
     <BadgeContext.Provider value={{ triggerBadgeUnlock }}>

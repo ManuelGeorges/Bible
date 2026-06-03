@@ -17,26 +17,23 @@ import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
-        
+
         checkAndRequestAlarmPermission();
         refreshAllAlarms();
 
         WebView webView = getBridge().getWebView();
         WebSettings settings = webView.getSettings();
 
-        // الحل النهائي لمشكلة الدارك مود في Capacitor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // إيقاف ميزة Force Dark تماماً لمنع الأندرويد من فرض ألوان غامقة من عنده
-            // ده بيخلي الـ CSS prefers-color-scheme يشتغل بناءً على وضع النظام الحقيقي
             settings.setForceDark(WebSettings.FORCE_DARK_OFF);
         }
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // منع التعتيم الخوارزمي اللي بيبوظ الألوان في الإصدارات الجديدة
             settings.setAlgorithmicDarkeningAllowed(false);
         }
 
@@ -57,25 +54,60 @@ public class MainActivity extends BridgeActivity {
             public void updateSettings(String json, boolean masterEnabled) {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 prefs.edit()
-                    .putString("notificationSettings", json)
-                    .putString("_cap_notificationSettings", json)
-                    .putString("masterNotifications", String.valueOf(masterEnabled))
-                    .putString("_cap_masterNotifications", String.valueOf(masterEnabled))
-                    .apply();
-                
+                        .putString("notificationSettings", json)
+                        .putString("_cap_notificationSettings", json)
+                        .putString("masterNotifications", String.valueOf(masterEnabled))
+                        .putString("_cap_masterNotifications", String.valueOf(masterEnabled))
+                        .apply();
+                refreshAllAlarms();
+            }
+
+            @JavascriptInterface
+            public void updateUserStats(int streak, String plansSummaryJson) {
+                SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt("_cap_userStreak", streak);
+                editor.putInt("userStreak", streak);
+                if (plansSummaryJson != null && !plansSummaryJson.isEmpty()) {
+                    editor.putString("_cap_studyPlansSummary", plansSummaryJson);
+                    editor.putString("studyPlansSummary", plansSummaryJson);
+                }
+                editor.apply();
                 refreshAllAlarms();
             }
 
             @JavascriptInterface
             public String getSystemTheme() {
                 int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-                if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
-                    return "dark";
-                } else {
-                    return "light";
-                }
+                return nightModeFlags == Configuration.UI_MODE_NIGHT_YES ? "dark" : "light";
             }
         }, "AgiosScannerNative");
+
+        handleDeepLinkIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleDeepLinkIntent(intent);
+    }
+
+    private void handleDeepLinkIntent(Intent intent) {
+        if (intent == null) return;
+        String deepLink = intent.getStringExtra("deepLink");
+        if (deepLink == null || deepLink.isEmpty()) return;
+
+        getBridge().getWebView().post(() -> {
+            String safeLink = deepLink.replace("'", "\\'");
+            getBridge().getWebView().evaluateJavascript(
+                "setTimeout(function() {" +
+                "  window.__agiosDeepLink = '" + safeLink + "';" +
+                "  window.dispatchEvent(new CustomEvent('agiosDeepLink', { detail: { path: '" + safeLink + "' } }));" +
+                "}, 800);",
+                null
+            );
+        });
     }
 
     private void checkAndRequestAlarmPermission() {
@@ -91,6 +123,6 @@ public class MainActivity extends BridgeActivity {
 
     public void refreshAllAlarms() {
         AgiosNotificationReceiver receiver = new AgiosNotificationReceiver();
-        receiver.refreshAllAlarms(MainActivity.this);
+        receiver.refreshAllAlarms(this);
     }
 }

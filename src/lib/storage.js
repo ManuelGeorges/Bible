@@ -8,7 +8,8 @@ const KEYS = {
     COMPLETED_PLANS: 'agios_completed_plans',
     COMPLETED_CHAPTERS: 'agios_completed_chapters',
     LAST_READ: 'agios_last_read',
-    LAST_ACTIVE: 'agios_last_active'
+    LAST_ACTIVE: 'agios_last_active',
+    SHOWN_BADGES: 'agios_shown_badges'
 };
 
 export const StorageService = {

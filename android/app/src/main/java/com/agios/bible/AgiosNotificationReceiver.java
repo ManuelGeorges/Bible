@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONArray;
 
-// استيراد مكتبات Play Store للتحقق من التحديثات
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
@@ -27,6 +26,7 @@ import com.google.android.gms.tasks.Task;
 
 public class AgiosNotificationReceiver extends BroadcastReceiver {
     private static final String TAG = "AgiosDebug";
+
     private final String[] agiosTips = {
             "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
             "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
@@ -45,8 +45,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
 
         Log.d(TAG, "onReceive: action=" + action + ", type=" + type);
 
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action) || 
-            "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
+                "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
             refreshAllAlarms(context);
             return;
         }
@@ -55,10 +55,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
 
         String norm = normalizeType(type);
 
-        // إذا كان نوع الإشعار هو تحديث، نفحص المتجر أولاً
         if (norm.equals("updateAlerts")) {
             checkForUpdateAndNotify(context);
-            // جدولة الفحص التالي ليوم غد
             scheduleAlarm(context, type, getDefaultHour(type), 0);
             return;
         }
@@ -80,26 +78,22 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 handleTipNotification(context);
                 break;
             default:
-                showNotification(context, "أجيوس", "لديك محتوى روحي جديد في انتظارك", 107);
+                showNotification(context, "أجيوس", "لديك محتوى روحي جديد في انتظارك", 107, "/");
                 break;
         }
 
         scheduleAlarm(context, type, getDefaultHour(type), 0);
     }
 
-    /**
-     * التحقق من وجود تحديث في متجر Google Play وإرسال إشعار فقط في حالة توفره
-     */
     private void checkForUpdateAndNotify(Context context) {
         try {
             AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(context);
             Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
-
             appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
                 if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                     Log.d(TAG, "Update detected on Play Store!");
-                    showNotification(context, "تحديث جديد متاح ",
-                        "تتوفر نسخة جديدة من أجيوس بمزايا رائعة، حملها الآن من المتجر!", 106);
+                    showNotification(context, "تحديث جديد متاح",
+                            "تتوفر نسخة جديدة من أجيوس بمزايا رائعة، حملها الآن من المتجر!", 106, "/");
                 } else {
                     Log.d(TAG, "No update available on Play Store.");
                 }
@@ -115,9 +109,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             if (data != null) {
                 String title = data.optString("reference", "آية اليوم");
                 String text = data.optString("verse", data.optString("text", "اكتشف آية اليوم"));
-                showNotification(context, title, text, 101);
+                showNotification(context, title, text, 101, "/#daily-verse");
             } else {
-                showNotification(context, "آية اليوم", "اكتشف آية اليوم وشاركها مع أصدقائك.", 101);
+                showNotification(context, "آية اليوم", "اكتشف آية اليوم وشاركها مع أصدقائك.", 101, "/#daily-verse");
             }
         } catch (Exception e) {
             Log.e(TAG, "Verse Notify Error", e);
@@ -129,9 +123,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             JSONObject data = getTodayData(context, "dailyQuestions.json");
             if (data != null) {
                 String question = data.optString("question", "حان وقت سؤال اليوم!");
-                showNotification(context, "سؤال اليوم", question, 102);
+                showNotification(context, "سؤال اليوم", question, 102, "/#daily-question");
             } else {
-                showNotification(context, "تحدي اليوم", "حان وقت سؤال اليوم، اختبر معلوماتك!", 102);
+                showNotification(context, "تحدي اليوم", "حان وقت سؤال اليوم، اختبر معلوماتك!", 102, "/#daily-question");
             }
         } catch (Exception e) {
             Log.e(TAG, "Question Notify Error", e);
@@ -142,31 +136,17 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         try {
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
             int streak = prefs.getInt("_cap_userStreak", prefs.getInt("userStreak", 0));
-            
+
             String msg;
             if (streak > 0) {
                 msg = "أنت في سلسلة تفاعل مدتها " + toArabicNumbers(streak) + " يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥";
             } else {
                 msg = "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.";
             }
-            showNotification(context, "حافظ على حماسك", msg, 103);
+            showNotification(context, "حافظ على حماسك", msg, 103, "/");
         } catch (Exception e) {
             Log.e(TAG, "Streak Notify Error", e);
         }
-    }
-
-    private String toArabicNumbers(int number) {
-        String n = String.valueOf(number);
-        char[] arabicChars = {'٠','١','٢','٣','٤','٥','٦','٧','٨','٩'};
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < n.length(); i++) {
-            if (Character.isDigit(n.charAt(i))) {
-                builder.append(arabicChars[n.charAt(i) - '0']);
-            } else {
-                builder.append(n.charAt(i));
-            }
-        }
-        return builder.toString();
     }
 
     private void handleStudyPlansNotification(Context context) {
@@ -179,13 +159,13 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 String title = json.optString("mainPlanTitle", "");
                 int remaining = json.optInt("remainingDays", 0);
 
-                String msg = count > 1 
-                    ? "لديك " + count + " خطط جارية. تبقّى " + remaining + " يوم في " + title
-                    : "تبقّى لك " + remaining + " يوم لإكمال " + title;
-                
-                showNotification(context, "متابعة القراءة 📖", msg, 104);
+                String msg = count > 1
+                        ? "لديك " + toArabicNumbers(count) + " خطط جارية. تبقّى " + toArabicNumbers(remaining) + " يوم في " + title
+                        : "تبقّى لك " + toArabicNumbers(remaining) + " يوم لإكمال " + title;
+
+                showNotification(context, "متابعة القراءة 📖", msg, 104, "/studyPlans");
             } else {
-                showNotification(context, "خطة القراءة 📖", "لديك جزء متبقي في خطة اليوم.", 104);
+                showNotification(context, "خطة القراءة 📖", "لديك جزء متبقي في خطة اليوم.", 104, "/studyPlans");
             }
         } catch (Exception e) {
             Log.e(TAG, "StudyPlans Notify Error", e);
@@ -194,7 +174,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
 
     private void handleTipNotification(Context context) {
         int index = (int) (Math.random() * agiosTips.length);
-        showNotification(context, "معلومة سريعة", agiosTips[index], 105);
+        showNotification(context, "معلومة سريعة", agiosTips[index], 105, "/");
     }
 
     private JSONObject getTodayData(Context context, String filename) {
@@ -214,9 +194,8 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
-            JSONArray array = new JSONArray(new String(buffer, StandardCharsets.UTF_8));
 
-            // توحيد التوقيت ليكون توقيت القاهرة دائماً عند جلب بيانات اليوم
+            JSONArray array = new JSONArray(new String(buffer, StandardCharsets.UTF_8));
             Calendar now = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
             int month = now.get(Calendar.MONTH) + 1;
             int day = now.get(Calendar.DAY_OF_MONTH);
@@ -233,6 +212,20 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         return null;
     }
 
+    private String toArabicNumbers(int number) {
+        String n = String.valueOf(number);
+        char[] arabicChars = {'٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'};
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < n.length(); i++) {
+            if (Character.isDigit(n.charAt(i))) {
+                builder.append(arabicChars[n.charAt(i) - '0']);
+            } else {
+                builder.append(n.charAt(i));
+            }
+        }
+        return builder.toString();
+    }
+
     private String normalizeType(String type) {
         if (type == null) return "";
         String low = type.toLowerCase();
@@ -246,14 +239,15 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     }
 
     private int getDefaultHour(String type) {
-        String n = normalizeType(type);
-        if (n.equals("verse")) return 6;
-        if (n.equals("question")) return 18;
-        if (n.equals("studyPlans")) return 10;
-        if (n.equals("streak")) return 21;
-        if (n.equals("appSuggestions")) return 12;
-        if (n.equals("updateAlerts")) return 12;
-        return 12;
+        switch (normalizeType(type)) {
+            case "verse":           return 6;
+            case "question":        return 18;
+            case "studyPlans":      return 10;
+            case "streak":          return 21;
+            case "appSuggestions":  return 12;
+            case "updateAlerts":    return 12;
+            default:                return 12;
+        }
     }
 
     public void refreshAllAlarms(Context context) {
@@ -262,7 +256,6 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         scheduleAlarm(context, "dailyQuestion", 18, 0);
         scheduleAlarm(context, "studyPlans", 10, 0);
         scheduleAlarm(context, "streakReminder", 21, 0);
-        // تم توحيد النصائح والاقتراحات تحت مسمى appSuggestions لضمان قراءة الإعدادات
         scheduleAlarm(context, "appSuggestions", 12, 0);
         scheduleAlarm(context, "updateAlerts", 12, 0);
     }
@@ -285,12 +278,12 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (!jsonStr.isEmpty()) {
             try {
                 JSONObject json = new JSONObject(jsonStr);
-                // البحث عن الوقت بالمسمى الموحد (مثل appSuggestionsTime)
                 savedTime = json.optString(norm + "Time", json.optString(type + "Time", ""));
-
                 if (json.has(norm)) enabled = json.optBoolean(norm, true);
                 else if (json.has(type)) enabled = json.optBoolean(type, true);
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         if (savedTime.isEmpty()) {
@@ -303,16 +296,18 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             return;
         }
 
-        // توحيد توقيت الجدولة ليكون بناءً على توقيت القاهرة
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
         boolean customFound = false;
+
         if (!savedTime.isEmpty() && savedTime.contains(":")) {
             try {
                 String[] p = savedTime.split(":");
                 cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(p[0]));
                 cal.set(Calendar.MINUTE, Integer.parseInt(p[1]));
                 customFound = true;
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         if (!customFound) {
@@ -339,6 +334,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         } else {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
         }
+
         Log.d(TAG, "Scheduled " + type + " at " + cal.getTime().toString() + (customFound ? " (Custom)" : " (Default)"));
     }
 
@@ -353,19 +349,30 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         Intent intent = new Intent(context, AgiosNotificationReceiver.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, normalizeType(type).hashCode(), intent,
                 PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-        if (pi != null) { am.cancel(pi); pi.cancel(); }
+        if (pi != null) {
+            am.cancel(pi);
+            pi.cancel();
+        }
     }
 
-    private void showNotification(Context context, String title, String text, int id) {
+    private void showNotification(Context context, String title, String text, int id, String deepLink) {
         String cid = "agios_notifications";
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(cid, "Agios Daily", NotificationManager.IMPORTANCE_HIGH);
             nm.createNotificationChannel(channel);
         }
+
         Intent intent = new Intent(context, MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-        
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        if (deepLink != null && !deepLink.isEmpty()) {
+            intent.putExtra("deepLink", deepLink);
+        }
+
+        PendingIntent pi = PendingIntent.getActivity(context, id, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         int iconRes = context.getResources().getIdentifier("ic_stat_ic_notification", "drawable", context.getPackageName());
         if (iconRes == 0) iconRes = android.R.drawable.ic_dialog_info;
 
@@ -376,6 +383,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(pi);
+
         nm.notify(id, b.build());
     }
 }
