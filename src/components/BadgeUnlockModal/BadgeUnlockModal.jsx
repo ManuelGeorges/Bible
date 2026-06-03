@@ -2,7 +2,7 @@
 
 import React from 'react';
 import styles from './BadgeUnlockModal.module.css';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, Share2, Trophy, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Share } from '@capacitor/share';
@@ -20,13 +20,15 @@ const BadgeUnlockModal = ({ badge, onClose }) => {
     "الاستكشاف الجغرافي": Icons.MapPin,
     "الكنز الروحي": Icons.Heart,
     "الوفاء التقني": Icons.Zap,
-    "الفئة السرية": Icons.Lock
+    "الفئة السرية": Icons.Lock,
+    "المواظبة على الخطط": Icons.CalendarCheck,
+    "إنجازات الخطط": Icons.Trophy
   };
 
   const IconComponent = iconFamilyMap[badge.familyName] || Trophy;
 
   const handleShare = async () => {
-    const text = ` حصلت على وسام جديد في تطبيق أجيوس: ${badge.name}!\n"${badge.requirement}"\nحمّل التطبيق وانضم إلينا في رحلتنا الروحية.`;
+    const text = `🎉 حصلت على وسام جديد في تطبيق أجيوس: ${badge.name}!\n"${badge.requirement}"\nحمّل التطبيق وانضم إلينا في رحلتنا الروحية.`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -47,6 +49,8 @@ const BadgeUnlockModal = ({ badge, onClose }) => {
       console.log('Share error', err);
     }
   };
+
+  if (!badge) return null;
 
   return (
     <div className={styles.overlay}>

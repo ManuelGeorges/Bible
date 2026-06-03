@@ -74,14 +74,13 @@ export default function StatsWatcher() {
       const today = getCairoDate();
       const cairoInfo = getCairoDateInfo();
 
-      // جلب معلومات الجهاز
       let deviceInfo = {};
       if (Capacitor.isNativePlatform()) {
         try {
           const info = await Device.getInfo();
           deviceInfo = {
-            deviceModel: info.model, // مثلاً SM-A356E
-            deviceManufacturer: info.manufacturer, // مثلاً Samsung
+            deviceModel: info.model,
+            deviceManufacturer: info.manufacturer,
             deviceOS: info.operatingSystem,
             deviceOSVersion: info.osVersion,
             platform: Capacitor.getPlatform()
@@ -106,12 +105,13 @@ export default function StatsWatcher() {
             lastActiveDate: today,
             badges: loyaltyBadges,
             createdAt: getCairoIsoString(),
-            ...deviceInfo // إضافة بيانات الجهاز عند الإنشاء
+            ...deviceInfo
         }, { merge: true });
+
+        // تفعيل شاشة التهنئة لأوسمة الولاء فوراً للمستخدم الجديد
+        loyaltyBadges.forEach(id => triggerBadgeUnlock(id));
       } else {
         let data = docSnap.data();
-
-        // تحديث بيانات الجهاز حتى لو المستخدم موجود قديم (عشان لو غير موبايله)
         const updates = { ...deviceInfo };
 
         if (data.stats) {
@@ -148,12 +148,10 @@ export default function StatsWatcher() {
           }
         }
 
-        // تنفيذ التحديثات في Firestore
         if (Object.keys(updates).length > 0) {
             await updateDoc(userRef, updates);
         }
 
-        // Plan Badges Logic
         const completedPlans = data.completedPlans || {};
         const customPlans = data.customPlans || {};
         const allPlans = { ...completedPlans, ...customPlans };
@@ -204,8 +202,6 @@ export default function StatsWatcher() {
                 const days = (todayDate - startDate) / (1000 * 60 * 60 * 24);
                 if (days >= 30) await unlockBadge('shadow_reader', data);
             }
-        } else {
-            localStorage.removeItem('dark_mode_start');
         }
       }
     } catch (error) { console.error("StatsWatcher Sync Error:", error); }
