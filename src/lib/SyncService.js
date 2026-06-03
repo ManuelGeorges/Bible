@@ -16,13 +16,16 @@ export const syncLocalDataToFirebase = async (user) => {
         const localAnswered = await StorageService.get('answered_questions') || {};
         const localBadges = await StorageService.get('local_badges') || [];
         const localLastActive = await StorageService.get(KEYS.LAST_ACTIVE);
+        const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
+        const localMapPoints = await StorageService.get('visited_map_points') || [];
+        const localQuizzes = await StorageService.get('completed_quizzes') || [];
+        const localLastRead = await StorageService.get(KEYS.LAST_READ);
 
         const updates = {};
 
         // 1. مزامنة النقاط
         if (localStats.points > 0) {
             updates.totalPoints = increment(localStats.points);
-            // إضافة سجل عملية الدمج
             updates.pointsHistory = arrayUnion({
                 type: 'sync_merge',
                 points: localStats.points,
@@ -31,12 +34,10 @@ export const syncLocalDataToFirebase = async (user) => {
             });
         }
 
-        // 2. مزامنة سجل النقاط (للمهمات اليومية)
+        // 2. مزامنة سجل النقاط
         if (localHistory.length > 0) {
             if (!updates.pointsHistory) updates.pointsHistory = arrayUnion(...localHistory);
             else {
-                // سيتم دمجها لاحقاً أو في عملية منفصلة إذا لزم الأمر،
-                // لكن arrayUnion مع ... تعمل جيداً
                 updates.pointsHistory = arrayUnion({
                     type: 'sync_merge',
                     points: localStats.points,
@@ -70,17 +71,29 @@ export const syncLocalDataToFirebase = async (user) => {
             }
         }
 
-        // 6. مزامنة الخطط
+        // 6. مزامنة الخطط والأصحاحات
         Object.keys(localCompletedPlans).forEach(planId => {
             updates[`completedPlans.${planId}`] = localCompletedPlans[planId];
         });
         Object.keys(localCustomPlans).forEach(planId => {
             updates[`customPlans.${planId}`] = localCustomPlans[planId];
         });
+        Object.keys(localChapters).forEach(chId => {
+            updates[`completedChapters.${chId}`] = localChapters[chId];
+        });
 
-        // 7. الأوسمة وآخر ظهور
+        // 7. الأوسمة والخريطة والمسابقات وآخر قراءة
         if (localBadges.length > 0) {
             updates.badges = arrayUnion(...localBadges);
+        }
+        if (localMapPoints.length > 0) {
+            updates.visitedMapPoints = arrayUnion(...localMapPoints);
+        }
+        if (localQuizzes.length > 0) {
+            updates.completedQuizzes = arrayUnion(...localQuizzes);
+        }
+        if (localLastRead) {
+            updates.lastRead = localLastRead;
         }
         if (localLastActive) {
             updates.lastActiveDate = localLastActive;
@@ -101,13 +114,16 @@ export const syncLocalDataToFirebase = async (user) => {
                 await updateDoc(userRef, updates);
             }
 
-            // تنظيف التخزين المحلي
+            // تنظيف التخزين المحلي بعد التأكد من المزامنة
             await StorageService.save(KEYS.POINTS, 0);
             await StorageService.save('points_history', []);
             await StorageService.save('answered_questions', {});
             await StorageService.save('local_completed_plans', {});
             await StorageService.save('local_custom_plans', {});
             await StorageService.save('local_badges', []);
+            await StorageService.save(KEYS.COMPLETED_CHAPTERS, {});
+            await StorageService.save('visited_map_points', []);
+            await StorageService.save('completed_quizzes', []);
 
             // تحديث الملاحظات والمفضلات لتكون معلمة كمزامنة
             await StorageService.save(KEYS.NOTES, localStats.notes.map(n => ({ ...n, synced: true })));
@@ -116,7 +132,7 @@ export const syncLocalDataToFirebase = async (user) => {
             await StorageService.save(KEYS.FAVORITES, updatedFavs);
         }
 
-        console.log("Sync: All data (including daily goals) merged successfully");
+        console.log("Sync: All data merged successfully");
     } catch (error) {
         console.error("Sync Error:", error);
     }

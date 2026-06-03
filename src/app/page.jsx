@@ -179,9 +179,8 @@ const LandingPage = () => {
         return { daysDone, totalDays, percent };
     }, []);
 
-    const fetchDailyContent = useCallback(async (loggedInUser) => {
-        setIsLoading(true);
-        const { month, day, key: dateKey } = getCairoDateInfo();
+    const fetchDailyContent = useCallback(async () => {
+        const { month, day } = getCairoDateInfo();
 
         try {
             const [verseRes, questRes] = await Promise.all([
@@ -199,57 +198,42 @@ const LandingPage = () => {
 
             setDailyVerse(todayVerse);
             setDailyQuestion(todayQuest);
-
-            let answered = localStorage.getItem(`questionAnswered_${dateKey}`) === 'true';
-
-            if (loggedInUser) {
-                const userSnap = await getDoc(doc(firestore, 'users', loggedInUser.uid));
-                if (userSnap.exists() && userSnap.data().answeredQuestions?.[dateKey]?.answered) {
-                    answered = true;
-                }
-            } else {
-                const localQuestions = await StorageService.get('answered_questions') || {};
-                if (localQuestions[dateKey]?.answered) {
-                    answered = true;
-                }
-            }
-            setHasAnswered(answered);
         } catch (e) {
             console.error("Home Fetch Error:", e);
             toast.error("حدث خطأ أثناء تحميل بيانات اليوم");
-        } finally {
-            setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
         setMounted(true);
-        fetchDailyContent(null);
+        fetchDailyContent();
         fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
         checkTimeBadges();
     }, [fetchDailyContent, checkTimeBadges]);
-useEffect(() => {
-    const handleDeepLink = (e) => {
-        const path = e.detail?.path;
-        if (!path) return;
-        if (path === '/#daily-verse') {
-            document.getElementById('daily-verse')?.scrollIntoView({ behavior: 'smooth' });
-        } else if (path === '/#daily-question') {
-            document.getElementById('daily-question')?.scrollIntoView({ behavior: 'smooth' });
+
+    useEffect(() => {
+        const handleDeepLink = (e) => {
+            const path = e.detail?.path;
+            if (!path) return;
+            if (path === '/#daily-verse') {
+                document.getElementById('daily-verse')?.scrollIntoView({ behavior: 'smooth' });
+            } else if (path === '/#daily-question') {
+                document.getElementById('daily-question')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        window.addEventListener('agiosDeepLink', handleDeepLink);
+
+        if (window.__agiosDeepLink) {
+            setTimeout(() => {
+                handleDeepLink({ detail: { path: window.__agiosDeepLink } });
+                window.__agiosDeepLink = null;
+            }, 600);
         }
-    };
 
-    window.addEventListener('agiosDeepLink', handleDeepLink);
+        return () => window.removeEventListener('agiosDeepLink', handleDeepLink);
+    }, []);
 
-    if (window.__agiosDeepLink) {
-        setTimeout(() => {
-            handleDeepLink({ detail: { path: window.__agiosDeepLink } });
-            window.__agiosDeepLink = null;
-        }, 600);
-    }
-
-    return () => window.removeEventListener('agiosDeepLink', handleDeepLink);
-}, []);
     useEffect(() => {
         const fetchRemoteConfig = async () => {
             if (typeof navigator !== 'undefined' && !navigator.onLine) return;
@@ -288,18 +272,14 @@ useEffect(() => {
 
     useEffect(() => {
         let unsubSnap = null;
+        setIsLoading(true);
+
         const unsubAuth = auth?.onAuthStateChanged(async (u) => {
             setUser(u);
+            const today = getCairoDate();
 
             if (u) {
                 await syncLocalDataToFirebase(u);
-
-                const { key: dateKey } = getCairoDateInfo();
-                getDoc(doc(firestore, 'users', u.uid)).then(userSnap => {
-                    if (userSnap.exists() && userSnap.data().answeredQuestions?.[dateKey]?.answered) {
-                        setHasAnswered(true);
-                    }
-                });
 
                 if (unsubSnap) { unsubSnap(); unsubSnap = null; }
 
@@ -318,8 +298,11 @@ useEffect(() => {
                         setUserBadges(data.badges || []);
                         setFavouriteVerses(data.favorites?.verses || {});
 
-                        const lastReadData = data.lastRead || JSON.parse(localStorage.getItem('lastReadLocation'));
+                        // Fix: Proper Last Read handling for logged in users
+                        const lastReadData = data.lastRead || null;
                         setLastRead(lastReadData);
+
+                        setHasAnswered(!!data.answeredQuestions?.[today]?.answered);
 
                         const serverComp = data.completedPlans || {};
                         const customPlans = data.customPlans || {};
@@ -340,7 +323,6 @@ useEffect(() => {
 
                         setStartedPlans([...activeCustom, ...activeStatic]);
 
-                        const today = getCairoDate();
                         const historyRaw = data.pointsHistory || [];
                         const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
 
@@ -361,9 +343,17 @@ useEffect(() => {
                             { id: 'favouriteVerse', label: 'تظليل آية', completed: completedTodayTypes.has('favouriteVerse') },
                         ];
                         setDailyGoals(goals);
+                        setIsLoading(false);
+                    } else {
+                        setIsLoading(false);
                     }
-                }, (error) => console.error("Snapshot error:", error));
+                }, (error) => {
+                    console.error("Snapshot error:", error);
+                    setIsLoading(false);
+                });
             } else {
+                if (unsubSnap) { unsubSnap(); unsubSnap = null; }
+
                 const localStats = await StorageService.getLocalStats();
                 const localHistory = await StorageService.get('points_history') || [];
                 const localAnswered = await StorageService.get('answered_questions') || {};
@@ -378,6 +368,7 @@ useEffect(() => {
                 setFavouriteVerses(localStats.favorites || {});
                 setUserBadges(localBadges);
                 setLastRead(localLastRead);
+                setHasAnswered(!!localAnswered[today]?.answered);
 
                 const activeStatic = staticPlans
                     .map(plan => {
@@ -395,7 +386,6 @@ useEffect(() => {
 
                 setStartedPlans([...activeCustom, ...activeStatic]);
 
-                const today = getCairoDate();
                 const completedTodayTypes = new Set(
                     localHistory.filter(h => getCairoDate(new Date(h.timestamp)) === today).map(h => h.type)
                 );
@@ -421,6 +411,7 @@ useEffect(() => {
                     pointsHistory: localHistory,
                     badges: localBadges
                 });
+                setIsLoading(false);
             }
         });
 
@@ -822,7 +813,9 @@ useEffect(() => {
                 </div>
             )}
 
-            {(user || dailyGoals.length > 0) && (
+            {(isLoading) ? (
+                <div className={styles.skeletonSection} style={{ height: '100px', margin: '16px' }} />
+            ) : (
                 <section className={styles.dailyGoalsSummary}>
                     <div className={styles.goalsHeader}>
                         <div className={styles.goalsTitle}><Award size={18} color="#f59e0b" /><span>مهام اليوم</span></div>
@@ -830,7 +823,7 @@ useEffect(() => {
                     </div>
                     <div className={styles.goalsProgressWrapper}>
                         <div className={styles.goalsProgressText}>أنجزت {convertToArabicNumber(completedGoalsCount)} من {convertToArabicNumber(dailyGoals.length)} مهام</div>
-                        <div className={styles.miniProgressBar}><div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / dailyGoals.length) * 100}%` }} /></div>
+                        <div className={styles.miniProgressBar}><div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / Math.max(1, dailyGoals.length)) * 100}%` }} /></div>
                     </div>
                     <div className={styles.goalsMiniList}>
                         {dailyGoals.map(goal => (
