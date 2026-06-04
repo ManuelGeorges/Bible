@@ -5,11 +5,17 @@ const KEYS = {
     POINTS: 'agios_points',
     STREAK: 'agios_streak',
     FAVORITES: 'agios_favorites',
-    COMPLETED_PLANS: 'agios_completed_plans',
-    COMPLETED_CHAPTERS: 'agios_completed_chapters',
+    COMPLETED_PLANS: 'agios_completed_plans', // For study plans progress
+    COMPLETED_CHAPTERS: 'agios_completed_chapters', // For bible chapters
     LAST_READ: 'agios_last_read',
     LAST_ACTIVE: 'agios_last_active',
-    SHOWN_BADGES: 'agios_shown_badges'
+    SHOWN_BADGES: 'agios_shown_badges',
+    POINTS_HISTORY: 'agios_points_history',
+    ANSWERED_QUESTIONS: 'agios_answered_questions',
+    LOCAL_BADGES: 'agios_local_badges',
+    CUSTOM_PLANS: 'agios_custom_plans',
+    VISITED_MAP_POINTS: 'agios_visited_map_points',
+    COMPLETED_QUIZZES: 'agios_completed_quizzes'
 };
 
 export const StorageService = {
