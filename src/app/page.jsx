@@ -291,10 +291,6 @@ const LandingPage = () => {
                         setUserStats({ points: data.totalPoints || 0, streak: streak });
                         checkStreakBadges(streak);
 
-                        if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
-                            window.AgiosScannerNative.updateUserStats(streak);
-                        }
-
                         setUserBadges(data.badges || []);
                         setFavouriteVerses(data.favorites?.verses || {});
 
@@ -321,7 +317,22 @@ const LandingPage = () => {
                             })
                             .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                        setStartedPlans([...activeCustom, ...activeStatic]);
+                        const allStarted = [...activeCustom, ...activeStatic];
+                        setStartedPlans(allStarted);
+
+                        // Fix: Correct call to Native Bridge with error handling
+                        if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
+                            try {
+                                const plansSummary = allStarted.map(p => ({
+                                    id: p.id,
+                                    title: p.title,
+                                    percent: p.stats?.percent || 0
+                                }));
+                                window.AgiosScannerNative.updateUserStats(streak, JSON.stringify(plansSummary));
+                            } catch (err) {
+                                console.error("Native Bridge Error:", err);
+                            }
+                        }
 
                         const historyRaw = data.pointsHistory || [];
                         const history = Array.isArray(historyRaw) ? historyRaw : Object.values(historyRaw);
@@ -384,7 +395,22 @@ const LandingPage = () => {
                     })
                     .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                setStartedPlans([...activeCustom, ...activeStatic]);
+                const allStarted = [...activeCustom, ...activeStatic];
+                setStartedPlans(allStarted);
+
+                // Fix: Correct call to Native Bridge with error handling for guest users
+                if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
+                    try {
+                        const plansSummary = allStarted.map(p => ({
+                            id: p.id,
+                            title: p.title,
+                            percent: p.stats?.percent || 0
+                        }));
+                        window.AgiosScannerNative.updateUserStats(localStats.streak, JSON.stringify(plansSummary));
+                    } catch (err) {
+                        console.error("Native Bridge Error:", err);
+                    }
+                }
 
                 const completedTodayTypes = new Set(
                     localHistory.filter(h => getCairoDate(new Date(h.timestamp)) === today).map(h => h.type)
