@@ -200,14 +200,14 @@ const LandingPage = () => {
             setDailyQuestion(todayQuest);
         } catch (e) {
             console.error("Home Fetch Error:", e);
-            toast.error("حدث خطأ أثناء تحميل بيانات اليوم");
+            // Don't show toast on fetch error to avoid annoying offline users
         }
     }, []);
 
     useEffect(() => {
         setMounted(true);
         fetchDailyContent();
-        fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
+        fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data)).catch(() => {});
         checkTimeBadges();
     }, [fetchDailyContent, checkTimeBadges]);
 
@@ -279,10 +279,12 @@ const LandingPage = () => {
             const today = getCairoDate();
 
             if (u) {
-                await syncLocalDataToFirebase(u);
+                // Fix: Run sync in background without awaiting to support offline startup
+                syncLocalDataToFirebase(u).catch(e => console.log("Sync deferred:", e));
 
                 if (unsubSnap) { unsubSnap(); unsubSnap = null; }
 
+                // Firestore persistence will automatically serve data from cache when offline
                 unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
