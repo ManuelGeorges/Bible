@@ -5,8 +5,8 @@ const KEYS = {
     POINTS: 'agios_points',
     STREAK: 'agios_streak',
     FAVORITES: 'agios_favorites',
-    COMPLETED_PLANS: 'agios_completed_plans', // For study plans progress
-    COMPLETED_CHAPTERS: 'agios_completed_chapters', // For bible chapters
+    COMPLETED_PLANS: 'agios_completed_plans',
+    COMPLETED_CHAPTERS: 'agios_completed_chapters',
     LAST_READ: 'agios_last_read',
     LAST_ACTIVE: 'agios_last_active',
     SHOWN_BADGES: 'agios_shown_badges',
@@ -28,15 +28,16 @@ export const StorageService = {
 
     async get(key) {
         if (!key) return null;
-        const { value } = await Preferences.get({ key });
         try {
-            return value ? JSON.parse(value) : null;
+            const { value } = await Preferences.get({ key });
+            if (value === null || value === undefined) return null;
+            return JSON.parse(value);
         } catch (e) {
-            return value;
+            await Preferences.remove({ key });
+            return null;
         }
     },
 
-    // Notes
     async addNote(note) {
         const notes = (await this.get(KEYS.NOTES)) || [];
         const newNote = {
@@ -50,7 +51,6 @@ export const StorageService = {
         return newNote;
     },
 
-    // Points
     async addPoints(amount) {
         const currentPoints = (await this.get(KEYS.POINTS)) || 0;
         const newPoints = currentPoints + amount;
@@ -58,7 +58,6 @@ export const StorageService = {
         return newPoints;
     },
 
-    // Favorites
     async toggleFavorite(verseKey, verseData) {
         let favorites = (await this.get(KEYS.FAVORITES)) || {};
         if (favorites[verseKey]) {
@@ -70,7 +69,6 @@ export const StorageService = {
         return favorites;
     },
 
-    // Streak
     async updateStreak(streak) {
         await this.save(KEYS.STREAK, streak);
     },
