@@ -5,8 +5,8 @@ const KEYS = {
     POINTS: 'agios_points',
     STREAK: 'agios_streak',
     FAVORITES: 'agios_favorites',
-    COMPLETED_PLANS: 'agios_completed_plans', // For study plans progress
-    COMPLETED_CHAPTERS: 'agios_completed_chapters', // For bible chapters
+    COMPLETED_PLANS: 'agios_completed_plans',
+    COMPLETED_CHAPTERS: 'agios_completed_chapters',
     LAST_READ: 'agios_last_read',
     LAST_ACTIVE: 'agios_last_active',
     SHOWN_BADGES: 'agios_shown_badges',
@@ -20,23 +20,40 @@ const KEYS = {
 
 export const StorageService = {
     async save(key, data) {
-        await Preferences.set({
-            key,
-            value: JSON.stringify(data)
-        });
+        try {
+            await Preferences.set({
+                key,
+                value: JSON.stringify(data)
+            });
+        } catch (e) {
+            console.error("Storage save error:", e);
+        }
     },
 
     async get(key) {
         if (!key) return null;
-        const { value } = await Preferences.get({ key });
         try {
-            return value ? JSON.parse(value) : null;
+            const { value } = await Preferences.get({ key });
+            if (value === null || value === undefined) return null;
+
+            // محاولة التحويل من JSON
+            try {
+                return JSON.parse(value);
+            } catch (jsonError) {
+                // إذا لم يكن JSON (ربما نص عادي)، نرجعه كما هو
+                return value;
+            }
         } catch (e) {
-            return value;
+            // في حال حدوث ClassCastException في أندرويد (مثل حالتنا)
+            // نقوم بمسح المفتاح التالف لمنع الكراش المتكرر
+            console.warn(`Storage error for key ${key}, removing it...`, e);
+            try {
+                await Preferences.remove({ key });
+            } catch (removeError) {}
+            return null;
         }
     },
 
-    // Notes
     async addNote(note) {
         const notes = (await this.get(KEYS.NOTES)) || [];
         const newNote = {
@@ -50,15 +67,13 @@ export const StorageService = {
         return newNote;
     },
 
-    // Points
     async addPoints(amount) {
         const currentPoints = (await this.get(KEYS.POINTS)) || 0;
-        const newPoints = currentPoints + amount;
+        const newPoints = (Number(currentPoints) || 0) + amount;
         await this.save(KEYS.POINTS, newPoints);
         return newPoints;
     },
 
-    // Favorites
     async toggleFavorite(verseKey, verseData) {
         let favorites = (await this.get(KEYS.FAVORITES)) || {};
         if (favorites[verseKey]) {
@@ -70,7 +85,6 @@ export const StorageService = {
         return favorites;
     },
 
-    // Streak
     async updateStreak(streak) {
         await this.save(KEYS.STREAK, streak);
     },

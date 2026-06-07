@@ -10,7 +10,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCairoIsoString } from '../../../lib/dateUtils';
 import { ArrowRight, Sparkles, Calendar, BookOpen, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { StorageService } from '../../../lib/storage';
+import { StorageService, KEYS } from '../../../lib/storage';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -160,10 +160,10 @@ export default function CustomPlanForm() {
                         }
                     }, { merge: true });
                 } else {
-                    // Save to local storage for guest
-                    const localCustom = await StorageService.get('local_custom_plans') || {};
+                    // Save to local storage for guest using unified KEYS
+                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
                     localCustom[planId] = newPlanObject;
-                    await StorageService.save('local_custom_plans', localCustom);
+                    await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
                 }
 
                 toast.success("تم إنشاء خطتك بنجاح!");

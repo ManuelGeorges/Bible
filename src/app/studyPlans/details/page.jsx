@@ -31,31 +31,39 @@ function PlanDetailsContent() {
   const [loading, setLoading] = useState(true);
 
   const loadLocalData = useCallback(async () => {
-    const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
-    setCompletedChapters(localChapters);
+    try {
+      // استخدام المفاتيح الموحدة مع دعم المفاتيح القديمة لتجنب الـ 404
+      const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
+      setCompletedChapters(localChapters);
 
-    const localCompletedPlans = await StorageService.get('local_completed_plans') || {};
-    const localCustomPlans = await StorageService.get('local_custom_plans') || {};
-    const localBadges = await StorageService.get('local_badges') || [];
-    const localStreak = await StorageService.get('userStreak') || 0;
+      const localCompletedPlans = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
+      const localCustomPlans = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || await StorageService.get('local_badges') || [];
+      const localStreak = await StorageService.get(KEYS.STREAK) || await StorageService.get('userStreak') || 0;
 
-    setUserData({
-      completedPlans: localCompletedPlans,
-      customPlans: localCustomPlans,
-      badges: localBadges,
-      userStreak: localStreak
-    });
+      setUserData({
+        completedPlans: localCompletedPlans,
+        customPlans: localCustomPlans,
+        badges: localBadges,
+        userStreak: localStreak
+      });
 
-    if (planType === 'custom') {
-      const aiPlan = localCustomPlans[planId];
-      if (aiPlan) {
-        setPlan(aiPlan);
-        setCompletedDays(aiPlan.completedDays || {});
+      if (planType === 'custom') {
+        const aiPlan = localCustomPlans[planId];
+        if (aiPlan) {
+          setPlan(aiPlan);
+          setCompletedDays(aiPlan.completedDays || {});
+        }
+      } else {
+        const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
+        setPlan(staticPlan);
+        const planData = localCompletedPlans[planId]?.completedDays || {};
+        setCompletedDays(planData);
       }
-    } else {
-      const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
-      setPlan(staticPlan);
-      setCompletedDays(localCompletedPlans[planId]?.completedDays || {});
+    } catch (error) {
+      console.error("Error loading local data:", error);
+    } finally {
+      setLoading(false);
     }
   }, [planId, planType]);
 
@@ -68,10 +76,10 @@ function PlanDetailsContent() {
         triggerBadgeUnlock(badgeId);
       } catch (e) { console.error(e); }
     } else {
-      const localBadges = await StorageService.get('local_badges') || [];
+      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || await StorageService.get('local_badges') || [];
       if (!localBadges.includes(badgeId)) {
         localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
+        await StorageService.save(KEYS.LOCAL_BADGES, localBadges);
         triggerBadgeUnlock(badgeId);
       }
     }
@@ -162,10 +170,12 @@ function PlanDetailsContent() {
             }
           }
           setLoading(false);
+        }, (error) => {
+          console.error("Firestore snapshot error:", error);
+          setLoading(false);
         });
       } else {
         await loadLocalData();
-        setLoading(false);
       }
     });
 
@@ -214,6 +224,7 @@ function PlanDetailsContent() {
   };
 
   const handleCheck = async (day) => {
+    if (!plan) return;
     const isCurrentlyManual = completedDays[day]?.isCompleted;
     let newCompletedDays = { ...completedDays };
 
@@ -260,13 +271,13 @@ function PlanDetailsContent() {
       }
     } else {
       if (planType === 'custom') {
-        const localCustom = await StorageService.get('local_custom_plans') || {};
+        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
         localCustom[planId] = updatedUserData.customPlans[planId];
-        await StorageService.save('local_custom_plans', localCustom);
+        await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
       } else {
-        const localCompletion = await StorageService.get('local_completed_plans') || {};
+        const localCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
         localCompletion[planId] = updatedUserData.completedPlans[planId];
-        await StorageService.save('local_completed_plans', localCompletion);
+        await StorageService.save(KEYS.COMPLETED_PLANS, localCompletion);
       }
       setUserData(updatedUserData);
       checkAndUnlockBadges(updatedUserData);

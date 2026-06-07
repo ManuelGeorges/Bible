@@ -135,7 +135,20 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     private void handleStreakNotification(Context context) {
         try {
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-            int streak = prefs.getInt("_cap_userStreak", prefs.getInt("userStreak", 0));
+            
+            // قراءة آمنة لـ Streak (قد يكون Integer أو String)
+            int streak = 0;
+            String streakStr = getPrefsString(prefs, "agios_streak");
+            if (streakStr.isEmpty()) streakStr = getPrefsString(prefs, "userStreak");
+            
+            if (!streakStr.isEmpty()) {
+                try {
+                    streak = Integer.parseInt(streakStr);
+                } catch (Exception e) {
+                    // إذا فشل التحويل، نحاول قراءته كـ int مباشرة (للمستخدمين القدامى)
+                    streak = prefs.getInt("_cap_userStreak", prefs.getInt("userStreak", 0));
+                }
+            }
 
             String msg;
             if (streak > 0) {
@@ -339,9 +352,20 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     }
 
     private String getPrefsString(SharedPreferences prefs, String key) {
-        String val = prefs.getString("_cap_" + key, null);
-        if (val == null) val = prefs.getString(key, "");
-        return val;
+        try {
+            String val = prefs.getString("_cap_" + key, null);
+            if (val == null) val = prefs.getString(key, "");
+            return val;
+        } catch (ClassCastException e) {
+            // معالجة حالة البيانات التالفة (Integer بدلاً من String)
+            try {
+                int val = prefs.getInt("_cap_" + key, -1);
+                if (val == -1) val = prefs.getInt(key, -1);
+                return val == -1 ? "" : String.valueOf(val);
+            } catch (Exception e2) {
+                return "";
+            }
+        }
     }
 
     private void cancelAlarm(Context context, String type) {

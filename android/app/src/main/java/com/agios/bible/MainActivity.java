@@ -66,8 +66,16 @@ public class MainActivity extends BridgeActivity {
             public void updateUserStats(int streak, String plansSummaryJson) {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt("_cap_userStreak", streak);
-                editor.putInt("userStreak", streak);
+                
+                // الحل: Capacitor تتوقع القيم كنصوص (Strings)
+                String streakStr = String.valueOf(streak);
+                editor.putString("_cap_agios_streak", streakStr); // المفتاح الموحد الجديد
+                editor.putString("agios_streak", streakStr);
+                
+                // للموافقة مع الكود القديم وتجنب الكراش
+                editor.putString("_cap_userStreak", streakStr);
+                editor.putString("userStreak", streakStr);
+
                 if (plansSummaryJson != null && !plansSummaryJson.isEmpty()) {
                     editor.putString("_cap_studyPlansSummary", plansSummaryJson);
                     editor.putString("studyPlansSummary", plansSummaryJson);

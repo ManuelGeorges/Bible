@@ -37,10 +37,10 @@ export default function StudyPlans() {
         triggerBadgeUnlock(badgeId);
       } catch (e) { console.error(e); }
     } else {
-      const localBadges = await StorageService.get('local_badges') || [];
+      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || [];
       if (!localBadges.includes(badgeId)) {
         localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
+        await StorageService.save(KEYS.LOCAL_BADGES, localBadges);
         triggerBadgeUnlock(badgeId);
       }
     }
@@ -99,10 +99,11 @@ export default function StudyPlans() {
           setLoading(false);
         }, () => setLoading(false));
       } else {
-        // تحميل البيانات المحلية للضيف
-        const localCompletion = await StorageService.get('local_completed_plans') || {};
-        const localCustom = await StorageService.get('local_custom_plans') || {};
-        const localBadges = await StorageService.get('local_badges') || [];
+        // توحيد المفاتيح للضيف
+        const localCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
+        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+        const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || await StorageService.get('local_badges') || [];
+
         setCompletionData(localCompletion);
         setCustomPlans(localCustom);
         checkPlanBadges({ completedPlans: localCompletion, customPlans: localCustom, badges: localBadges });
@@ -161,9 +162,9 @@ export default function StudyPlans() {
                 const userRef = doc(db, "users", user.uid);
                 await updateDoc(userRef, { [`customPlans.${planId}`]: deleteField() });
               } else {
-                const localCustom = await StorageService.get('local_custom_plans') || {};
+                const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
                 delete localCustom[planId];
-                await StorageService.save('local_custom_plans', localCustom);
+                await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
                 setCustomPlans(localCustom);
               }
               toast.success("تم الحذف بنجاح");
