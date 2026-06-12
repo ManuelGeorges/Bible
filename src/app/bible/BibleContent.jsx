@@ -88,7 +88,7 @@ export default function BibleContent() {
   const unlockBadge = async (badgeId) => {
     if (user) {
       try {
-        const userRef = document.getElementById(firestore, 'users', user.uid);
+        const userRef = doc(firestore, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         const currentBadges = userSnap.data()?.badges || [];
         if (!currentBadges.includes(badgeId)) {
@@ -97,10 +97,10 @@ export default function BibleContent() {
         }
       } catch (e) { console.error(e); }
     } else {
-      const localBadges = await StorageService.get('local_badges') || [];
+      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || await StorageService.get('local_badges') || [];
       if (!localBadges.includes(badgeId)) {
         localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
+        await StorageService.save(KEYS.LOCAL_BADGES, localBadges);
         triggerBadgeUnlock(badgeId);
       }
     }
@@ -314,14 +314,14 @@ export default function BibleContent() {
         const finalAmount = isNegative ? -amount : amount;
         if (!isNegative) {
             await StorageService.addPoints(amount);
-            const history = await StorageService.get('points_history') || [];
+            const history = await StorageService.get(KEYS.POINTS_HISTORY) || await StorageService.get('points_history') || [];
             history.push({
               type: type,
               points: finalAmount,
               reason: reason,
               timestamp: getCairoIsoString()
             });
-            await StorageService.save('points_history', history);
+            await StorageService.save(KEYS.POINTS_HISTORY, history);
             toast.success(`${reason}: +${amount} نقطة`);
         }
     }
@@ -360,7 +360,7 @@ export default function BibleContent() {
 
       const history = user
         ? (await getDoc(doc(firestore, 'users', user.uid))).data()?.pointsHistory || []
-        : await StorageService.get('points_history') || [];
+        : await StorageService.get(KEYS.POINTS_HISTORY) || await StorageService.get('points_history') || [];
 
       const shares = history.filter(h => h.type === 'share').length;
       if (shares >= 50) unlockBadge('social_influencer');
@@ -372,7 +372,7 @@ export default function BibleContent() {
 
   const saveBibleData = useCallback(async (v, c) => {
     await StorageService.save(KEYS.FAVORITES, v);
-    await StorageService.save(KEYS.COMPLETED_PLANS, c); // Note: Should probably be KEYS.COMPLETED_CHAPTERS but keeping consistency with current code
+    await StorageService.save(KEYS.COMPLETED_CHAPTERS, c);
 
     if (user && firestore) {
       const userRef = doc(firestore, 'users', user.uid);
@@ -431,7 +431,8 @@ export default function BibleContent() {
       } else {
         const localStats = await StorageService.getLocalStats();
         setFavouriteVerses(localStats.favorites || {});
-        const localCompleted = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
+        // محاولة القراءة من المفتاح الصحيح، مع دعم المفتاح القديم الخاطئ للانتقال السلس
+        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || await StorageService.get(KEYS.COMPLETED_PLANS) || {};
         setCompletedChapters(localCompleted);
       }
     };
@@ -592,10 +593,59 @@ export default function BibleContent() {
     }
   };
 
-  const updateStudyPlanProgress = async (planId, planType, day) => {
+  const checkDayReadingCompleted = useCallback((readings, allCompleted) => {
+    if (!readings || !Array.isArray(readings)) return false;
+
+    return readings.every(reading => {
+      try {
+        const trimmed = reading.trim();
+        const parts = trimmed.split(' ');
+        const chaptersPart = parts.pop();
+        const bookName = parts.join(' ');
+
+        const bookIdx = bookNamesData.findIndex(b => b.name === bookName);
+        if (bookIdx === -1) return false;
+
+        let chapters = [];
+        if (chaptersPart.includes('-')) {
+          const [start, end] = chaptersPart.split('-').map(Number);
+          for (let i = start; i <= end; i++) chapters.push(i);
+        } else if (chaptersPart.includes(',')) {
+          chapters = chaptersPart.split(',').map(Number);
+        } else {
+          chapters.push(Number(chaptersPart));
+        }
+
+        return chapters.every(ch => allCompleted[`${bookIdx}-${ch - 1}`]);
+      } catch (e) { return false; }
+    });
+  }, [bookNamesData]);
+
+  const updateStudyPlanProgress = async (planId, planType, day, currentCompleted) => {
+    let planInfo = null;
+
+    if (planType === 'custom') {
+      if (user) {
+        const userSnap = await getDoc(doc(firestore, 'users', user.uid));
+        if (userSnap.exists()) {
+          planInfo = userSnap.data().customPlans?.[planId];
+        }
+      } else {
+        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+        planInfo = localCustom[planId];
+      }
+    } else {
+      planInfo = allPlans.find(p => p.id === parseInt(planId));
+    }
+
+    if (!planInfo) return;
+
+    const dayReading = planInfo.readings?.find(r => r.day === parseInt(day))?.books;
+    const isDayNowCompleted = checkDayReadingCompleted(dayReading, currentCompleted);
+
     const newDayData = {
-      isCompleted: true,
-      dateCompleted: getCairoIsoString()
+      isCompleted: isDayNowCompleted,
+      dateCompleted: isDayNowCompleted ? getCairoIsoString() : null
     };
 
     if (user) {
@@ -614,18 +664,13 @@ export default function BibleContent() {
           : userData.completedPlans?.[planId] || { completedDays: {} };
 
         const currentCompletedDays = planData.completedDays || {};
-        if (currentCompletedDays[day]?.isCompleted) return;
+
+        // Only update if completion status changed
+        if (!!currentCompletedDays[day]?.isCompleted === isDayNowCompleted) return;
 
         const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
 
-        let totalDays = 0;
-        if (planType === 'custom') {
-          totalDays = planData.readings?.length || 0;
-        } else {
-          const staticPlan = allPlans.find(p => p.id === parseInt(planId));
-          totalDays = staticPlan?.readings?.length || 0;
-        }
-
+        const totalDays = planInfo.readings?.length || 0;
         const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
         const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
 
@@ -633,37 +678,48 @@ export default function BibleContent() {
           [`${fieldPath}.completedDays`]: newCompletedDays,
           [`${fieldPath}.completionPercentage`]: percentage
         });
-        toast.success("تم تحديث تقدمك في الخطة الدراسية ✅");
+
+        if (isDayNowCompleted) {
+          toast.success("مبروك! أتممت قراءات اليوم في الخطة ✨");
+          if (percentage === 100) {
+            unlockBadge(`plan_finish_${planId}`);
+            toast.success("رائع! لقد أنهيت الخطة الدراسية بالكامل 🏆");
+          }
+        }
       } catch (e) {
         console.error("Error updating study plan:", e);
       }
     } else {
-      const storageKey = planType === 'custom' ? 'local_custom_plans' : 'local_completed_plans';
-      const allData = await StorageService.get(storageKey) || {};
+      const storageKey = planType === 'custom' ? KEYS.CUSTOM_PLANS : KEYS.COMPLETED_PLANS;
+      const allData = await StorageService.get(storageKey) || await StorageService.get(planType === 'custom' ? 'local_custom_plans' : 'local_completed_plans') || {};
 
       let planData = allData[planId];
       if (!planData) {
         if (planType !== 'custom') {
-          const staticPlan = allPlans.find(p => p.id === parseInt(planId));
-          planData = { ...staticPlan, completedDays: {}, completionPercentage: 0 };
+          planData = { ...planInfo, completedDays: {}, completionPercentage: 0 };
         } else return;
       }
 
       const currentCompletedDays = planData.completedDays || {};
-      if (currentCompletedDays[day]?.isCompleted) return;
+      if (!!currentCompletedDays[day]?.isCompleted === isDayNowCompleted) return;
 
       const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
-      const totalDays = planData.readings?.length || 0;
+      const totalDays = planInfo.readings?.length || 0;
       const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
       const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
 
       allData[planId] = { ...planData, completedDays: newCompletedDays, completionPercentage: percentage };
       await StorageService.save(storageKey, allData);
+
+      if (isDayNowCompleted) toast.success("أتممت قراءات اليوم في الخطة ✅");
     }
   };
 
   const toggleChapterCompletion = async () => {
     const key = `${selectedBookIndex}-${selectedChapterIndex}`;
+    const planId = searchParams.get('planId');
+    const planType = searchParams.get('planType');
+    const day = searchParams.get('day');
 
     if (completedChapters[key]) {
       const next = { ...completedChapters, [key]: false };
@@ -671,17 +727,18 @@ export default function BibleContent() {
       await saveBibleData(favouriteVerses, next);
       updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
       toast.error("تم إلغاء تحديد الإصحاح");
+
+      if (planId && day) {
+        updateStudyPlanProgress(planId, planType, parseInt(day), next);
+      }
     } else {
       const next = { ...completedChapters, [key]: true };
       setCompletedChapters(next);
       await saveBibleData(favouriteVerses, next);
       updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
 
-      const planId = searchParams.get('planId');
-      const planType = searchParams.get('planType');
-      const day = searchParams.get('day');
       if (planId && day) {
-        updateStudyPlanProgress(planId, planType, parseInt(day));
+        updateStudyPlanProgress(planId, planType, parseInt(day), next);
       }
 
       // Check "Avid Reader" Badges

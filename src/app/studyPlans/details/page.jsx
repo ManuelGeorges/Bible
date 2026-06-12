@@ -32,7 +32,6 @@ function PlanDetailsContent() {
 
   const loadLocalData = useCallback(async () => {
     try {
-      // استخدام المفاتيح الموحدة مع دعم المفاتيح القديمة لتجنب الـ 404
       const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
       setCompletedChapters(localChapters);
 
@@ -199,9 +198,12 @@ function PlanDetailsContent() {
     if (!bookNames.length || !completedChapters) return false;
     try {
       const trimmed = readingStr.trim();
-      const parts = trimmed.split(' ');
-      const chaptersPart = parts.pop();
-      const bookName = parts.join(' ');
+      const match = trimmed.match(/^(.+?)\s?(\d+[\d\s\-,]*)$/);
+      if (!match) return false;
+
+      const bookName = match[1].trim();
+      const chaptersPart = match[2].trim();
+
       const bookIndex = bookNames.findIndex(b => b.name === bookName);
       if (bookIndex === -1) return false;
 
@@ -210,7 +212,7 @@ function PlanDetailsContent() {
         const [start, end] = chaptersPart.split('-').map(Number);
         for (let i = start; i <= end; i++) chaptersToNodes.push(i);
       } else if (chaptersPart.includes(',')) {
-        chaptersToNodes = chaptersPart.split(',').map(Number);
+        chaptersToNodes = chaptersPart.split(',').map(c => Number(c.trim()));
       } else {
         chaptersToNodes.push(Number(chaptersPart));
       }
