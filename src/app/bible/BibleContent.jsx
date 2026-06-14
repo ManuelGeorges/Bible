@@ -72,7 +72,8 @@ export default function BibleContent() {
   const [copiedMessage, setCopiedMessage] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [versePerLine, setVersePerLine] = useState(false);
-  
+  const [useTashkeel, setUseTashkeel] = useState(false);
+
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState('');
   const [targetVerseKey, setTargetVerseKey] = useState(null);
@@ -138,14 +139,14 @@ export default function BibleContent() {
             setDirection(dir);
             setSelectedChapterIndex(nextChapter);
             setSelectedVerses([]);
-            window.scrollTo(0, 0); // Force scroll to top on nav
+            window.scrollTo(0, 0);
             return true;
         } else if (dir > 0 && selectedBookIndex < bookNamesData.length - 1) {
             setDirection(1);
             setSelectedBookIndex(prev => prev + 1);
             setSelectedChapterIndex(0);
             setSelectedVerses([]);
-            window.scrollTo(0, 0); // Force scroll to top on nav
+            window.scrollTo(0, 0);
             return true;
         } else if (dir < 0 && selectedBookIndex > 0) {
             setDirection(-1);
@@ -153,7 +154,7 @@ export default function BibleContent() {
             const prevBookChapters = bibleData?.[selectedBookIndex - 1]?.chapters || [];
             setSelectedChapterIndex(Math.max(0, prevBookChapters.length - 1));
             setSelectedVerses([]);
-            window.scrollTo(0, 0); // Force scroll to top on nav
+            window.scrollTo(0, 0);
             return true;
         }
         return false;
@@ -163,13 +164,10 @@ export default function BibleContent() {
     return () => setNavigationCallback(null);
   }, [bibleData, selectedBookIndex, selectedChapterIndex, bookNamesData, setNavigationCallback]);
 
-  // التمرير لأعلى عند تغيير الإصحاح (ضمان إضافي)
   useEffect(() => {
     if (!isLoading) {
-      // استخدام setTimeout لضمان حدوث التمرير بعد اكتمال ريندر المحتوى الجديد
       const timer = setTimeout(() => {
         window.scrollTo(0, 0);
-        // في حالة وجود scroll container داخلي في الـ CSS
         document.body.scrollTo(0, 0);
         document.documentElement.scrollTo(0, 0);
       }, 50);
@@ -177,7 +175,6 @@ export default function BibleContent() {
     }
   }, [selectedBookIndex, selectedChapterIndex, isLoading]);
 
-  // تعديل: التمرير للآية فقط عند تشغيل الأوديو بشكل نشط، وليس عند مجرد تغيير الإصحاح إذا كان الـ currentVerseId قديماً
   useEffect(() => {
     if (isPlaying && currentVerseId !== -1) {
       const element = document.getElementById(`verse-${currentVerseId}`);
@@ -187,7 +184,6 @@ export default function BibleContent() {
     }
   }, [currentVerseId, isPlaying]);
 
-  // Audio Sync Logic
   useEffect(() => {
     const syncAudio = async () => {
         if (isLoading || bookNamesData.length === 0) return;
@@ -266,6 +262,7 @@ export default function BibleContent() {
       const savedTheme = localStorage.getItem('theme') || 'system';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
+      const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
 
       const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -276,6 +273,7 @@ export default function BibleContent() {
       }
       document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
       setVersePerLine(savedLayout);
+      setUseTashkeel(savedTashkeel);
     };
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);
@@ -355,16 +353,7 @@ export default function BibleContent() {
       }
 
       updateUserPoints(15, "مشاركة آية", 'share');
-
       unlockBadge('share_1');
-
-      const history = user
-        ? (await getDoc(doc(firestore, 'users', user.uid))).data()?.pointsHistory || []
-        : await StorageService.get(KEYS.POINTS_HISTORY) || await StorageService.get('points_history') || [];
-
-      const shares = history.filter(h => h.type === 'share').length;
-      if (shares >= 50) unlockBadge('social_influencer');
-
     } catch (err) {
       console.log('Share error', err);
     }
@@ -386,9 +375,10 @@ export default function BibleContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel.json' : '/data/bibles/ar_svd.json';
         const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
-          fetch('/data/bibles/ar_svd.json').then(r => r.json())
+          fetch(biblePath).then(r => r.json())
         ]);
 
         const names = namesRes.ar || [];
@@ -397,8 +387,6 @@ export default function BibleContent() {
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
-
-        // جلب آخر قراءة من التخزين المحلي الجديد
         const savedLastRead = await StorageService.get(KEYS.LAST_READ);
 
         if (bParam) {
@@ -413,7 +401,7 @@ export default function BibleContent() {
       } catch (e) { setIsLoading(false); }
     };
     loadData();
-  }, [searchParams]);
+  }, [searchParams, useTashkeel]);
 
   useEffect(() => {
     const initUserData = async () => {
@@ -431,13 +419,19 @@ export default function BibleContent() {
       } else {
         const localStats = await StorageService.getLocalStats();
         setFavouriteVerses(localStats.favorites || {});
-        // محاولة القراءة من المفتاح الصحيح، مع دعم المفتاح القديم الخاطئ للانتقال السلس
-        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || await StorageService.get(KEYS.COMPLETED_PLANS) || {};
+        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || await StorageService.get('local_completed_plans') || {};
         setCompletedChapters(localCompleted);
       }
     };
     initUserData();
   }, []);
+
+  const toggleTashkeel = () => {
+    const newVal = !useTashkeel;
+    setUseTashkeel(newVal);
+    localStorage.setItem('useTashkeel', newVal.toString());
+    toast.success(newVal ? "تم تفعيل التشكيل" : "تم إخفاء التشكيل");
+  };
 
   const copyVerse = (text, index) => {
     const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
@@ -631,7 +625,7 @@ export default function BibleContent() {
           planInfo = userSnap.data().customPlans?.[planId];
         }
       } else {
-        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
         planInfo = localCustom[planId];
       }
     } else {
@@ -655,21 +649,13 @@ export default function BibleContent() {
         if (!userSnap.exists()) return;
         const userData = userSnap.data();
 
-        const fieldPath = planType === 'custom'
-          ? `customPlans.${planId}`
-          : `completedPlans.${planId}`;
-
-        const planData = planType === 'custom'
-          ? userData.customPlans?.[planId]
-          : userData.completedPlans?.[planId] || { completedDays: {} };
+        const fieldPath = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
+        const planData = planType === 'custom' ? userData.customPlans?.[planId] : userData.completedPlans?.[planId] || { completedDays: {} };
 
         const currentCompletedDays = planData.completedDays || {};
-
-        // Only update if completion status changed
         if (!!currentCompletedDays[day]?.isCompleted === isDayNowCompleted) return;
 
         const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
-
         const totalDays = planInfo.readings?.length || 0;
         const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
         const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
@@ -686,19 +672,16 @@ export default function BibleContent() {
             toast.success("رائع! لقد أنهيت الخطة الدراسية بالكامل 🏆");
           }
         }
-      } catch (e) {
-        console.error("Error updating study plan:", e);
-      }
+      } catch (e) { console.error(e); }
     } else {
       const storageKey = planType === 'custom' ? KEYS.CUSTOM_PLANS : KEYS.COMPLETED_PLANS;
-      const allData = await StorageService.get(storageKey) || await StorageService.get(planType === 'custom' ? 'local_custom_plans' : 'local_completed_plans') || {};
-
+      const allData = await StorageService.get(storageKey) || {};
       let planData = allData[planId];
-      if (!planData) {
-        if (planType !== 'custom') {
-          planData = { ...planInfo, completedDays: {}, completionPercentage: 0 };
-        } else return;
+
+      if (!planData && planType !== 'custom') {
+        planData = { ...planInfo, completedDays: {}, completionPercentage: 0 };
       }
+      if (!planData) return;
 
       const currentCompletedDays = planData.completedDays || {};
       if (!!currentCompletedDays[day]?.isCompleted === isDayNowCompleted) return;
@@ -741,7 +724,7 @@ export default function BibleContent() {
         updateStudyPlanProgress(planId, planType, parseInt(day), next);
       }
 
-      // Check "Avid Reader" Badges
+      // Badge checks
       const completedCount = Object.keys(next).filter(k => next[k]).length;
       if (completedCount >= 10) unlockBadge('reader_10');
       if (completedCount >= 50) unlockBadge('reader_50');
@@ -753,19 +736,11 @@ export default function BibleContent() {
 
       const otChaptersTotal = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
       const ntChaptersTotal = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
-
-      const otCompletedCount = Object.keys(next).filter(k => {
-        const bIdx = parseInt(k.split('-')[0]);
-        return next[k] && bookNamesData[bIdx]?.type === 'old';
-      }).length;
-
-      const ntCompletedCount = Object.keys(next).filter(k => {
-        const bIdx = parseInt(k.split('-')[0]);
-        return next[k] && bookNamesData[bIdx]?.type === 'new';
-      }).length;
+      const otCompletedCount = Object.keys(next).filter(k => next[k] && bookNamesData[parseInt(k.split('-')[0])]?.type === 'old').length;
+      const ntCompletedCount = Object.keys(next).filter(k => next[k] && bookNamesData[parseInt(k.split('-')[0])]?.type === 'new').length;
 
       if (otCompletedCount === otChaptersTotal && otChaptersTotal > 0) unlockBadge('testament_old');
-      if (ntCompletedCount === ntChaptersTotal && ntCompletedCount > 0) unlockBadge('testament_new');
+      if (ntCompletedCount === ntChaptersTotal && ntChaptersTotal > 0) unlockBadge('testament_new');
     }
   };
 
@@ -854,6 +829,14 @@ export default function BibleContent() {
           <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
           <span className={styles.navSeparator}>|</span>
           <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
+        </button>
+
+        <button
+          className={`${styles.tashkeelToggle} ${useTashkeel ? styles.active : ''}`}
+          onClick={toggleTashkeel}
+          title={useTashkeel ? "إخفاء التشكيل" : "إظهار التشكيل"}
+        >
+          <span className={styles.tashkeelIcon}>ـَ</span>
         </button>
       </div>
 

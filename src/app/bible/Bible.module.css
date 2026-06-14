@@ -39,9 +39,11 @@
 .controls {
   display: flex ;
   justify-content: center ;
+  align-items: center ;
   margin-bottom: 1.5rem ;
   width: 90% ;
-  max-width: 500px ;
+  max-width: 600px ;
+  gap: 10px ;
 }
 
 .navigationDisplay {
@@ -54,7 +56,7 @@
   justify-content: center ;
   gap: 8px ;
   cursor: pointer ;
-  width: 100% ;
+  flex: 1 ;
   transition: all 0.2s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) ;
 }
@@ -65,8 +67,40 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) ;
 }
 
-.navigationDisplay:active {
-  transform: translateY(1px) ;
+.tashkeelToggle {
+  width: 48px ;
+  height: 48px ;
+  border-radius: 12px ;
+  background: var(--btn-bg) ;
+  border: 1px solid rgba(255, 255, 255, 0.1) ;
+  display: flex ;
+  align-items: center ;
+  justify-content: center ;
+  cursor: pointer ;
+  transition: all 0.3s ease ;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) ;
+}
+
+.tashkeelToggle:hover {
+  transform: translateY(-2px) ;
+  background: var(--btn-hover) ;
+}
+
+.tashkeelToggle.active {
+  background: var(--color-accent) !important;
+  border-color: #ffffff ;
+}
+
+.tashkeelIcon {
+  font-size: 1.4rem ;
+  font-weight: 900 ;
+  color: #ffffff ;
+  line-height: 1 ;
+  margin-top: -5px ;
+}
+
+.tashkeelToggle.active .tashkeelIcon {
+  color: #000000 ;
 }
 
 .navText {
@@ -159,7 +193,6 @@
   transform: translateX(-50%) ;
   width: 92% ;
   max-width: 500px ;
-  /* جعل الخلفية أكثر بروزاً وغير شفافة تماماً */
   background: var(--color-bg-end, #0f172a) !important;
   backdrop-filter: blur(25px) ;
   -webkit-backdrop-filter: blur(25px) ;
@@ -171,9 +204,7 @@
   justify-content: flex-start ;
   gap: 12px ;
   z-index: 9999 ;
-  /* ظل أقوى ليبرز الشريط */
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7) ;
-  /* إطار واضح بلون الأكسنت */
   border: 1.5px solid var(--color-accent) !important;
   direction: ltr ;
   overflow-x: auto ;
@@ -240,7 +271,6 @@
   transition: all 0.2s ;
 }
 
-/* تصغير الأيقونات داخل الشريط */
 .actionBtn svg {
   width: 18px !important;
   height: 18px !important;
@@ -392,15 +422,6 @@
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.completionBtn:hover {
-  background-color: var(--btn-hover);
-  transform: translateY(-2px);
-}
-
-.completionBtn:active {
-  transform: translateY(1px);
 }
 
 .completionBtn.completed {
