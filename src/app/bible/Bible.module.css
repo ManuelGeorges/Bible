@@ -67,40 +67,42 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) ;
 }
 
-.tashkeelToggle {
-  width: 48px ;
-  height: 48px ;
-  border-radius: 12px ;
-  background: var(--btn-bg) ;
-  border: 1px solid rgba(255, 255, 255, 0.1) ;
-  display: flex ;
-  align-items: center ;
-  justify-content: center ;
-  cursor: pointer ;
-  transition: all 0.3s ease ;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) ;
+/* ستايل زر التشكيل "الحلو المختلف" في الشريط السفلي */
+.tashkeelTextBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 6px 18px;
+  border-radius: 50px; /* شكل بيضاوي */
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
-.tashkeelToggle:hover {
-  transform: translateY(-2px) ;
-  background: var(--btn-hover) ;
+.tashkeelTextBtn:hover {
+  background: rgba(255, 193, 7, 0.1);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
 }
 
-.tashkeelToggle.active {
+.tashkeelTextBtn.active {
   background: var(--color-accent) !important;
-  border-color: #ffffff ;
+  color: #000 !important; /* لون غامق للنص فوق التشكيل */
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+  transform: scale(1.05);
 }
 
-.tashkeelIcon {
-  font-size: 1.4rem ;
-  font-weight: 900 ;
-  color: #ffffff ;
-  line-height: 1 ;
-  margin-top: -5px ;
-}
-
-.tashkeelToggle.active .tashkeelIcon {
-  color: #000000 ;
+.tashkeelTextBtn:active {
+  transform: scale(0.9);
 }
 
 .navText {
@@ -422,6 +424,15 @@
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.completionBtn:hover {
+  background-color: var(--btn-hover);
+  transform: translateY(-2px);
+}
+
+.completionBtn:active {
+  transform: translateY(1px);
 }
 
 .completionBtn.completed {

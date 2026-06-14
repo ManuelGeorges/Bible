@@ -129,7 +129,7 @@ ${targetText}
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({
-        model: "gemini-3.1-flash-lite",
+        model: "gemma-4-31b-it",
         generationConfig: {
           maxOutputTokens: 2048,
         }
