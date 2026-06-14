@@ -471,6 +471,7 @@ function SearchContent() {
       setAiStatus('جاري تحليل الكلمة...');
       const result = await withRetry(
         attemptStream,
+        
         (attempt, max, reason) => setAiStatus(`محاولة (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. جاري تجربة مفتاح بديل...`),
         5,
         2000
@@ -853,6 +854,59 @@ ${filterContext}
     updateUserPoints(20, "نسخ جميع نتائج البحث");
   };
 
+  const shareAllResults = async () => {
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    let fullText = "";
+
+    if (searchType === 'semantic') {
+      if (displaySemanticResults.length === 0) return;
+
+      fullText = displaySemanticResults.map(res => {
+        let groupText = "";
+        if (semanticOptions.showTitle) groupText += `العنوان: ${res.title}\n`;
+        if (semanticOptions.showReason) groupText += `الشرح: ${res.reason}\n`;
+
+        const versesText = res.versesContent.map(v => v.text).join(' ');
+        const first = res.versesContent[0];
+        const last = res.versesContent[res.versesContent.length - 1];
+
+        const verseRange = res.versesContent.length === 1
+          ? convertToArabicNumber(first.number)
+          : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+
+        groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+        return groupText;
+      }).join('\n\n');
+
+    } else {
+      if (searchResults.length === 0) return;
+      fullText = searchResults.map(v => {
+        const chapterLabel = convertToArabicNumber(v.chapter + 1);
+        const verseLabel = convertToArabicNumber(v.verse + 1);
+        return `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
+      }).join('\n');
+    }
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          text: fullText,
+          dialogTitle: 'مشاركة جميع النتائج عبر...',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          text: fullText,
+        });
+      } else {
+        copyAllResults();
+      }
+      updateUserPoints(20, "مشاركة جميع نتائج البحث");
+    } catch (err) {
+      console.error('Share error', err);
+    }
+  };
+
   const copySemanticGroup = (res) => {
     const rlm = "\u200F";
     const lrm = "\u200E";
@@ -1132,10 +1186,16 @@ ${filterContext}
                         {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(displaySemanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
                       </p>
                       {(searchType === 'semantic' ? displaySemanticResults.length > 0 : searchResults.length > 0) && (
-                        <button onClick={copyAllResults} className={styles.copyAllBtn}>
-                          <Copy size={14} />
-                          <span>نسخ جميع النتائج</span>
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={copyAllResults} className={styles.copyAllBtn}>
+                            <Copy size={14} />
+                            <span>نسخ الكل</span>
+                          </button>
+                          <button onClick={shareAllResults} className={styles.copyAllBtn} style={{ borderColor: '#3b82f6' }}>
+                            <Share2 size={14} />
+                            <span>مشاركة الكل</span>
+                          </button>
+                        </div>
                       )}
                     </div>
                     {selectedVerses.length > 0 && (
