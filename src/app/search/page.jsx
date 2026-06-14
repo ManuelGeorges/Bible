@@ -18,9 +18,9 @@ import { Capacitor } from '@capacitor/core';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic"
+  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
+  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg"
 ];
-
 const getGenAI = (index) => {
   const key = apiKeys[index % apiKeys.length];
   return new GoogleGenerativeAI(key);
