@@ -41,14 +41,14 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
 
       // تحديد ما إذا كان الخطأ يستحق إعادة المحاولة
       const isRetryable = errorMsg.includes('429') ||
-                          errorMsg.includes('quota') ||
-                          errorMsg.includes('503') ||
-                          errorMsg.includes('overloaded') ||
-                          errorMsg.includes('busy') ||
-                          errorMsg.includes('timeout') ||
-                          errorMsg.includes('network') ||
-                          errorMsg.includes('fetch') ||
-                          errorMsg.includes('deadline');
+        errorMsg.includes('quota') ||
+        errorMsg.includes('503') ||
+        errorMsg.includes('overloaded') ||
+        errorMsg.includes('busy') ||
+        errorMsg.includes('timeout') ||
+        errorMsg.includes('network') ||
+        errorMsg.includes('fetch') ||
+        errorMsg.includes('deadline');
 
       if (attempt < maxAttempts - 1 && isRetryable) {
         const delay = baseDelayMs * Math.pow(2, attempt);
@@ -279,7 +279,7 @@ function SearchContent() {
 
       setSearchResults(filtered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
     } else if (searchType === 'derivatives' && selectedDerivatives.length === 0) {
-        setSearchResults([]);
+      setSearchResults([]);
     }
   }, [searchQuery, selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
 
@@ -472,7 +472,7 @@ function SearchContent() {
       setAiStatus('جاري تحليل الكلمة...');
       const result = await withRetry(
         attemptStream,
-        
+
         (attempt, max, reason) => setAiStatus(`محاولة (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. جاري تجربة مفتاح بديل...`),
         5,
         2000
@@ -510,35 +510,18 @@ function SearchContent() {
 
       const genAIInstance = getGenAI(attemptIndex);
       const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-      const prompt = `أنت محرك بحث لاهوتي ذكي ومفسر للكتاب المقدس لتطبيق "أجيوس". مهمتك هي فهم "المعنى" العميق وراء بحث المستخدم واستخراج شواهد مرتبطة به.
+      const prompt = `أنت محرك بحث لاهوتي لتطبيق "أجيوس".
+استخرج 5-7 مراجع مرتبطة بـ: "${term}"
+السياق: ${filterContext}
 
-### [سؤال المستخدم]
-"${term}"
-
-### [سياق الفلترة]
-${filterContext}
-
-### [المطلوب]
-استخراج أهم 5-7 مراجع دقيقة جداً (قصص، أمثال، أو آيات مباشرة) تشرح أو ترتبط بالمعنى المطلوب.
-
-### [قواعد الاستجابة]
+القواعد:
 1. الرد JSON فقط بهذا التنسيق:
 {
-  "results": [
-    {
-      "book": "اسم السفر",
-      "chapter": رقم الأصحاح,
-      "verses": [رقم الأية, رقم الآية],
-      "title": "عنوان قصير للمقطع (مثلاً: مثل السامري الصالح)",
-      "reason": "لماذا هذا شاهد مرتبط ببحث المستخدم؟ (جملة واحدة ملهمة)"
-    }
-  ]
+  "results": [{"book": "اسم السفر", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
 }
-
-2. الالتزام بأسماء الأسفار من القائمة المتاحة حصراً: [${allowedBooks}]
-3. إذا كان البحث عن صفة (مثل التواضع)، ابحث عن آيات مباشرة وعن قصص تجسد الصفة (مثل غسل الأرجل، ميلاد المسيح).
-4. تأكد تماماً من صحة أرقام الآيات والأصحاحات ومناسبتها للسفر.`;
-
+2. الالتزام بأسماء الأسفار حصراً: [${allowedBooks}]
+3. للصفات: ابحث عن آيات مباشرة وقصص تجسدها.
+4. دقة عالية في الأرقام.`;
       const responsePromise = model.generateContent(prompt);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Semantic search timed out after 25s')), 25000)
@@ -757,9 +740,9 @@ ${filterContext}
         : sorted.map(sv => convertToArabicNumber(sv.verse + 1)).join('، ');
       reference = `${first.book} ${convertToArabicNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
     } else if (sameBook) {
-        reference = `${first.book} (شواهد متعددة)`;
+      reference = `${first.book} (شواهد متعددة)`;
     } else {
-        reference = "شواهد متعددة";
+      reference = "شواهد متعددة";
     }
 
     const fullText = `${text} ${rlm}(${reference})`;
@@ -789,9 +772,9 @@ ${filterContext}
         : sorted.map(sv => convertToArabicNumber(sv.verse + 1)).join('، ');
       reference = `${first.book} ${convertToArabicNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
     } else if (sameBook) {
-        reference = `${first.book} (شواهد متعددة)`;
+      reference = `${first.book} (شواهد متعددة)`;
     } else {
-        reference = "شواهد متعددة";
+      reference = "شواهد متعددة";
     }
 
     const fullText = `${text} ${rlm}(${reference})`;
@@ -1056,7 +1039,7 @@ ${filterContext}
               <ImageIcon size={18} />
             </button>
             <button onClick={(e) => { e.stopPropagation(); setActiveActionId(activeActionId === vId ? null : vId); setNoteText(savedVerse?.note || ''); }} title="تفضيل">
-              {savedVerse ? <span style={{color: savedVerse.color}}>💙</span> : '🤍'}
+              {savedVerse ? <span style={{ color: savedVerse.color }}>💙</span> : '🤍'}
             </button>
           </div>
         </div>
@@ -1157,19 +1140,19 @@ ${filterContext}
             {showDerivatives && (
               <div className={styles.searchInfoBox}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <p style={{ margin: 0 }}><strong>الجذر المستخرج:</strong> {searchInfo.root}</p>
-                    <div className={styles.selectionActionsSmall}>
-                        <button type="button" onClick={() => setSelectedDerivatives(searchInfo.derivatives)}>تحديد الكل</button>
-                        <button type="button" onClick={() => setSelectedDerivatives([])}>إلغاء الكل</button>
-                    </div>
+                  <p style={{ margin: 0 }}><strong>الجذر المستخرج:</strong> {searchInfo.root}</p>
+                  <div className={styles.selectionActionsSmall}>
+                    <button type="button" onClick={() => setSelectedDerivatives(searchInfo.derivatives)}>تحديد الكل</button>
+                    <button type="button" onClick={() => setSelectedDerivatives([])}>إلغاء الكل</button>
+                  </div>
                 </div>
                 <div className={styles.derivativesList}>
-                    {searchInfo.derivatives.map((d, i) => (
-                        <label key={i} className={`${styles.derivativeItem} ${selectedDerivatives.includes(d) ? styles.activeItem : ''}`}>
-                            <input type="checkbox" checked={selectedDerivatives.includes(d)} onChange={() => setSelectedDerivatives(prev => prev.includes(d) ? prev.filter(item => item !== d) : [...prev, d])} />
-                            {d}
-                        </label>
-                    ))}
+                  {searchInfo.derivatives.map((d, i) => (
+                    <label key={i} className={`${styles.derivativeItem} ${selectedDerivatives.includes(d) ? styles.activeItem : ''}`}>
+                      <input type="checkbox" checked={selectedDerivatives.includes(d)} onChange={() => setSelectedDerivatives(prev => prev.includes(d) ? prev.filter(item => item !== d) : [...prev, d])} />
+                      {d}
+                    </label>
+                  ))}
                 </div>
               </div>
             )}
@@ -1182,44 +1165,44 @@ ${filterContext}
               <div className={styles.resultsWrapper}>
 
                 <div className={styles.resultsHeader}>
-                    <div className={styles.headerInfo}>
-                      <p className={styles.resultsCount}>
-                        {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(displaySemanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
-                      </p>
-                      {(searchType === 'semantic' ? displaySemanticResults.length > 0 : searchResults.length > 0) && (
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={copyAllResults} className={styles.copyAllBtn}>
-                            <Copy size={14} />
-                            <span>نسخ الكل</span>
-                          </button>
-                          <button onClick={shareAllResults} className={styles.copyAllBtn} style={{ borderColor: '#3b82f6' }}>
-                            <Share2 size={14} />
-                            <span>مشاركة الكل</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    {selectedVerses.length > 0 && (
-                     <div className={styles.selectionActions}>
-                       <button onClick={copySelected} className={styles.multiCopyBtn}>
-                         <Copy size={16} />
-                         <span>نسخ {convertToArabicNumber(selectedVerses.length)} آيات</span>
-                       </button>
-                       <button onClick={shareSelected} className={styles.multiShareBtn}>
-                         <Share2 size={16} />
-                         <span>مشاركة {convertToArabicNumber(selectedVerses.length)} آيات</span>
-                       </button>
-                       <button onClick={() => addSelectedToFavorites("#ffeb3b")} className={styles.multiFavBtn}>
-                         <Heart size={16} />
-                         <span>تفضيل الكل</span>
-                       </button>
-                       <button onClick={analyzeSelected} className={styles.multiAiBtn}>
-                         <Sparkles size={16} />
-                         <span>تحليل ذكي</span>
-                       </button>
-                       <button onClick={() => setSelectedVerses([])} className={styles.clearSelectionBtn}>إلغاء</button>
-                     </div>
+                  <div className={styles.headerInfo}>
+                    <p className={styles.resultsCount}>
+                      {searchType === 'semantic' ? `نتائج البحث الذكي: ${convertToArabicNumber(displaySemanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0))} آية` : `نتائج البحث: ${convertToArabicNumber(searchResults.length)} آية`}
+                    </p>
+                    {(searchType === 'semantic' ? displaySemanticResults.length > 0 : searchResults.length > 0) && (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={copyAllResults} className={styles.copyAllBtn}>
+                          <Copy size={14} />
+                          <span>نسخ الكل</span>
+                        </button>
+                        <button onClick={shareAllResults} className={styles.copyAllBtn} style={{ borderColor: '#3b82f6' }}>
+                          <Share2 size={14} />
+                          <span>مشاركة الكل</span>
+                        </button>
+                      </div>
                     )}
+                  </div>
+                  {selectedVerses.length > 0 && (
+                    <div className={styles.selectionActions}>
+                      <button onClick={copySelected} className={styles.multiCopyBtn}>
+                        <Copy size={16} />
+                        <span>نسخ {convertToArabicNumber(selectedVerses.length)} آيات</span>
+                      </button>
+                      <button onClick={shareSelected} className={styles.multiShareBtn}>
+                        <Share2 size={16} />
+                        <span>مشاركة {convertToArabicNumber(selectedVerses.length)} آيات</span>
+                      </button>
+                      <button onClick={() => addSelectedToFavorites("#ffeb3b")} className={styles.multiFavBtn}>
+                        <Heart size={16} />
+                        <span>تفضيل الكل</span>
+                      </button>
+                      <button onClick={analyzeSelected} className={styles.multiAiBtn}>
+                        <Sparkles size={16} />
+                        <span>تحليل ذكي</span>
+                      </button>
+                      <button onClick={() => setSelectedVerses([])} className={styles.clearSelectionBtn}>إلغاء</button>
+                    </div>
+                  )}
                 </div>
 
                 {searchType === 'semantic' && displaySemanticResults.length > 0 && (
@@ -1230,22 +1213,22 @@ ${filterContext}
                           <div className={styles.semanticHeaderTop}>
                             {semanticOptions.showTitle && <h3 className={styles.semanticTitle}>{res.title}</h3>}
                             <div className={styles.semanticGroupActions}>
-                                <button
-                                  type="button"
-                                  className={styles.copyGroupBtn}
-                                  onClick={() => copySemanticGroup(res)}
-                                >
-                                  <Copy size={14} />
-                                  <span>نسخ المقطع</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className={styles.shareGroupBtn}
-                                  onClick={() => shareSemanticGroup(res)}
-                                >
-                                  <Share2 size={14} />
-                                  <span>مشاركة المقطع</span>
-                                </button>
+                              <button
+                                type="button"
+                                className={styles.copyGroupBtn}
+                                onClick={() => copySemanticGroup(res)}
+                              >
+                                <Copy size={14} />
+                                <span>نسخ المقطع</span>
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.shareGroupBtn}
+                                onClick={() => shareSemanticGroup(res)}
+                              >
+                                <Share2 size={14} />
+                                <span>مشاركة المقطع</span>
+                              </button>
 
                             </div>
                           </div>
@@ -1254,7 +1237,7 @@ ${filterContext}
 
                         <div className={styles.semanticVersesList}>
                           {res.versesContent.map((v) => (
-                             <VerseCard key={`${v.book_index}-${v.chapter}-${v.verse}`} v={v} />
+                            <VerseCard key={`${v.book_index}-${v.chapter}-${v.verse}`} v={v} />
                           ))}
                         </div>
                       </div>
