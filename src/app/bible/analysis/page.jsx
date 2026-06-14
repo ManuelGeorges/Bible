@@ -8,6 +8,7 @@ import { ArrowRight, Sparkles, Loader2, AlertCircle, Clock, Copy, Check, Share2 
 import { toast } from 'react-hot-toast';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
+import { kv, CACHE_KEYS } from '../../../lib/kv';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -29,7 +30,6 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
     } catch (err) {
       lastError = err;
       const errorMsg = err.message?.toLowerCase() || "";
-      // توسيع نطاق الأخطاء القابلة لإعادة المحاولة لتشمل أخطاء الخادم والشبكة الشائعة
       const isRetryable =
         errorMsg.includes('429') ||
         errorMsg.includes('quota') ||
@@ -66,7 +66,7 @@ function AnalysisContent() {
   const verses = searchParams.get('verses');
 
   const [analysis, setAnalysis] = useState('');
-  const analysisRef = useRef(''); // تتبع النص الحالي لتجنب مشاكل Closures
+  const analysisRef = useRef('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('');
@@ -82,11 +82,23 @@ function AnalysisContent() {
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
-    // Check rate limit (3 requests per minute)
+    const cacheKey = `${CACHE_KEYS.ANALYSIS}${book}:${chapter}:${verses || 'all'}`;
+
+    try {
+      const cached = await kv.get(cacheKey);
+      if (cached) {
+        setAnalysis(cached);
+        analysisRef.current = cached;
+        setIsLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.error("KV Read Error:", e);
+    }
+
     const requestTimes = JSON.parse(localStorage.getItem('aiRequestTimestamps') || '[]');
     const now = Date.now();
     const oneMinute = 60000;
-
     const recentRequests = requestTimes.filter(time => now - time < oneMinute);
 
     if (recentRequests.length >= 1) {
@@ -108,7 +120,8 @@ function AnalysisContent() {
     const targetText = verses
       ? `السفر: ${book}\nالإصحاح: ${chapter}\nالآيات المحددة: ${verses}`
       : `السفر: ${book}\nالإصحاح: ${chapter}`;
-const prompt = `أنت "مساعد آجيوس الذكي". مهمتك: تفسير النص المرفق لاهوتياً ولغوياً بدقة، مع التركيز حصراً على النص المطلوب وتجنب الاستطراد.
+
+    const prompt = `أنت "مساعد آجيوس الذكي". مهمتك: تفسير النص المرفق لاهوتياً ولغوياً بدقة، مع التركيز حصراً على النص المطلوب وتجنب الاستطراد.
 
 # نص البحث:
 ${targetText}
@@ -124,10 +137,11 @@ ${targetText}
 # قواعد:
 - ممنوع استخدام Markdown (مثل #).
 - التزم بالتركيز المطلق على النص دون تشتيت.`;
+
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({
-        model: "gemini-3.1-flash-lite",
+        model: "gemini-1.5-flash",
         generationConfig: {
           maxOutputTokens: 2048,
         }
@@ -136,17 +150,14 @@ ${targetText}
       const result = await model.generateContentStream(prompt);
       let text = '';
       for await (const chunk of result.stream) {
-        try {
-          const chunkText = chunk.text();
-          text += chunkText;
-          setAnalysis(text);
-          analysisRef.current = text;
-        } catch (e) {
-          console.error("Stream chunk error:", e);
-          // إذا كان لدينا نص كافٍ، نعتبره نجاحاً جزئياً بدلاً من الفشل الكامل
-          if (text.length > 200) break;
-          throw e;
-        }
+        const chunkText = chunk.text();
+        text += chunkText;
+        setAnalysis(text);
+        analysisRef.current = text;
+      }
+
+      if (text) {
+        kv.set(cacheKey, text).catch(e => console.error("KV Write Error:", e));
       }
       return text;
     };
@@ -161,7 +172,6 @@ ${targetText}
       setIsLoading(false);
     } catch (e) {
       console.error("Final Analysis Error:", e);
-      // إذا فشل تماماً ولكن لدينا نص (ربما انقطع الاتصال في النهاية)، لا نظهر صفحة الخطأ
       if (analysisRef.current.length > 100) {
         setIsLoading(false);
         toast.error("انقطع الاتصال، قد يكون التحليل غير مكتمل");

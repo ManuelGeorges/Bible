@@ -15,6 +15,7 @@ import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Ima
 import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
+import { kv, CACHE_KEYS } from '../../lib/kv';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -415,6 +416,18 @@ function SearchContent() {
       return geminiCache[term];
     }
 
+    const normalizedTerm = normalizeArabicText(term);
+    const cacheKey = `${CACHE_KEYS.SEMANTIC}deriv:${normalizedTerm}`;
+    try {
+      const cached = await kv.get(cacheKey);
+      if (cached) {
+        setSearchInfo(cached);
+        setSelectedDerivatives(cached.derivatives);
+        geminiCache[term] = cached;
+        return cached;
+      }
+    } catch (e) { console.error("Upstash Read Error:", e); }
+
     if (!checkRateLimit()) return null;
 
     const searchId = ++currentSearchIdRef.current;
@@ -440,7 +453,6 @@ function SearchContent() {
 }`;
 
       const result = await model.generateContentStream(prompt);
-
       let fullText = '';
 
       for await (const chunk of streamWithTimeout(result.stream, 15000)) {
@@ -472,12 +484,16 @@ function SearchContent() {
       setAiStatus('جاري تحليل الكلمة...');
       const result = await withRetry(
         attemptStream,
-
         (attempt, max, reason) => setAiStatus(`محاولة (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. جاري تجربة مفتاح بديل...`),
         5,
         2000
       );
+
       geminiCache[term] = result;
+      if (result && result.derivatives.length > 0) {
+        kv.set(cacheKey, result, { ex: 604800 }).catch(console.error);
+      }
+
       setAiStatus('');
 
       const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
@@ -497,6 +513,16 @@ function SearchContent() {
   };
 
   const handleSemanticSearch = async (term) => {
+    const normalizedTerm = normalizeArabicText(term);
+    const cacheKey = `${CACHE_KEYS.SEMANTIC}${normalizedTerm}`;
+    try {
+      const cached = await kv.get(cacheKey);
+      if (cached) {
+        setSemanticResults(cached);
+        return cached;
+      }
+    } catch (e) { console.error("Upstash Read Error:", e); }
+
     if (!checkRateLimit()) return null;
 
     const searchId = ++currentSearchIdRef.current;
@@ -563,6 +589,10 @@ function SearchContent() {
           book: bookNamesData.ar[bookIdx].name
         };
       }).filter(r => r !== null);
+
+      if (enriched.length > 0) {
+        kv.set(cacheKey, enriched, { ex: 604800 }).catch(console.error);
+      }
 
       setSemanticResults(enriched);
       return enriched;

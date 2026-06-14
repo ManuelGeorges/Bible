@@ -1,6 +1,7 @@
-import { createClient } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 
-export const kv = createClient({
+// استخدام @upstash/redis مباشرة بدلاً من @vercel/kv لضمان العمل في المتصفح والموبايل
+export const kv = new Redis({
   url: "https://liberal-sunbird-40663.upstash.io",
   token: "AZ7XAAIgcDEyNzk0YzZkNDdlNjg0ZjNkOWNmOWFmNDEzY2IxMTdjMg",
 });

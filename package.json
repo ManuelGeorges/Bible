@@ -65,6 +65,7 @@
     "react-map-gl": "^8.0.4",
     "react-native-webview": "^13.15.0",
     "resium": "^1.13.0",
+    "upstash": "^0.0.1",
     "use-debounce": "^10.0.5"
   },
   "devDependencies": {
