@@ -11,7 +11,8 @@ import { Capacitor } from '@capacitor/core';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic"
+  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
+  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg"
 ];
 
 const getGenAI = (index) => {
@@ -27,6 +28,7 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
     } catch (err) {
       lastError = err;
       const errorMsg = err.message?.toLowerCase() || "";
+      // توسيع نطاق الأخطاء القابلة لإعادة المحاولة لتشمل أخطاء الخادم والشبكة الشائعة
       const isRetryable =
         errorMsg.includes('429') ||
         errorMsg.includes('quota') ||
@@ -63,7 +65,7 @@ function AnalysisContent() {
   const verses = searchParams.get('verses');
 
   const [analysis, setAnalysis] = useState('');
-  const analysisRef = useRef('');
+  const analysisRef = useRef(''); // تتبع النص الحالي لتجنب مشاكل Closures
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('');
@@ -79,13 +81,14 @@ function AnalysisContent() {
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
+    // Check rate limit (3 requests per minute)
     const requestTimes = JSON.parse(localStorage.getItem('aiRequestTimestamps') || '[]');
     const now = Date.now();
     const oneMinute = 60000;
 
     const recentRequests = requestTimes.filter(time => now - time < oneMinute);
 
-    if (recentRequests.length >= 3) {
+    if (recentRequests.length >= 1) {
       const oldestInWindow = Math.min(...recentRequests);
       const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
       setCountdown(remaining);
@@ -104,46 +107,37 @@ function AnalysisContent() {
     const targetText = verses
       ? `السفر: ${book}\nالإصحاح: ${chapter}\nالآيات المحددة: ${verses}`
       : `السفر: ${book}\nالإصحاح: ${chapter}`;
-const systemInstruction = `أنت لاهوتي ومؤرخ ومترجم كتابي خبير ومحترف اسمك "مساعد آجيوس الذكي". مهمتك هي تحليل وشرح النص الكتابي المطلوب باللغة العربية الفصحى فقط. يُمنع منعاً باتاً استخدام اللغة الإنجليزية أو كتابة أي تمهيد بالإنجليزية. لا تستخدم رموز Markdown مثل ## أو # في العناوين. استخدم الترقيم العربي (١. ، ٢. ، إلخ) لبدء كل قسم. اجعل الأقسام واضحة ومنفصلة.`;
 
-const userMessage = `حلل النص الكتابي التالي:
+    const prompt = `أنت لاهوتي ومؤرخ ومترجم كتابي خبير ومحترف اسمك "مساعد آجيوس الذكي". مهمتك الوحيدة والحصرية هي تحليل وشرح آية أو آيات أو إصحاحات الكتاب المقدس التي يرسلها المستخدم لك وركز جيداً على التركيز فيها وعدم الانخراط في الحديث عن السفر بكثرة او عن بقية الاصحاح او الايات الاخرى بكثرة, تحدث عما يطلبه منك المستخدم.
 
+# TARGET
 ${targetText}
 
-الهيكل المطلوب:
-١. المقدمة والترحيب: قدم نفسك كمساعد آجيوس الذكي الخبير في دراسات الكتاب المقدس.
-٢. المنهجية اللغوية: أصل الكلمات في اللغة الأصلية (يوناني/عبري/آرامي).
-٣. الخلفية التاريخية: السياق التاريخي والبيئي للنص.
-٤. التفسير الروحي واللاهوتي: التفسير القبطي الأرثوذكسي والآبائي (تفسيرات أبونا تادرس يعقوب ملطي وأبونا أنطونيوس فكري).
-٥. التطبيق العملي: كيف نعيش هذه الآيات اليوم. (يجب أن تنتهي بعبارة: ودائماً ننصح بالرجوع لأب اعترافك للإرشاد والتدقيق في حالة وجود أي تساؤل أو شك).
-٦. الرد على التساؤلات: تفكيك أي شبهات أو اعتراضات حول هذا النص.
+# STRUCTURE (التزم بهذا التنسيق تماماً)
+١. المقدمة والترحيب: قدم نفسك دوماً كمساعد آجيوس الذكي الخبير في دراسات الكتاب المقدس
+٢.  المنهجية اللغوية وأصل الكلمات اليوناني او العبري او الآرامي للآيات المحددة.
+٣. الخلفية التاريخية والبيئية للنص المطلوب.
+٤.  التفسير الروحي واللاهوتي القبطي الأرثوذكسي للآيات المذكورة مثل التفسيرات الآبائية التي تعترف لها الكنيسة القبطية وتفسيرات ابونا تادرس يعقوب ملطي وابونا انطونيوس فكري.
+٥. التطبيق العملي والمعاصر للآيات المحددة: (يجب أن تنتهي بـ: ودائماً ننصح بالرجوع لأب اعترافك للإرشاد والتدقيق في حالة وجود أي تساؤل أو شك)
+٦. تفكيك الشبهات والرد على الاعتراضات المتعلقة بهذا النص تحديداً.
 
-تذكر: الإجابة بالعربية فقط، بدون رموز #، مع الترقيم العربي.`;
-
-    const primer = `١. المقدمة والترحيب:\nأنا مساعد آجيوس الذكي، الخبير في دراسات الكتاب المقدس واللاهوت والتاريخ والترجمة الكتابية.`;
+# RULES
+- لا تستخدم رموز Markdown مثل ## أو # في العناوين.
+- استخدم الترقيم العربي (١. ، ٢. ، إلخ) لبدء كل قسم.
+- اجعل الأقسام واضحة ومنفصلة.
+- ركز تركيزاً تاماً على الآيات المطلوبة ولا تشتت المستخدم بأجزاء أخرى من السفر إلا للضرورة القصوى.`;
 
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({
-        model: "gemma-4-31b-it",
+        model: "gemini-3.1-flash-lite",
         generationConfig: {
           maxOutputTokens: 2048,
-          temperature: 0.7,
-        },
-        systemInstruction: systemInstruction,
+        }
       });
 
-      const result = await model.generateContentStream({
-        contents: [
-          { role: "user", parts: [{ text: userMessage }] },
-          { role: "model", parts: [{ text: primer }] },
-        ],
-      });
-
-      let text = primer;
-      setAnalysis(text);
-      analysisRef.current = text;
-
+      const result = await model.generateContentStream(prompt);
+      let text = '';
       for await (const chunk of result.stream) {
         try {
           const chunkText = chunk.text();
@@ -152,6 +146,7 @@ ${targetText}
           analysisRef.current = text;
         } catch (e) {
           console.error("Stream chunk error:", e);
+          // إذا كان لدينا نص كافٍ، نعتبره نجاحاً جزئياً بدلاً من الفشل الكامل
           if (text.length > 200) break;
           throw e;
         }
@@ -169,6 +164,7 @@ ${targetText}
       setIsLoading(false);
     } catch (e) {
       console.error("Final Analysis Error:", e);
+      // إذا فشل تماماً ولكن لدينا نص (ربما انقطع الاتصال في النهاية)، لا نظهر صفحة الخطأ
       if (analysisRef.current.length > 100) {
         setIsLoading(false);
         toast.error("انقطع الاتصال، قد يكون التحليل غير مكتمل");
@@ -246,7 +242,9 @@ ${targetText}
           dialogTitle: 'مشاركة النص...',
         });
       } else if (navigator.share) {
-        await navigator.share({ text: text });
+        await navigator.share({
+          text: text
+        });
       } else {
         navigator.clipboard.writeText(text);
         toast.success('تم النسخ');
@@ -279,7 +277,9 @@ ${targetText}
 
       return (
         <div key={i} className={styles.paragraphWrapper}>
-          <p className={styles.paragraph}>{formattedLine}</p>
+          <p className={styles.paragraph}>
+            {formattedLine}
+          </p>
           <div className={styles.paragraphActions}>
             <button
               onClick={() => {
@@ -337,7 +337,7 @@ ${targetText}
         {countdown > 0 ? (
           <div className={styles.loadingWrapper}>
             <div className={styles.countdownCircle}>
-              <span className={styles.countdownNumber}>{convertToArabicNumber(countdown)}</span>
+               <span className={styles.countdownNumber}>{convertToArabicNumber(countdown)}</span>
             </div>
             <h2 className={styles.waitTitle}>يرجى الانتظار قليلاً</h2>
             <p className={styles.statusText}>
@@ -347,11 +347,11 @@ ${targetText}
         ) : isLoading && !analysis ? (
           <div className={styles.loadingWrapper}>
             <div className={styles.aiLoadingIcon}>
-              <Sparkles size={50} className={styles.pulseIcon} />
+               <Sparkles size={50} className={styles.pulseIcon} />
             </div>
             <p className={styles.statusText}>{status}</p>
             <div className={styles.loadingBarContainer}>
-              <div className={styles.loadingBarProgress}></div>
+               <div className={styles.loadingBarProgress}></div>
             </div>
           </div>
         ) : (error && !analysis) ? (
@@ -367,18 +367,19 @@ ${targetText}
               {parseAndRender(analysis)}
             </div>
             {isLoading && (
-              <div className={styles.streamingIndicator}>
-                <div className={styles.typingDots}>
-                  <span></span><span></span><span></span>
-                </div>
-                <span>مساعد أجيوس الذكي يكتب لك الآن...</span>
-              </div>
+               <div className={styles.streamingIndicator}>
+                  <div className={styles.typingDots}>
+                    <span></span><span></span><span></span>
+                  </div>
+                  <span>مساعد أجيوس الذكي يكتب لك الآن...</span>
+               </div>
             )}
+
             {!isLoading && (
               <footer className={styles.analysisFooter}>
-                <p className={styles.disclaimer}>
-                  هذا التحليل تم توليده بواسطة الذكاء الاصطناعي للمساعدة في الدراسة. دائماً يرجى الرجوع للآباء الكهنة وكتب التفسير المعتمدة للكنيسة القبطية.
-                </p>
+                 <p className={styles.disclaimer}>
+                   هذا التحليل تم توليده بواسطة الذكاء الاصطناعي للمساعدة في الدراسة. دائماً يرجى الرجوع للآباء الكهنة وكتب التفسير المعتمدة للكنيسة القبطية.
+                 </p>
               </footer>
             )}
           </div>

@@ -12,9 +12,9 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
 import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Image as ImageIcon, Share2 } from 'lucide-react';
+import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
-import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -38,6 +38,7 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
       lastError = err;
       const errorMsg = err.message?.toLowerCase() || "";
 
+      // تحديد ما إذا كان الخطأ يستحق إعادة المحاولة
       const isRetryable = errorMsg.includes('429') ||
                           errorMsg.includes('quota') ||
                           errorMsg.includes('503') ||
@@ -54,10 +55,11 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
         if (errorMsg.includes('429') || errorMsg.includes('quota')) reason = "ضغط طلبات (Quota)";
         else if (errorMsg.includes('503') || errorMsg.includes('busy')) reason = "الخادم مشغول";
         else if (errorMsg.includes('timeout')) reason = "بطء في الاستجابة";
+
         if (onRetry) onRetry(attempt + 1, maxAttempts, reason);
         await new Promise(r => setTimeout(r, delay));
       } else if (!isRetryable) {
-        throw err;
+        throw err; // إذا كان خطأ برمجي لا نعيد المحاولة
       }
     }
   }
@@ -96,10 +98,10 @@ function convertToArabicNumber(num) {
 function normalizeArabicText(text) {
   if (!text || typeof text !== 'string') return '';
   return text
-    .replace(/[ًٌٍَُِْ]/g, '')
-    .replace(/[أآإآءئؤ]/g, 'ا')
-    .replace(/[ىي]/g, 'ي')
-    .replace(/[ة]/g, 'ه')
+    .replace(/[ًٌٍَُِْ]/g, '')      // حذف التشكيل
+    .replace(/[أآإآءئؤ]/g, 'ا')   // توحيد جميع أشكال الهمزة إلى ألف
+    .replace(/[ىي]/g, 'ي')       // توحيد الياء والألف المقصورة
+    .replace(/[ة]/g, 'ه')        // توحيد التاء المربوطة والهاء
     .trim();
 }
 
@@ -245,6 +247,7 @@ function SearchContent() {
     const normQuery = normalizeArabicText(searchQuery);
     const isFilterActive = selectedTestament !== '' || selectedBookIndex !== '' || selectedChapter !== '';
 
+    // منع عرض كل الآيات إذا لم يوجد بحث أو فلتر فعال لتجنب تهنيج المتصفح عند الفتح
     if (!normQuery && !isFilterActive && (searchType !== 'derivatives' || selectedDerivatives.length === 0)) {
       setSearchResults([]);
       return;
@@ -261,7 +264,7 @@ function SearchContent() {
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
       const finalFiltered = filtered.filter(v => regex.test(v.normText || normalizeArabicText(v.text)));
-      setSearchResults(finalFiltered.slice(0, 500));
+      setSearchResults(finalFiltered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
     } else if (searchType === 'literal') {
       let filtered = allVerses;
 
@@ -273,12 +276,13 @@ function SearchContent() {
       if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
-      setSearchResults(filtered.slice(0, 500));
+      setSearchResults(filtered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
     } else if (searchType === 'derivatives' && selectedDerivatives.length === 0) {
         setSearchResults([]);
     }
   }, [searchQuery, selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
 
+  // فلترة فورية لنتائج البحث الذكي
   const displaySemanticResults = useMemo(() => {
     if (searchType !== 'semantic' || semanticResults.length === 0) return [];
 
@@ -391,7 +395,7 @@ function SearchContent() {
     const oneMinute = 60000;
     const recentRequests = requestTimes.filter(time => now - time < oneMinute);
 
-    if (recentRequests.length >= 3) {
+    if (recentRequests.length >= 2) {
       const oldestInWindow = Math.min(...recentRequests);
       const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
       setTimeLeft(remaining);
@@ -435,13 +439,18 @@ function SearchContent() {
 }`;
 
       const result = await model.generateContentStream(prompt);
+
       let fullText = '';
+
       for await (const chunk of streamWithTimeout(result.stream, 15000)) {
         if (currentSearchIdRef.current !== searchId) return currentInfo;
+
         const chunkText = chunk.text();
         fullText += chunkText;
+
         const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
         if (rootMatch) currentInfo.root = rootMatch[1];
+
         const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
         if (derivativesMatch) {
           const wordsString = derivativesMatch[1];
@@ -454,6 +463,7 @@ function SearchContent() {
           }
         }
       }
+
       return currentInfo;
     };
 
@@ -467,9 +477,11 @@ function SearchContent() {
       );
       geminiCache[term] = result;
       setAiStatus('');
+
       const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
       localStorage.setItem('nlp_search_count', nlpCount.toString());
       if (nlpCount >= 3) await unlockBadge('logic_breaker');
+
       return result;
     } catch (e) {
       setAiStatus('');
@@ -484,6 +496,7 @@ function SearchContent() {
 
   const handleSemanticSearch = async (term) => {
     if (!checkRateLimit()) return null;
+
     const searchId = ++currentSearchIdRef.current;
 
     const attemptSemantic = async (attemptIndex) => {
@@ -494,7 +507,7 @@ function SearchContent() {
       `;
 
       const genAIInstance = getGenAI(attemptIndex);
-      const model = genAIInstance.getGenerativeModel({ model: "gemma-4-31b-it" });
+      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = `أنت محرك بحث لاهوتي ذكي ومفسر للكتاب المقدس لتطبيق "أجيوس". مهمتك هي فهم "المعنى" العميق وراء بحث المستخدم واستخراج شواهد مرتبطة به.
 
 ### [سؤال المستخدم]
@@ -530,6 +543,7 @@ ${filterContext}
       );
 
       const result = await Promise.race([responsePromise, timeoutPromise]);
+
       if (currentSearchIdRef.current !== searchId) return null;
 
       const responseText = result.response.text();
@@ -587,67 +601,6 @@ ${filterContext}
     }
   };
 
-  const shareText = async (text) => {
-    try {
-      if (Capacitor.isNativePlatform()) {
-        await Share.share({
-          text: text,
-          dialogTitle: 'مشاركة النص...',
-        });
-      } else if (navigator.share) {
-        await navigator.share({
-          text: text
-        });
-      } else {
-        navigator.clipboard.writeText(text);
-        toast.success('تم النسخ');
-      }
-    } catch (err) {
-      console.error('Share error', err);
-    }
-  };
-
-  const handleShareSingle = (v) => {
-    const chapterLabel = convertToArabicNumber(v.chapter + 1);
-    const verseLabel = convertToArabicNumber(v.verse + 1);
-    const rlm = "\u200F";
-    const lrm = "\u200E";
-    const fullText = `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
-    shareText(fullText);
-    updateUserPoints(15, "مشاركة آية من البحث");
-  };
-
-  const shareSelected = () => {
-    if (selectedVerses.length === 0) return;
-    const rlm = "\u200F";
-    const lrm = "\u200E";
-    const sorted = [...selectedVerses].sort((a, b) => a.book_index - b.book_index || a.chapter - b.chapter || a.verse - b.verse);
-    const text = sorted.map(v => v.text).join(' ');
-
-    const first = sorted[0];
-    const last = sorted[sorted.length - 1];
-    const sameBook = sorted.every(v => v.book_index === first.book_index);
-    const sameChapter = sameBook && sorted.every(v => v.chapter === first.chapter);
-
-    let reference;
-    if (sameChapter) {
-      const isConsecutive = (last.verse - first.verse) === (sorted.length - 1);
-      const verseRange = isConsecutive
-        ? `${convertToArabicNumber(first.verse + 1)} - ${convertToArabicNumber(last.verse + 1)}`
-        : sorted.map(sv => convertToArabicNumber(sv.verse + 1)).join('، ');
-      reference = `${first.book} ${convertToArabicNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
-    } else if (sameBook) {
-        reference = `${first.book} (شواهد متعددة)`;
-    } else {
-        reference = "شواهد متعددة";
-    }
-
-    const fullText = `${text} ${rlm}(${reference})`;
-    shareText(fullText);
-    updateUserPoints(15, "مشاركة مجموعة آيات من البحث");
-    setSelectedVerses([]);
-  };
-
   const handleSearchPoints = () => {
     if (!user) return;
     const today = getCairoDate();
@@ -693,12 +646,11 @@ ${filterContext}
         setSearchResults([]);
         await handleSemanticSearch(currentQuery);
       } else {
-        setSemanticResults([]);
-        setSearchInfo(null);
-        setSelectedDerivatives([]);
+        // Just local filtering via useEffect
       }
     } else {
       setSemanticResults([]);
+      // الفلترة تتم الآن تلقائياً عبر useEffect
     }
     setIsLoading(false);
   };
@@ -714,6 +666,7 @@ ${filterContext}
       const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
       regex = new RegExp(pattern, 'gi');
     } else {
+      // نظام تظليل مرن يتجاهل التشكيل ويوحد الهمزات
       const tashkeelRegex = "[ًٌٍَُِْ]*";
       const fuzzyPattern = normalizedHighlight.split('').map(char => {
         if (char === 'ا') return "[اأإآءئؤ]";
@@ -756,6 +709,32 @@ ${filterContext}
     updateUserPoints(15, "نسخ آية من البحث");
   };
 
+  const handleShare = async (v) => {
+    const chapterLabel = convertToArabicNumber(v.chapter + 1);
+    const verseLabel = convertToArabicNumber(v.verse + 1);
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    const fullText = `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          text: fullText,
+          dialogTitle: 'مشاركة الآية عبر...',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          text: fullText,
+        });
+      } else {
+        handleCopy(v);
+      }
+      updateUserPoints(15, "مشاركة آية من البحث");
+    } catch (err) {
+      console.error('Share error', err);
+    }
+  };
+
   const copySelected = () => {
     if (selectedVerses.length === 0) return;
     const rlm = "\u200F";
@@ -786,6 +765,53 @@ ${filterContext}
     toast.success("تم نسخ الآيات المختارة ✨");
     updateUserPoints(15, "نسخ مجموعة آيات");
     setSelectedVerses([]);
+  };
+
+  const shareSelected = async () => {
+    if (selectedVerses.length === 0) return;
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    const sorted = [...selectedVerses].sort((a, b) => a.book_index - b.book_index || a.chapter - b.chapter || a.verse - b.verse);
+    const text = sorted.map(v => v.text).join(' ');
+
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const sameBook = sorted.every(v => v.book_index === first.book_index);
+    const sameChapter = sameBook && sorted.every(v => v.chapter === first.chapter);
+
+    let reference;
+    if (sameChapter) {
+      const isConsecutive = (last.verse - first.verse) === (sorted.length - 1);
+      const verseRange = isConsecutive
+        ? `${convertToArabicNumber(first.verse + 1)} - ${convertToArabicNumber(last.verse + 1)}`
+        : sorted.map(sv => convertToArabicNumber(sv.verse + 1)).join('، ');
+      reference = `${first.book} ${convertToArabicNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
+    } else if (sameBook) {
+        reference = `${first.book} (شواهد متعددة)`;
+    } else {
+        reference = "شواهد متعددة";
+    }
+
+    const fullText = `${text} ${rlm}(${reference})`;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          text: fullText,
+          dialogTitle: 'مشاركة الآيات عبر...',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          text: fullText,
+        });
+      } else {
+        copySelected();
+      }
+      updateUserPoints(15, "مشاركة مجموعة آيات");
+      setSelectedVerses([]);
+    } catch (err) {
+      console.error('Share error', err);
+    }
   };
 
   const copyAllResults = () => {
@@ -850,6 +876,43 @@ ${filterContext}
     updateUserPoints(10, "نسخ مقطع من البحث الذكي");
   };
 
+  const shareSemanticGroup = async (res) => {
+    const rlm = "\u200F";
+    const lrm = "\u200E";
+    let groupText = "";
+
+    if (semanticOptions.showTitle) groupText += `العنوان: ${res.title}\n`;
+    if (semanticOptions.showReason) groupText += `الشرح: ${res.reason}\n`;
+
+    const versesText = res.versesContent.map(v => v.text).join(' ');
+    const first = res.versesContent[0];
+    const last = res.versesContent[res.versesContent.length - 1];
+
+    const verseRange = res.versesContent.length === 1
+      ? convertToArabicNumber(first.number)
+      : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+
+    groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          text: groupText,
+          dialogTitle: 'مشاركة المقطع عبر...',
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          text: groupText,
+        });
+      } else {
+        copySemanticGroup(res);
+      }
+      updateUserPoints(10, "مشاركة مقطع من البحث الذكي");
+    } catch (err) {
+      console.error('Share error', err);
+    }
+  };
+
   const analyzeSelected = () => {
     if (selectedVerses.length === 0) return;
 
@@ -912,7 +975,7 @@ ${filterContext}
             <button onClick={(e) => { e.stopPropagation(); handleCopy(v); }} title="نسخ">
               <Copy size={18} />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); handleShareSingle(v); }} title="مشاركة">
+            <button onClick={(e) => { e.stopPropagation(); handleShare(v); }} title="مشاركة">
               <Share2 size={18} />
             </button>
             <button
@@ -1081,7 +1144,7 @@ ${filterContext}
                          <Copy size={16} />
                          <span>نسخ {convertToArabicNumber(selectedVerses.length)} آيات</span>
                        </button>
-                       <button onClick={shareSelected} className={styles.multiShareBtn} title="مشاركة">
+                       <button onClick={shareSelected} className={styles.multiShareBtn}>
                          <Share2 size={16} />
                          <span>مشاركة {convertToArabicNumber(selectedVerses.length)} آيات</span>
                        </button>
@@ -1117,26 +1180,12 @@ ${filterContext}
                                 <button
                                   type="button"
                                   className={styles.shareGroupBtn}
-                                  onClick={() => {
-                                    const rlm = "\u200F";
-                                    const lrm = "\u200E";
-                                    let groupText = "";
-                                    if (semanticOptions.showTitle) groupText += `العنوان: ${res.title}\n`;
-                                    if (semanticOptions.showReason) groupText += `الشرح: ${res.reason}\n`;
-                                    const versesText = res.versesContent.map(v => v.text).join(' ');
-                                    const first = res.versesContent[0];
-                                    const last = res.versesContent[res.versesContent.length - 1];
-                                    const verseRange = res.versesContent.length === 1
-                                      ? convertToArabicNumber(first.number)
-                                      : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
-                                    groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
-                                    shareText(groupText);
-                                  }}
-                                  title="مشاركة المقطع"
+                                  onClick={() => shareSemanticGroup(res)}
                                 >
                                   <Share2 size={14} />
                                   <span>مشاركة المقطع</span>
                                 </button>
+
                             </div>
                           </div>
                           {semanticOptions.showReason && <p className={styles.semanticReason}>{res.reason}</p>}
