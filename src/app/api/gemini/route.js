@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// هذا السطر يمنع الخطأ عند عمل static export للموبايل
+export const dynamic = 'force-static';
+
 export async function GET() {
   return NextResponse.json({ message: "API is active in server mode only" });
 }
