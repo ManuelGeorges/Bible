@@ -8,7 +8,7 @@ import { doc, getDoc, updateDoc, increment, arrayUnion, deleteField } from "fire
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, Type } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
@@ -830,14 +830,6 @@ export default function BibleContent() {
           <span className={styles.navSeparator}>|</span>
           <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
         </button>
-
-        <button
-          className={`${styles.tashkeelToggle} ${useTashkeel ? styles.active : ''}`}
-          onClick={toggleTashkeel}
-          title={useTashkeel ? "إخفاء التشكيل" : "إظهار التشكيل"}
-        >
-          <span className={styles.tashkeelIcon}>ـَ</span>
-        </button>
       </div>
 
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
@@ -911,6 +903,14 @@ export default function BibleContent() {
         <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> « </button>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          {/* زر التشكيل الجديد بجانب زر الصوت */}
+          <button
+            className={`${styles.tashkeelTextBtn} ${useTashkeel ? styles.active : ''}`}
+            onClick={toggleTashkeel}
+          >
+            تشكيل
+          </button>
+
           <button
             onClick={handleAudioButtonClick}
             disabled={contextAudioLoading}
