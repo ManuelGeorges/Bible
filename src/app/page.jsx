@@ -315,7 +315,16 @@ const LandingPage = () => {
                             })
                             .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                        const allStarted = [...activeCustom, ...activeStatic];
+                        // New: Shared plans progress
+                        const activeShared = Object.values(serverComp)
+                            .filter(p => p.type === 'shared' || p.isShared)
+                            .map(plan => {
+                                const stats = calculatePlanStats(plan, true, plan, null);
+                                return { ...plan, stats };
+                            })
+                            .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
+
+                        const allStarted = [...activeCustom, ...activeStatic, ...activeShared];
                         setStartedPlans(allStarted);
 
                         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
@@ -395,7 +404,16 @@ const LandingPage = () => {
                     })
                     .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                const allStarted = [...activeCustom, ...activeStatic];
+                // New: Shared plans progress for guests
+                const activeShared = Object.values(localStaticCompletion)
+                    .filter(p => p.type === 'shared' || p.isShared)
+                    .map(plan => {
+                        const stats = calculatePlanStats(plan, true, plan, null);
+                        return { ...plan, stats };
+                    })
+                    .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
+
+                const allStarted = [...activeCustom, ...activeStatic, ...activeShared];
                 setStartedPlans(allStarted);
 
                 if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
@@ -1093,7 +1111,7 @@ const LandingPage = () => {
                     <h2 className={styles.sectionTitle}>خططك الجارية</h2>
                     <div className={styles.plansVerticalList}>
                         {startedPlans.map((plan) => (
-                            <button key={plan.id} onClick={() => router.push(`/studyPlans/details?id=${plan.id}${plan.isCustom ? '&type=custom' : ''}`)} className={styles.planProgressCardVertical}>
+                            <button key={plan.id} onClick={() => router.push(`/studyPlans/details?id=${plan.id}${plan.isCustom || plan.isShared || plan.type === 'shared' ? '&type=' + (plan.isCustom ? 'custom' : 'shared') : ''}`)} className={styles.planProgressCardVertical}>
                                 <div className={styles.planInfo}>
                                     <div className={styles.planNameRow}><span className={styles.planTitle}>{plan.title}</span><span className={styles.planPercent}>{plan.stats?.percent}%</span></div>
                                     <div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${plan.stats?.percent}%` }} /></div>
