@@ -1,10 +1,7 @@
+'use client';
+
 import styles from './contact.module.css';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'تواصل معنا - Agios Bible',
-  description: 'تواصل معنا للدعم الفني، الاقتراحات، الشكاوى، أو المساهمة في تطوير الخدمة.',
-};
 
 export default function ContactPage() {
   const handleExternalLink = (e, url) => {
