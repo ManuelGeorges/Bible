@@ -54,12 +54,19 @@ function PlanDetailsContent() {
           setCompletedDays(aiPlan.completedDays || {});
         }
       } else if (planType === 'shared') {
-          // Shared plans usually need fetching from Firestore even for guests
-          const docRef = doc(db, 'sharedPlans', planId);
-          const snap = await getDoc(docRef);
-          if (snap.exists()) {
-              setPlan(snap.data());
-              setCompletedDays({}); // Shared plans start fresh for everyone
+          // Check if we already have a local copy of this shared plan
+          const savedShared = localCompletedPlans[planId];
+          if (savedShared && savedShared.readings) {
+              setPlan(savedShared);
+              setCompletedDays(savedShared.completedDays || {});
+          } else {
+              const docRef = doc(db, 'sharedPlans', planId);
+              const snap = await getDoc(docRef);
+              if (snap.exists()) {
+                  const data = snap.data();
+                  setPlan({ ...data, id: planId, isShared: true });
+                  setCompletedDays({});
+              }
           }
       } else {
         const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
@@ -170,14 +177,19 @@ function PlanDetailsContent() {
                 setCompletedDays(aiPlan.completedDays || {});
               }
             } else if (planType === 'shared') {
-                const docRef = doc(db, 'sharedPlans', planId);
-                const sharedSnap = await getDoc(docRef);
-                if (sharedSnap.exists()) {
-                    const sharedData = sharedSnap.data();
-                    setPlan(sharedData);
-                    // Check if user already has progress for this shared plan in their own collection
-                    const userProgress = data.completedPlans?.[planId]?.completedDays || {};
-                    setCompletedDays(userProgress);
+                // Priority to user's personal copy of the shared plan
+                const userCopy = data.completedPlans?.[planId];
+                if (userCopy && userCopy.readings) {
+                    setPlan(userCopy);
+                    setCompletedDays(userCopy.completedDays || {});
+                } else {
+                    const docRef = doc(db, 'sharedPlans', planId);
+                    const sharedSnap = await getDoc(docRef);
+                    if (sharedSnap.exists()) {
+                        const sharedData = sharedSnap.data();
+                        setPlan({ ...sharedData, id: planId, isShared: true });
+                        setCompletedDays({});
+                    }
                 }
             } else {
               const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
@@ -272,22 +284,48 @@ function PlanDetailsContent() {
         updatedUserData.customPlans = updatedUserData.customPlans || {};
         updatedUserData.customPlans[planId] = { ...(updatedUserData.customPlans[planId] || plan), completedDays: newCompletedDays, completionPercentage: percentage };
     } else {
-        // Shared plans and static plans go into completedPlans
         updatedUserData.completedPlans = updatedUserData.completedPlans || {};
-        updatedUserData.completedPlans[planId] = { completedDays: newCompletedDays, completionPercentage: percentage };
+        const existingData = updatedUserData.completedPlans[planId] || {};
+        updatedUserData.completedPlans[planId] = {
+            ...existingData,
+            completedDays: newCompletedDays,
+            completionPercentage: percentage,
+            id: planId,
+            title: plan.title,
+            type: plan.type || (planType === 'shared' ? 'shared' : 'static'),
+            isShared: plan.isShared || planType === 'shared'
+        };
+
+        // If it's a shared plan, copy the readings to make it a personal copy
+        if (planType === 'shared' || plan.isShared) {
+            updatedUserData.completedPlans[planId].readings = plan.readings;
+            if (plan.description) updatedUserData.completedPlans[planId].description = plan.description;
+            if (plan.authorName) updatedUserData.completedPlans[planId].authorName = plan.authorName;
+        }
     }
 
     if (user) {
       try {
         const userRef = doc(db, 'users', user.uid);
         const fieldPath = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
-        await updateDoc(userRef, {
+
+        const updatePayload = {
           [`${fieldPath}.completedDays`]: newCompletedDays,
           [`${fieldPath}.completionPercentage`]: percentage,
           [`${fieldPath}.id`]: planId,
           [`${fieldPath}.title`]: plan.title,
-          [`${fieldPath}.type`]: plan.type || 'shared'
-        });
+          [`${fieldPath}.type`]: plan.type || (planType === 'shared' ? 'shared' : 'static'),
+          [`${fieldPath}.isShared`]: plan.isShared || planType === 'shared'
+        };
+
+        if (planType === 'shared' || plan.isShared) {
+            updatePayload[`${fieldPath}.readings`] = plan.readings;
+            if (plan.description) updatePayload[`${fieldPath}.description`] = plan.description;
+            if (plan.authorName) updatePayload[`${fieldPath}.authorName`] = plan.authorName;
+            if (plan.createdAt) updatePayload[`${fieldPath}.createdAt`] = plan.createdAt;
+        }
+
+        await updateDoc(userRef, updatePayload);
         checkAndUnlockBadges(updatedUserData);
       } catch (e) {
         console.error(e);
@@ -295,11 +333,11 @@ function PlanDetailsContent() {
       }
     } else {
       if (planType === 'custom') {
-        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
         localCustom[planId] = updatedUserData.customPlans[planId];
         await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
       } else {
-        const localCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
+        const localCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
         localCompletion[planId] = updatedUserData.completedPlans[planId];
         await StorageService.save(KEYS.COMPLETED_PLANS, localCompletion);
       }
@@ -324,7 +362,7 @@ function PlanDetailsContent() {
         </div>
       )}
 
-      {plan.isShared && plan.authorName && (
+      {(plan.isShared || planType === 'shared') && plan.authorName && (
           <div className={styles.authorSection}>
               بواسطة: <span>{plan.authorName}</span>
           </div>

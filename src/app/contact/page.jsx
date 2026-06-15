@@ -27,9 +27,16 @@ export default function ContactPage() {
       <section className={styles.section}>
         <h2 className={styles.subtitle}>طرق التواصل الرسمية</h2>
         <div className={styles.contactMethods}>
-          {/* تم تغيير الإيميل للإيميل الرسمي للمشروع */}
           <Link href="mailto:agios.system@gmail.com" className={styles.contactLink}>
             إرسال بريد إلكتروني
+          </Link>
+          <Link
+            href="https://www.facebook.com/AgiosSystem/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.contactLink}
+          >
+            صفحة الفيسبوك
           </Link>
         </div>
       </section>

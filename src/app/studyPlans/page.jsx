@@ -167,12 +167,24 @@ export default function StudyPlans() {
               toast.dismiss(t.id);
               if (user) {
                 const userRef = doc(db, "users", user.uid);
-                await updateDoc(userRef, { [`customPlans.${planId}`]: deleteField() });
+                if (customPlans[planId]) {
+                  await updateDoc(userRef, { [`customPlans.${planId}`]: deleteField() });
+                } else {
+                  await updateDoc(userRef, { [`completedPlans.${planId}`]: deleteField() });
+                }
               } else {
-                const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
-                delete localCustom[planId];
-                await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
-                setCustomPlans(localCustom);
+                const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
+                const localCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
+
+                if (localCustom[planId]) {
+                  delete localCustom[planId];
+                  await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
+                  setCustomPlans(localCustom);
+                } else if (localCompletion[planId]) {
+                  delete localCompletion[planId];
+                  await StorageService.save(KEYS.COMPLETED_PLANS, localCompletion);
+                  setCompletionData(localCompletion);
+                }
               }
               toast.success("تم الحذف بنجاح");
             }}
@@ -195,20 +207,26 @@ export default function StudyPlans() {
   const allAvailablePlans = useMemo(() => {
     let basePlans = [];
 
-    const customPlansArray = Object.values(customPlans)
-      .map(plan => ({ ...plan, isCustom: true }))
-      .sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-        return dateB - dateA;
-      });
+    // All "personal" plans: Custom (AI) + Joined Shared Plans (ones with readings saved)
+    const personalPlans = [
+      ...Object.values(customPlans).map(plan => ({ ...plan, isCustom: true })),
+      ...Object.values(completionData).filter(plan => plan.isShared && plan.readings)
+    ].sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+      return dateB - dateA;
+    });
 
     if (activeFilter === 'خطط مشاركة') {
       basePlans = sharedPlans;
     } else if (activeFilter === 'مخصصة') {
-      basePlans = customPlansArray;
+      basePlans = personalPlans;
     } else if (activeFilter === 'الكل') {
-      basePlans = [...customPlansArray, ...sharedPlans, ...staticPlans];
+      // Merge unique plans, prioritizing personal copies
+      const personalIds = new Set(personalPlans.map(p => String(p.id)));
+      const filteredShared = sharedPlans.filter(p => !personalIds.has(String(p.id)));
+
+      basePlans = [...personalPlans, ...filteredShared, ...staticPlans];
     } else {
       basePlans = staticPlans.filter(p => p.type === activeFilter);
     }
@@ -218,10 +236,9 @@ export default function StudyPlans() {
     const queryWords = searchQuery.toLowerCase().trim().split(/\s+/);
     return basePlans.filter(plan => {
       const planContent = `${plan.title} ${plan.description} ${plan.type}`.toLowerCase();
-      // "مرن زي المابس" - البحث عن أي كلمة من الكلمات المدخلة (OR logic)
       return queryWords.some(word => planContent.includes(word));
     });
-  }, [customPlans, sharedPlans, activeFilter, searchQuery]);
+  }, [customPlans, sharedPlans, completionData, activeFilter, searchQuery]);
 
   if (loading) return <div className={styles.container}><div className={styles.loading}>جاري التحميل...</div></div>;
 
@@ -268,18 +285,23 @@ export default function StudyPlans() {
             const isSharedPlan = plan.isShared;
             const progress = plan.isCustom 
               ? { percent: plan.completionPercentage || 0, done: Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length }
-              : (isSharedPlan ? { percent: 0, done: 0 } : { percent: completionData[plan.id]?.completionPercentage || 0, done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length });
+              : {
+                  percent: completionData[plan.id]?.completionPercentage || 0,
+                  done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length
+                };
 
             const hasStarted = progress.done > 0;
+            const isPersonalCopy = plan.isCustom || (plan.isShared && plan.readings);
+
             const planUrl = isSharedPlan
                 ? `/studyPlans/details?id=${plan.id}&type=shared`
                 : (plan.isCustom ? `/studyPlans/details?id=${plan.id}&type=custom` : `/studyPlans/details?id=${plan.id}`);
 
             return (
               <div key={plan.id} className={styles.card}>
-                {plan.isCustom && !isSharedPlan && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
+                {isPersonalCopy && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
                 <div className={styles.cardContent}>
-                  {plan.isCustom && !isSharedPlan && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
+                  {plan.isCustom && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
                   {isSharedPlan && <span className={styles.sharedBadge}><Share2 size={14} /> خطة مشاركة</span>}
 
                   <h3 className={styles.cardTitle}>{plan.title}</h3>
