@@ -169,6 +169,7 @@ export default function CustomPlanForm() {
                     completionPercentage: 0
                 };
 
+                // 1. Save locally or to user profile
                 if (currentUser) {
                     const userRef = doc(db, 'users', currentUser.uid);
                     await setDoc(userRef, {
@@ -177,27 +178,23 @@ export default function CustomPlanForm() {
                             [planId]: newPlanObject
                         }
                     }, { merge: true });
-
-                    if (formData.isShared) {
-                        const sharedPlanRef = collection(db, 'sharedPlans');
-                        await addDoc(sharedPlanRef, {
-                            ...newPlanObject,
-                            authorId: currentUser.uid,
-                            authorName: formData.showAuthor ? (userData?.displayName || 'مستخدم أجيوس') : 'مشارك مجهول',
-                            isShared: true,
-                            createdAt: serverTimestamp(),
-                            originalPlanId: planId
-                        });
-                    }
                 } else {
-                    // Save to local storage for guest using unified KEYS
                     const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
                     localCustom[planId] = newPlanObject;
                     await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
+                }
 
-                    if (formData.isShared) {
-                        toast.error("يجب تسجيل الدخول لمشاركة الخطط مع الآخرين");
-                    }
+                // 2. Public sharing (Available for both Guest and Registered)
+                if (formData.isShared) {
+                    const sharedPlanRef = collection(db, 'sharedPlans');
+                    await addDoc(sharedPlanRef, {
+                        ...newPlanObject,
+                        authorId: currentUser ? currentUser.uid : 'guest',
+                        authorName: (currentUser && formData.showAuthor) ? (userData?.displayName || 'مستخدم أجيوس') : 'مشارك مجهول',
+                        isShared: true,
+                        createdAt: serverTimestamp(),
+                        originalPlanId: planId
+                    });
                 }
 
                 toast.success("تم إنشاء خطتك بنجاح!");
@@ -321,12 +318,11 @@ export default function CustomPlanForm() {
                                 type="checkbox"
                                 checked={formData.isShared}
                                 onChange={(e) => handleSelect('isShared', e.target.checked)}
-                                disabled={loading || !user}
+                                disabled={loading}
                             />
                             <span className={styles.checkmark}></span>
                             <span className={styles.checkboxLabel}>مشاركة هذه الخطة مع الآخرين في قسم "خطط مشاركة"</span>
                         </label>
-                        {!user && <p className={styles.authWarning}>يجب تسجيل الدخول لتتمكن من مشاركة خطتك.</p>}
 
                         {formData.isShared && user && (
                             <div className={styles.authorOption}>
@@ -346,6 +342,9 @@ export default function CustomPlanForm() {
                                     </div>
                                 )}
                             </div>
+                        )}
+                        {formData.isShared && !user && (
+                            <p className={styles.authHint}>سيتم نشر الخطة كـ "مشارك مجهول" لأنك لست مسجلاً.</p>
                         )}
                     </div>
                 </div>
