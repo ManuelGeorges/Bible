@@ -40,7 +40,7 @@ const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
 const MAP_STYLES = {
-  streets: 'https://api.maptiler.com/maps/basic-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7',
+  streets: 'https://tiles.openfreemap.org/styles/liberty',
   satellite: 'https://api.maptiler.com/maps/hybrid/style.json?key=QvkUns3IvYwEEKb9dIJ7',
   topo: 'https://api.maptiler.com/maps/topo-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7'
 };
@@ -72,6 +72,9 @@ export default function MapsPage() {
   const [visitedEras, setVisitedEras] = useState(new Set());
   const [infoReads, setInfoReads] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  // حالة للتحقق من توافر MapTiler
+  const [isMapTilerAvailable, setIsMapTilerAvailable] = useState(true);
 
   const mapRef = useRef(null);
   const eraRef = useRef(null);
@@ -209,7 +212,6 @@ export default function MapsPage() {
         await StorageService.save('visited_eras', localEras);
       }
 
-      // Check for Era Traveler Badge (all 7 eras)
       if (newEras.size === eras.length) {
         await unlockBadge('era_traveler');
       }
@@ -222,7 +224,6 @@ export default function MapsPage() {
     if (point) {
       const pointId = point.id || point.name;
 
-      // 1. Logic for points/visitation
       if (!visitedPoints.has(pointId)) {
         const newVisited = new Set(visitedPoints).add(pointId);
         setVisitedPoints(newVisited);
@@ -237,16 +238,13 @@ export default function MapsPage() {
           await StorageService.save('visited_map_points', localVisited);
         }
 
-        // Check Map Badges
         if (newVisited.size === 5) await unlockBadge('map_pioneer');
         if (newVisited.size === 20) await unlockBadge('ancient_navigator');
-        // holy_land_pro logic (approximate all points in file)
         if (newVisited.size >= allPlaces.filter(p => p.type === 'point').length && allPlaces.length > 0) {
             await unlockBadge('holy_land_pro');
         }
       }
 
-      // 2. Logic for Info Reads Badge (info_addict: 50 reads)
       const newReads = infoReads + 1;
       setInfoReads(newReads);
       if (user) {
@@ -343,6 +341,8 @@ export default function MapsPage() {
   };
 
   const setupTerrain = (map) => {
+    if (!isMapTilerAvailable) return;
+
     if (!map.getSource('maptiler-terrain')) {
       map.addSource('maptiler-terrain', {
         type: 'raster-dem',
@@ -385,6 +385,14 @@ export default function MapsPage() {
     const map = e.target;
     if (mapLoaded) {
       setupTerrain(map);
+    }
+  };
+
+  // معالجة أخطاء التحميل (مثل انتهاء الكوتة 403)
+  const handleMapError = (e) => {
+    if (e.error && (e.error.status === 403 || e.error.message?.includes('api.maptiler.com'))) {
+        setIsMapTilerAvailable(false);
+        setCurrentStyle(MAP_STYLES.streets);
     }
   };
 
@@ -498,12 +506,16 @@ export default function MapsPage() {
         <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.streets ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.streets)}>
           <MapIcon size={16} /> خريطة
         </button>
-        <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.satellite ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.satellite)}>
-          <Globe size={16} /> قمر اصطناعي
-        </button>
-        <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.topo ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.topo)}>
-          <Mountain size={16} /> تضاريس 3D
-        </button>
+        {isMapTilerAvailable && (
+          <>
+            <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.satellite ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.satellite)}>
+              <Globe size={16} /> قمر اصطناعي
+            </button>
+            <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.topo ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.topo)}>
+              <Mountain size={16} /> تضاريس 3D
+            </button>
+          </>
+        )}
       </div>
 
       {!isLoading && (
@@ -517,6 +529,7 @@ export default function MapsPage() {
             onLoad={onMapLoad}
             onStyleData={onStyleData}
             onClick={handleMapClick}
+            onError={handleMapError}
             interactiveLayerIds={['unclustered-point', 'line-layer']}
             maxZoom={currentStyle === MAP_STYLES.satellite ? 18 : 25}
             style={{ width: '100%', height: '100%' }}

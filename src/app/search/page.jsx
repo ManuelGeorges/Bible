@@ -436,7 +436,7 @@ function SearchContent() {
 
     const attemptStream = async (attemptIndex) => {
       const genAIInstance = getGenAI(attemptIndex);
-      const model = genAIInstance.getGenerativeModel({ model: "gemma-4-31b-it" });
+      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = `أنت عالم لغوي متخصص في فقه اللغة العربية والصرف المعمق.
 الكلمة المستهدفة: "${term}".
 المطلوب: تحليل صرفي شامل يستخرج "كل صورة ممكنة" للكلمة في النص.
