@@ -5,16 +5,15 @@ import Link from 'next/link';
 import styles from './studyPlans.module.css';
 import studyPlansData from './studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, updateDoc, deleteField, arrayUnion } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, deleteField, arrayUnion, collection, query, orderBy, limit } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import {Sparkles } from 'lucide-react';
+import { Sparkles, User, Share2 } from 'lucide-react';
 import { useBadge } from '../context/BadgeContext';
 import { StorageService, KEYS } from '../../lib/storage';
 
 const staticPlans = studyPlansData.plans;
-const filtersList = ['الكل', 'مخصصة', ...new Set(staticPlans.map(plan => plan.type))];
 
 export default function StudyPlans() {
   const router = useRouter();
@@ -22,11 +21,18 @@ export default function StudyPlans() {
   const [activeFilter, setActiveFilter] = useState('الكل');
   const [completionData, setCompletionData] = useState({});
   const [customPlans, setCustomPlans] = useState({});
+  const [sharedPlans, setSharedPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
   const filterRef = useRef(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
+
+  const filtersList = useMemo(() => {
+    const baseFilters = ['الكل', 'مخصصة', 'خطط مشاركة'];
+    const types = [...new Set(staticPlans.map(plan => plan.type))];
+    return [...baseFilters, ...types];
+  }, []);
 
   const unlockBadge = async (badgeId, currentBadges) => {
     if (user) {
@@ -85,6 +91,13 @@ export default function StudyPlans() {
     const auth = getAuth();
     let unsubFirestore = () => {};
 
+    // Fetch Shared Plans
+    const sharedQuery = query(collection(db, 'sharedPlans'), orderBy('createdAt', 'desc'), limit(20));
+    const unsubShared = onSnapshot(sharedQuery, (snapshot) => {
+      const shared = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, isShared: true }));
+      setSharedPlans(shared);
+    });
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (loggedInUser) => {
       setUser(loggedInUser);
       if (loggedInUser) {
@@ -99,7 +112,6 @@ export default function StudyPlans() {
           setLoading(false);
         }, () => setLoading(false));
       } else {
-        // توحيد المفاتيح للضيف
         const localCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
         const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
         const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || await StorageService.get('local_badges') || [];
@@ -114,6 +126,7 @@ export default function StudyPlans() {
     return () => {
       unsubscribeAuth();
       unsubFirestore();
+      unsubShared();
     };
   }, []);
 
@@ -138,12 +151,6 @@ export default function StudyPlans() {
       };
     }
   }, [loading]);
-
-  const handleScrollClick = () => {
-    if (filterRef.current) {
-      filterRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-    }
-  };
 
   const handleDeletePlan = async (e, planId) => {
     e.preventDefault();
@@ -193,12 +200,25 @@ export default function StudyPlans() {
         const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
         return dateB - dateA;
       });
-    return [...customPlansArray, ...staticPlans];
-  }, [customPlans]);
 
-  const filteredPlans = allAvailablePlans.filter(plan => 
-    activeFilter === 'الكل' ? true : (plan.isCustom ? activeFilter === 'مخصصة' : plan.type === activeFilter)
-  );
+    // Add shared plans to the "All" view if desired, or keep them separate
+    // Let's only show custom and static in "All", and shared separately to avoid clutter
+    // Or maybe show everything in "All"? The user said "قسم جديد اسمه خطط مشاركة"
+
+    if (activeFilter === 'خطط مشاركة') {
+      return sharedPlans;
+    }
+
+    if (activeFilter === 'مخصصة') {
+      return customPlansArray;
+    }
+
+    if (activeFilter === 'الكل') {
+      return [...customPlansArray, ...staticPlans];
+    }
+
+    return staticPlans.filter(p => p.type === activeFilter);
+  }, [customPlans, sharedPlans, activeFilter]);
 
   if (loading) return <div className={styles.container}><div className={styles.loading}>جاري التحميل...</div></div>;
 
@@ -222,22 +242,36 @@ export default function StudyPlans() {
       </div>
 
       <div className={styles.plansGrid}>
-        {filteredPlans.length > 0 ? (
-          filteredPlans.map(plan => {
+        {allAvailablePlans.length > 0 ? (
+          allAvailablePlans.map(plan => {
+            const isSharedPlan = plan.isShared;
             const progress = plan.isCustom 
               ? { percent: plan.completionPercentage || 0, done: Object.values(plan.completedDays || {}).filter(d => d.isCompleted).length }
-              : { percent: completionData[plan.id]?.completionPercentage || 0, done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length };
+              : (isSharedPlan ? { percent: 0, done: 0 } : { percent: completionData[plan.id]?.completionPercentage || 0, done: Object.values(completionData[plan.id]?.completedDays || {}).filter(d => d.isCompleted).length });
 
             const hasStarted = progress.done > 0;
-            const planUrl = plan.isCustom ? `/studyPlans/details?id=${plan.id}&type=custom` : `/studyPlans/details?id=${plan.id}`;
+            const planUrl = isSharedPlan
+                ? `/studyPlans/details?id=${plan.id}&type=shared`
+                : (plan.isCustom ? `/studyPlans/details?id=${plan.id}&type=custom` : `/studyPlans/details?id=${plan.id}`);
 
             return (
-              <div key={plan.id} className={`${styles.card} ${plan.isCustom ? styles.customCard : ''}`}>
-                {plan.isCustom && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
+              <div key={plan.id} className={`${styles.card} ${plan.isCustom ? styles.customCard : ''} ${isSharedPlan ? styles.sharedCard : ''}`}>
+                {plan.isCustom && !isSharedPlan && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
                 <div className={styles.cardContent}>
-                  {plan.isCustom && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
+                  {plan.isCustom && !isSharedPlan && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
+                  {isSharedPlan && <span className={styles.sharedBadge}><Share2 size={14} /> خطة مشاركة</span>}
+
                   <h3 className={styles.cardTitle}>{plan.title}</h3>
-                  <p className={styles.cardType}>{plan.isCustom ? 'خطة شخصية' : plan.type}</p>
+                  <p className={styles.cardType}>
+                    {isSharedPlan ? 'خطة من المجتمع' : (plan.isCustom ? 'خطة شخصية' : plan.type)}
+                  </p>
+
+                  {isSharedPlan && plan.authorName && (
+                    <div className={styles.authorInfo}>
+                      <User size={12} /> بواسطة: {plan.authorName}
+                    </div>
+                  )}
+
                   {hasStarted && <div className={styles.progressContainer}><div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${progress.percent}%` }}></div></div><span className={styles.percentageText}>{progress.percent}% مكتمل</span></div>}
                   <Link href={planUrl} className={styles.cardButton}>{hasStarted ? 'متابعة' : 'ابدأ الآن'}</Link>
                 </div>

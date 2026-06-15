@@ -29,7 +29,7 @@ export async function POST(req) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: config?.model || "gemini-1.5-flash",
+      model: config?.model || "gemini-3.1-flash-lite",
     });
 
     const result = await model.generateContent(prompt);

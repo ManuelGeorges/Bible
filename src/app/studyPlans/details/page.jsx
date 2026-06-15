@@ -6,7 +6,7 @@ import Link from 'next/link';
 import styles from './PlanDetails.module.css';
 import studyPlansData from '../studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { db } from '../../../lib/firebase';
 import toast from 'react-hot-toast';
 import { useBadge } from '../../context/BadgeContext';
@@ -53,6 +53,14 @@ function PlanDetailsContent() {
           setPlan(aiPlan);
           setCompletedDays(aiPlan.completedDays || {});
         }
+      } else if (planType === 'shared') {
+          // Shared plans usually need fetching from Firestore even for guests
+          const docRef = doc(db, 'sharedPlans', planId);
+          const snap = await getDoc(docRef);
+          if (snap.exists()) {
+              setPlan(snap.data());
+              setCompletedDays({}); // Shared plans start fresh for everyone
+          }
       } else {
         const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
         setPlan(staticPlan);
@@ -149,7 +157,7 @@ function PlanDetailsContent() {
       
       if (loggedInUser) {
         const userRef = doc(db, 'users', loggedInUser.uid);
-        unsubSnap = onSnapshot(userRef, (docSnap) => {
+        unsubSnap = onSnapshot(userRef, async (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setUserData(data);
@@ -161,6 +169,16 @@ function PlanDetailsContent() {
                 setPlan(aiPlan);
                 setCompletedDays(aiPlan.completedDays || {});
               }
+            } else if (planType === 'shared') {
+                const docRef = doc(db, 'sharedPlans', planId);
+                const sharedSnap = await getDoc(docRef);
+                if (sharedSnap.exists()) {
+                    const sharedData = sharedSnap.data();
+                    setPlan(sharedData);
+                    // Check if user already has progress for this shared plan in their own collection
+                    const userProgress = data.completedPlans?.[planId]?.completedDays || {};
+                    setCompletedDays(userProgress);
+                }
             } else {
               const staticPlan = allPlans.find((p) => p.id === parseInt(planId));
               setPlan(staticPlan);
@@ -254,6 +272,7 @@ function PlanDetailsContent() {
         updatedUserData.customPlans = updatedUserData.customPlans || {};
         updatedUserData.customPlans[planId] = { ...(updatedUserData.customPlans[planId] || plan), completedDays: newCompletedDays, completionPercentage: percentage };
     } else {
+        // Shared plans and static plans go into completedPlans
         updatedUserData.completedPlans = updatedUserData.completedPlans || {};
         updatedUserData.completedPlans[planId] = { completedDays: newCompletedDays, completionPercentage: percentage };
     }
@@ -264,7 +283,10 @@ function PlanDetailsContent() {
         const fieldPath = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
         await updateDoc(userRef, {
           [`${fieldPath}.completedDays`]: newCompletedDays,
-          [`${fieldPath}.completionPercentage`]: percentage
+          [`${fieldPath}.completionPercentage`]: percentage,
+          [`${fieldPath}.id`]: planId,
+          [`${fieldPath}.title`]: plan.title,
+          [`${fieldPath}.type`]: plan.type || 'shared'
         });
         checkAndUnlockBadges(updatedUserData);
       } catch (e) {
@@ -301,6 +323,13 @@ function PlanDetailsContent() {
           <p className={styles.description}>{plan.description}</p>
         </div>
       )}
+
+      {plan.isShared && plan.authorName && (
+          <div className={styles.authorSection}>
+              بواسطة: <span>{plan.authorName}</span>
+          </div>
+      )}
+
       <div className={styles.progressWrapper}>
         <div className={styles.progressInfo}>
           <span>نسبة الإنجاز</span>

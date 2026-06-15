@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '../../../lib/firebase';
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, collection, addDoc, getDoc } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCairoIsoString } from '../../../lib/dateUtils';
-import { ArrowRight, Sparkles, Calendar, BookOpen, MessageCircle } from 'lucide-react';
+import { ArrowRight, Sparkles, Calendar, BookOpen, MessageCircle, Share2, User } from 'lucide-react';
 import Link from 'next/link';
 import { StorageService, KEYS } from '../../../lib/storage';
 
@@ -18,12 +18,30 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export default function CustomPlanForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
+    const [userData, setUserData] = useState(null);
     const [formData, setFormData] = useState({
         mood: '',
         duration: '',
         customDays: '',
-        level: ''
+        level: '',
+        isShared: false,
+        showAuthor: true
     });
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(async (u) => {
+            setUser(u);
+            if (u) {
+                const userRef = doc(db, 'users', u.uid);
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    setUserData(snap.data());
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     const durations = [
         { id: '3', label: '3 أيام' },
@@ -159,11 +177,27 @@ export default function CustomPlanForm() {
                             [planId]: newPlanObject
                         }
                     }, { merge: true });
+
+                    if (formData.isShared) {
+                        const sharedPlanRef = collection(db, 'sharedPlans');
+                        await addDoc(sharedPlanRef, {
+                            ...newPlanObject,
+                            authorId: currentUser.uid,
+                            authorName: formData.showAuthor ? (userData?.displayName || 'مستخدم أجيوس') : 'مشارك مجهول',
+                            isShared: true,
+                            createdAt: serverTimestamp(),
+                            originalPlanId: planId
+                        });
+                    }
                 } else {
                     // Save to local storage for guest using unified KEYS
                     const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
                     localCustom[planId] = newPlanObject;
                     await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
+
+                    if (formData.isShared) {
+                        toast.error("يجب تسجيل الدخول لمشاركة الخطط مع الآخرين");
+                    }
                 }
 
                 toast.success("تم إنشاء خطتك بنجاح!");
@@ -274,6 +308,45 @@ export default function CustomPlanForm() {
                                 {l.label}
                             </button>
                         ))}
+                    </div>
+                </div>
+
+                <div className={styles.questionGroup}>
+                    <label className={styles.questionLabel}>
+                        <Share2 size={18} /> خيارات المشاركة
+                    </label>
+                    <div className={styles.shareOptions}>
+                        <label className={styles.checkboxContainer}>
+                            <input
+                                type="checkbox"
+                                checked={formData.isShared}
+                                onChange={(e) => handleSelect('isShared', e.target.checked)}
+                                disabled={loading || !user}
+                            />
+                            <span className={styles.checkmark}></span>
+                            <span className={styles.checkboxLabel}>مشاركة هذه الخطة مع الآخرين في قسم "خطط مشاركة"</span>
+                        </label>
+                        {!user && <p className={styles.authWarning}>يجب تسجيل الدخول لتتمكن من مشاركة خطتك.</p>}
+
+                        {formData.isShared && user && (
+                            <div className={styles.authorOption}>
+                                <label className={styles.checkboxContainer}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.showAuthor}
+                                        onChange={(e) => handleSelect('showAuthor', e.target.checked)}
+                                        disabled={loading}
+                                    />
+                                    <span className={styles.checkmark}></span>
+                                    <span className={styles.checkboxLabel}>إظهار اسمي كمؤلف لهذه الخطة</span>
+                                </label>
+                                {formData.showAuthor && (
+                                    <div className={styles.authorPreview}>
+                                        <User size={14} /> ستظهر الخطة بواسطة: <strong>{userData?.displayName || 'مستخدم أجيوس'}</strong>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
