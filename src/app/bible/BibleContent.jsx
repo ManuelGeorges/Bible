@@ -8,7 +8,7 @@ import { doc, getDoc, updateDoc, increment, arrayUnion, deleteField } from "fire
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, Type } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, Type, ChevronDown } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
@@ -826,9 +826,12 @@ export default function BibleContent() {
 
       <div className={styles.controls}>
         <button className={styles.navigationDisplay} onClick={() => router.push('/bible/books')}>
-          <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
-          <span className={styles.navSeparator}>|</span>
-          <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
+          <div className={styles.navContent}>
+            <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
+            <span className={styles.navSeparator}>|</span>
+            <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
+          </div>
+          <ChevronDown size={20} className={styles.navIcon} />
         </button>
       </div>
 
@@ -838,7 +841,7 @@ export default function BibleContent() {
         <motion.div
           key={`${selectedBookIndex}-${selectedChapterIndex}`}
           custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
-          transition={{ x: { type: "spring", stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
+          transition={{ x: { type: "spring", stiffness: 450, stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
           className={styles.verseContainer}
           style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
         >

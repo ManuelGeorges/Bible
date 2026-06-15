@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
-import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Image as ImageIcon, Share2 } from 'lucide-react';
+import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Image as ImageIcon, Share2, AlertCircle, Info } from 'lucide-react';
 import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
@@ -40,7 +40,6 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
       lastError = err;
       const errorMsg = err.message?.toLowerCase() || "";
 
-      // تحديد ما إذا كان الخطأ يستحق إعادة المحاولة
       const isRetryable = errorMsg.includes('429') ||
         errorMsg.includes('quota') ||
         errorMsg.includes('503') ||
@@ -61,14 +60,13 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
         if (onRetry) onRetry(attempt + 1, maxAttempts, reason);
         await new Promise(r => setTimeout(r, delay));
       } else if (!isRetryable) {
-        throw err; // إذا كان خطأ برمجي لا نعيد المحاولة
+        throw err;
       }
     }
   }
   throw lastError;
 }
 
-// ─── Stream with chunk timeout ────────────────────────────────────────────────
 async function* streamWithTimeout(stream, timeoutMs = 15000) {
   for await (const chunk of stream) {
     yield await Promise.race([
@@ -100,10 +98,10 @@ function convertToArabicNumber(num) {
 function normalizeArabicText(text) {
   if (!text || typeof text !== 'string') return '';
   return text
-    .replace(/[ًٌٍَُِْ]/g, '')      // حذف التشكيل
-    .replace(/[أآإآءئؤ]/g, 'ا')   // توحيد جميع أشكال الهمزة إلى ألف
-    .replace(/[ىي]/g, 'ي')       // توحيد الياء والألف المقصورة
-    .replace(/[ة]/g, 'ه')        // توحيد التاء المربوطة والهاء
+    .replace(/[ًٌٍَُِْ]/g, '')
+    .replace(/[أآإآءئؤ]/g, 'ا')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[ة]/g, 'ه')
     .trim();
 }
 
@@ -249,7 +247,6 @@ function SearchContent() {
     const normQuery = normalizeArabicText(searchQuery);
     const isFilterActive = selectedTestament !== '' || selectedBookIndex !== '' || selectedChapter !== '';
 
-    // منع عرض كل الآيات إذا لم يوجد بحث أو فلتر فعال لتجنب تهنيج المتصفح عند الفتح
     if (!normQuery && !isFilterActive && (searchType !== 'derivatives' || selectedDerivatives.length === 0)) {
       setSearchResults([]);
       return;
@@ -266,7 +263,7 @@ function SearchContent() {
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
       const finalFiltered = filtered.filter(v => regex.test(v.normText || normalizeArabicText(v.text)));
-      setSearchResults(finalFiltered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
+      setSearchResults(finalFiltered.slice(0, 500));
     } else if (searchType === 'literal') {
       let filtered = allVerses;
 
@@ -278,13 +275,12 @@ function SearchContent() {
       if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
-      setSearchResults(filtered.slice(0, 500)); // تحديد النتائج بـ 500 كحد أقصى للأداء
+      setSearchResults(filtered.slice(0, 500));
     } else if (searchType === 'derivatives' && selectedDerivatives.length === 0) {
       setSearchResults([]);
     }
   }, [searchQuery, selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
 
-  // فلترة فورية لنتائج البحث الذكي
   const displaySemanticResults = useMemo(() => {
     if (searchType !== 'semantic' || semanticResults.length === 0) return [];
 
@@ -431,26 +427,26 @@ function SearchContent() {
     if (!checkRateLimit()) return null;
 
     const searchId = ++currentSearchIdRef.current;
-    let currentInfo = { root: '...', derivatives: [] };
+    let currentInfo = { root: '...', derivatives: [], isStatic: false, explanation: '' };
     setShowDerivatives(true);
 
     const attemptStream = async (attemptIndex) => {
       const genAIInstance = getGenAI(attemptIndex);
       const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-      const prompt = `أنت عالم لغوي متخصص في فقه اللغة العربية والصرف المعمق.
-الكلمة المستهدفة: "${term}".
-المطلوب: تحليل صرفي شامل يستخرج "كل صورة ممكنة" للكلمة في النص.
-يجب أن تتضمن قائمة المشتقات (derivatives) ما يلي:
-1. الجذر اللغوي الصحيح. "تنبيه": إذا كانت الكلمة (اسم علم أعجمي)، يمنع تماماً اشتقاق أفعال منها، وبدلاً من ذلك يتم التركيز على صور ورودها المختلفة بالسوابق واللواحق.
-2. الأفعال: في حالات (الرفع، النصب، الجزم) بما يشمل حذف النون وحروف العلة، وتصريفها في الماضي والمضارع والأمر مع كافة الضمائر.
-3. الضمائر المتصلة: شمول الأفعال المتصلة بضمائر المفعول به نون الوقاية.
-4. الأسماء المشتقة: (فاعل، مفعول، مصدر، مبالغة، تفضيل).
-5. السوابق واللواحق لأسماء الأعلام والأفعال.
-يجب أن يكون الرد بصيغة JSON فقط:
+      const prompt = `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}".
+المطلوب رد JSON فقط بهذا التنسيق حصراً:
 {
-  "root": "الجذر أو 'اسم علم'",
+  "root": "الجذر اللغوي"،
+  "isStatic": true/false,
+  "explanation": "تبرير لغوي باختصار شديد"،
   "derivatives": ["كلمة1", "كلمة2", "..."]
-}`;
+}
+
+القواعد الصارمة:
+1. "isStatic": اجعلها true إذا كانت الكلمة اسماً جامداً (مثل: حجر، شمس) أو اسم علم (مثل: موسى، إبراهيم، مريم) لا يُبنى عليه أفعال.
+2. إذا كانت الكلمة جامدة أو اسم علم، يمنع منعاً باتاً اختراع أفعال وهمية (مثلاً: لا تشتق 'يتموسى' من 'موسى'). فقط ضع صور ورودها المباشرة بالسوابق واللواحق في قائمة المشتقات.
+3. للكلمات المشتقة: استخرج كافة الصور الصرفية الصحيحة (ماضي، مضارع، أمر، فاعل، مفعول، صيغ مبالغة) مع الضمائر.
+4. الرد JSON فقط ولا تخرج عن التنسيق.`;
 
       const result = await model.generateContentStream(prompt);
       let fullText = '';
@@ -463,6 +459,12 @@ function SearchContent() {
 
         const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
         if (rootMatch) currentInfo.root = rootMatch[1];
+
+        const staticMatch = fullText.match(/"isStatic"\s*:\s*(true|false)/);
+        if (staticMatch) currentInfo.isStatic = staticMatch[1] === 'true';
+
+        const explMatch = fullText.match(/"explanation"\s*:\s*"([^"]+)"/);
+        if (explMatch) currentInfo.explanation = explMatch[1];
 
         const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
         if (derivativesMatch) {
@@ -481,7 +483,7 @@ function SearchContent() {
     };
 
     try {
-      setAiStatus('جاري تحليل الكلمة...');
+      setAiStatus('جاري تحليل الكلمة لغوياً...');
       const result = await withRetry(
         attemptStream,
         (attempt, max, reason) => setAiStatus(`محاولة (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. جاري تجربة مفتاح بديل...`),
@@ -503,9 +505,9 @@ function SearchContent() {
       return result;
     } catch (e) {
       setAiStatus('');
-      console.error("Gemini Derivatives Error (all retries exhausted):", e);
-      toast.error(navigator.onLine ? "تعذّر الوصول للذكاء الاصطناعي، حاول مجدداً" : "تأكد من اتصالك بالإنترنت");
-      const fallback = { derivatives: [normalizeArabicText(term)], root: 'غير معروف' };
+      console.error("Gemini Derivatives Error:", e);
+      toast.error("تعذّر التحليل اللغوي الدقيق حالياً.");
+      const fallback = { derivatives: [normalizeArabicText(term)], root: 'غير معروف', isStatic: false, explanation: '' };
       setSearchInfo(fallback);
       setSelectedDerivatives(fallback.derivatives);
       return fallback;
@@ -610,7 +612,7 @@ function SearchContent() {
       return result;
     } catch (e) {
       setAiStatus('');
-      console.error("Semantic Search Error (all retries exhausted):", e);
+      console.error("Semantic Search Error:", e);
       toast.error("عذراً، الخادم مضغوط حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.");
       return null;
     }
@@ -644,6 +646,17 @@ function SearchContent() {
       return;
     }
 
+    if (searchType === 'derivatives') {
+        if (currentQuery.split(/\s+/).length > 1) {
+            toast.error("نظام البحث بالمشتقات يتطلب كلمة واحدة فقط لضمان الدقة.");
+            return;
+        }
+        if (!/^[\u0600-\u06FF]+$/.test(currentQuery)) {
+            toast.error("يرجى إدخال كلمة عربية صحيحة فقط.");
+            return;
+        }
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -660,12 +673,9 @@ function SearchContent() {
       } else if (searchType === 'semantic') {
         setSearchResults([]);
         await handleSemanticSearch(currentQuery);
-      } else {
-        // Just local filtering via useEffect
       }
     } else {
       setSemanticResults([]);
-      // الفلترة تتم الآن تلقائياً عبر useEffect
     }
     setIsLoading(false);
   };
@@ -681,7 +691,6 @@ function SearchContent() {
       const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
       regex = new RegExp(pattern, 'gi');
     } else {
-      // نظام تظليل مرن يتجاهل التشكيل ويوحد الهمزات
       const tashkeelRegex = "[ًٌٍَُِْ]*";
       const fuzzyPattern = normalizedHighlight.split('').map(char => {
         if (char === 'ا') return "[اأإآءئؤ]";
@@ -1098,7 +1107,7 @@ function SearchContent() {
         <h1 className={styles.heading}>الباحث الإنجيلي</h1>
         <form onSubmit={(e) => { e.preventDefault(); performSearch(); }} className={styles.controls}>
           <div className={styles.inputGroup}>
-            <input type="text" value={inputTerm} onChange={e => setInputTerm(e.target.value)} className={styles.input} placeholder="أدخل كلمة البحث..." />
+            <input type="text" value={inputTerm} onChange={e => setInputTerm(e.target.value)} className={styles.input} placeholder={searchType === 'derivatives' ? "أدخل كلمة واحدة فقط..." : "أدخل كلمة البحث..."} />
             <button type="submit" className={styles.searchButton}>
               <Search size={18} />
               <span>بحث الآن</span>
@@ -1166,6 +1175,19 @@ function SearchContent() {
 
         {searchInfo && searchType === 'derivatives' && (
           <div className={styles.derivativesWrapper}>
+            {searchInfo.isStatic && (
+              <div className={styles.staticWordWarning}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#856404' }}>
+                  <AlertCircle size={20} />
+                  <strong>تنبيه: كلمة جامدة أو اسم علم</strong>
+                </div>
+                <p>{searchInfo.explanation || "هذه الكلمة لا تملك اشتقاقات فعلية تصريفية في اللغة العربية. تم البحث عن صور ورودها المباشرة فقط لضمان أدق النتائج."}</p>
+                <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    <Info size={12} />
+                    <span>تم التحقق لغوياً بواسطة مساعد أجيوس الذكي</span>
+                </div>
+              </div>
+            )}
             <button type="button" className={styles.toggleDerivativesBtn} onClick={() => setShowDerivatives(!showDerivatives)}>{showDerivatives ? 'إخفاء خيارات المشتقات ▲' : 'تخصيص كلمات البحث ▼'}</button>
             {showDerivatives && (
               <div className={styles.searchInfoBox}>

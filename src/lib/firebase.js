@@ -8,7 +8,6 @@ import {
 import { getRemoteConfig, isSupported } from "firebase/remote-config";
 import { Capacitor } from "@capacitor/core";
 
-// إعدادات Firebase مع قيم احتياطية لضمان العمل في بيئات مثل Capacitor
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAihaAWbI0BHz6zI6Q5JGNxnMPf0JQmZho",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "profiles-system.firebaseapp.com",
@@ -18,14 +17,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:900022943169:web:583b03be3f070dfe92c340"
 };
 
-// وظيفة لتهيئة التطبيق وضمان وجود نسخة [DEFAULT]
 const initializeFirebase = () => {
   if (getApps().length > 0) {
     return getApp();
   }
-
   try {
-    console.log("Initializing Firebase with config...");
     return initializeApp(firebaseConfig);
   } catch (error) {
     console.error("Firebase Initialization Error:", error);
@@ -35,22 +31,17 @@ const initializeFirebase = () => {
 
 const app = initializeFirebase();
 
-// تهيئة Auth ليعمل بشكل مستقر في Capacitor باستخدام IndexedDB
 export const auth = (() => {
   if (!app) return null;
-
-  // إذا كنا على منصة موبايل (Native)، نستخدم persistence يضمن بقاء الجلسة
   if (Capacitor.isNativePlatform()) {
     try {
       return initializeAuth(app, {
         persistence: indexedDBLocalPersistence
       });
     } catch (e) {
-      // في حالة وجود نسخة مسبقة من Auth
       return getAuth(app);
     }
   }
-
   return getAuth(app);
 })();
 
@@ -62,19 +53,20 @@ export const db = app ? initializeFirestore(app, {
 
 export { app };
 
-// دالة Remote Config لضمان عملها فقط في المتصفح ومع وجود تطبيق
 let remoteConfigInstance = null;
 
 export const getFirebaseRemoteConfig = async () => {
     if (typeof window === "undefined" || !app) return null;
-
     if (remoteConfigInstance) return remoteConfigInstance;
 
     try {
         const supported = await isSupported();
         if (supported) {
             remoteConfigInstance = getRemoteConfig(app);
+            remoteConfigInstance.settings.minimumFetchIntervalMillis = 3600000; // ساعة واحدة
             remoteConfigInstance.defaultConfig = {
+                'show_sync_login': true,
+                'show_maptiler_features': true,
                 'app_news': JSON.stringify({
                     active: false,
                     title: "",

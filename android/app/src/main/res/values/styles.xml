@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- ثيم التطبيق الأساسي -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
-        
         <item name="isLightTheme">true</item>
+
+        <!-- ضمان عدم وجود وضع ملء الشاشة الذي يسبب التعارض -->
+        <item name="android:windowFullscreen">false</item>
     </style>
 
-    <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_visual</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowNoTitle">true</item>
+    <!-- ثيم شاشة البدء المحدث -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_visual</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+
+        <!-- تعطيل ملء الشاشة هنا أيضاً لحل مشكلة SurfaceControl -->
+        <item name="android:windowFullscreen">false</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
-        
-        <item name="windowSplashScreenAnimatedIcon" tools:targetApi="s">@android:color/transparent</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/splash_background</item>
+
+        <!-- تقليل مدة التحريك لمنع التعليق في الذاكرة -->
+        <item name="windowSplashScreenAnimationDuration" tools:targetApi="s">0</item>
     </style>
 </resources>

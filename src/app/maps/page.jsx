@@ -7,7 +7,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import styles from './maps.module.css';
 import { getAuth } from "firebase/auth";
 import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
-import { db } from '../../lib/firebase';
+import { db, getFirebaseRemoteConfig } from '../../lib/firebase';
+import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
 import { toast } from 'react-hot-toast';
 import { useBadge } from '../context/BadgeContext';
 import {
@@ -53,6 +54,12 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
+// حدود الخريطة (من إيطاليا غرباً إلى إيران شرقاً) لتوفير التحميل وتحديد النطاق الجغرافي
+const MAX_BOUNDS = [
+  [5.0, 15.0],  // الزاوية الجنوبية الغربية
+  [65.0, 50.0]  // الزاوية الشمالية الشرقية
+];
+
 export default function MapsPage() {
   const router = useRouter(); 
   const { triggerBadgeUnlock } = useBadge();
@@ -73,8 +80,9 @@ export default function MapsPage() {
   const [infoReads, setInfoReads] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // حالة للتحقق من توافر MapTiler
+  // حالة للتحقق من توافر MapTiler (سواء كوتة أو تحكم عن بعد)
   const [isMapTilerAvailable, setIsMapTilerAvailable] = useState(true);
+  const [showMaptilerFeatures, setShowMaptilerFeatures] = useState(true);
 
   const mapRef = useRef(null);
   const eraRef = useRef(null);
@@ -180,7 +188,18 @@ export default function MapsPage() {
 
   useEffect(() => {
     setMounted(true);
-    const fetchData = async () => {
+    const initPage = async () => {
+      // Remote Config
+      const remoteConfig = await getFirebaseRemoteConfig();
+      if (remoteConfig) {
+        try {
+          await fetchAndActivate(remoteConfig);
+          setShowMaptilerFeatures(getBoolean(remoteConfig, 'show_maptiler_features'));
+        } catch (e) {
+          console.error("Remote Config Error:", e);
+        }
+      }
+
       try {
         const response = await fetch('/data/places/places.json');
         const data = await response.json();
@@ -191,7 +210,7 @@ export default function MapsPage() {
         setIsLoading(false);
       }
     };
-    fetchData();
+    initPage();
   }, []);
 
   const handleEraSelection = async (era) => {
@@ -341,7 +360,7 @@ export default function MapsPage() {
   };
 
   const setupTerrain = (map) => {
-    if (!isMapTilerAvailable) return;
+    if (!isMapTilerAvailable || !showMaptilerFeatures) return;
 
     if (!map.getSource('maptiler-terrain')) {
       map.addSource('maptiler-terrain', {
@@ -506,7 +525,7 @@ export default function MapsPage() {
         <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.streets ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.streets)}>
           <MapIcon size={16} /> خريطة
         </button>
-        {isMapTilerAvailable && (
+        {isMapTilerAvailable && showMaptilerFeatures && (
           <>
             <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.satellite ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.satellite)}>
               <Globe size={16} /> قمر اصطناعي
@@ -532,6 +551,8 @@ export default function MapsPage() {
             onError={handleMapError}
             interactiveLayerIds={['unclustered-point', 'line-layer']}
             maxZoom={currentStyle === MAP_STYLES.satellite ? 18 : 25}
+            minZoom={4}
+            maxBounds={MAX_BOUNDS}
             style={{ width: '100%', height: '100%' }}
           >
             <NavigationControl position="top-right" showCompass={false} />

@@ -126,17 +126,21 @@ function AnalysisContent() {
 # نص البحث:
 ${targetText}
 
-# المنهجية (التزم بالترقيم والترتيب):
+# المنهجية (محتوى الأقسام):
 ١. مقدمة: رحب بصفتك "مساعد آجيوس".
 ٢. لغويات: أصل الكلمات (يوناني/عبري/آرامي) للنص فقط.
 ٣. تاريخ: الخلفية البيئية للنص.
 ٤. تفسير: لاهوتي/آبائي (القبطية الأرثوذكسية، أ. تادرس ملطي، أ. أنطونيوس فكري).
-٥. تطبيق: عملي معاصر. (انتهِ بـ: "ودائماً ننصح بالرجوع لأب اعترافك").
+٥. تطبيق: عملي معاصر.
 ٦. شبهات: تفكيك أي اعتراض على النص المذكور فقط.
 
-# قواعد:
+# قواعد التنسيق (صارمة جداً):
+- يجب أن يكون رقم القسم وعنوانه (مثلاً: ١. مقدمة) في سطر مستقل تماماً.
+- يمنع منعاً باتاً كتابة أي نص بجانب العنوان في نفس السطر.
+- ابدأ محتوى القسم دائماً في سطر جديد كلياً بعد العنوان.
 - ممنوع استخدام Markdown (مثل #).
-- التزم بالتركيز المطلق على النص دون تشتيت.`;
+- التزم بالتركيز المطلق على النص دون تشتيت.
+- في نهاية قسم التطبيق، أضف دائماً: "ودائماً ننصح بالرجوع لأب اعترافك".`;
 
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
@@ -264,17 +268,8 @@ ${targetText}
   const parseAndRender = (text) => {
     if (!text) return null;
 
-    return text.split('\n').map((line, i) => {
-      let cleanLine = line.replace(/[#*]/g, '').trim();
-      if (!cleanLine) return <div key={i} className={styles.spacer} />;
-
-      const isHeader = /^[١٢٣٤٥٦]\./.test(cleanLine);
-
-      if (isHeader) {
-        return <h3 key={i} className={styles.sectionHeader}>{cleanLine}</h3>;
-      }
-
-      const parts = line.split(/(\*\*.*?\*\*)/g);
+    const renderParagraph = (content, key, originalRaw) => {
+      const parts = content.split(/(\*\*.*?\*\*)/g);
       const formattedLine = parts.map((part, pIdx) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           return <strong key={pIdx}>{part.slice(2, -2)}</strong>;
@@ -283,14 +278,14 @@ ${targetText}
       });
 
       return (
-        <div key={i} className={styles.paragraphWrapper}>
+        <div key={key} className={styles.paragraphWrapper}>
           <p className={styles.paragraph}>
             {formattedLine}
           </p>
           <div className={styles.paragraphActions}>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(cleanLine);
+                navigator.clipboard.writeText(originalRaw.replace(/[#*]/g, '').trim());
                 toast.success('تم نسخ الفقرة');
               }}
               className={styles.miniActionBtn}
@@ -299,7 +294,7 @@ ${targetText}
               <Copy size={14} />
             </button>
             <button
-              onClick={() => shareText(cleanLine)}
+              onClick={() => shareText(originalRaw.replace(/[#*]/g, '').trim())}
               className={styles.miniActionBtn}
               title="مشاركة"
             >
@@ -308,6 +303,30 @@ ${targetText}
           </div>
         </div>
       );
+    };
+
+    return text.split('\n').map((line, i) => {
+      let cleanLine = line.replace(/[#*]/g, '').trim();
+      if (!cleanLine) return <div key={i} className={styles.spacer} />;
+
+      const headerMatch = cleanLine.match(/^([١٢٣٤٥٦]\.\s*[^:]{1,25}(?::|$))(.*)/);
+
+      if (headerMatch) {
+        const headerPart = headerMatch[1].trim();
+        const contentPart = headerMatch[2].trim();
+
+        if (contentPart) {
+          return (
+            <React.Fragment key={i}>
+              <h3 className={styles.sectionHeader}>{headerPart}</h3>
+              {renderParagraph(contentPart, `extra-${i}`, contentPart)}
+            </React.Fragment>
+          );
+        }
+        return <h3 key={i} className={styles.sectionHeader}>{headerPart}</h3>;
+      }
+
+      return renderParagraph(line, i, cleanLine);
     });
   };
 

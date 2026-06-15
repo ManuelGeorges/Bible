@@ -32,15 +32,13 @@ const ProfilePage = () => {
   const fetchLocalProfile = useCallback(async () => {
     const localStats = await StorageService.getLocalStats();
     const localFavs = localStats.favorites || {};
-    const localNotes = localStats.notes || [];
 
-    // محاكاة إحصائيات للضيف
     setUserStats({
       verses: Object.keys(localFavs).length,
-      chapters: 0, // يمكن تطويرها لاحقاً لتخزين الفصول محلياً
+      chapters: 0,
       plans: 0,
       joinDate: 'زائر',
-      points: localStats.points
+      points: localStats.points || 0
     });
     setLoading(false);
     setIsGuest(true);
@@ -121,7 +119,7 @@ const ProfilePage = () => {
       if (navigator.share) {
         navigator.share(shareData);
       } else {
-        alert('المشاركة غير مدعومة في المتصفح، يمكنك نسخ الرابط: ' + shareData.url);
+        alert('المشاركة غير مدعومة في المتصفح');
       }
     }
   };
@@ -137,30 +135,15 @@ const ProfilePage = () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    const lastSignInTime = new Date(currentUser.metadata.lastSignInTime).getTime();
-    const now = new Date().getTime();
-    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000);
-
-    if (!isFreshSession) {
-      alert("لدواعي أمنية، يتطلب حذف الحساب تسجيل دخول حديث. يرجى تسجيل الخروج ثم الدخول مرة أخرى والمحاولة مجدداً.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك من السحابة."
-    );
-
+    const confirmed = window.confirm("هل أنت متأكد من حذف حسابك نهائياً؟");
     if (confirmed) {
       try {
         const userId = currentUser.uid;
         await deleteUser(currentUser);
-        const userDocRef = doc(db, 'users', userId);
-        await deleteDoc(userDocRef);
-        alert("تم حذف الحساب والبيانات بنجاح.");
+        await deleteDoc(doc(db, 'users', userId));
         router.push('/');
       } catch (error) {
-        console.error("Error deleting user:", error);
-        alert("حدث خطأ أثناء حذف الحساب.");
+        alert("حدث خطأ، قد تحتاج لتسجيل الدخول مجدداً لحذف الحساب.");
       }
     }
   };
@@ -178,9 +161,7 @@ const ProfilePage = () => {
         <h1 className={styles.userName}>
           {isGuest ? 'حساب زائر' : (userData?.displayName || user?.displayName || 'صديق أجيوس')}
         </h1>
-        {isGuest ? (
-          <p className={styles.guestHint}>سجل دخولك لحفظ بياناتك في السحابة</p>
-        ) : (
+        {!isGuest && (
           <>
             <p className={styles.userEmail}><Mail size={14} /> {user?.email}</p>
             <p className={styles.joinDate}><Calendar size={14} /> عضو منذ: {userStats.joinDate}</p>
@@ -207,24 +188,16 @@ const ProfilePage = () => {
       </div>
 
       <div className={styles.menuSection}>
-        <h3 className={styles.menuTitle}>الحساب</h3>
-
-        {isGuest ? (
+        {!isGuest && (
           <>
-            <button className={`${styles.menuItem} ${styles.loginBtn}`} onClick={() => router.push('/intro')}>
+            <h3 className={styles.menuTitle}>الحساب</h3>
+            <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
               <div className={styles.menuItemRight}>
-                <LogIn size={20} />
-                <span>تسجيل الدخول / إنشاء حساب</span>
+                <LogOut size={20} />
+                <span>تسجيل الخروج</span>
               </div>
             </button>
           </>
-        ) : (
-          <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
-            <div className={styles.menuItemRight}>
-              <LogOut size={20} />
-              <span>تسجيل الخروج</span>
-            </div>
-          </button>
         )}
 
         <h3 className={styles.menuTitle}>الخيارات العامة</h3>

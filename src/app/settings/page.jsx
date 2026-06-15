@@ -6,14 +6,15 @@ import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
-  Trash2, LogOut
+  Trash2, LogOut, LogIn, CloudSync
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
 import { signOut, deleteUser, onAuthStateChanged } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
-import { auth, db } from '../../lib/firebase';
+import { auth, db, getFirebaseRemoteConfig } from '../../lib/firebase';
+import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
 import styles from './Settings.module.css'
 
 const Settings = () => {
@@ -25,6 +26,7 @@ const Settings = () => {
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
   const [user, setUser] = useState(null)
+  const [showSyncLogin, setShowSyncLogin] = useState(true)
   const [notifications, setNotifications] = useState({
     verse: true,
     verseTime: '06:00',
@@ -51,6 +53,18 @@ const Settings = () => {
       setMounted(true)
       const native = Capacitor.isNativePlatform()
       setIsNative(native)
+
+      // Remote Config
+      const remoteConfig = await getFirebaseRemoteConfig();
+      if (remoteConfig) {
+        try {
+          await fetchAndActivate(remoteConfig);
+          const shouldShow = getBoolean(remoteConfig, 'show_sync_login');
+          setShowSyncLogin(shouldShow);
+        } catch (e) {
+          console.error("Remote Config Fetch Error:", e);
+        }
+      }
 
       const savedSize = localStorage.getItem('bibleFontSize') || '18'
       const size = parseInt(savedSize)
@@ -530,7 +544,7 @@ const Settings = () => {
         </div>
       )}
 
-      {user && (
+      {user ? (
         <div className={styles.section + ' ' + styles.deleteSection}>
           <h2 className={styles.sectionTitle}>
             <SettingsIcon size={22} className={styles.iconPrimary} /> إدارة الحساب
@@ -549,6 +563,36 @@ const Settings = () => {
               <span>حذف الحساب نهائياً</span>
             </button>
           </div>
+        </div>
+      ) : showSyncLogin && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            <CloudSync size={22} className={styles.iconPrimary} /> المزامنة والسحابة
+          </h2>
+          <p className={styles.subText} style={{ marginBottom: '15px' }}>
+            سجل دخولك الآن للحفاظ على تقدمك، ملاحظاتك، ونقاطك من الضياع، ومزامنتها عبر جميع أجهزتك.
+          </p>
+          <button
+            className={styles.loginButton}
+            onClick={() => router.push('/intro')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              padding: '12px',
+              borderRadius: '12px',
+              backgroundColor: 'var(--primary-color, #2563eb)',
+              color: 'white',
+              border: 'none',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            <LogIn size={20} />
+            <span>تسجيل الدخول للمزامنة</span>
+          </button>
         </div>
       )}
 

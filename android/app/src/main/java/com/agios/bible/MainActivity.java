@@ -20,7 +20,16 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        SplashScreen.installSplashScreen(this);
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        
+        // حل مشكلة الكراش SurfaceControl checkNotReleased
+        // نقوم بإنهاء شاشة البدء فوراً عند بدء الرسم لتجنب تعارض العمليات
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            splashScreen.setOnExitAnimationListener(splashScreenView -> {
+                splashScreenView.remove();
+            });
+        }
+
         super.onCreate(savedInstanceState);
 
         checkAndRequestAlarmPermission();
@@ -66,13 +75,9 @@ public class MainActivity extends BridgeActivity {
             public void updateUserStats(int streak, String plansSummaryJson) {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
-                
-                // الحل: Capacitor تتوقع القيم كنصوص (Strings)
                 String streakStr = String.valueOf(streak);
-                editor.putString("_cap_agios_streak", streakStr); // المفتاح الموحد الجديد
+                editor.putString("_cap_agios_streak", streakStr);
                 editor.putString("agios_streak", streakStr);
-                
-                // للموافقة مع الكود القديم وتجنب الكراش
                 editor.putString("_cap_userStreak", streakStr);
                 editor.putString("userStreak", streakStr);
 
@@ -121,7 +126,7 @@ public class MainActivity extends BridgeActivity {
     private void checkAndRequestAlarmPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            if (!alarmManager.canScheduleExactAlarms()) {
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
                 Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                 intent.setData(Uri.parse("package:" + getPackageName()));
                 startActivity(intent);

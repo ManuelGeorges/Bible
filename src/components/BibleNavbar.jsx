@@ -37,7 +37,7 @@ export default function BibleNavbar() {
 
                     <Link 
                         href="/maps" 
-                        className={`${styles.navLink} ${pathname === '/maps' ? styles.active : ''}`} 
+                        className={`${styles.navLink} ${pathname.startsWith('/maps') ? styles.active : ''}`}
                         aria-label="Maps" 
                         onClick={(e) => {
                             if (!navigator.onLine) {
@@ -49,7 +49,7 @@ export default function BibleNavbar() {
                         <MapIcon size={24} />
                     </Link>
 
-                    <Link href="/search" className={`${styles.navLink} ${pathname === '/search' ? styles.active : ''}`} aria-label="Search">
+                    <Link href="/search" className={`${styles.navLink} ${pathname.startsWith('/search') ? styles.active : ''}`} aria-label="Search">
                         <Search size={24} />
                     </Link>
 

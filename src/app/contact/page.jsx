@@ -7,6 +7,13 @@ export const metadata = {
 };
 
 export default function ContactPage() {
+  const handleExternalLink = (e, url) => {
+    if (typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)) {
+      e.preventDefault();
+      window.open(url, '_system');
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -35,6 +42,7 @@ export default function ContactPage() {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.contactLink}
+            onClick={(e) => handleExternalLink(e, "https://www.facebook.com/AgiosSystem/")}
           >
             صفحة الفيسبوك
           </Link>
