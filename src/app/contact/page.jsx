@@ -2,12 +2,18 @@
 
 import styles from './contact.module.css';
 import Link from 'next/link';
+import { Browser } from '@capacitor/browser';
 
 export default function ContactPage() {
-  const handleExternalLink = (e, url) => {
-    if (typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)) {
+  const handleExternalLink = async (e, url) => {
+    if (typeof window !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       e.preventDefault();
-      window.open(url, '_system');
+      try {
+        await Browser.open({ url });
+      } catch (error) {
+        console.error("Could not open browser", error);
+        window.open(url, '_blank');
+      }
     }
   };
 
