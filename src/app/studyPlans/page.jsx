@@ -9,7 +9,7 @@ import { doc, onSnapshot, updateDoc, deleteField, arrayUnion, collection, query,
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Sparkles, User, Share2 } from 'lucide-react';
+import { Sparkles, User, Share2, Search, X } from 'lucide-react';
 import { useBadge } from '../context/BadgeContext';
 import { StorageService, KEYS } from '../../lib/storage';
 
@@ -19,6 +19,7 @@ export default function StudyPlans() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
   const [activeFilter, setActiveFilter] = useState('الكل');
+  const [searchQuery, setSearchQuery] = useState('');
   const [completionData, setCompletionData] = useState({});
   const [customPlans, setCustomPlans] = useState({});
   const [sharedPlans, setSharedPlans] = useState([]);
@@ -91,7 +92,6 @@ export default function StudyPlans() {
     const auth = getAuth();
     let unsubFirestore = () => {};
 
-    // Fetch Shared Plans
     const sharedQuery = query(collection(db, 'sharedPlans'), orderBy('createdAt', 'desc'), limit(20));
     const unsubShared = onSnapshot(sharedQuery, (snapshot) => {
       const shared = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, isShared: true }));
@@ -193,6 +193,8 @@ export default function StudyPlans() {
   };
 
   const allAvailablePlans = useMemo(() => {
+    let basePlans = [];
+
     const customPlansArray = Object.values(customPlans)
       .map(plan => ({ ...plan, isCustom: true }))
       .sort((a, b) => {
@@ -201,24 +203,25 @@ export default function StudyPlans() {
         return dateB - dateA;
       });
 
-    // Add shared plans to the "All" view if desired, or keep them separate
-    // Let's only show custom and static in "All", and shared separately to avoid clutter
-    // Or maybe show everything in "All"? The user said "قسم جديد اسمه خطط مشاركة"
-
     if (activeFilter === 'خطط مشاركة') {
-      return sharedPlans;
+      basePlans = sharedPlans;
+    } else if (activeFilter === 'مخصصة') {
+      basePlans = customPlansArray;
+    } else if (activeFilter === 'الكل') {
+      basePlans = [...customPlansArray, ...sharedPlans, ...staticPlans];
+    } else {
+      basePlans = staticPlans.filter(p => p.type === activeFilter);
     }
 
-    if (activeFilter === 'مخصصة') {
-      return customPlansArray;
-    }
+    if (!searchQuery.trim()) return basePlans;
 
-    if (activeFilter === 'الكل') {
-      return [...customPlansArray, ...staticPlans];
-    }
-
-    return staticPlans.filter(p => p.type === activeFilter);
-  }, [customPlans, sharedPlans, activeFilter]);
+    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/);
+    return basePlans.filter(plan => {
+      const planContent = `${plan.title} ${plan.description} ${plan.type}`.toLowerCase();
+      // "مرن زي المابس" - البحث عن أي كلمة من الكلمات المدخلة (OR logic)
+      return queryWords.some(word => planContent.includes(word));
+    });
+  }, [customPlans, sharedPlans, activeFilter, searchQuery]);
 
   if (loading) return <div className={styles.container}><div className={styles.loading}>جاري التحميل...</div></div>;
 
@@ -229,6 +232,24 @@ export default function StudyPlans() {
         <Link href="/studyPlans/custom" className={styles.aiCreateButton}>
           <Sparkles size={18} /> صمم خطة ذكية الآن
         </Link>
+      </div>
+
+      <div className={styles.searchSection}>
+        <div className={styles.searchBar}>
+          <Search size={20} className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="ابحث عن خطة (مثلاً: إنجيل، مزامير...)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+          {searchQuery && (
+            <button className={styles.clearSearch} onClick={() => setSearchQuery('')}>
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.filterWrapper}>
@@ -255,7 +276,7 @@ export default function StudyPlans() {
                 : (plan.isCustom ? `/studyPlans/details?id=${plan.id}&type=custom` : `/studyPlans/details?id=${plan.id}`);
 
             return (
-              <div key={plan.id} className={`${styles.card} ${plan.isCustom ? styles.customCard : ''} ${isSharedPlan ? styles.sharedCard : ''}`}>
+              <div key={plan.id} className={styles.card}>
                 {plan.isCustom && !isSharedPlan && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
                 <div className={styles.cardContent}>
                   {plan.isCustom && !isSharedPlan && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
@@ -279,7 +300,10 @@ export default function StudyPlans() {
             );
           })
         ) : (
-          <div className={styles.emptyState}><h3>لا توجد خطط حالياً</h3></div>
+          <div className={styles.emptyState}>
+            <h3>{searchQuery ? 'لا توجد نتائج لهذا البحث' : 'لا توجد خطط حالياً'}</h3>
+            {searchQuery && <button onClick={() => setSearchQuery('')} className={styles.resetSearch}>عرض كل الخطط</button>}
+          </div>
         )}
       </div>
     </div>

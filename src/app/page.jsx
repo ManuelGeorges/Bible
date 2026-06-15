@@ -200,7 +200,6 @@ const LandingPage = () => {
             setDailyQuestion(todayQuest);
         } catch (e) {
             console.error("Home Fetch Error:", e);
-            // Don't show toast on fetch error to avoid annoying offline users
         }
     }, []);
 
@@ -279,12 +278,10 @@ const LandingPage = () => {
             const today = getCairoDate();
 
             if (u) {
-                // Fix: Run sync in background without awaiting to support offline startup
                 syncLocalDataToFirebase(u).catch(e => console.log("Sync deferred:", e));
 
                 if (unsubSnap) { unsubSnap(); unsubSnap = null; }
 
-                // Firestore persistence will automatically serve data from cache when offline
                 unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
@@ -296,7 +293,6 @@ const LandingPage = () => {
                         setUserBadges(data.badges || []);
                         setFavouriteVerses(data.favorites?.verses || {});
 
-                        // Fix: Proper Last Read handling for logged in users
                         const lastReadData = data.lastRead || null;
                         setLastRead(lastReadData);
 
@@ -322,7 +318,6 @@ const LandingPage = () => {
                         const allStarted = [...activeCustom, ...activeStatic];
                         setStartedPlans(allStarted);
 
-                        // Fix: Correct call to Native Bridge with error handling
                         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
                             try {
                                 const plansSummary = allStarted.map(p => ({
@@ -370,8 +365,11 @@ const LandingPage = () => {
                 const localStats = await StorageService.getLocalStats();
                 const localHistory = await StorageService.get('points_history') || [];
                 const localAnswered = await StorageService.get('answered_questions') || {};
-                const localStaticCompletion = await StorageService.get('local_completed_plans') || {};
-                const localCustomPlans = await StorageService.get('local_custom_plans') || {};
+
+                // Fix: Fetch using both new and old keys to ensure visibility for Guest users
+                const localStaticCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
+                const localCustomPlans = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+
                 const localBadges = await StorageService.get('local_badges') || [];
                 const localLastRead = await StorageService.get(KEYS.LAST_READ);
                 const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
@@ -400,7 +398,6 @@ const LandingPage = () => {
                 const allStarted = [...activeCustom, ...activeStatic];
                 setStartedPlans(allStarted);
 
-                // Fix: Correct call to Native Bridge with error handling for guest users
                 if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
                     try {
                         const plansSummary = allStarted.map(p => ({

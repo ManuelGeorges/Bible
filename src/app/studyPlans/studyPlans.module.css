@@ -7,7 +7,7 @@
 }
 
 .heroSection {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -35,7 +35,7 @@
   box-shadow: 0 8px 15px rgba(30, 58, 138, 0.2);
   border-bottom: 4px solid rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .aiCreateButton:active {
@@ -43,7 +43,67 @@
   border-bottom-width: 1px;
 }
 
-/* Container for filters */
+/* Search Section Styling */
+.searchSection {
+  margin-bottom: 20px;
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  padding: 10px 16px;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.searchBar:focus-within {
+  border-color: #2196F3;
+  box-shadow: 0 4px 20px rgba(33, 150, 243, 0.15);
+  transform: translateY(-2px);
+}
+
+.searchIcon {
+  color: var(--color-text-secondary);
+  margin-left: 12px;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 5px 0;
+  direction: rtl;
+}
+
+.clearSearch {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: background 0.2s;
+}
+
+.clearSearch:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Filter Styling */
 .filterWrapper {
   position: relative;
   margin-bottom: 25px;
@@ -80,25 +140,6 @@
   color: white !important;
   border-color: #2196F3 !important;
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-}
-
-/* Arrow Hint */
-.scrollHint {
-  align-self: flex-end;
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-text-primary);
-  opacity: 1;
-  z-index: 2;
-  padding: 6px;
-  margin-top: -4px;
-  margin-inline-start: 4px;
-  outline: none;
-  transition: all 0.2s ease;
 }
 
 .plansGrid {
@@ -231,5 +272,24 @@
 .emptyState {
   text-align: center;
   padding: 40px 20px;
+}
+
+.emptyState h3 {
   color: var(--color-text-secondary);
+  margin-bottom: 15px;
+}
+
+.resetSearch {
+  background: transparent;
+  color: #2196F3;
+  border: 1px solid #2196F3;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resetSearch:hover {
+  background: rgba(33, 150, 243, 0.05);
 }
