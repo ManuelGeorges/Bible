@@ -30,6 +30,14 @@ const HIGHLIGHT_COLORS = [
   '#F8BBD0', '#E1BEE7', '#CFD8DC'
 ];
 
+const fontOptionsMap = {
+  'Cairo': "'Cairo', sans-serif",
+  'Amiri': "'Amiri', serif",
+  'Almarai': "'Almarai', sans-serif",
+  'Tajawal': "'Tajawal', sans-serif",
+  'ReemKufi': "'Reem Kufi', sans-serif"
+};
+
 function convertToArabicNumber(num) {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   return num.toString().split('').map(d => arabicNums[+d] || d).join('');
@@ -261,6 +269,8 @@ export default function BibleContent() {
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'system';
       const savedFontSize = localStorage.getItem('bibleFontSize') || '18';
+      const savedFontId = localStorage.getItem('bibleFontFamily') || 'Cairo';
+      const savedFontWeight = localStorage.getItem('bibleFontWeight') || '400';
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
       const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
 
@@ -272,6 +282,11 @@ export default function BibleContent() {
         document.body.classList.remove('light-theme');
       }
       document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
+
+      const fontValue = fontOptionsMap[savedFontId] || fontOptionsMap['Cairo'];
+      document.documentElement.style.setProperty('--bible-font-family', fontValue);
+      document.documentElement.style.setProperty('--bible-font-weight', savedFontWeight);
+
       setVersePerLine(savedLayout);
       setUseTashkeel(savedTashkeel);
     };
@@ -841,7 +856,7 @@ export default function BibleContent() {
         <motion.div
           key={`${selectedBookIndex}-${selectedChapterIndex}`}
           custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
-          transition={{ x: { type: "spring", stiffness: 450, stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
+          transition={{ x: { type: "spring", stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
           className={styles.verseContainer}
           style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
         >

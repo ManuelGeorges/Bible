@@ -6,7 +6,7 @@ import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
-  Trash2, LogOut, LogIn, CloudSync
+  Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
@@ -17,11 +17,21 @@ import { auth, db, getFirebaseRemoteConfig } from '../../lib/firebase';
 import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
 import styles from './Settings.module.css'
 
+const fontOptions = [
+  { id: 'Cairo', name: 'القاهرة (الأساسي)', value: "'Cairo', sans-serif" },
+  { id: 'Amiri', name: 'الأميري (كلاسيكي)', value: "'Amiri', serif" },
+  { id: 'Almarai', name: 'المراعي (عصري)', value: "'Almarai', sans-serif" },
+  { id: 'Tajawal', name: 'تجول (بسيط)', value: "'Tajawal', sans-serif" },
+  { id: 'ReemKufi', name: 'ريم كوفي (تراثي)', value: "'Reem Kufi', sans-serif" }
+]
+
 const Settings = () => {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [fontSize, setFontSize] = useState(18)
+  const [fontFamily, setFontFamily] = useState('Cairo')
+  const [fontWeight, setFontWeight] = useState(400)
   const [versePerLine, setVersePerLine] = useState(false)
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
@@ -70,6 +80,16 @@ const Settings = () => {
       const size = parseInt(savedSize)
       setFontSize(size)
       document.documentElement.style.setProperty('--bible-font-size', size + 'px')
+
+      const savedFont = localStorage.getItem('bibleFontFamily') || 'Cairo'
+      setFontFamily(savedFont)
+      const selectedFont = fontOptions.find(f => f.id === savedFont) || fontOptions[0]
+      document.documentElement.style.setProperty('--bible-font-family', selectedFont.value)
+
+      const savedWeight = localStorage.getItem('bibleFontWeight') || '400'
+      const weight = parseInt(savedWeight)
+      setFontWeight(weight)
+      document.documentElement.style.setProperty('--bible-font-weight', weight.toString())
 
       const savedLayout = localStorage.getItem('versePerLine') === 'true'
       setVersePerLine(savedLayout)
@@ -152,6 +172,22 @@ const Settings = () => {
     window.dispatchEvent(new Event('storage'))
   }
 
+  const updateFontWeight = (weight) => {
+    const newWeight = Math.max(300, Math.min(900, weight))
+    setFontWeight(newWeight)
+    localStorage.setItem('bibleFontWeight', newWeight.toString())
+    document.documentElement.style.setProperty('--bible-font-weight', newWeight.toString())
+    window.dispatchEvent(new Event('storage'))
+  }
+
+  const updateFontFamily = (id) => {
+    setFontFamily(id)
+    localStorage.setItem('bibleFontFamily', id)
+    const selectedFont = fontOptions.find(f => f.id === id) || fontOptions[0]
+    document.documentElement.style.setProperty('--bible-font-family', selectedFont.value)
+    window.dispatchEvent(new Event('storage'))
+  }
+
   const toggleVerseLayout = () => {
     const nextState = !versePerLine
     setVersePerLine(nextState)
@@ -227,6 +263,8 @@ const Settings = () => {
 
   if (!mounted) return null
 
+  const currentFontValue = fontOptions.find(f => f.id === fontFamily)?.value || fontOptions[0].value
+
   return (
     <div className={styles.container} dir="rtl">
       <h1 className={styles.title}>الإعدادات</h1>
@@ -296,12 +334,53 @@ const Settings = () => {
         <div className={styles.fontControlGroup}>
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <span className={styles.settingLabel}>
+              <CaseSensitive size={20} className={styles.iconPrimary} />
+              نوع الخط (عربي)
+            </span>
+          </div>
+          <div className={styles.fontOptionsList}>
+            {fontOptions.map(option => (
+              <button
+                key={option.id}
+                className={`${styles.fontChip} ${fontFamily === option.id ? styles.activeChip : ''}`}
+                onClick={() => updateFontFamily(option.id)}
+                style={{ fontFamily: option.value }}
+              >
+                {option.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.fontControlGroup} style={{ marginTop: '20px' }}>
+          <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
+            <span className={styles.settingLabel}>
+              <Bold size={20} className={styles.iconPrimary} />
+              ثقل الخط ({fontWeight})
+            </span>
+          </div>
+          <div className={styles.controlsWrapper}>
+            <input
+              type="range"
+              min="300"
+              max="900"
+              step="100"
+              value={fontWeight}
+              onChange={(e) => updateFontWeight(parseInt(e.target.value))}
+              className={styles.slider}
+            />
+          </div>
+        </div>
+
+        <div className={styles.fontControlGroup} style={{ marginTop: '20px' }}>
+          <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
+            <span className={styles.settingLabel}>
               <Type size={20} className={styles.iconPrimary} />
               حجم خط القراءة ({fontSize}px)
             </span>
           </div>
 
-          <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px` }}>
+          <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px`, fontFamily: currentFontValue, fontWeight: fontWeight }}>
             {versePerLine ? (
               <div className={styles.previewList}>
                 <div>١ هكذا سيبدو شكل الآيات</div>

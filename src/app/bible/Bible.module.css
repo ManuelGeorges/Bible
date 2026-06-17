@@ -203,6 +203,8 @@
 
 .verseText {
   font-size: var(--main-font-size) ;
+  font-family: var(--bible-font-family, inherit) ;
+  font-weight: var(--bible-font-weight, normal) ;
   line-height: 1.8 ;
   color: var(--color-text-primary) ;
 }

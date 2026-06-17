@@ -9,35 +9,6 @@
   align-items: center;
 }
 
-.topNav {
-  width: 100%;
-  max-width: 800px;
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.backBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: var(--transition-smooth);
-  padding: 8px 16px;
-  border-radius: 12px;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-}
-
-.backBtn:hover {
-  color: var(--color-accent);
-  transform: translateX(-5px);
-  background: var(--color-bg-end);
-}
-
 .formCard {
   width: 100%;
   max-width: 800px;

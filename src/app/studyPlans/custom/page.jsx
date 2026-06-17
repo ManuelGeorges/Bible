@@ -8,9 +8,9 @@ import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCairoIsoString } from '../../../lib/dateUtils';
-import { ArrowRight, Sparkles, Calendar, BookOpen, MessageCircle, Share2, User } from 'lucide-react';
-import Link from 'next/link';
+import { Sparkles, Calendar, BookOpen, MessageCircle, Share2, User } from 'lucide-react';
 import { StorageService, KEYS } from '../../../lib/storage';
+import { kv, CACHE_KEYS } from '../../../lib/kv';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -78,11 +78,24 @@ export default function CustomPlanForm() {
 
     const generatePlanWithAI = async (data) => {
         try {
+            const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
+
+            // 1. Check Cache first
+            const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+            try {
+                const cached = await kv.get(cacheKey);
+                if (cached) {
+                    console.log("Plan loaded from cache");
+                    return cached;
+                }
+            } catch (e) {
+                console.error("Redis Read Error:", e);
+            }
+
             const response = await fetch('/data/bookNames.json');
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
-            const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || 'أصحاح واحد يومياً';
 
             const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
@@ -117,7 +130,17 @@ export default function CustomPlanForm() {
             const responseText = result.response.text();
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("Format Error");
-            return JSON.parse(jsonMatch[0]);
+
+            const planResult = JSON.parse(jsonMatch[0]);
+
+            // 2. Save to Cache (for 7 days)
+            try {
+                await kv.set(cacheKey, planResult, { ex: 604800 });
+            } catch (e) {
+                console.error("Redis Write Error:", e);
+            }
+
+            return planResult;
         } catch (e) {
             console.error("Gemini Error:", e);
             return null;
@@ -218,12 +241,6 @@ export default function CustomPlanForm() {
                     <p className={styles.loadingSub}>قد يستغرق هذا بضع ثوانٍ</p>
                 </div>
             )}
-
-            <div className={styles.topNav}>
-                <Link href="/studyPlans" className={styles.backBtn}>
-                    <ArrowRight size={20} /> العودة للخطط
-                </Link>
-            </div>
 
             <div className={styles.formCard}>
                 <div className={styles.header}>
