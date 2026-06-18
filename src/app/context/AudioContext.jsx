@@ -236,8 +236,7 @@ export function AudioProvider({ children }) {
             const chapter = currentLocation.chapIdx + 1;
 
             // استخدام رابط مطلق للصور لضمان عملها على أندرويد و iOS
-            const iconUrl = "https://agios-bible.vercel.app/web-app-manifest-192x192-v2.png";
-
+            const iconUrl = "https://agios-bible.vercel.app/agios.png";
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: trackTitle || `الأصحاح ${chapter}`,
                 artist: book ? book.name : 'الكتاب المقدس',
