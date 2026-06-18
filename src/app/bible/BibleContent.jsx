@@ -390,7 +390,7 @@ export default function BibleContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel.json' : '/data/bibles/ar_svd.json';
+        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd.json';
         const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch(biblePath).then(r => r.json())
@@ -926,7 +926,8 @@ export default function BibleContent() {
             className={`${styles.tashkeelTextBtn} ${useTashkeel ? styles.active : ''}`}
             onClick={toggleTashkeel}
           >
-            تشكيل
+            <Type size={18} />
+            <span>تشكيل</span>
           </button>
 
           <button

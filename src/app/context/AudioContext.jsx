@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { KeepAwake } from '@capacitor-community/keep-awake';
+import { Capacitor } from '@capacitor/core';
 
 const AudioContext = createContext();
 
@@ -35,9 +37,8 @@ export function AudioProvider({ children }) {
     const lastUrlRef = useRef(null);
     const timestampsRef = useRef([]);
     const fetchingRef = useRef(null);
-
-    // استخدام Refs للقيم التي تتغير باستمرار لمنع الـ Infinite Loops في الـ Callbacks
     const currentLocationRef = useRef({ bookIdx: -1, chapIdx: -1 });
+
     useEffect(() => {
         currentLocationRef.current = currentLocation;
     }, [currentLocation]);
@@ -95,7 +96,6 @@ export function AudioProvider({ children }) {
             .sort((a, b) => a.startTime - b.startTime);
     }, [parseTimeToSeconds]);
 
-    // دالة playTrack الآن مستقرة تماماً ولا تعتمد على حالة currentLocation
     const playTrack = useCallback((url, title, chapterTimestamps = [], bookIdx, chapIdx, shouldOpenPanel = true) => {
         setIsAutoNext(false);
 
@@ -234,55 +234,59 @@ export function AudioProvider({ children }) {
         if (typeof window !== 'undefined' && 'mediaSession' in navigator && audioUrl) {
             const book = bookNames[currentLocation.bookIdx];
             const chapter = currentLocation.chapIdx + 1;
-            const origin = window.location.origin;
+
+            // استخدام رابط مطلق للصور لضمان عملها على أندرويد و iOS
+            const iconUrl = "https://agios-bible.vercel.app/web-app-manifest-192x192-v2.png";
 
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: trackTitle || `الأصحاح ${chapter}`,
-                artist: 'عادل نصحي',
-                album: book ? book.name : 'الكتاب المقدس',
+                artist: book ? book.name : 'الكتاب المقدس',
+                album: 'أجيوس ميديا',
                 artwork: [
-                    { src: `${origin}/web-app-manifest-192x192-v2.png`, sizes: '192x192', type: 'image/png' },
-                    { src: `${origin}/web-app-manifest-512x512-v2.png`, sizes: '512x512', type: 'image/png' },
+                    { src: iconUrl, sizes: '192x192', type: 'image/png' },
+                    { src: iconUrl.replace('192', '512'), sizes: '512x512', type: 'image/png' },
                 ]
             });
 
-            const actionHandlers = [
-                ['play', () => audioRef.current?.play().catch(() => {})],
-                ['pause', () => audioRef.current?.pause()],
-                ['previoustrack', () => goToChapter(-1)],
-                ['nexttrack', () => goToChapter(1)],
-                ['seekbackward', (details) => {
+            const handlers = {
+                play: () => audioRef.current?.play(),
+                pause: () => audioRef.current?.pause(),
+                previoustrack: () => goToChapter(-1),
+                nexttrack: () => goToChapter(1),
+                seekbackward: (details) => {
                     const skipTime = details.seekOffset || 10;
-                    if (audioRef.current) audioRef.current.currentTime = Math.max(audioRef.current.currentTime - skipTime, 0);
-                }],
-                ['seekforward', (details) => {
+                    if (audioRef.current) audioRef.current.currentTime -= skipTime;
+                },
+                seekforward: (details) => {
                     const skipTime = details.seekOffset || 10;
-                    if (audioRef.current) audioRef.current.currentTime = Math.min(audioRef.current.currentTime + skipTime, audioRef.current.duration);
-                }],
-                ['seekto', (details) => {
+                    if (audioRef.current) audioRef.current.currentTime += skipTime;
+                },
+                seekto: (details) => {
                     if (details.seekTime !== undefined && audioRef.current) {
                         audioRef.current.currentTime = details.seekTime;
                     }
-                }],
-                ['stop', () => {
-                    if (audioRef.current) {
-                        audioRef.current.pause();
-                        audioRef.current.currentTime = 0;
-                    }
-                }]
-            ];
+                }
+            };
 
-            actionHandlers.forEach(([action, handler]) => {
+            Object.entries(handlers).forEach(([action, handler]) => {
                 try {
                     navigator.mediaSession.setActionHandler(action, handler);
-                } catch (error) {
-                    console.warn(`MediaSession action "${action}" is not supported.`);
-                }
+                } catch (e) {}
             });
         }
     }, [audioUrl, trackTitle, currentLocation, bookNames, goToChapter]);
 
-    // Update playback state and position for the notification seek bar
+    // Keep screen and CPU awake while playing on mobile
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            if (isPlaying) {
+                KeepAwake.keepAwake().catch(() => {});
+            } else {
+                KeepAwake.allowSleep().catch(() => {});
+            }
+        }
+    }, [isPlaying]);
+
     useEffect(() => {
         if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
             navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';

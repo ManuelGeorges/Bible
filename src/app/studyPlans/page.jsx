@@ -15,6 +15,17 @@ import { StorageService, KEYS } from '../../lib/storage';
 
 const staticPlans = studyPlansData.plans;
 
+const normalizeArabic = (text) => {
+  if (!text) return "";
+  return text.toString()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[\u064B-\u0652]/g, "")
+    .toLowerCase()
+    .trim();
+};
+
 export default function StudyPlans() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
@@ -233,10 +244,13 @@ export default function StudyPlans() {
 
     if (!searchQuery.trim()) return basePlans;
 
-    const queryWords = searchQuery.toLowerCase().trim().split(/\s+/);
+    const normalizedQuery = normalizeArabic(searchQuery);
+    const queryWords = normalizedQuery.split(/\s+/);
+
     return basePlans.filter(plan => {
-      const planContent = `${plan.title} ${plan.description} ${plan.type}`.toLowerCase();
-      return queryWords.some(word => planContent.includes(word));
+      const planContent = normalizeArabic(`${plan.title} ${plan.description} ${plan.type}`);
+      // flexible search: matches if all words are present in any order, or if the whole query matches as a substring
+      return queryWords.every(word => planContent.includes(word));
     });
   }, [customPlans, sharedPlans, completionData, activeFilter, searchQuery]);
 
