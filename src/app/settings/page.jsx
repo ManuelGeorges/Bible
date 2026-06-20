@@ -8,7 +8,7 @@ import {
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
   Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold
 } from 'lucide-react'
-import { Capacitor } from '@capacitor-core'
+import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
 import { signOut, deleteUser, onAuthStateChanged } from 'firebase/auth';
@@ -324,7 +324,7 @@ const Settings = () => {
         <div className={styles.settingItem}>
           <div className={styles.settingInfo}>
             <div className={styles.textContainer}>
-              <span className={styles.settingLabel}>
+              <span className={strings.settings.bible.verse_per_line}>
                 <LayoutList size={20} className={styles.iconPrimary} />
                 {strings.settings.bible.verse_per_line}
               </span>
