@@ -1,9 +1,11 @@
 "use client";
 
 import Link from 'next/link';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function OfflinePage() {
+  const { strings, dir } = useLanguage();
+
   return (
     <div style={{ 
       textAlign: 'center', 
@@ -13,7 +15,7 @@ export default function OfflinePage() {
       alignItems: 'center', 
       justifyContent: 'center',
       minHeight: '70vh',
-      direction: 'rtl'
+      direction: dir
     }}>
       <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>{strings.offline.title}</h1>
       <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '30px' }}>

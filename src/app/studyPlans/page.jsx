@@ -11,8 +11,8 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Sparkles, User, Share2, Search, X } from 'lucide-react';
 import { useBadge } from '../context/BadgeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
-import strings from '../data/ar.json';
 
 const staticPlans = studyPlansData.plans;
 
@@ -30,6 +30,7 @@ const normalizeArabic = (text) => {
 export default function StudyPlans() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
+  const { strings, dir } = useLanguage();
   const [activeFilter, setActiveFilter] = useState(strings.studyPlans.filters.all);
   const [searchQuery, setSearchQuery] = useState('');
   const [completionData, setCompletionData] = useState({});
@@ -173,7 +174,7 @@ export default function StudyPlans() {
     e.stopPropagation();
 
     toast((t) => (
-      <div style={{ direction: 'rtl', textAlign: 'center' }}>
+      <div style={{ direction: dir, textAlign: 'center' }}>
         <p style={{ marginBottom: '12px', fontWeight: 'bold', fontSize: '1.1rem' }}>
           {strings.studyPlans.delete_toast.confirm_title}
         </p>

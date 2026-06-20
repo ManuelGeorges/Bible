@@ -1,16 +1,15 @@
 
 export const metadata = {
-  title: ' المزيد | Agios Bible',
-  description:"الصفحة الجامعة التي تجمع كل الصفحات التقنية والإدارية التي ليس لها صلة بالمحتوى كالتواصل  ومعلومات التحديثات ومعلومات عننا",
-  keywords: ['Agios Bible, Agios , مسابقات الكتاب المقدس, أسئلة كتابية , أسئلة الإنجيل , مسابقات كتاب مقدس,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  title: 'More | Agios Bible',
+  description: 'Explore additional resources and app sections like updates, about, and support.',
+  keywords: ['Agios Bible, more, resources, updates, support, additional pages'],
   openGraph: {
-   title: ' المزيد | Agios Bible',
-  description:"الصفحة الجامعة التي تجمع كل الصفحات التقنية والإدارية التي ليس لها صلة بالمحتوى كالتواصل  ومعلومات التحديثات ومعلومات عننا",
-  keywords: ['Agios Bible, Agios , مسابقات الكتاب المقدس, أسئلة كتابية , أسئلة الإنجيل , مسابقات كتاب مقدس,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+    title: 'More | Agios Bible',
+    description: 'Explore additional resources and app sections like updates, about, and support.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/more',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

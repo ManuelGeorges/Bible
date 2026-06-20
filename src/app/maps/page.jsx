@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { getCairoIsoString } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 if (typeof window !== 'undefined') {
   if (maplibregl.getRTLTextPluginStatus() === 'unavailable') {
@@ -61,7 +61,8 @@ const MAX_BOUNDS = [
 ];
 
 export default function MapsPage() {
-  const router = useRouter(); 
+  const { strings, dir, language } = useLanguage();
+  const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
   const [selectedEra, setSelectedEra] = useState(strings.maps.eras_placeholder);
@@ -191,7 +192,8 @@ export default function MapsPage() {
       }
 
       try {
-        const response = await fetch('/data/places/places.json');
+        const placesPath = `/data/places/places${language && language !== 'ar' ? '_' + language : ''}.json`;
+        const response = await fetch(placesPath);
         const data = await response.json();
         setAllPlaces(data);
       } catch (error) {
@@ -201,7 +203,7 @@ export default function MapsPage() {
       }
     };
     initPage();
-  }, []);
+  }, [language]);
 
   const handleEraSelection = async (era) => {
     setSelectedEra(era);
@@ -414,7 +416,7 @@ export default function MapsPage() {
   if (!mounted) return null;
 
   return (
-    <div dir="rtl" className={styles.container}>
+    <div dir={dir} className={styles.container}>
       <header className={styles.headerSection}>
         <h1 className={styles.heading}>{strings.maps.title}</h1>
       </header>

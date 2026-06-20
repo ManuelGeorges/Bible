@@ -1,15 +1,14 @@
 export const metadata = {
-  title: ' التحديثات| Agios Bible',
-  description:"تحديثات موقع Agios Bible مع معلومات عنها لكي تطلع عليها وقتما شئت لمتابعة تاريخ الموقع",
-  keywords: ['Agios Bible, Agios ,Bible,البحث الكتابي, البحث الإنجيلي, قراءة الكتاب المقدس, الكتاب المقدس, خطط قراءة الإنجيل , دراسة الكتاب Full Bible, الإنجيل, الآيات'],
+  title: 'Updates | Agios Bible',
+  description: 'Stay updated with the latest Agios Bible release notes and feature announcements.',
+  keywords: ['Agios Bible, updates, release notes, new features, app changes'],
   openGraph: {
-title: ' التحديثات| Agios Bible',
-  description:"تحديثات موقع Agios Bible مع معلومات عنها لكي تطلع عليها وقتما شئت لمتابعة تاريخ الموقع",
-  keywords: ['Agios Bible, Agios ,Bible,البحث الكتابي, البحث الإنجيلي, قراءة الكتاب المقدس, الكتاب المقدس, خطط قراءة الإنجيل , دراسة الكتاب Full Bible, الإنجيل, الآيات'],
+    title: 'Updates | Agios Bible',
+    description: 'Stay updated with the latest Agios Bible release notes and feature announcements.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/versions',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

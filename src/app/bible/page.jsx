@@ -3,17 +3,15 @@
 import { Suspense } from 'react';
 import BibleContent from './BibleContent'; 
 import styles from './Bible.module.css'; 
-export const metadata = {
-  title: 'الكتاب المقدس| Agios Bible',
-  description: '  اقرأ الكتاب المقدس من واجهة سلسة مريحة للعين في القراءة مع خصائص عدة مثل نسخ الآيات ووضعها في المفضلة',
-  keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+PLACEHOLDER  description: 'Read the Bible with a clean interface featuring easy verse copying and bookmarking.',
+  keywords: ['Agios Bible, Bible reading, scripture, favorite verses, Bible study'],
   openGraph: {
-    title: 'Agios Bible',
-    description: 'اقرأ الكتاب المقدس من واجهة سلسة مريحة للعين في القراءة مع خصائص عدة مثل نسخ الآيات ووضعها في المفضلة',
+    title: 'Bible | Agios Bible',
+    description: 'Read the Bible with a clean interface featuring easy verse copying and bookmarking.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/bible',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 export default function BiblePage() {

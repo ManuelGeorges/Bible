@@ -1,14 +1,12 @@
-export const metadata = {
-  title: ' خطط دراسة الكتاب | Agios Bible',
-  description:"ادرس الكتاب في خطط موضوعية وسنوية تساعدك على فهمه والنمو في ايمانك",
-  keywords: ['Agios Bible, Agios ,Bible,البحث الكتابي, البحث الإنجيلي, قراءة الكتاب المقدس, الكتاب المقدس, خطط قراءة الإنجيل , دراسة الكتاب Full Bible, الإنجيل, الآيات'],
+PLACEHOLDER  description: 'Explore guided Bible reading plans designed for daily, weekly, and thematic study.',
+  keywords: ['Agios Bible, reading plans, Bible study plans, devotional plans, scripture reading'],
   openGraph: {
-  title: ' خطط دراسة الكتاب | Agios Bible',
-        description:"ادرس الكتاب في خطط موضوعية وسنوية تساعدك على فهمه والنمو في ايمانك",
+    title: 'Reading Plans | Agios Bible',
+    description: 'Explore guided Bible reading plans designed for daily, weekly, and thematic study.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/studyPlans',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

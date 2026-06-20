@@ -2,9 +2,10 @@
 import Link from 'next/link';
 import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck } from 'lucide-react';
 import styles from './more.module.css';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
+  const { strings } = useLanguage();
   const menuItems = [
     { name: strings.more.items.favourites, icon: <Heart size={20} />, href: '/favourites' },
     { name: strings.more.items.competitions, icon: <Trophy size={20} />, href: '/competitions' },

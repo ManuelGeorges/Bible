@@ -1,15 +1,15 @@
 
 export const metadata = {
-  title: ' البحث الكتابي| Agios Bible',
-  description:"ابحث في نصوص الكتاب المقدس بسهولة بباحث حرفي سهل الاستخدام وبحث متقدم يستخدم المشتقات والجذور العربية",
-  keywords: ['Agios Bible, Agios ,Bible,البحث الكتابي, البحث الإنجيلي, ابحث عن آية , Bible search, ابحث في الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  title: 'Bible Search | Agios Bible',
+  description: 'Search Scripture using literal queries, morphological derivatives, and semantic matching.',
+  keywords: ['Agios Bible, Bible search, scripture lookup, semantic search, search derivatives'],
   openGraph: {
-  title: ' البحث الكتابي| Agios Bible',
-          description:"ابحث في نصوص الكتاب المقدس بسهولة بباحث حرفي سهل الاستخدام وبحث متقدم يستخدم المشتقات والجذور العربية",
+    title: 'Bible Search | Agios Bible',
+    description: 'Search Scripture using literal queries, morphological derivatives, and semantic matching.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/search',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

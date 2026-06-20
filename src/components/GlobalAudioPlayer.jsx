@@ -8,9 +8,10 @@ import {
 } from 'lucide-react';
 import { useAudio } from '../app/context/AudioContext';
 import styles from './GlobalAudioPlayer.module.css';
-import strings from '../app/data/ar.json';
+import { useLanguage } from '../app/context/LanguageContext';
 
 export default function GlobalAudioPlayer() {
+    const { strings, dir } = useLanguage();
     const {
         isPlaying, currentTime, duration, playbackSpeed, isPanelOpen, trackTitle,
         isRepeat, isAutoPlay, volume, isHighlightEnabled, sleepTimer, timeLeft,
@@ -39,7 +40,7 @@ export default function GlobalAudioPlayer() {
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                dir="rtl"
+                dir={dir}
             >
                 <AnimatePresence>
                     {showSettings && (

@@ -3,9 +3,10 @@
 import styles from './contact.module.css';
 import Link from 'next/link';
 import { Browser } from '@capacitor/browser';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ContactPage() {
+  const { strings } = useLanguage();
   const handleExternalLink = async (e, url) => {
     if (typeof window !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       e.preventDefault();

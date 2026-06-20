@@ -14,7 +14,7 @@ import {
   Sparkles, Move, Type, Maximize2, AlignCenter, ArrowUpDown
 } from 'lucide-react';
 import styles from './SharePreview.module.css';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
   id: i + 1,
@@ -47,6 +47,8 @@ function PreviewContent() {
   const [lineHeight, setLineHeight] = useState(1.4);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const { strings, dir } = useLanguage();
 
   useEffect(() => {
     try {
@@ -152,7 +154,7 @@ function PreviewContent() {
   };
 
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container} dir={dir}>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700;900&family=El+Messiri:wght@400;700&family=Lateef&family=Tajawal:wght@400;700&display=swap');
       `}</style>

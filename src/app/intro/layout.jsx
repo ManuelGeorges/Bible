@@ -1,16 +1,15 @@
 
 export const metadata = {
-  title: '   سجل دخولك| Agios Bible',
-  description:"سجل الدخول او انشئ حساباً جديداً لتحصل على مزايا لا حصر لها ويصل لك كل جديد",
-  keywords: ['Agios Bible, Agios ,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  title: 'Welcome | Agios Bible',
+  description: 'Sign in or create a new account to unlock full app features and updates.',
+  keywords: ['Agios Bible, welcome, login, signup, account, Bible app'],
   openGraph: {
-    title: 'سجل دخولك| Agios Bible',
-       description:"سجل الدخول او انشئ حساباً جديداً لتحصل على مزايا لا حصر لها ويصل لك كل جديد",
-
+    title: 'Welcome | Agios Bible',
+    description: 'Sign in or create a new account to unlock full app features and updates.',
     type: 'website',
-    url: 'https://agios-bible.vercel.app/intr',
+    url: 'https://agios-bible.vercel.app/intro',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

@@ -15,7 +15,7 @@ import Badge from '../../components/Badge/Badge';
 import { toast } from 'react-hot-toast';
 import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const convertToArabicNumber = (num) => {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -187,6 +187,7 @@ const categorizeActivities = (history) => {
 };
 
 export default function Points() {
+  const { strings, dir } = useLanguage();
   const router = useRouter();
   const [pointsData, setPointsData] = useState(null);
   const [badgesData, setBadgesData] = useState(null);
@@ -331,7 +332,7 @@ export default function Points() {
   );
 
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container} dir={dir}>
       <h1 className={styles.header}>{strings.points.title}</h1>
 
       <nav className={styles.topNav}>

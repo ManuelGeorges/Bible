@@ -16,7 +16,6 @@ import { LanguageProvider } from './context/LanguageContext';
 import GlobalAudioPlayer from '../components/GlobalAudioPlayer';
 import LanguageWelcome from '../components/LanguageWelcome';
 import TopHeader from '../components/TopHeader';
-import strings from './data/ar.json';
 
 export const viewport = {
   width: 'device-width',
@@ -32,8 +31,8 @@ export const viewport = {
 
 export const metadata = {
   publisher: 'Agios Bible',
-  title: strings.metadata.title,
-  description: strings.metadata.description,
+  title: 'Agios Bible',
+  description: 'Multilingual Bible app supporting Arabic, English, German, and French.',
   authors: [{ name: 'Manuel Georges' }],
   robots: 'index, follow',
   keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس , Bible study, دراسة الكتاب المقدس, آية اليوم, Verse of the day, خرائط الكتاب المقدس, Bible maps, خطط دراسة الكتاب المقدس, Bible study plans, مسابقات الكتاب المقدس, Bible quizzes, البحث في الكتاب المقدس, Bible search, كتب مسيحية, Christian books'],
@@ -44,11 +43,11 @@ export const metadata = {
   },
   openGraph: {
     title: 'Agios Bible',
-    description: strings.metadata.description,
+    description: 'Multilingual Bible app supporting Arabic, English, German, and French.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
     images: [
       {
         url: 'https://agios-bible.vercel.app/agios.png',
@@ -73,7 +72,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light dark" />
       </head>

@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import styles from './interpretations.module.css';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const ChapterCard = ({ chapter, interpretation }) => {
+  const { strings } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   
   let formattedInterpretation = interpretation

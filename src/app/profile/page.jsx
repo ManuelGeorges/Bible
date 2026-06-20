@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { StorageService } from '../../lib/storage';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -29,6 +29,8 @@ const ProfilePage = () => {
     points: 0
   });
   const router = useRouter();
+
+  const { strings, dir } = useLanguage();
 
   const fetchLocalProfile = useCallback(async () => {
     const localStats = await StorageService.getLocalStats();
@@ -152,7 +154,7 @@ const ProfilePage = () => {
   if (loading) return <div className={styles.loading}>{strings.common.loading}</div>;
 
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container} dir={dir}>
       <div className={styles.profileHeader}>
         <div className={styles.avatarWrapper}>
           <div className={styles.avatar}>

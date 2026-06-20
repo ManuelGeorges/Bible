@@ -6,8 +6,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
-import strings from '../data/ar.json';
 
 const HIGHLIGHT_COLORS = [
   '#FFC107', '#FF5722', '#F44336', '#E91E63', '#9C27B0',
@@ -18,6 +18,7 @@ const HIGHLIGHT_COLORS = [
 
 export default function FavouritesPage() {
   const router = useRouter();
+  const { strings } = useLanguage();
   const [activeTab, setActiveTab] = useState('favourites'); 
   const [selectedColor, setSelectedColor] = useState(null); 
   const [allData, setAllData] = useState([]);

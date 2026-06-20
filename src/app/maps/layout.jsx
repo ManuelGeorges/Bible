@@ -1,14 +1,15 @@
 
 export const metadata = {
-  title: 'الخرائط الكتابية | Agios Bible',
-  description: "استكشف الأماكن الكتابية بأسلوب جديد متطور عن طريق خرائط ثلاثية الأبعاد",
-  keywords: ['Agios Bible, Agios ,Bible,خرائط الكتاب المقدس, Bible maps, الخرائط الكتابية, خرائط الإنجيل, الخرائط الإنجيلية, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  title: 'Maps | Agios Bible',
+  description: 'Explore biblical locations with modern interactive maps.',
+  keywords: ['Agios Bible, Bible maps, biblical locations, interactive maps, scripture geography'],
   openGraph: {
-    title: 'الخرائط الكتابية | Agios Bible',
-    description: "استكشف الأماكن الكتابية بأسلوب جديد متطور عن طريق خرائط ثلاثية الأبعاد",
+    title: 'Maps | Agios Bible',
+    description: 'Explore biblical locations with modern interactive maps.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/maps',
     siteName: 'Agios Bible',
+    locale: 'en_US',
   },
 };
 

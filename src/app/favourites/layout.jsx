@@ -1,16 +1,15 @@
 
 export const metadata = {
-  title: ' الآيات المفضلة | Agios Bible',
-  description:"احفظ جميع آياتك المفضلة في مكان واحد للوصول السريع في أي وقت من أي جهاز",
-  keywords: ['Agios Bible, Agios ,الآيات المفضلة , آياتي المفضلةBible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  title: 'Favorites | Agios Bible',
+  description: 'Save and access your favorite Bible verses in one convenient place.',
+  keywords: ['Agios Bible, favorites, saved verses, Bible bookmarks, scripture highlights'],
   openGraph: {
-    title: 'الآيات المفضلة | Agios Bible',
-     description:"احفظ جميع آياتك المفضلة في مكان واحد للوصول السريع في أي وقت من أي جهاز",
-
+    title: 'Favorites | Agios Bible',
+    description: 'Save and access your favorite Bible verses in one convenient place.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/favourites',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

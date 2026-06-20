@@ -8,10 +8,11 @@ import { useRouter } from 'next/navigation';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import * as Icons from 'lucide-react';
-import strings from '../../app/data/ar.json';
+import { useLanguage } from '../../app/context/LanguageContext';
 
 const BadgeUnlockModal = ({ badge, onClose }) => {
   const router = useRouter();
+  const { strings } = useLanguage();
 
   const iconFamilyMap = {
     "المثابرة": Icons.Flame,

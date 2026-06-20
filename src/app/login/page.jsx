@@ -16,9 +16,10 @@ import { Capacitor } from '@capacitor/core';
 import { auth, db } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const LoginPage = () => {
+  const { strings } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -171,7 +172,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className={`${styles.container} ${styles.rtl}`}>
+    <div className={styles.container} style={{ direction: dir }}>
       <div className={styles.card}>
         <h1 className={styles.title}>{strings.login.title}</h1>
         <form onSubmit={handleAuth} className={styles.form}>

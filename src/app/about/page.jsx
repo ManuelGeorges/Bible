@@ -1,8 +1,11 @@
+'use client';
+
+import { useLanguage } from '../context/LanguageContext';
 import styles from './about.module.css';
 import Image from 'next/image';
-import strings from '../data/ar.json';
 
 export default function AboutPage() {
+  const { strings } = useLanguage();
   return (
     <div className={styles.container}>
       <header className={styles.header}>

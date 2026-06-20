@@ -1,15 +1,12 @@
 import styles from './versions.module.css';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 import updates from '../data/updates.json';
 
-export const metadata = {
-  title: `${strings.versions.title} - Agios Bible`,
-  description: strings.versions.intro,
-};
-
 export default function VersionsPage() {
+  const { strings } = useLanguage();
+
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container}>
       <h1 className={styles.title}>{strings.versions.title}</h1>
       <p className={styles.introParagraph}>
         {strings.versions.intro}

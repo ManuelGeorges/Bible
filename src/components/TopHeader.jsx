@@ -3,9 +3,10 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import styles from './TopHeader.module.css';
-import strings from '../app/data/ar.json';
+import { useLanguage } from '../app/context/LanguageContext';
 
 export default function TopHeader() {
+  const { strings } = useLanguage();
     const router = useRouter();
     const pathname = usePathname();
 

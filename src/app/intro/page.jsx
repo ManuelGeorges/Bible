@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import styles from './intro.module.css';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function IntroPage() {
   const router = useRouter();
+  const { strings } = useLanguage();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -1,16 +1,13 @@
 
-export const metadata = {
-  title: ' تواصل معنا | Agios Bible',
-  description:" تواصل مع إدارة  Agios Bible لأي استفسار أو اقتراح أو دعم فني أو للانتساب لهم",
-  keywords: ['Agios Bible, Agios , مسابقات الكتاب المقدس, أسئلة كتابية , أسئلة الإنجيل , مسابقات كتاب مقدس,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+PLACEHOLDER  description: 'Get in touch with Agios Bible for support, feedback, or partnership inquiries.',
+  keywords: ['Agios Bible, contact, support, Bible app, feedback, Christian ministry'],
   openGraph: {
-    title: 'تواصل معنا | Agios Bible',
-     description:" تواصل مع إدارة  Agios Bible لأي استفسار أو اقتراح أو دعم فني أو للانتساب لهم",
-
+    title: 'Contact | Agios Bible',
+    description: 'Get in touch with Agios Bible for support, feedback, or partnership inquiries.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/contact',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

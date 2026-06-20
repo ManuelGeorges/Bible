@@ -1,15 +1,15 @@
 
 export const metadata = {
-  title: ' المسابقات | Agios Bible',
-  description:"اختبر معرفتك في الكتاب المقدس وقم بحل أسئلة كتابية متدرجة الصعوبة عن إكمال الآيات والأشخاص وغيرها",
-  keywords: ['Agios Bible, Agios , مسابقات الكتاب المقدس, أسئلة كتابية , أسئلة الإنجيل , مسابقات كتاب مقدس,Bible, الكتاب المقدس, Full Bible, الإنجيل, الآيات'],
+  title: 'Competitions | Agios Bible',
+  description: 'Challenge your Bible knowledge with quizzes and scripture-based competitions.',
+  keywords: ['Agios Bible, competitions, Bible quizzes, scripture challenges, Christian trivia'],
   openGraph: {
-    title: 'المسابقات | Agios Bible',
-    description: "اختبر معرفتك في الكتاب المقدس وقم بحل أسئلة كتابية متدرجة الصعوبة عن إكمال الآيات والأشخاص وغيرها",
+    title: 'Competitions | Agios Bible',
+    description: 'Challenge your Bible knowledge with quizzes and scripture-based competitions.',
     type: 'website',
     url: 'https://agios-bible.vercel.app/competitions',
     siteName: 'Agios Bible',
-    locale: 'ar_AR',
+    locale: 'en_US',
   },
 };
 

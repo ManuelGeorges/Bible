@@ -529,8 +529,7 @@ function SearchContent() {
   };
 
   const handleSemanticSearch = async (term) => {
-    const normalizedTerm = normalizeArabicText(term);
-    const cacheKey = `${CACHE_KEYS.SEMANTIC}${normalizedTerm}`;
+    const cacheKey = `${CACHE_KEYS.SEMANTIC}semantic:${language}:${term}`;
     try {
       const cached = await kv.get(cacheKey);
       if (cached) {
@@ -543,16 +542,8 @@ function SearchContent() {
 
     const searchId = ++currentSearchIdRef.current;
 
-    const attemptSemantic = async (attemptIndex) => {
-      const allowedBooks = bookNamesData?.map(b => b.name).join(', ') || '';
-      const filterContext = `
-        ${selectedTestament ? `Testament: ${selectedTestament === 'OT' ? 'Old' : 'New'}` : ''}
-        ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
-      `;
-
-      const genAIInstance = getGenAI(attemptIndex);
-      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-      const prompt = `أنت محرك بحث لاهوتي لتطبيق "أجيوس".
+    const semanticPrompts = {
+      ar: (term, allowedBooks, filterContext) => `أنت محرك بحث لاهوتي لتطبيق "أجيوس".
 استخرج 5-7 مراجع مرتبطة بـ: "${term}"
 السياق: ${filterContext}
 
@@ -563,7 +554,57 @@ function SearchContent() {
 }
 2. الالتزام بأسماء الأسفار حصراً: [${allowedBooks}]
 3. للصفات: ابحث عن آيات مباشرة وقصص تجسدها.
-4. دقة عالية في الأرقام.`;
+4. دقة عالية في الأرقام.`,
+      en: (term, allowedBooks, filterContext) => `You are a theological search engine for the "Agios" Bible app.
+Extract 5-7 references related to: "${term}"
+Context: ${filterContext}
+
+Rules:
+1. Return JSON only in this exact format:
+{
+  "results": [{"book": "book name", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
+}
+2. Strictly use only these book names: [${allowedBooks}]
+3. For topics: find direct verses and stories that illustrate them.
+4. High accuracy in chapter and verse numbers.`,
+      fr: (term, allowedBooks, filterContext) => `Vous êtes un moteur de recherche théologique pour l'application Bible "Agios".
+Extrayez 5-7 références liées à: "${term}"
+Contexte: ${filterContext}
+
+Règles:
+1. Renvoyez JSON uniquement dans ce format exact:
+{
+  "results": [{"book": "nom du livre", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
+}
+2. Utilisez strictement uniquement ces noms de livres: [${allowedBooks}]
+3. Pour les sujets: trouvez les versets directs et les histoires qui les illustrent.
+4. Haute précision dans les numéros de chapitre et de verset.`,
+      de: (term, allowedBooks, filterContext) => `Sie sind eine theologische Suchmaschine für die "Agios" -Bibel-App.
+Extrahieren Sie 5-7 Verweise auf: "${term}"
+Kontext: ${filterContext}
+
+Regeln:
+1. Geben Sie JSON nur in diesem genauen Format zurück:
+{
+  "results": [{"book": "Buchname", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
+}
+2. Verwenden Sie streng nur diese Buchnamen: [${allowedBooks}]
+3. Für Themen: Finden Sie direkte Verse und Geschichten, die sie veranschaulichen.
+4. Hohe Genauigkeit bei Kapitel- und Versnummern.`
+    };
+
+    const attemptSemantic = async (attemptIndex) => {
+      const allowedBooks = bookNamesData?.map(b => b.name).join(', ') || '';
+      const filterContext = `
+        ${selectedTestament ? `Testament: ${selectedTestament === 'OT' ? 'Old' : 'New'}` : ''}
+        ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
+      `;
+
+      const genAIInstance = getGenAI(attemptIndex);
+      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+      const promptFn = semanticPrompts[language] || semanticPrompts.en;
+      const prompt = promptFn(term, allowedBooks, filterContext);
+      
       const responsePromise = model.generateContent(prompt);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Semantic search timed out after 25s')), 25000)
@@ -632,6 +673,138 @@ function SearchContent() {
     }
   };
 
+  const searchWithGeminiDerivativesMultilingual = async (term) => {
+    const cacheKey = `${CACHE_KEYS.SEMANTIC}deriv:${language}:${term}`;
+    try {
+      const cached = await kv.get(cacheKey);
+      if (cached) {
+        setSearchInfo(cached);
+        setSelectedDerivatives(cached.derivatives);
+        return cached;
+      }
+    } catch (e) { console.error("Upstash Read Error:", e); }
+
+    if (!checkRateLimit()) return null;
+
+    const searchId = ++currentSearchIdRef.current;
+    let currentInfo = { root: '...', derivatives: [], isStatic: false, explanation: '' };
+    setShowDerivatives(true);
+
+    const languagePrompts = {
+      en: `You are a linguistic expert specializing in English morphology. Target word: "${term}".
+Return JSON only in this exact format:
+{
+  "root": "root or base form",
+  "isStatic": true/false,
+  "explanation": "brief linguistic explanation",
+  "derivatives": ["word1", "word2", "..."]
+}
+
+Rules:
+1. "isStatic": true if the word is a noun (like "stone", "sun") that doesn't derive verbs.
+2. If static, only list actual forms: plurals, possessive variants.
+3. For derivable words: extract all valid morphological forms (past, present, gerund, agent, adjective, noun forms).
+4. Return JSON only, no additional text.`,
+      fr: `Vous êtes un expert linguistique spécialisé dans la morphologie française. Mot cible: "${term}".
+Renvoyez JSON uniquement dans ce format exact:
+{
+  "root": "racine ou forme de base",
+  "isStatic": true/false,
+  "explanation": "brève explication linguistique",
+  "derivatives": ["mot1", "mot2", "..."]
+}
+
+Règles:
+1. "isStatic": true si le mot est un nom (comme "pierre", "soleil") qui ne dérive pas de verbes.
+2. Si statique, énumérez uniquement les formes réelles: pluriels, variantes.
+3. Pour les mots dérivables: extrayez toutes les formes morphologiques valides (passé, présent, gérondif, agent, adjectif).
+4. Renvoyez JSON uniquement, pas de texte supplémentaire.`,
+      de: `Sie sind ein Sprachexperte, der sich auf deutsche Morphologie spezialisiert hat. Zielwort: "${term}".
+Geben Sie JSON nur in diesem exakten Format zurück:
+{
+  "root": "Wurzel oder Basisform",
+  "isStatic": true/false,
+  "explanation": "kurze linguistische Erklärung",
+  "derivatives": ["wort1", "wort2", "..."]
+}
+
+Regeln:
+1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verben ableitet.
+2. Wenn statisch, listen Sie nur tatsächliche Formen auf: Plurale, Varianten.
+3. Für ableitbare Wörter: Extrahieren Sie alle gültigen morphologischen Formen (Vergangenheit, Präsens, Partizip, Nominalformen).
+4. Nur JSON zurückgeben, kein zusätzlicher Text.`
+    };
+
+    const attemptStream = async (attemptIndex) => {
+      const genAIInstance = getGenAI(attemptIndex);
+      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+      const prompt = languagePrompts[language] || languagePrompts.en;
+
+      const result = await model.generateContentStream(prompt);
+      let fullText = '';
+
+      for await (const chunk of streamWithTimeout(result.stream, 15000)) {
+        if (currentSearchIdRef.current !== searchId) return currentInfo;
+
+        const chunkText = chunk.text();
+        fullText += chunkText;
+
+        const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
+        if (rootMatch) currentInfo.root = rootMatch[1];
+
+        const staticMatch = fullText.match(/"isStatic"\s*:\s*(true|false)/);
+        if (staticMatch) currentInfo.isStatic = staticMatch[1] === 'true';
+
+        const explMatch = fullText.match(/"explanation"\s*:\s*"([^"]+)"/);
+        if (explMatch) currentInfo.explanation = explMatch[1];
+
+        const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
+        if (derivativesMatch) {
+          const wordsString = derivativesMatch[1];
+          const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+          if (words.length > 0) {
+            const allWords = _.uniq([term, ...words]);
+            currentInfo.derivatives = allWords;
+            setSearchInfo({ ...currentInfo });
+            setSelectedDerivatives(allWords);
+          }
+        }
+      }
+
+      return currentInfo;
+    };
+
+    try {
+      setAiStatus(strings.search.status_analyzing);
+      const result = await withRetry(
+        attemptStream,
+        (attempt, max, reason) => setAiStatus(`Attempt (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. Trying next key...`),
+        5,
+        2000
+      );
+
+      if (result && result.derivatives.length > 0) {
+        kv.set(cacheKey, result, { ex: 604800 }).catch(console.error);
+      }
+
+      setAiStatus('');
+
+      const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
+      localStorage.setItem('nlp_search_count', nlpCount.toString());
+      if (nlpCount >= 3) await unlockBadge('logic_breaker');
+
+      return result;
+    } catch (e) {
+      setAiStatus('');
+      console.error("Gemini Derivatives Error:", e);
+      toast.error("Analysis failed.");
+      const fallback = { derivatives: [term], root: 'Unknown', isStatic: false, explanation: '' };
+      setSearchInfo(fallback);
+      setSelectedDerivatives(fallback.derivatives);
+      return fallback;
+    }
+  };
+
   const handleSearchPoints = () => {
     if (!user) return;
     const today = getCairoDate();
@@ -683,7 +856,7 @@ function SearchContent() {
       handleSearchPoints();
       if (searchType === 'derivatives') {
         setSemanticResults([]);
-        await searchWithGeminiDerivatives(currentQuery);
+        await searchWithGeminiDerivativesMultilingual(currentQuery);
       } else if (searchType === 'semantic') {
         setSearchResults([]);
         await handleSemanticSearch(currentQuery);

@@ -1,7 +1,10 @@
+'use client';
+
+import { useLanguage } from '../context/LanguageContext';
 import styles from './Privacy.module.css';
-import strings from '../data/ar.json';
 
 export default function PrivacyPolicy() {
+  const { strings } = useLanguage();
   const s = strings.privacy;
 
   return (

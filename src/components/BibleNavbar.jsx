@@ -9,12 +9,13 @@ import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
 import { toast } from 'react-hot-toast';
 import { Home, BookOpenText, Map as MapIcon, Search, Menu } from 'lucide-react';
-import strings from '../app/data/ar.json';
+import { useLanguage } from '../app/context/LanguageContext';
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const pathname = usePathname();
+    const { strings } = useLanguage();
 
     useEffect(() => {
         if (!auth) return;

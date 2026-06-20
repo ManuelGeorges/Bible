@@ -1,18 +1,12 @@
+'use client';
+
 import tafsirData from './interpretations.json';
 import styles from './interpretations.module.css';
 import ChapterCard from './chapterCard';
-import strings from '../data/ar.json';
-
-const firstBook = tafsirData && Array.isArray(tafsirData) && tafsirData.length > 0 ? tafsirData[0] : null;
-
-export function generateMetadata() {
-  const title = firstBook ? `${strings.interpretations.title_prefix} ${firstBook.book}` : strings.interpretations.default_title;
-  return {
-    title: title,
-  };
-}
+import { useLanguage } from '../context/LanguageContext';
 
 export default function InterpretationsPage() {
+    const { strings } = useLanguage();
     const data = tafsirData; 
 
     if (!data || !Array.isArray(data) || data.length === 0) {

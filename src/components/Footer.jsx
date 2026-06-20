@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Footer.module.css';
 import { Capacitor } from '@capacitor/core';
-import strings from '../app/data/ar.json';
+import { useLanguage } from '../app/context/LanguageContext';
 
 const Footer = () => {
+    const { strings } = useLanguage();
     const [isApp, setIsApp] = useState(false);
 
     useEffect(() => {

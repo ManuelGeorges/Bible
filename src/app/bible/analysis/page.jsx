@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
-import strings from '../../data/ar.json';
+import { useLanguage } from '../../context/LanguageContext';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -60,6 +60,7 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
 }
 
 function AnalysisContent() {
+  const { strings, language, dir } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
   const book = searchParams.get('book');
@@ -83,15 +84,39 @@ function AnalysisContent() {
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
-    const cacheKey = `${CACHE_KEYS.ANALYSIS}${book}:${chapter}:${verses || 'all'}`;
+    const cacheKeyBase = `${CACHE_KEYS.ANALYSIS}${book}:${chapter}:${verses || 'all'}`;
 
     try {
-      const cached = await kv.get(cacheKey);
-      if (cached) {
-        setAnalysis(cached);
-        analysisRef.current = cached;
-        setIsLoading(false);
-        return;
+      const cachedRaw = await kv.get(cacheKeyBase);
+      if (cachedRaw) {
+        try {
+          const parsed = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
+          if (typeof parsed === 'string') {
+            // legacy string value
+            setAnalysis(parsed);
+            analysisRef.current = parsed;
+            setIsLoading(false);
+            return;
+          }
+          if (parsed && parsed[language]) {
+            setAnalysis(parsed[language]);
+            analysisRef.current = parsed[language];
+            setIsLoading(false);
+            return;
+          }
+          if (parsed && parsed.en) {
+            setAnalysis(parsed.en);
+            analysisRef.current = parsed.en;
+            setIsLoading(false);
+            return;
+          }
+        } catch (e) {
+          // not JSON, treat as raw string
+          setAnalysis(cachedRaw);
+          analysisRef.current = cachedRaw;
+          setIsLoading(false);
+          return;
+        }
       }
     } catch (e) {
       console.error("KV Read Error:", e);
@@ -119,10 +144,11 @@ function AnalysisContent() {
     localStorage.setItem('aiRequestTimestamps', JSON.stringify(updatedRequests));
 
     const targetText = verses
-      ? `السفر: ${book}\nالإصحاح: ${chapter}\nالآيات المحددة: ${verses}`
-      : `السفر: ${book}\nالإصحاح: ${chapter}`;
+      ? `${book}\n${chapter}\n${verses}`
+      : `${book}\n${chapter}`;
 
-    const prompt = `أنت "مساعد آجيوس الذكي". مهمتك: تفسير النص المرفق لاهوتياً ولغوياً بدقة، مع التركيز حصراً على النص المطلوب وتجنب الاستطراد.
+    const prompts = {
+      ar: `أنت "مساعد آجيوس الذكي". مهمتك: تفسير النص المرفق لاهوتياً ولغوياً بدقة، مع التركيز حصراً على النص المطلوب وتجنب الاستطراد.
 
 # نص البحث:
 ${targetText}
@@ -141,7 +167,32 @@ ${targetText}
 - ابدأ محتوى القسم دائماً في سطر جديد كلياً بعد العنوان.
 - ممنوع استخدام Markdown (مثل #).
 - التزم بالتركيز المطلق على النص دون تشتيت.
-- في نهاية قسم التطبيق، أضف دائماً: "ودائماً ننصح بالرجوع لأب اعترافك".`;
+- في نهاية قسم التطبيق، أضف دائماً: "ودائماً ننصح بالرجوع لأب اعترافك".`,
+      en: `You are the "Agios Assistant". Your task: provide a theological and linguistic analysis of the provided text precisely, focusing only on the requested passage and avoiding digressions.
+
+Search text:
+${targetText}
+
+Sections (content):
+1. Introduction: greet as "Agios Assistant".
+2. Linguistics: origins of words (Hebrew/Greek/Aramaic) for the passage only.
+3. Historical background: cultural and historical context.
+4. Exegesis: theological/patristic interpretation (Coptic Orthodox tradition references).
+5. Application: contemporary practical implications.
+6. Objections: address any challenges related ONLY to the passage.
+
+Formatting rules (strict):
+- Each section number and title (e.g., "1. Introduction") must be on its own line.
+- Do not place any text on the same line as the title.
+- Start the section content on a new line after the title.
+- Do not use Markdown.
+- Keep focus strictly on the passage.
+- At the end of the Application section add: "Always consult your confessor."`,
+      de: null,
+      fr: null
+    };
+
+    const prompt = prompts.en; // always send the prompt in English
 
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
@@ -162,7 +213,17 @@ ${targetText}
       }
 
       if (text) {
-        kv.set(cacheKey, text).catch(e => console.error("KV Write Error:", e));
+        try {
+          const existingRaw = await kv.get(cacheKeyBase);
+          let storeObj = {};
+          if (existingRaw) {
+            try { storeObj = typeof existingRaw === 'string' ? JSON.parse(existingRaw) : existingRaw; } catch (e) { storeObj = {}; }
+          }
+          storeObj[language || 'en'] = text;
+          await kv.set(cacheKeyBase, JSON.stringify(storeObj));
+        } catch (e) {
+          console.error("KV Write Error:", e);
+        }
       }
       return text;
     };
@@ -192,7 +253,7 @@ ${targetText}
       hasFetched.current = true;
       fetchAnalysis();
     }
-  }, [book, chapter, verses]);
+  }, [book, chapter, verses, language]);
 
   useEffect(() => {
     let timer;
@@ -336,7 +397,7 @@ ${targetText}
     : `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)}`;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} dir={dir}>
       <header className={styles.header}>
         <div className={styles.headerRight}>
           <button onClick={() => router.back()} className={styles.backBtn} title={strings.common.back}>

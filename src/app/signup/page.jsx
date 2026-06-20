@@ -16,9 +16,10 @@ import { Capacitor } from '@capacitor/core';
 import { auth, db } from '../../lib/firebase';
 import styles from './signup.module.css';
 import { Apple } from 'lucide-react';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function SignUpPage() {
+  const { strings } = useLanguage();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -171,7 +172,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className={`${styles.container} ${styles.rtl}`}>
+    <div className={styles.container} style={{ direction: dir }}>
       <div className={styles.card}>
         <h1 className={styles.title}>{strings.signup.title}</h1>
         <form onSubmit={handleAuth} className={styles.form}>

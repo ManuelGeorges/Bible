@@ -3,13 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { ImageIcon, Sparkles } from 'lucide-react';
 import styles from './ShareVerseCard.module.css';
-import strings from '../app/data/ar.json';
+import { useLanguage } from '../app/context/LanguageContext';
 
 /**
  * ShareVerseCard - زر فخم يوجه المستخدم لصفحة التصميم المنفصلة
  */
 const ShareVerseCard = ({ verse, reference }) => {
   const router = useRouter();
+  const { strings } = useLanguage();
 
   const handleNavigateToDesign = () => {
     if (!verse || !reference) return;
