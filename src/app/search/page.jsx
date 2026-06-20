@@ -208,7 +208,7 @@ function SearchContent() {
         if (language === 'ar') {
           biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/asv.json';
+          biblePath = '/data/bibles/en_kjv.json';
         } else if (language === 'fr') {
           biblePath = '/data/bibles/fr_apee.json';
         } else if (language === 'de') {
