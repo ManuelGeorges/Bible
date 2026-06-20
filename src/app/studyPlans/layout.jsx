@@ -1,4 +1,5 @@
-PLACEHOLDER  description: 'Explore guided Bible reading plans designed for daily, weekly, and thematic study.',
+export const metadata = {
+  description: 'Explore guided Bible reading plans designed for daily, weekly, and thematic study.',
   keywords: ['Agios Bible, reading plans, Bible study plans, devotional plans, scripture reading'],
   openGraph: {
     title: 'Reading Plans | Agios Bible',

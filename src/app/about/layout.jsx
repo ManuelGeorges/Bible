@@ -1,5 +1,6 @@
 
-PLACEHOLDER  description: 'Learn more about Agios Bible, the team, and the mission behind the app.',
+export const metadata = {
+  description: 'Learn more about Agios Bible, the team, and the mission behind the app.',
   keywords: ['Agios Bible, Agios, Bible app, Christian resources, Bible study, About Agios Bible'],
   openGraph: {
     title: 'About | Agios Bible',

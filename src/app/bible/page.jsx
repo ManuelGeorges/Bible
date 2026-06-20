@@ -3,7 +3,8 @@
 import { Suspense } from 'react';
 import BibleContent from './BibleContent'; 
 import styles from './Bible.module.css'; 
-PLACEHOLDER  description: 'Read the Bible with a clean interface featuring easy verse copying and bookmarking.',
+export const metadata = {
+  description: 'Read the Bible with a clean interface featuring easy verse copying and bookmarking.',
   keywords: ['Agios Bible, Bible reading, scripture, favorite verses, Bible study'],
   openGraph: {
     title: 'Bible | Agios Bible',
