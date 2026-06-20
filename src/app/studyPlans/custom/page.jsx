@@ -82,7 +82,7 @@ export default function CustomPlanForm() {
         try {
             const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
 
-            const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+            const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
             try {
                 const cached = await kv.get(cacheKey);
                 if (cached) {

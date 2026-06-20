@@ -19,7 +19,7 @@ import { Apple } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function SignUpPage() {
-  const { strings } = useLanguage();
+  const { strings, dir } = useLanguage();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
