@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { getCairoIsoString } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
+import strings from '../data/ar.json';
 
 if (typeof window !== 'undefined') {
   if (maplibregl.getRTLTextPluginStatus() === 'unavailable') {
@@ -54,17 +55,16 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
-// حدود الخريطة (من إيطاليا غرباً إلى إيران شرقاً) لتوفير التحميل وتحديد النطاق الجغرافي
 const MAX_BOUNDS = [
-  [5.0, 15.0],  // الزاوية الجنوبية الغربية
-  [65.0, 50.0]  // الزاوية الشمالية الشرقية
+  [5.0, 15.0],
+  [65.0, 50.0]
 ];
 
 export default function MapsPage() {
   const router = useRouter(); 
   const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
-  const [selectedEra, setSelectedEra] = useState("الحقب الزمنية");
+  const [selectedEra, setSelectedEra] = useState(strings.maps.eras_placeholder);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES.streets);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,7 +80,6 @@ export default function MapsPage() {
   const [infoReads, setInfoReads] = useState(0);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // حالة للتحقق من توافر MapTiler (سواء كوتة أو تحكم عن بعد)
   const [isMapTilerAvailable, setIsMapTilerAvailable] = useState(true);
   const [showMaptilerFeatures, setShowMaptilerFeatures] = useState(true);
 
@@ -89,15 +88,7 @@ export default function MapsPage() {
   const placeRef = useRef(null);
   const searchRef = useRef(null);
 
-  const eras = [
-    "أيام إبراهيم",
-    "الخروج والغزو",
-    "القضاة والمملكة الموحدة",
-    "المملكة المنقسمة والسبي",
-    "ما بعد السبي والعهد القديم",
-    "الأناجيل",
-    "الكنيسة المبكرة ورحلات الرسل"
-  ];
+  const eras = Object.values(strings.maps.era_names);
 
   const unlockBadge = async (badgeId) => {
     if (user) {
@@ -189,7 +180,6 @@ export default function MapsPage() {
   useEffect(() => {
     setMounted(true);
     const initPage = async () => {
-      // Remote Config
       const remoteConfig = await getFirebaseRemoteConfig();
       if (remoteConfig) {
         try {
@@ -218,7 +208,7 @@ export default function MapsPage() {
     setIsEraOpen(false);
     setSelectedPoint(null);
 
-    if (era !== "الحقب الزمنية" && !visitedEras.has(era)) {
+    if (era !== strings.maps.eras_placeholder && !visitedEras.has(era)) {
       const newEras = new Set(visitedEras).add(era);
       setVisitedEras(newEras);
 
@@ -246,7 +236,7 @@ export default function MapsPage() {
       if (!visitedPoints.has(pointId)) {
         const newVisited = new Set(visitedPoints).add(pointId);
         setVisitedPoints(newVisited);
-        await updateUserPoints(40, `اكتشاف معلم: ${point.name}`);
+        await updateUserPoints(40, strings.maps.points_reason.replace('{name}', point.name));
 
         if (user) {
           const userRef = doc(firestore, 'users', user.uid);
@@ -299,7 +289,7 @@ export default function MapsPage() {
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',
     features: allPlaces
-      .filter(p => (selectedEra === "الحقب الزمنية" || p.era === selectedEra) && p.type === 'point')
+      .filter(p => (selectedEra === strings.maps.eras_placeholder || p.era === selectedEra) && p.type === 'point')
       .map(p => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
@@ -318,7 +308,7 @@ export default function MapsPage() {
   const geojsonPaths = useMemo(() => ({
     type: 'FeatureCollection',
     features: allPlaces
-      .filter(p => (selectedEra === "الحقب الزمنية" || p.era === selectedEra) && p.type === 'polyline')
+      .filter(p => (selectedEra === strings.maps.eras_placeholder || p.era === selectedEra) && p.type === 'polyline')
       .map(p => ({
         type: 'Feature',
         geometry: { type: 'LineString', coordinates: p.coordinates },
@@ -407,7 +397,6 @@ export default function MapsPage() {
     }
   };
 
-  // معالجة أخطاء التحميل (مثل انتهاء الكوتة 403)
   const handleMapError = (e) => {
     if (e.error && (e.error.status === 403 || e.error.message?.includes('api.maptiler.com'))) {
         setIsMapTilerAvailable(false);
@@ -427,7 +416,7 @@ export default function MapsPage() {
   return (
     <div dir="rtl" className={styles.container}>
       <header className={styles.headerSection}>
-        <h1 className={styles.heading}>خرائط الكتاب المقدس</h1>
+        <h1 className={styles.heading}>{strings.maps.title}</h1>
       </header>
 
       <div className={styles.searchContainer} ref={searchRef}>
@@ -435,7 +424,7 @@ export default function MapsPage() {
           <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="ابحث عن مكان  أو مدينة..."
+            placeholder={strings.maps.search_placeholder}
             className={styles.searchInput}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -473,7 +462,7 @@ export default function MapsPage() {
             ) : (
               <div className={styles.noResults}>
                 <Mountain size={32} className={styles.noResultsIcon} />
-                <p>لا توجد نتائج تطابق بحثك</p>
+                <p>{strings.maps.no_results}</p>
               </div>
             )}
           </div>
@@ -485,13 +474,13 @@ export default function MapsPage() {
           <div className={styles.selectTrigger} onClick={() => { setIsEraOpen(!isEraOpen); setIsPlaceOpen(false); }}>
             <div className={styles.triggerLabel}>
               <Globe size={18} />
-              <span>{selectedEra === "الحقب الزمنية" ? "اختر الحقبة الزمنية" : selectedEra}</span>
+              <span>{selectedEra === strings.maps.eras_placeholder ? strings.maps.choose_era : selectedEra}</span>
             </div>
             <ChevronDown size={18} className={isEraOpen ? styles.rotateIcon : ''} />
           </div>
           <ul className={`${styles.dropdownMenu} ${isEraOpen ? styles.open : ''}`}>
-            <li className={styles.dropdownItem} onClick={() => handleEraSelection("الحقب الزمنية")}>
-              كل الحقب
+            <li className={styles.dropdownItem} onClick={() => handleEraSelection(strings.maps.eras_placeholder)}>
+              {strings.maps.all_eras}
             </li>
             {eras.map((era) => (
               <li key={era} className={styles.dropdownItem} onClick={() => handleEraSelection(era)}>
@@ -501,12 +490,12 @@ export default function MapsPage() {
           </ul>
         </div>
 
-        {selectedEra !== "الحقب الزمنية" && (
+        {selectedEra !== strings.maps.eras_placeholder && (
           <div className={`${styles.customSelectWrapper} ${isPlaceOpen ? styles.activeWrapper : ''}`} ref={placeRef}>
             <div className={styles.selectTrigger} onClick={() => { setIsPlaceOpen(!isPlaceOpen); setIsEraOpen(false); }}>
               <div className={styles.triggerLabel}>
                 <MapPin size={18} />
-                <span>انتقل إلى مكان...</span>
+                <span>{strings.maps.jump_to_place}</span>
               </div>
               <ChevronDown size={18} className={isPlaceOpen ? styles.rotateIcon : ''} />
             </div>
@@ -523,15 +512,15 @@ export default function MapsPage() {
 
       <div className={styles.styleSelector}>
         <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.streets ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.streets)}>
-          <MapIcon size={16} /> خريطة
+          <MapIcon size={16} /> {strings.maps.style_map}
         </button>
         {isMapTilerAvailable && showMaptilerFeatures && (
           <>
             <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.satellite ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.satellite)}>
-              <Globe size={16} /> قمر اصطناعي
+              <Globe size={16} /> {strings.maps.style_satellite}
             </button>
             <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.topo ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.topo)}>
-              <Mountain size={16} /> تضاريس 3D
+              <Mountain size={16} /> {strings.maps.style_topo}
             </button>
           </>
         )}
@@ -574,9 +563,9 @@ export default function MapsPage() {
                 <div className={styles.popupWrapper}>
                   <h3 className={styles.popupTitleText}>{selectedPoint.name}</h3>
                   <div className={styles.popupMeta}>
-                    <span className={styles.popupEraBadge}>{selectedPoint.book || "معلم تاريخي"}</span>
+                    <span className={styles.popupEraBadge}>{selectedPoint.book || strings.maps.default_point_book}</span>
                   </div>
-                  <p className={styles.popupInfoText}>{selectedPoint.info || "لا تتوفر معلومات إضافية لهذا الموقع."}</p>
+                  <p className={styles.popupInfoText}>{selectedPoint.info || strings.maps.no_info}</p>
 
                   {selectedPoint.book && (
                     <button
@@ -585,7 +574,7 @@ export default function MapsPage() {
                         router.push(`/bible?book=${encodeURIComponent(selectedPoint.book)}&chapter=${selectedPoint.chapter || 1}`);
                       }}
                     >
-                      <BookOpen size={18} /> اقرأ في الكتاب المقدس
+                      <BookOpen size={18} /> {strings.maps.read_in_bible}
                     </button>
                   )}
                 </div>

@@ -11,6 +11,7 @@ import { getCairoIsoString } from '../../../lib/dateUtils';
 import { Sparkles, Calendar, BookOpen, MessageCircle, Share2, User } from 'lucide-react';
 import { StorageService, KEYS } from '../../../lib/storage';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
+import strings from '../../data/ar.json';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -44,19 +45,19 @@ export default function CustomPlanForm() {
     }, []);
 
     const durations = [
-        { id: '3', label: '3 أيام' },
-        { id: '7', label: 'أسبوع' },
-        { id: '14', label: 'أسبوعين' },
-        { id: '30', label: 'شهر' },
-        { id: '90', label: '3 أشهر' },
-        { id: '180', label: '6 أشهر' },
-        { id: 'custom', label: 'مدة مخصصة' }
+        { id: '3', label: strings.studyPlans.custom.durations['3'] },
+        { id: '7', label: strings.studyPlans.custom.durations['7'] },
+        { id: '14', label: strings.studyPlans.custom.durations['14'] },
+        { id: '30', label: strings.studyPlans.custom.durations['30'] },
+        { id: '90', label: strings.studyPlans.custom.durations['90'] },
+        { id: '180', label: strings.studyPlans.custom.durations['180'] },
+        { id: 'custom', label: strings.studyPlans.custom.durations['custom'] }
     ];
 
     const intensities = [
-        { id: '1', label: 'أصحاح يومياً' },
-        { id: '2', label: 'أصحاحين يومياً' },
-        { id: '3', label: '3 أصحاحات يومياً' }
+        { id: '1', label: strings.studyPlans.custom.intensities['1'] },
+        { id: '2', label: strings.studyPlans.custom.intensities['2'] },
+        { id: '3', label: strings.studyPlans.custom.intensities['3'] }
     ];
 
     const handleSelect = (field, value) => {
@@ -80,12 +81,10 @@ export default function CustomPlanForm() {
         try {
             const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
 
-            // 1. Check Cache first
             const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
             try {
                 const cached = await kv.get(cacheKey);
                 if (cached) {
-                    console.log("Plan loaded from cache");
                     return cached;
                 }
             } catch (e) {
@@ -96,7 +95,7 @@ export default function CustomPlanForm() {
             const bookNamesData = await response.json();
             const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
 
-            const intensityLabel = intensities.find(i => i.id === data.level)?.label || 'أصحاح واحد يومياً';
+            const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 
             const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
 
@@ -133,7 +132,6 @@ export default function CustomPlanForm() {
 
             const planResult = JSON.parse(jsonMatch[0]);
 
-            // 2. Save to Cache (for 7 days)
             try {
                 await kv.set(cacheKey, planResult, { ex: 604800 });
             } catch (e) {
@@ -153,23 +151,23 @@ export default function CustomPlanForm() {
         const actualDuration = formData.duration === 'custom' ? parseInt(formData.customDays) : parseInt(formData.duration);
 
         if (!formData.mood.trim() || !formData.duration || !formData.level) {
-            toast.error('من فضلك أكمل البيانات أولاً');
+            toast.error(strings.studyPlans.custom.error_incomplete);
             return;
         }
 
         if (formData.duration === 'custom') {
             if (!formData.customDays || actualDuration <= 0) {
-                toast.error('من فضلك حدد عدد الأيام');
+                toast.error(strings.studyPlans.custom.error_duration);
                 return;
             }
             if (actualDuration > 180) {
-                toast.error('الحد الأقصى للمدة المخصصة هو 180 يوماً لضمان جودة الخطة');
+                toast.error(strings.studyPlans.custom.error_duration_max);
                 return;
             }
         }
 
         if (formData.mood.trim().length < 10) {
-            toast.error("الوصف قصير جداً، أخبرنا بمزيد من التفاصيل لنصمم خطة أفضل.");
+            toast.error(strings.studyPlans.custom.error_mood_short);
             return;
         }
 
@@ -192,7 +190,6 @@ export default function CustomPlanForm() {
                     completionPercentage: 0
                 };
 
-                // 1. Save locally or to user profile
                 if (currentUser) {
                     const userRef = doc(db, 'users', currentUser.uid);
                     await setDoc(userRef, {
@@ -207,26 +204,25 @@ export default function CustomPlanForm() {
                     await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
                 }
 
-                // 2. Public sharing (Available for both Guest and Registered)
                 if (formData.isShared) {
                     const sharedPlanRef = collection(db, 'sharedPlans');
                     await addDoc(sharedPlanRef, {
                         ...newPlanObject,
                         authorId: currentUser ? currentUser.uid : 'guest',
-                        authorName: (currentUser && formData.showAuthor) ? (userData?.displayName || 'مستخدم أجيوس') : 'مشارك مجهول',
+                        authorName: (currentUser && formData.showAuthor) ? (userData?.displayName || strings.studyPlans.custom.author_default) : 'مشارك مجهول',
                         isShared: true,
                         createdAt: serverTimestamp(),
                         originalPlanId: planId
                     });
                 }
 
-                toast.success("تم إنشاء خطتك بنجاح!");
+                toast.success(strings.studyPlans.custom.success_toast);
                 router.push(`/studyPlans/details?id=${planId}&type=custom`);
             } else {
-                throw new Error("فشل الذكاء الاصطناعي في تكوين الخطة");
+                throw new Error(strings.studyPlans.custom.ai_error);
             }
         } catch (error) {
-            toast.error(error.message || 'حدث خطأ أثناء إنشاء الخطة');
+            toast.error(error.message || strings.studyPlans.custom.generic_error);
         } finally {
             setLoading(false);
         }
@@ -237,8 +233,8 @@ export default function CustomPlanForm() {
             {loading && (
                 <div className={styles.loadingOverlay}>
                     <div className={styles.spinner}></div>
-                    <h2 className={styles.sectionTitle}>أجيوس يصمم لك رحلة روحية خاصة...</h2>
-                    <p className={styles.loadingSub}>قد يستغرق هذا بضع ثوانٍ</p>
+                    <h2 className={styles.sectionTitle}>{strings.studyPlans.custom.loading_title}</h2>
+                    <p className={styles.loadingSub}>{strings.studyPlans.custom.loading_sub}</p>
                 </div>
             )}
 
@@ -247,13 +243,13 @@ export default function CustomPlanForm() {
                     <div className={styles.iconCircle}>
                         <Sparkles className={styles.sparkleIcon} />
                     </div>
-                    <h1 className={styles.mainTitle}>مُصمم الخطط الذكي</h1>
-                    <p className={styles.subtitle}>أخبر "أجيوس" بما يمر به قلبك اليوم، وسيقترح لك قراءات كتابية مخصصة.</p>
+                    <h1 className={styles.mainTitle}>{strings.studyPlans.custom.form_title}</h1>
+                    <p className={styles.subtitle}>{strings.studyPlans.custom.form_subtitle}</p>
                 </div>
 
                 <div className={styles.questionGroup}>
                     <label className={styles.questionLabel}>
-                        <MessageCircle size={18} /> بماذا تشعر حالياً؟ أو ما الموضوع الذي تبحث عنه؟
+                        <MessageCircle size={18} /> {strings.studyPlans.custom.mood_label}
                     </label>
                     <div className={styles.inputWrapper}>
                         <textarea
@@ -261,7 +257,7 @@ export default function CustomPlanForm() {
                             rows="4"
                             maxLength={500}
                             disabled={loading}
-                            placeholder="مثلاً: أشعر بالقلق من المستقبل، أو أريد دراسة عن الصبر.."
+                            placeholder={strings.studyPlans.custom.mood_placeholder}
                             value={formData.mood}
                             onChange={(e) => handleSelect('mood', e.target.value)}
                         ></textarea>
@@ -273,7 +269,7 @@ export default function CustomPlanForm() {
 
                 <div className={styles.questionGroup}>
                     <label className={styles.questionLabel}>
-                        <Calendar size={18} /> ما هي المدة المفضلة للخطة؟
+                        <Calendar size={18} /> {strings.studyPlans.custom.duration_label}
                     </label>
                     <div className={styles.optionsGrid}>
                         {durations.map(d => (
@@ -294,21 +290,21 @@ export default function CustomPlanForm() {
                             <input
                                 type="number"
                                 className={styles.customDaysInput}
-                                placeholder="مثلاً: 40"
+                                placeholder={strings.studyPlans.custom.duration_custom_placeholder}
                                 value={formData.customDays}
                                 onChange={(e) => handleSelect('customDays', e.target.value)}
                                 min="1"
                                 max="180"
                             />
-                            <span className={styles.inputSuffix}>يوماً</span>
-                            <p className={styles.limitHint}>(الحد الأقصى 180 يوماً)</p>
+                            <span className={styles.inputSuffix}>{strings.studyPlans.custom.duration_suffix}</span>
+                            <p className={styles.limitHint}>{strings.studyPlans.custom.duration_limit_hint}</p>
                         </div>
                     )}
                 </div>
 
                 <div className={styles.questionGroup}>
                     <label className={styles.questionLabel}>
-                        <BookOpen size={18} /> كم أصحاحاً تود قراءته يومياً؟
+                        <BookOpen size={18} /> {strings.studyPlans.custom.intensity_label}
                     </label>
                     <div className={styles.optionsGrid}>
                         {intensities.map(l => (
@@ -327,7 +323,7 @@ export default function CustomPlanForm() {
 
                 <div className={styles.questionGroup}>
                     <label className={styles.questionLabel}>
-                        <Share2 size={18} /> خيارات المشاركة
+                        <Share2 size={18} /> {strings.studyPlans.custom.share_label}
                     </label>
                     <div className={styles.shareOptions}>
                         <label className={styles.checkboxContainer}>
@@ -338,7 +334,7 @@ export default function CustomPlanForm() {
                                 disabled={loading}
                             />
                             <span className={styles.checkmark}></span>
-                            <span className={styles.checkboxLabel}>مشاركة هذه الخطة مع الآخرين في قسم "خطط مشاركة"</span>
+                            <span className={styles.checkboxLabel}>{strings.studyPlans.custom.share_check}</span>
                         </label>
 
                         {formData.isShared && user && (
@@ -351,17 +347,17 @@ export default function CustomPlanForm() {
                                         disabled={loading}
                                     />
                                     <span className={styles.checkmark}></span>
-                                    <span className={styles.checkboxLabel}>إظهار اسمي كمؤلف لهذه الخطة</span>
+                                    <span className={styles.checkboxLabel}>{strings.studyPlans.custom.author_check}</span>
                                 </label>
                                 {formData.showAuthor && (
                                     <div className={styles.authorPreview}>
-                                        <User size={14} /> ستظهر الخطة بواسطة: <strong>{userData?.displayName || 'مستخدم أجيوس'}</strong>
+                                        <User size={14} /> {strings.studyPlans.custom.author_preview.replace('{name}', userData?.displayName || strings.studyPlans.custom.author_default)}
                                     </div>
                                 )}
                             </div>
                         )}
                         {formData.isShared && !user && (
-                            <p className={styles.authHint}>سيتم نشر الخطة كـ "مشارك مجهول" لأنك لست مسجلاً.</p>
+                            <p className={styles.authHint}>{strings.studyPlans.custom.guest_hint}</p>
                         )}
                     </div>
                 </div>
@@ -371,7 +367,7 @@ export default function CustomPlanForm() {
                     onClick={handleSubmit}
                     disabled={loading}
                 >
-                    {loading ? 'جاري التحضير...' : 'ابدأ رحلتي المخصصة ✨'}
+                    {loading ? strings.studyPlans.custom.submitting : strings.studyPlans.custom.submit_btn}
                 </button>
             </div>
         </div>

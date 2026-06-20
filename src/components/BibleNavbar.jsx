@@ -9,6 +9,7 @@ import styles from './layout.module.css';
 import MoreSidebar from '../app/more/page.jsx';
 import { toast } from 'react-hot-toast';
 import { Home, BookOpenText, Map as MapIcon, Search, Menu } from 'lucide-react';
+import strings from '../app/data/ar.json';
 
 export default function BibleNavbar() {
     const [user, setUser] = useState(null);
@@ -27,29 +28,29 @@ export default function BibleNavbar() {
         <>
             <div className={styles.navbarWrapper}>
                 <nav className={styles.navbar}>
-                    <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`} aria-label="Home">
+                    <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`} aria-label={strings.components.bible_nav.home}>
                         <Home size={24} />
                     </Link>
 
-                    <Link href="/bible" className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`} aria-label="Read">
+                    <Link href="/bible" className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`} aria-label={strings.components.bible_nav.read}>
                         <BookOpenText size={24} />
                     </Link>
 
                     <Link 
                         href="/maps" 
                         className={`${styles.navLink} ${pathname.startsWith('/maps') ? styles.active : ''}`}
-                        aria-label="Maps" 
+                        aria-label={strings.components.bible_nav.maps}
                         onClick={(e) => {
                             if (!navigator.onLine) {
                                 e.preventDefault();
-                                toast.error("خرائط الـ 3D تتطلب اتصالاً بالإنترنت");
+                                toast.error(strings.maps.error_offline);
                             }
                         }}
                     >
                         <MapIcon size={24} />
                     </Link>
 
-                    <Link href="/search" className={`${styles.navLink} ${pathname.startsWith('/search') ? styles.active : ''}`} aria-label="Search">
+                    <Link href="/search" className={`${styles.navLink} ${pathname.startsWith('/search') ? styles.active : ''}`} aria-label={strings.components.bible_nav.search}>
                         <Search size={24} />
                     </Link>
 
@@ -57,7 +58,7 @@ export default function BibleNavbar() {
                         className={styles.navLink}
                         onClick={() => setIsSidebarOpen(true)}
                         style={{ cursor: 'pointer' }}
-                        aria-label="More"
+                        aria-label={strings.components.bible_nav.more}
                     >
                         <Menu size={24} />
                     </div>

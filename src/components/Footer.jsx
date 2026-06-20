@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Footer.module.css';
 import { Capacitor } from '@capacitor/core';
+import strings from '../app/data/ar.json';
 
 const Footer = () => {
     const [isApp, setIsApp] = useState(false);
 
     useEffect(() => {
-        // التأكد إذا كان التطبيق يعمل كـ Native App (Android/iOS)
         if (Capacitor.isNativePlatform()) {
             setIsApp(true);
         }
@@ -17,8 +17,8 @@ const Footer = () => {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'Agios Bible - تطبيقك لدراسة الكتاب المقدس',
-                    text: 'اكتشف تطبيق Agios Bible لدراسة الكتاب المقدس وقراءة آيات يومية.',
+                    title: strings.profile.share_title,
+                    text: strings.profile.share_text,
                     url: 'https://agios-bible.vercel.app/',
                 });
             } catch (error) {
@@ -27,7 +27,6 @@ const Footer = () => {
         }
     };
 
-    // لو المستخدم فاتح من الأبليكيشن، مش هنعرض الفوتر خالص
     if (isApp) return null;
 
     return (
@@ -40,10 +39,10 @@ const Footer = () => {
                 />
             </a>
             <button className={styles.shareButton} onClick={shareWebsite}>
-                شارك الموقع
+                {strings.profile.share_dialog}
             </button>
             <p dir="ltr" className={styles.footerText}>
-                © Copyright Agios Bible 2026, All Rights Reserved.
+                {strings.about.footer}
             </p>
         </footer>
     );

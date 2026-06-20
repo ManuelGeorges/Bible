@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAudio } from '../app/context/AudioContext';
 import styles from './GlobalAudioPlayer.module.css';
+import strings from '../app/data/ar.json';
 
 export default function GlobalAudioPlayer() {
     const {
@@ -40,7 +41,6 @@ export default function GlobalAudioPlayer() {
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                 dir="rtl"
             >
-                {/* Settings Overlay - Opens ON TOP of the controls */}
                 <AnimatePresence>
                     {showSettings && (
                         <motion.div
@@ -50,14 +50,14 @@ export default function GlobalAudioPlayer() {
                             exit={{ opacity: 0 }}
                         >
                             <div className={styles.settingsHeader}>
-                                <span>إعدادات التشغيل</span>
+                                <span>{strings.components.audio_player.settings}</span>
                                 <button className={styles.iconBtn} onClick={() => setShowSettings(false)}>
                                     <X size={18}/>
                                 </button>
                             </div>
 
                             <div className={styles.settingItem}>
-                                <div className={styles.settingLabel}><Volume2 size={16}/> مستوى الصوت</div>
+                                <div className={styles.settingLabel}><Volume2 size={16}/> {strings.components.audio_player.volume}</div>
                                 <input
                                     type="range" min="0" max="1" step="0.05"
                                     value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))}
@@ -70,19 +70,19 @@ export default function GlobalAudioPlayer() {
                                     className={`${styles.settingBtn} ${isRepeat ? styles.activeSetting : ''}`}
                                     onClick={() => setIsRepeat(!isRepeat)}
                                 >
-                                    <Repeat size={18}/> <span>تكرار</span>
+                                    <Repeat size={18}/> <span>{strings.components.audio_player.repeat}</span>
                                 </button>
                                 <button
                                     className={`${styles.settingBtn} ${isAutoPlay ? styles.activeSetting : ''}`}
                                     onClick={() => setIsAutoPlay(!isAutoPlay)}
                                 >
-                                    <ListEnd size={18}/> <span>تلقائي</span>
+                                    <ListEnd size={18}/> <span>{strings.components.audio_player.auto_play}</span>
                                 </button>
                                 <button
                                     className={`${styles.settingBtn} ${isHighlightEnabled ? styles.activeSetting : ''}`}
                                     onClick={() => setIsHighlightEnabled(!isHighlightEnabled)}
                                 >
-                                    <Highlighter size={18}/> <span>تلوين</span>
+                                    <Highlighter size={18}/> <span>{strings.components.audio_player.highlight}</span>
                                 </button>
                             </div>
 
@@ -94,7 +94,7 @@ export default function GlobalAudioPlayer() {
                                             className={`${styles.timerChip} ${sleepTimer === m ? styles.activeChip : ''}`}
                                             onClick={() => setSleepTimer(m)}
                                         >
-                                            {m ? `${m}د` : 'إيقاف'}
+                                            {m ? `${m}${strings.common.day[0]}` : strings.components.audio_player.stop}
                                         </button>
                                     ))}
                                 </div>
@@ -103,7 +103,6 @@ export default function GlobalAudioPlayer() {
                     )}
                 </AnimatePresence>
 
-                {/* Main Audio Player Content */}
                 <div className={styles.audioPanelHeader}>
                     <span className={styles.audioPanelTitle}>{trackTitle}</span>
                     <div style={{ display: 'flex', gap: '8px' }}>

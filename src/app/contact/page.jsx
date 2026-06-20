@@ -3,6 +3,7 @@
 import styles from './contact.module.css';
 import Link from 'next/link';
 import { Browser } from '@capacitor/browser';
+import strings from '../data/ar.json';
 
 export default function ContactPage() {
   const handleExternalLink = async (e, url) => {
@@ -20,25 +21,24 @@ export default function ContactPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>تواصل معنا</h1>
-        <p className={styles.tagline}>يسعدنا سماع آرائكم واقتراحاتكم لتطوير الخدمة</p>
+        <h1 className={styles.title}>{strings.contact.title}</h1>
+        <p className={styles.tagline}>{strings.contact.tagline}</p>
       </header>
 
       <section className={styles.section}>
-        <h2 className={styles.subtitle}>لماذا قد تحتاج للتواصل معنا؟</h2>
+        <h2 className={styles.subtitle}>{strings.contact.reasons_title}</h2>
         <ul className={styles.reasonList}>
-          <li>المشاركة باقتراحات لتطوير خصائص التطبيق.</li>
-          <li>الإبلاغ عن مشكلة تقنية أو خطأ في النصوص.</li>
-          <li>تقديم الدعم الفني أو التطوع في تحسين المحتوى.</li>
-          <li>الاستفسارات العامة حول خدمات Agios.</li>
+          {strings.contact.reasons.map((reason, index) => (
+            <li key={index}>{reason}</li>
+          ))}
         </ul>
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.subtitle}>طرق التواصل الرسمية</h2>
+        <h2 className={styles.subtitle}>{strings.contact.methods_title}</h2>
         <div className={styles.contactMethods}>
           <Link href="mailto:agios.system@gmail.com" className={styles.contactLink}>
-            إرسال بريد إلكتروني
+            {strings.contact.email_btn}
           </Link>
           <Link
             href="https://www.facebook.com/AgiosSystem/"
@@ -47,13 +47,13 @@ export default function ContactPage() {
             className={styles.contactLink}
             onClick={(e) => handleExternalLink(e, "https://www.facebook.com/AgiosSystem/")}
           >
-            صفحة الفيسبوك
+            {strings.contact.facebook_btn}
           </Link>
         </div>
       </section>
 
       <footer className={styles.contactFooter}>
-        <p>نعمل على الرد على جميع الاستفسارات في أقرب وقت ممكن.</p>
+        <p>{strings.contact.footer}</p>
       </footer>
     </div>
   );

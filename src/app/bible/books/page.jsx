@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import styles from './books.module.css';
 import { useRouter } from 'next/navigation';
+import strings from '../../data/ar.json';
 import {
      Search, Book, Hash, X, ArrowRight,
     Sun, Compass, Flame, MapPin, Scroll, Sword, Shield, Heart, Crown,
@@ -123,7 +124,7 @@ function BooksContent() {
     return (
         <div dir="rtl" className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>اختر السفر</h1>
+                <h1 className={styles.title}>{strings.bible.books_title}</h1>
             </header>
 
             <div className={styles.tabs}>
@@ -131,13 +132,13 @@ function BooksContent() {
                     className={`${styles.tab} ${activeTab === 'OT' ? styles.activeTab : ''}`}
                     onClick={() => setActiveTab('OT')}
                 >
-                    العهد القديم
+                    {strings.bible.testament_ot}
                 </button>
                 <button
                     className={`${styles.tab} ${activeTab === 'NT' ? styles.activeTab : ''}`}
                     onClick={() => setActiveTab('NT')}
                 >
-                    العهد الجديد
+                    {strings.bible.testament_nt}
                 </button>
             </div>
 
@@ -146,7 +147,7 @@ function BooksContent() {
                 <input
                     type="text"
                     className={styles.searchInput}
-                    placeholder="ابحث عن سفر..."
+                    placeholder={strings.bible.search_book}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -172,7 +173,7 @@ function BooksContent() {
 
 export default function BooksPage() {
     return (
-        <Suspense fallback={<div>جاري التحميل...</div>}>
+        <Suspense fallback={<div>{strings.common.loading}</div>}>
             <BooksContent />
         </Suspense>
     );

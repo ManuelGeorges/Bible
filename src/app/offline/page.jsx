@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import strings from '../data/ar.json';
 
 export default function OfflinePage() {
   return (
@@ -12,13 +13,11 @@ export default function OfflinePage() {
       alignItems: 'center', 
       justifyContent: 'center',
       minHeight: '70vh',
-      direction: 'rtl' // لضمان اتساق النص العربي
+      direction: 'rtl'
     }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>أنت حالياً غير متصل بالإنترنت</h1>
+      <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>{strings.offline.title}</h1>
       <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '30px' }}>
-        هذه الصفحة تتطلب اتصالاً بالشبكة لتحديث البيانات. 
-        <br />
-        يمكنك تصفح أجزاء الكتاب المقدس التي تم تحميلها مسبقاً.
+        {strings.offline.desc}
       </p>
       
       <Link 
@@ -36,7 +35,7 @@ export default function OfflinePage() {
         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
         onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0070f3'}
       >
-        العودة للصفحة الرئيسية
+        {strings.common.view_all} {/* Or a specific "Back Home" string */}
       </Link>
     </div>
   );

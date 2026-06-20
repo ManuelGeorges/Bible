@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import * as Icons from 'lucide-react';
+import strings from '../../app/data/ar.json';
 
 const BadgeUnlockModal = ({ badge, onClose }) => {
   const router = useRouter();
@@ -28,19 +29,21 @@ const BadgeUnlockModal = ({ badge, onClose }) => {
   const IconComponent = iconFamilyMap[badge.familyName] || Trophy;
 
   const handleShare = async () => {
-    const text = `🎉 حصلت على وسام جديد في تطبيق أجيوس: ${badge.name}!\n"${badge.requirement}"\nحمّل التطبيق وانضم إلينا في رحلتنا الروحية.`;
+    const text = strings.components.badges.share_text
+      .replace('{badge}', badge.name)
+      .replace('{req}', badge.requirement);
 
     try {
       if (Capacitor.isNativePlatform()) {
         await Share.share({
-          title: 'وسام جديد!',
+          title: strings.components.badges.share_title,
           text: text,
           url: 'https://agios-bible.vercel.app/',
-          dialogTitle: 'مشاركة الوسام عبر...',
+          dialogTitle: strings.components.badges.share_dialog,
         });
       } else if (navigator.share) {
         await navigator.share({
-          title: 'وسام جديد!',
+          title: strings.components.badges.share_title,
           text: text,
           url: 'https://agios-bible.vercel.app/'
         });
@@ -64,7 +67,7 @@ const BadgeUnlockModal = ({ badge, onClose }) => {
           <X size={20} />
         </button>
 
-        <div className={styles.celebrationText}>مبروك! إنجاز جديد</div>
+        <div className={styles.celebrationText}>{strings.components.badges.congrats}</div>
 
         <div className={styles.badgeDisplay}>
           <div className={styles.iconWrapper}>
@@ -81,10 +84,10 @@ const BadgeUnlockModal = ({ badge, onClose }) => {
 
         <div className={styles.actions}>
           <button className={styles.primaryBtn} onClick={handleShare}>
-            <Share2 size={20} /> مشاركة الإنجاز
+            <Share2 size={20} /> {strings.components.badges.share_achievement}
           </button>
           <button className={styles.secondaryBtn} onClick={() => { router.push('/points'); onClose(); }}>
-            عرض كل الأوسمة <ArrowRight size={20} />
+            {strings.components.badges.view_all} <ArrowRight size={20} />
           </button>
         </div>
       </motion.div>

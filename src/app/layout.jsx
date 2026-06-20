@@ -14,6 +14,7 @@ import { BadgeProvider } from './context/BadgeContext';
 import { AudioProvider } from './context/AudioContext';
 import GlobalAudioPlayer from '../components/GlobalAudioPlayer';
 import TopHeader from '../components/TopHeader';
+import strings from './data/ar.json';
 
 export const viewport = {
   width: 'device-width',
@@ -29,8 +30,8 @@ export const viewport = {
 
 export const metadata = {
   publisher: 'Agios Bible',
-  title: 'الموقع الرسمي | Agios Bible ',
-  description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث متطور وخرائط تفاعلية وخطط دراسة ومسابقات',
+  title: strings.metadata.title,
+  description: strings.metadata.description,
   authors: [{ name: 'Manuel Georges' }],
   robots: 'index, follow',
   keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس , Bible study, دراسة الكتاب المقدس, آية اليوم, Verse of the day, خرائط الكتاب المقدس, Bible maps, خطط دراسة الكتاب المقدس, Bible study plans, مسابقات الكتاب المقدس, Bible quizzes, البحث في الكتاب المقدس, Bible search, كتب مسيحية, Christian books'],
@@ -41,7 +42,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Agios Bible',
-    description: 'موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث متطور وخرائط تفاعلية وخطط دراسة ومسابقات',
+    description: strings.metadata.description,
     type: 'website',
     url: 'https://agios-bible.vercel.app/',
     siteName: 'Agios Bible',

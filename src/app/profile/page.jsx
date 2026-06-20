@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { StorageService } from '../../lib/storage';
+import strings from '../data/ar.json';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -37,7 +38,7 @@ const ProfilePage = () => {
       verses: Object.keys(localFavs).length,
       chapters: 0,
       plans: 0,
-      joinDate: 'زائر',
+      joinDate: strings.profile.guest_date,
       points: localStats.points || 0
     });
     setLoading(false);
@@ -64,7 +65,7 @@ const ProfilePage = () => {
                 month: 'long',
                 timeZone: 'Africa/Cairo'
               })
-            : 'غير متوفر';
+            : 'N/A';
 
           setUserStats({
             verses: versesCount,
@@ -107,10 +108,10 @@ const ProfilePage = () => {
 
   const handleShareApp = async () => {
     const shareData = {
-      title: 'تطبيق أجيوس',
-      text: 'حمل أبليكيشن أجيوس واقرأ الكتاب المقدس بطريقة جديدة!',
+      title: strings.profile.share_title,
+      text: strings.profile.share_text,
       url: 'https://play.google.com/store/apps/details?id=com.agios.bible', 
-      dialogTitle: 'مشاركة التطبيق مع الأصدقاء',
+      dialogTitle: strings.profile.share_dialog,
     };
 
     if (Capacitor.isNativePlatform()) {
@@ -119,7 +120,7 @@ const ProfilePage = () => {
       if (navigator.share) {
         navigator.share(shareData);
       } else {
-        alert('المشاركة غير مدعومة في المتصفح');
+        alert(strings.profile.share_not_supported);
       }
     }
   };
@@ -135,7 +136,7 @@ const ProfilePage = () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    const confirmed = window.confirm("هل أنت متأكد من حذف حسابك نهائياً؟");
+    const confirmed = window.confirm(strings.profile.delete_confirm);
     if (confirmed) {
       try {
         const userId = currentUser.uid;
@@ -143,12 +144,12 @@ const ProfilePage = () => {
         await deleteDoc(doc(db, 'users', userId));
         router.push('/');
       } catch (error) {
-        alert("حدث خطأ، قد تحتاج لتسجيل الدخول مجدداً لحذف الحساب.");
+        alert("An error occurred");
       }
     }
   };
 
-  if (loading) return <div className={styles.loading}>جاري التحميل...</div>;
+  if (loading) return <div className={styles.loading}>{strings.common.loading}</div>;
 
   return (
     <div className={styles.container} dir="rtl">
@@ -159,12 +160,12 @@ const ProfilePage = () => {
           </div>
         </div>
         <h1 className={styles.userName}>
-          {isGuest ? 'حساب زائر' : (userData?.displayName || user?.displayName || 'صديق أجيوس')}
+          {isGuest ? strings.profile.guest_user : (userData?.displayName || user?.displayName || strings.profile.friend_agios)}
         </h1>
         {!isGuest && (
           <>
             <p className={styles.userEmail}><Mail size={14} /> {user?.email}</p>
-            <p className={styles.joinDate}><Calendar size={14} /> عضو منذ: {userStats.joinDate}</p>
+            <p className={styles.joinDate}><Calendar size={14} /> {strings.profile.member_since.replace('{date}', userStats.joinDate)}</p>
           </>
         )}
       </div>
@@ -173,53 +174,53 @@ const ProfilePage = () => {
         <div className={styles.statBox} onClick={() => router.push('/favourites')}>
           <Heart className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.verses}</span>
-          <span className={styles.statLabel}>آيات مفضلة</span>
+          <span className={styles.statLabel}>{strings.profile.fav_verses}</span>
         </div>
         <div className={styles.statBox}>
           <Trophy className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.points}</span>
-          <span className={styles.statLabel}>XP</span>
+          <span className={styles.statLabel}>{strings.profile.points_label}</span>
         </div>
         <div className={styles.statBox} onClick={() => router.push('/studyPlans')}>
           <Activity className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.plans}</span>
-          <span className={styles.statLabel}>خطط نشطة</span>
+          <span className={styles.statLabel}>{strings.profile.active_plans_count}</span>
         </div>
       </div>
 
       <div className={styles.menuSection}>
         {!isGuest && (
           <>
-            <h3 className={styles.menuTitle}>الحساب</h3>
+            <h3 className={styles.menuTitle}>{strings.profile.account_section}</h3>
             <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
               <div className={styles.menuItemRight}>
                 <LogOut size={20} />
-                <span>تسجيل الخروج</span>
+                <span>{strings.profile.logout}</span>
               </div>
             </button>
           </>
         )}
 
-        <h3 className={styles.menuTitle}>الخيارات العامة</h3>
+        <h3 className={styles.menuTitle}>{strings.profile.general_options}</h3>
         
         <button className={styles.menuItem} onClick={() => router.push('/settings')}>
           <div className={styles.menuItemRight}>
             <SettingsIcon size={20} />
-            <span>إعدادات التطبيق</span>
+            <span>{strings.profile.app_settings}</span>
           </div>
         </button>
 
         <button className={styles.menuItem} onClick={() => router.push('/points')}>
           <div className={styles.menuItemRight}>
             <Trophy size={20} />
-            <span>النقاط والأوسمة</span>
+            <span>{strings.profile.points_badges}</span>
           </div>
         </button>
 
         <button className={styles.menuItem} onClick={handleShareApp}>
           <div className={styles.menuItemRight}>
             <Share2 size={20} />
-            <span>دعوة صديق للتطبيق</span>
+            <span>{strings.profile.invite_friend}</span>
           </div>
         </button>
 
@@ -227,14 +228,14 @@ const ProfilePage = () => {
           <button className={`${styles.menuItem} ${styles.deleteAccount}`} onClick={handleDeleteAccount}>
             <div className={styles.menuItemRight}>
               <Trash2 size={20} />
-              <span>حذف الحساب</span>
+              <span>{strings.profile.delete_account}</span>
             </div>
           </button>
         )}
       </div>
 
       <footer className={styles.profileFooter}>
-        <p>تطبيق أجيوس - الإصدار 1.2.0</p>
+        <p>{strings.profile.version}</p>
       </footer>
     </div>
   );

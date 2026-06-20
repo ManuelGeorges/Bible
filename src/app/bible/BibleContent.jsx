@@ -8,13 +8,14 @@ import { doc, getDoc, updateDoc, increment, arrayUnion, deleteField } from "fire
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, Type, ChevronDown } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, Type, ChevronDown, Settings } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
 import { useAudio } from '../context/AudioContext';
 import studyPlansData from '../studyPlans/studyPlansData.json';
 import { getCairoIsoString } from '../../lib/dateUtils';
+import strings from '../data/ar.json';
 
 // Local-first imports
 import { StorageService, KEYS } from '../../lib/storage';
@@ -236,7 +237,7 @@ export default function BibleContent() {
       if (data) {
         playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex, true);
       } else {
-        toast.error("الأوديو غير متوفر لهذا الإصحاح");
+        toast.error(strings.bible.toasts.audio_not_found);
       }
     }
   };
@@ -350,24 +351,24 @@ export default function BibleContent() {
     try {
       if (Capacitor.isNativePlatform()) {
         await Share.share({
-          title: 'آية من الكتاب المقدس',
+          title: strings.bible.share_title,
           text: fullText,
-          dialogTitle: 'مشاركة الآية عبر...',
+          dialogTitle: strings.bible.share_dialog,
         });
       }
       else if (navigator.share) {
         await navigator.share({
-          title: 'آية من الكتاب المقدس',
+          title: strings.bible.share_title,
           text: fullText
         });
       }
       else {
         copyVerse(text, index);
-        toast.info("المشاركة غير مدعومة، تم نسخ النص بدلاً من ذلك");
+        toast.info(strings.bible.share_not_supported);
         return;
       }
 
-      updateUserPoints(15, "مشاركة آية", 'share');
+      updateUserPoints(15, strings.bible.reasons.share_verse, 'share');
       unlockBadge('share_1');
     } catch (err) {
       console.log('Share error', err);
@@ -390,7 +391,7 @@ export default function BibleContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd.json';
+        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel';
         const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch(biblePath).then(r => r.json())
@@ -441,22 +442,15 @@ export default function BibleContent() {
     initUserData();
   }, []);
 
-  const toggleTashkeel = () => {
-    const newVal = !useTashkeel;
-    setUseTashkeel(newVal);
-    localStorage.setItem('useTashkeel', newVal.toString());
-    toast.success(newVal ? "تم تفعيل التشكيل" : "تم إخفاء التشكيل");
-  };
-
   const copyVerse = (text, index) => {
     const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
     const verseLabel = convertToArabicNumber(index + 1);
     const rlm = "\u200F";
     const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${verseLabel}:${chapterLabel})`;
     navigator.clipboard.writeText(fullText);
-    setCopiedMessage('تم النسخ');
+    setCopiedMessage(strings.bible.toasts.copied);
     setActiveMenu(null);
-    updateUserPoints(5, "نسخ آية", 'search');
+    updateUserPoints(5, strings.bible.reasons.copy_verse, 'search');
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -473,8 +467,8 @@ export default function BibleContent() {
 
     const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
     navigator.clipboard.writeText(fullText);
-    setCopiedMessage('تم النسخ بدقة ✨');
-    updateUserPoints(15, "مشاركة مجموعة آيات", 'share');
+    setCopiedMessage(strings.bible.toasts.copied_precise);
+    updateUserPoints(15, strings.bible.reasons.share_verses, 'share');
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -507,7 +501,7 @@ export default function BibleContent() {
 
     setFavouriteVerses(next);
     if (newlyAddedCount > 0) {
-      updateUserPoints(newlyAddedCount * 5, "إضافة آية للمفضلة", 'favouriteVerse');
+      updateUserPoints(newlyAddedCount * 5, strings.bible.reasons.favourite, 'favouriteVerse');
       const count = Object.keys(next).length;
       if (count >= 1) unlockBadge('fav_1');
       if (count >= 20) unlockBadge('fav_20');
@@ -515,7 +509,7 @@ export default function BibleContent() {
     }
     await saveBibleData(next, completedChapters);
 
-    setCopiedMessage(targetColor ? 'تم التظليل ✨' : 'تم حذف التظليل 🗑️');
+    setCopiedMessage(targetColor ? strings.bible.toasts.highlighted : strings.bible.toasts.highlight_removed);
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
@@ -558,8 +552,8 @@ export default function BibleContent() {
     await saveBibleData(next, completedChapters);
 
     setIsNoteModalOpen(false);
-    updateUserPoints(5, "كتابة تأمل شخصي", 'favouriteVerse');
-    setCopiedMessage('تم حفظ ملاحظتك 📝');
+    updateUserPoints(5, strings.bible.reasons.note, 'favouriteVerse');
+    setCopiedMessage(strings.bible.toasts.note_saved);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
@@ -681,10 +675,10 @@ export default function BibleContent() {
         });
 
         if (isDayNowCompleted) {
-          toast.success("مبروك! أتممت قراءات اليوم في الخطة ✨");
+          toast.success(strings.bible.toasts.plan_day_complete);
           if (percentage === 100) {
             unlockBadge(`plan_finish_${planId}`);
-            toast.success("رائع! لقد أنهيت الخطة الدراسية بالكامل 🏆");
+            toast.success(strings.bible.toasts.plan_all_complete);
           }
         }
       } catch (e) { console.error(e); }
@@ -709,7 +703,7 @@ export default function BibleContent() {
       allData[planId] = { ...planData, completedDays: newCompletedDays, completionPercentage: percentage };
       await StorageService.save(storageKey, allData);
 
-      if (isDayNowCompleted) toast.success("أتممت قراءات اليوم في الخطة ✅");
+      if (isDayNowCompleted) toast.success(strings.bible.toasts.plan_day_complete);
     }
   };
 
@@ -723,8 +717,8 @@ export default function BibleContent() {
       const next = { ...completedChapters, [key]: false };
       setCompletedChapters(next);
       await saveBibleData(favouriteVerses, next);
-      updateUserPoints(20, `إلغاء قراءة إصحاح`, 'completedChapter', true);
-      toast.error("تم إلغاء تحديد الإصحاح");
+      updateUserPoints(20, strings.bible.reasons.undo_chapter, 'completedChapter', true);
+      toast.error(strings.bible.toasts.chapter_undo);
 
       if (planId && day) {
         updateStudyPlanProgress(planId, planType, parseInt(day), next);
@@ -733,7 +727,7 @@ export default function BibleContent() {
       const next = { ...completedChapters, [key]: true };
       setCompletedChapters(next);
       await saveBibleData(favouriteVerses, next);
-      updateUserPoints(20, `قراءة إصحاح كامل`, 'completedChapter');
+      updateUserPoints(20, strings.bible.reasons.complete_chapter, 'completedChapter');
 
       if (planId && day) {
         updateStudyPlanProgress(planId, planType, parseInt(day), next);
@@ -759,7 +753,7 @@ export default function BibleContent() {
     }
   };
 
-  if (isLoading || !bibleData || !bookNamesData.length) return <div className={styles.loading}>جاري التحميل...</div>;
+  if (isLoading || !bibleData || !bookNamesData.length) return <div className={styles.loading}>{strings.common.loading}</div>;
 
   const chaptersList = bibleData[selectedBookIndex]?.chapters || [];
   const versesList = chaptersList[selectedChapterIndex] || [];
@@ -770,7 +764,7 @@ export default function BibleContent() {
         <div className={styles.selectionBar}>
           <div className={styles.selectionActions}>
             <button onClick={() => setSelectedVerses([])} className={styles.actionBtn}>✕</button>
-            <button onClick={copySelected} className={styles.actionBtn} title="نسخ"><Copy size={20} /></button>
+            <button onClick={copySelected} className={styles.actionBtn} title={strings.bible.tooltips.copy}><Copy size={20} /></button>
             <button onClick={() => {
                 const combinedText = selectedVerses.map(v => v.text).join(' ');
                 shareVerse(combinedText, selectedVerses[0].index);
@@ -787,20 +781,20 @@ export default function BibleContent() {
                   router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
                 }}
                 className={styles.actionBtn}
-                title="تصميم صورة"
+                title={strings.bible.tooltips.image_design}
               >
                 <ImageIcon size={20} />
               </button>
             )}
 
-            <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title="ملاحظة"><MessageSquare size={20} /></button>
+            <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title={strings.bible.tooltips.note}><MessageSquare size={20} /></button>
             <button
               onClick={() => {
                 const verseNumbers = selectedVerses.map(v => v.index + 1).sort((a, b) => a - b).join(',');
                 router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}&verses=${verseNumbers}`);
               }}
               className={styles.actionBtn}
-              title="تحليل بالذكاء الاصطناعي"
+              title={strings.bible.tooltips.ai_analysis}
             >
               <Sparkles size={20} />
             </button>
@@ -827,24 +821,24 @@ export default function BibleContent() {
       {isNoteModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.noteModal}>
-            <h3>أضف تأملك الشخصي</h3>
-            <textarea value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder="اكتب هنا ما لمسه قلبك في هذه الآية..." />
+            <h3>{strings.bible.notes.title}</h3>
+            <textarea value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder={strings.bible.notes.placeholder} />
             <div className={styles.modalActions}>
-              <button onClick={saveNote} className={styles.saveBtn}>حفظ</button>
-              <button onClick={() => setIsNoteModalOpen(false)} className={styles.cancelBtn}>إلغاء</button>
+              <button onClick={saveNote} className={styles.saveBtn}>{strings.common.save}</button>
+              <button onClick={() => setIsNoteModalOpen(false)} className={styles.cancelBtn}>{strings.common.cancel}</button>
             </div>
           </div>
         </div>
       )}
 
-      <h1 className={styles.title}>الكتاب المقدس</h1>
+      <h1 className={styles.title}>{strings.bible.title}</h1>
 
       <div className={styles.controls}>
         <button className={styles.navigationDisplay} onClick={() => router.push('/bible/books')}>
           <div className={styles.navContent}>
             <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
             <span className={styles.navSeparator}>|</span>
-            <span className={styles.navText}>{`إصحاح ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
+            <span className={styles.navText}>{`${strings.bible.chapter_label} ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
           </div>
           <ChevronDown size={20} className={styles.navIcon} />
         </button>
@@ -865,7 +859,7 @@ export default function BibleContent() {
             <button
               className={styles.aiBtn}
               onClick={() => router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}`)}
-              title="تحليل بالذكاء الاصطناعي"
+              title={strings.bible.tooltips.ai_analysis}
             >
               <Sparkles size={20} />
             </button>
@@ -910,7 +904,7 @@ export default function BibleContent() {
               className={`${styles.completionBtn} ${completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? styles.completed : ''}`}
               onClick={toggleChapterCompletion}
             >
-              <span>أتممت الإصحاح</span>
+              <span>{strings.bible.chapter_complete_btn}</span>
               {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? <CircleCheck size={24} color="#4CAF50" /> : <Check size={24} opacity={0.6} />}
             </button>
           </div>
@@ -921,13 +915,13 @@ export default function BibleContent() {
         <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> « </button>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          {/* زر التشكيل الجديد بجانب زر الصوت */}
+          {/* زر الإعدادات الجديد */}
           <button
-            className={`${styles.tashkeelTextBtn} ${useTashkeel ? styles.active : ''}`}
-            onClick={toggleTashkeel}
+            onClick={() => router.push('/settings#text-settings')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title={strings.bible.tooltips.text_settings}
           >
-            <Type size={18} />
-            <span>تشكيل</span>
+            <Settings size={28} color="var(--color-text-primary)" />
           </button>
 
           <button

@@ -8,7 +8,7 @@ import {
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
   Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold
 } from 'lucide-react'
-import { Capacitor } from '@capacitor/core'
+import { Capacitor } from '@capacitor-core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
 import { signOut, deleteUser, onAuthStateChanged } from 'firebase/auth';
@@ -16,6 +16,7 @@ import { doc, deleteDoc } from 'firebase/firestore';
 import { auth, db, getFirebaseRemoteConfig } from '../../lib/firebase';
 import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
 import styles from './Settings.module.css'
+import strings from '../data/ar.json';
 
 const fontOptions = [
   { id: 'Cairo', name: 'القاهرة (الأساسي)', value: "'Cairo', sans-serif" },
@@ -33,6 +34,7 @@ const Settings = () => {
   const [fontFamily, setFontFamily] = useState('Cairo')
   const [fontWeight, setFontWeight] = useState(400)
   const [versePerLine, setVersePerLine] = useState(false)
+  const [useTashkeel, setUseTashkeel] = useState(false)
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
   const [user, setUser] = useState(null)
@@ -93,6 +95,9 @@ const Settings = () => {
 
       const savedLayout = localStorage.getItem('versePerLine') === 'true'
       setVersePerLine(savedLayout)
+
+      const savedTashkeel = localStorage.getItem('useTashkeel') === 'true'
+      setUseTashkeel(savedTashkeel)
 
       if (native) {
         const perms = await LocalNotifications.checkPermissions()
@@ -195,6 +200,13 @@ const Settings = () => {
     window.dispatchEvent(new Event('storage'))
   }
 
+  const toggleTashkeel = () => {
+    const nextState = !useTashkeel
+    setUseTashkeel(nextState)
+    localStorage.setItem('useTashkeel', nextState.toString())
+    window.dispatchEvent(new Event('storage'))
+  }
+
   const openSystemSettings = async () => {
     setShowPermissionModal(false)
     try {
@@ -229,13 +241,11 @@ const Settings = () => {
     const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000); // 5 دقائق
 
     if (!isFreshSession) {
-      alert("لدواعي أمنية، يتطلب حذف الحساب تسجيل دخول حديث. يرجى تسجيل الخروج ثم الدخول مرة أخرى والمحاولة مجدداً.");
+      alert(strings.settings.account.fresh_login_required);
       return;
     }
 
-    const confirmed = window.confirm(
-      "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك من السحابة."
-    );
+    const confirmed = window.confirm(strings.settings.account.delete_confirm);
 
     if (confirmed) {
       try {
@@ -248,14 +258,14 @@ const Settings = () => {
         const userDocRef = doc(db, 'users', userId);
         await deleteDoc(userDocRef);
 
-        alert("تم حذف الحساب والبيانات بنجاح.");
+        alert(strings.settings.account.delete_success);
         router.push('/intro');
       } catch (error) {
         console.error("Error deleting user:", error);
         if (error.code === 'auth/requires-recent-login') {
-          alert("انتهت صلاحية الجلسة الأمنية. يرجى إعادة تسجيل الدخول ثم المحاولة مرة أخرى.");
+          alert(strings.settings.account.reauth_required);
         } else {
-          alert("حدث خطأ أثناء حذف الحساب. يرجى المحاولة لاحقاً.");
+          alert(strings.settings.account.delete_error);
         }
       }
     }
@@ -267,11 +277,11 @@ const Settings = () => {
 
   return (
     <div className={styles.container} dir="rtl">
-      <h1 className={styles.title}>الإعدادات</h1>
+      <h1 className={styles.title}>{strings.settings.title}</h1>
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          <Palette size={22} className={styles.iconPrimary} /> مظهر التطبيق
+          <Palette size={22} className={styles.iconPrimary} /> {strings.settings.appearance.title}
         </h2>
         <div className={styles.themeGrid}>
           <div
@@ -281,7 +291,7 @@ const Settings = () => {
             <div className={`${styles.themeCircle} ${styles.light}`}>
               <Sun size={24} />
             </div>
-            <span className={styles.themeLabel}>فاتح</span>
+            <span className={styles.themeLabel}>{strings.settings.appearance.light}</span>
           </div>
 
           <div
@@ -291,7 +301,7 @@ const Settings = () => {
             <div className={`${styles.themeCircle} ${styles.dark}`}>
               <Moon size={24} />
             </div>
-            <span className={styles.themeLabel}>داكن</span>
+            <span className={styles.themeLabel}>{strings.settings.appearance.dark}</span>
           </div>
 
           <div
@@ -301,14 +311,14 @@ const Settings = () => {
             <div className={`${styles.themeCircle} ${styles.system}`}>
               <Monitor size={24} />
             </div>
-            <span className={styles.themeLabel}>تلقائي</span>
+            <span className={styles.themeLabel}>{strings.settings.appearance.system}</span>
           </div>
         </div>
       </div>
 
-      <div className={styles.section}>
+      <div className={styles.section} id="text-settings">
         <h2 className={styles.sectionTitle}>
-          <BookOpen size={22} className={styles.iconPrimary} /> إعدادات الآيات
+          <BookOpen size={22} className={styles.iconPrimary} /> {strings.settings.bible.title}
         </h2>
 
         <div className={styles.settingItem}>
@@ -316,9 +326,9 @@ const Settings = () => {
             <div className={styles.textContainer}>
               <span className={styles.settingLabel}>
                 <LayoutList size={20} className={styles.iconPrimary} />
-                كل آية في سطر مستقل
+                {strings.settings.bible.verse_per_line}
               </span>
-              <p className={styles.subText}>عرض النص كقائمة مرتبة بدلاً من فقرة</p>
+              <p className={styles.subText}>{strings.settings.bible.verse_per_line_desc}</p>
             </div>
           </div>
           <label className={styles.switch}>
@@ -331,11 +341,31 @@ const Settings = () => {
           </label>
         </div>
 
+        <div className={styles.settingItem}>
+          <div className={styles.settingInfo}>
+            <div className={styles.textContainer}>
+              <span className={styles.settingLabel}>
+                <Type size={20} className={styles.iconPrimary} />
+                {strings.settings.bible.show_tashkeel}
+              </span>
+              <p className={styles.subText}>{strings.settings.bible.show_tashkeel_desc}</p>
+            </div>
+          </div>
+          <label className={styles.switch}>
+            <input
+              type="checkbox"
+              checked={useTashkeel}
+              onChange={toggleTashkeel}
+            />
+            <span className={styles.sliderRound}></span>
+          </label>
+        </div>
+
         <div className={styles.fontControlGroup}>
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <span className={styles.settingLabel}>
               <CaseSensitive size={20} className={styles.iconPrimary} />
-              نوع الخط (عربي)
+              {strings.settings.bible.font_type}
             </span>
           </div>
           <div className={styles.fontOptionsList}>
@@ -356,7 +386,7 @@ const Settings = () => {
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <span className={styles.settingLabel}>
               <Bold size={20} className={styles.iconPrimary} />
-              ثقل الخط ({fontWeight})
+              {strings.settings.bible.font_weight.replace('{weight}', fontWeight)}
             </span>
           </div>
           <div className={styles.controlsWrapper}>
@@ -376,19 +406,19 @@ const Settings = () => {
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <span className={styles.settingLabel}>
               <Type size={20} className={styles.iconPrimary} />
-              حجم خط القراءة ({fontSize}px)
+              {strings.settings.bible.font_size.replace('{size}', fontSize)}
             </span>
           </div>
 
           <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px`, fontFamily: currentFontValue, fontWeight: fontWeight }}>
             {versePerLine ? (
               <div className={styles.previewList}>
-                <div>١ هكذا سيبدو شكل الآيات</div>
-                <div>٢ عند تفعيل خيار السطر المستقل</div>
+                <div>{strings.settings.bible.preview.line_1}</div>
+                <div>{strings.settings.bible.preview.line_2}</div>
               </div>
             ) : (
               <p className={styles.previewParagraph}>
-                ١ هكذا سيبدو شكل الآيات في نظام الفقرة المستمرة حيث تظهر الأرقام بجانب بعضها البعض.
+                {strings.settings.bible.preview.paragraph}
               </p>
             )}
           </div>
@@ -415,7 +445,7 @@ const Settings = () => {
         <div className={styles.section}>
           <div className={styles.masterToggleRow}>
             <h2 className={styles.sectionTitle}>
-              <Bell size={22} className={styles.iconPrimary} /> الإشعارات
+              <Bell size={22} className={styles.iconPrimary} /> {strings.settings.notifications.title}
             </h2>
             <label className={styles.switch}>
               <input
@@ -435,9 +465,9 @@ const Settings = () => {
                   <div className={styles.textContainer}>
                     <span className={styles.settingLabel}>
                       <Bell size={18} />
-                      آية اليوم
+                      {strings.settings.notifications.verse.title}
                     </span>
-                    <p className={styles.subText}>استلام آية مشجعة يومياً</p>
+                    <p className={styles.subText}>{strings.settings.notifications.verse.desc}</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
@@ -452,7 +482,7 @@ const Settings = () => {
               </div>
               <div className={`${styles.timePickerRow} ${!notifications.verse ? styles.dimmed : ''}`}>
                 <Clock size={16} />
-                <span>وقت التنبيه:</span>
+                <span>{strings.settings.notifications.alert_time}</span>
                 <input
                   type="time"
                   value={notifications.verseTime}
@@ -469,9 +499,9 @@ const Settings = () => {
                   <div className={styles.textContainer}>
                     <span className={styles.settingLabel}>
                       <HelpCircle size={18} />
-                      سؤال اليوم
+                      {strings.settings.notifications.question.title}
                     </span>
-                    <p className={styles.subText}>تحديات ومسابقات يومية</p>
+                    <p className={styles.subText}>{strings.settings.notifications.question.desc}</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
@@ -486,7 +516,7 @@ const Settings = () => {
               </div>
               <div className={`${styles.timePickerRow} ${!notifications.question ? styles.dimmed : ''}`}>
                 <Clock size={16} />
-                <span>وقت التنبيه:</span>
+                <span>{strings.settings.notifications.alert_time}</span>
                 <input
                   type="time"
                   value={notifications.questionTime}
@@ -503,9 +533,9 @@ const Settings = () => {
                   <div className={styles.textContainer}>
                     <span className={styles.settingLabel}>
                       <BookOpen size={18} />
-                      تذكير الخطط الدراسية
+                      {strings.settings.notifications.study_plans.title}
                     </span>
-                    <p className={styles.subText}>تنبيه بمتابعة ورد القراءة المتبقي</p>
+                    <p className={styles.subText}>{strings.settings.notifications.study_plans.desc}</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
@@ -520,7 +550,7 @@ const Settings = () => {
               </div>
               <div className={`${styles.timePickerRow} ${!notifications.studyPlans ? styles.dimmed : ''}`}>
                 <Clock size={16} />
-                <span>وقت التنبيه:</span>
+                <span>{strings.settings.notifications.alert_time}</span>
                 <input
                   type="time"
                   value={notifications.studyPlansTime}
@@ -537,9 +567,9 @@ const Settings = () => {
                   <div className={styles.textContainer}>
                     <span className={styles.settingLabel}>
                       <Flame size={18} className={styles.notifIcon} />
-                      تنبيه حماية الستريك
+                      {strings.settings.notifications.streak.title}
                     </span>
-                    <p className={styles.subText}>تذكيرك قبل انتهاء اليوم للحفاظ على أيامك</p>
+                    <p className={styles.subText}>{strings.settings.notifications.streak.desc}</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
@@ -554,7 +584,7 @@ const Settings = () => {
               </div>
               <div className={`${styles.timePickerRow} ${!notifications.streak ? styles.dimmed : ''}`}>
                 <Clock size={16} />
-                <span>وقت التنبيه:</span>
+                <span>{strings.settings.notifications.alert_time}</span>
                 <input
                   type="time"
                   value={notifications.streakTime}
@@ -571,9 +601,9 @@ const Settings = () => {
                   <div className={styles.textContainer}>
                     <span className={styles.settingLabel}>
                       <Sparkles size={18} className={styles.notifIcon} />
-                      اقتراحات ومزايا التطبيق
+                      {strings.settings.notifications.app_suggestions.title}
                     </span>
-                    <p className={styles.subText}>تعرف على خصائص أجيوس الجديدة</p>
+                    <p className={styles.subText}>{strings.settings.notifications.app_suggestions.desc}</p>
                   </div>
                 </div>
                 <label className={styles.switch}>
@@ -588,7 +618,7 @@ const Settings = () => {
               </div>
               <div className={`${styles.timePickerRow} ${!notifications.appSuggestions ? styles.dimmed : ''}`}>
                 <Clock size={16} />
-                <span>وقت التنبيه:</span>
+                <span>{strings.settings.notifications.alert_time}</span>
                 <input
                   type="time"
                   value={notifications.appSuggestionsTime}
@@ -604,9 +634,9 @@ const Settings = () => {
                 <div className={styles.textContainer}>
                   <span className={styles.settingLabel}>
                     <RefreshCw size={18} className={styles.notifIcon} />
-                    إشعارات التحديثات
+                    {strings.settings.notifications.updates.title}
                   </span>
-                  <p className={styles.subText}>تنبيه فور توفر نسخة جديدة من التطبيق</p>
+                  <p className={styles.subText}>{strings.settings.notifications.updates.desc}</p>
                 </div>
               </div>
               <label className={styles.switch}>
@@ -626,30 +656,30 @@ const Settings = () => {
       {user ? (
         <div className={styles.section + ' ' + styles.deleteSection}>
           <h2 className={styles.sectionTitle}>
-            <SettingsIcon size={22} className={styles.iconPrimary} /> إدارة الحساب
+            <SettingsIcon size={22} className={styles.iconPrimary} /> {strings.settings.account.title}
           </h2>
           <p className={styles.subText} style={{ marginBottom: '15px' }}>
-            يمكنك إدارة حسابك من هنا. يرجى العلم أن حذف الحساب سيؤدي لمسح جميع بياناتك نهائياً.
+            {strings.settings.account.desc}
           </p>
           <div className={styles.accountButtons}>
             <button className={styles.logoutButton} onClick={handleLogout}>
               <LogOut size={20} />
-              <span>تسجيل الخروج</span>
+              <span>{strings.settings.account.logout}</span>
             </button>
 
             <button className={styles.deleteButton} onClick={handleDeleteAccount}>
               <Trash2 size={20} />
-              <span>حذف الحساب نهائياً</span>
+              <span>{strings.settings.account.delete_account}</span>
             </button>
           </div>
         </div>
       ) : showSyncLogin && (
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            <CloudSync size={22} className={styles.iconPrimary} /> المزامنة والسحابة
+            <CloudSync size={22} className={styles.iconPrimary} /> {strings.settings.sync.title}
           </h2>
           <p className={styles.subText} style={{ marginBottom: '15px' }}>
-            سجل دخولك الآن للحفاظ على تقدمك، ملاحظاتك، ونقاطك من الضياع، ومزامنتها عبر جميع أجهزتك.
+            {strings.settings.sync.desc}
           </p>
           <button
             className={styles.loginButton}
@@ -670,7 +700,7 @@ const Settings = () => {
             }}
           >
             <LogIn size={20} />
-            <span>تسجيل الدخول للمزامنة</span>
+            <span>{strings.settings.sync.login_button}</span>
           </button>
         </div>
       )}
@@ -684,11 +714,11 @@ const Settings = () => {
                 <X size={20} />
               </button>
             </div>
-            <h3>تفعيل الإشعارات</h3>
-            <p>يرجى تفعيل الإشعارات من إعدادات الهاتف لتتمكن من استلام المحتوى اليومي.</p>
+            <h3>{strings.settings.permission_modal.title}</h3>
+            <p>{strings.settings.permission_modal.desc}</p>
             <div className={styles.modalActions}>
-              <button onClick={openSystemSettings} className={styles.primaryBtn}>فتح الإعدادات</button>
-              <button onClick={() => setShowPermissionModal(false)} className={styles.cancelBtn}>إلغاء</button>
+              <button onClick={openSystemSettings} className={styles.primaryBtn}>{strings.common.open_settings}</button>
+              <button onClick={() => setShowPermissionModal(false)} className={styles.cancelBtn}>{strings.common.cancel}</button>
             </div>
           </div>
         </div>

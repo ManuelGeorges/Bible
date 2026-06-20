@@ -7,6 +7,7 @@ import { doc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import { StorageService, KEYS } from '../../lib/storage';
+import strings from '../data/ar.json';
 
 const HIGHLIGHT_COLORS = [
   '#FFC107', '#FF5722', '#F44336', '#E91E63', '#9C27B0',
@@ -84,7 +85,7 @@ export default function FavouritesPage() {
           'favorites.colorLabels': newLabels
         });
       } catch (e) {
-        alert("حدث خطأ أثناء حفظ التسمية");
+        alert(strings.favourites.error_save);
       }
     } else {
       await StorageService.save('color_labels', newLabels);
@@ -114,24 +115,24 @@ export default function FavouritesPage() {
     return false; 
   });
 
-  if (isLoading) return <div className={styles.loadingMessage}>جاري التحميل...</div>;
+  if (isLoading) return <div className={styles.loadingMessage}>{strings.common.loading}</div>;
 
   return (
     <main className={`${styles.container} ${styles.ar}`}>
-      <h1 className={styles.title}>تفضيلاتي</h1>
+      <h1 className={styles.title}>{strings.favourites.title}</h1>
 
       <nav className={styles.tabContainer}>
         <div className={`${styles.tab} ${activeTab === 'favourites' ? styles.activeTab : ''}`} onClick={() => { setActiveTab('favourites'); setSelectedColor(null); }}>
-          المفضلة
+          {strings.favourites.tab_favs}
         </div>
         <div className={`${styles.tab} ${activeTab === 'notes' ? styles.activeTab : ''}`} onClick={() => { setActiveTab('notes'); setSelectedColor(null); }}>
-          الملحوظات
+          {strings.favourites.tab_notes}
         </div>
       </nav>
 
       {activeTab === 'favourites' && (
         <div className={styles.colorPickerContainer}>
-          <p className={styles.pickerTitle}>تصنيفات الألوان:</p>
+          <p className={styles.pickerTitle}>{strings.favourites.color_categories}</p>
           <div className={styles.colorGrid}>
             {HIGHLIGHT_COLORS.map((color, idx) => {
               const count = allData.filter(i => i.color === color).length;
@@ -145,7 +146,7 @@ export default function FavouritesPage() {
                   />
                   <div className={styles.labelRow} onClick={() => { setEditingColor(color); setTempLabel(colorLabels[color] || ''); }}>
                     <span className={styles.colorLabelText}>
-                      {colorLabels[color] || 'بدون عنوان'}
+                      {colorLabels[color] || strings.favourites.no_title}
                     </span>
                     <button className={styles.inlineEditBtn}>✎</button>
                   </div>
@@ -160,17 +161,17 @@ export default function FavouritesPage() {
       {editingColor && (
         <div className={styles.modalOverlay}>
           <div className={styles.editModal}>
-            <h3>تسمية اللون</h3>
+            <h3>{strings.favourites.modal_title}</h3>
             <div className={styles.previewDot} style={{ backgroundColor: editingColor }} />
             <input 
               type="text" 
               value={tempLabel} 
               onChange={(e) => setTempLabel(e.target.value)} 
-              placeholder="مثلاً: آيات تعزية، وعود..."
+              placeholder={strings.favourites.modal_placeholder}
             />
             <div className={styles.modalActions}>
-              <button onClick={saveColorLabel} className={styles.saveBtn}>حفظ</button>
-              <button onClick={() => setEditingColor(null)} className={styles.cancelBtn}>إلغاء</button>
+              <button onClick={saveColorLabel} className={styles.saveBtn}>{strings.common.save}</button>
+              <button onClick={() => setEditingColor(null)} className={styles.cancelBtn}>{strings.common.cancel}</button>
             </div>
           </div>
         </div>
@@ -196,10 +197,10 @@ export default function FavouritesPage() {
           </li>
         ))}
         {activeTab === 'favourites' && !selectedColor && (
-          <div className={styles.emptyPrompt}>اختر تصنيفاً من الأعلى لعرض الآيات</div>
+          <div className={styles.emptyPrompt}>{strings.favourites.empty_color_prompt}</div>
         )}
         {filteredItems.length === 0 && (selectedColor || activeTab === 'notes') && (
-          <div className={styles.emptyPrompt}>لا توجد عناصر هنا بعد</div>
+          <div className={styles.emptyPrompt}>{strings.favourites.empty_list}</div>
         )}
       </ul>
     </main>

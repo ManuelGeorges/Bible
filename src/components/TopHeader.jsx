@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import styles from './TopHeader.module.css';
+import strings from '../app/data/ar.json';
 
 export default function TopHeader() {
     const router = useRouter();
@@ -10,7 +11,6 @@ export default function TopHeader() {
 
     const cleanPath = pathname === '/' ? '/' : pathname.replace(/\/$/, "");
 
-    // إخفاء زر الرجوع فقط في الصفحة الرئيسية
     const isHomePage = cleanPath === '/';
 
     if (isHomePage) return null;
@@ -20,7 +20,7 @@ export default function TopHeader() {
             <button
                 className={styles.backBtn}
                 onClick={() => router.back()}
-                aria-label="الرجوع"
+                aria-label={strings.components.top_header.back}
             >
                 <ChevronRight size={28} />
             </button>

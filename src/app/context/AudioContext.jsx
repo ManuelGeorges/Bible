@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Capacitor } from '@capacitor/core';
+import strings from '../data/ar.json';
 
 const AudioContext = createContext();
 
@@ -171,7 +172,10 @@ export function AudioProvider({ children }) {
                 } catch (e) {}
             }
 
-            const title = `عادل نصحي - ${book.name} ${chapter.toLocaleString('ar-EG')}`;
+            const title = strings.audio.track_title
+                .replace('{book}', book.name)
+                .replace('{chapter}', chapter.toLocaleString('ar-EG'));
+
             return { url, title, times };
         } catch (error) {
             console.error("Fetch audio error", error);
@@ -235,12 +239,11 @@ export function AudioProvider({ children }) {
             const book = bookNames[currentLocation.bookIdx];
             const chapter = currentLocation.chapIdx + 1;
 
-            // استخدام رابط مطلق للصور لضمان عملها على أندرويد و iOS
             const iconUrl = "https://agios-bible.vercel.app/agios.png";
             navigator.mediaSession.metadata = new MediaMetadata({
-                title: trackTitle || `الأصحاح ${chapter}`,
-                artist: book ? book.name : 'الكتاب المقدس',
-                album: 'أجيوس ميديا',
+                title: trackTitle || `${strings.common.chapter} ${chapter}`,
+                artist: book ? book.name : strings.audio.artist_default,
+                album: strings.audio.album,
                 artwork: [
                     { src: iconUrl, sizes: '192x192', type: 'image/png' },
                     { src: iconUrl.replace('192', '512'), sizes: '512x512', type: 'image/png' },

@@ -2,15 +2,16 @@
 import Link from 'next/link';
 import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck } from 'lucide-react';
 import styles from './more.module.css';
+import strings from '../data/ar.json';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
   const menuItems = [
-    { name: 'الملاحظات والتفضيلات', icon: <Heart size={20} />, href: '/favourites' },
-    { name: 'المسابقات', icon: <Trophy size={20} />, href: '/competitions' },
-    { name: 'خطط القراءة', icon: <BookOpen size={20} />, href: '/studyPlans' },
-    { name: 'الملف الشخصي', icon: <User size={20} />, href: '/profile' },
-    { name: 'الإعدادات', icon: <Settings size={20} />, href: '/settings' }, 
-    { name: 'الانجازات', icon: <Coins size={20} />, href: '/points' }, 
+    { name: strings.more.items.favourites, icon: <Heart size={20} />, href: '/favourites' },
+    { name: strings.more.items.competitions, icon: <Trophy size={20} />, href: '/competitions' },
+    { name: strings.more.items.studyPlans, icon: <BookOpen size={20} />, href: '/studyPlans' },
+    { name: strings.more.items.profile, icon: <User size={20} />, href: '/profile' },
+    { name: strings.more.items.settings, icon: <Settings size={20} />, href: '/settings' },
+    { name: strings.more.items.points, icon: <Coins size={20} />, href: '/points' },
 
   ];
 
@@ -20,7 +21,7 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
       
       <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.header}>
-          <h1 className={styles.title}>المزيد</h1>
+          <h1 className={styles.title}>{strings.more.title}</h1>
           <button className={styles.closeBtn} onClick={onClose}><X size={24} /></button>
         </div>
 
@@ -37,16 +38,16 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
 
         <div className={styles.footerLinks}>
           <Link href="/about" className={styles.footerItem} onClick={onClose}>
-             <Info size={22} /> <span>من نحن</span>
+             <Info size={22} /> <span>{strings.more.footer.about}</span>
           </Link>
           <Link href="/contact" className={styles.footerItem} onClick={onClose}>
-             <Mail size={22} /> <span>تواصل معنا</span>
+             <Mail size={22} /> <span>{strings.more.footer.contact}</span>
           </Link>
           <Link href="/versions" className={styles.footerItem} onClick={onClose}>
-             <History size={22} /> <span>التحديثات</span>
+             <History size={22} /> <span>{strings.more.footer.versions}</span>
           </Link>
           <Link href="/privacy-policy" className={styles.footerItem} onClick={onClose}>
-             <ShieldCheck size={22} /> <span>سياسة الخصوصية</span>
+             <ShieldCheck size={22} /> <span>{strings.more.footer.privacy}</span>
           </Link>
         </div>
       </div>

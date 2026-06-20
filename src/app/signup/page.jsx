@@ -12,10 +12,11 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor } from '@capacitor-core';
 import { auth, db } from '../../lib/firebase';
 import styles from './signup.module.css';
 import { Apple } from 'lucide-react';
+import strings from '../data/ar.json';
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState('');
@@ -33,7 +34,6 @@ export default function SignUpPage() {
   useEffect(() => {
     setIsIOS(Capacitor.getPlatform() === 'ios');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // منع التوجيه التلقائي إذا كنا نقوم بعملية يدوية جارية لضمان اكتمال المزامنة وحفظ البيانات
       if (user && !isSubmittingRef.current) {
         router.replace('/');
       }
@@ -54,8 +54,8 @@ export default function SignUpPage() {
       if (!userSnap.exists()) {
         const [fName, ...lName] = (user.displayName || "").split(' ');
         await setDoc(userRef, {
-          firstName: firstName || fName || "مستخدم",
-          lastName: lastName || lName.join(' ') || "جديد",
+          firstName: firstName || fName || strings.common.default_first_name,
+          lastName: lastName || lName.join(' ') || strings.common.default_last_name,
           email: user.email,
           createdAt: new Date().toISOString(),
           favorites: { verses: {} },
@@ -66,11 +66,9 @@ export default function SignUpPage() {
     } catch (err) { console.error("Firestore Sync Error:", err); }
   };
 
-  // وظيفة لضمان مزامنة نسخة الـ JS SDK مع الدخول النيتيف (Native)
   const syncAuthAndRedirect = async (nativeResult) => {
     let user = auth.currentUser;
 
-    // 1. محاولة الانتظار حتى يتعرف الـ SDK على المستخدم تلقائياً
     if (!user) {
       user = await new Promise((resolve) => {
         let attempts = 0;
@@ -84,7 +82,6 @@ export default function SignUpPage() {
       });
     }
 
-    // 2. مزامنة يدوية إجبارية إذا لزم الأمر لضمان الربط 100% في الـ WebView
     if (!user && nativeResult?.credential) {
       try {
         const isApple = !!nativeResult.credential.nonce;
@@ -106,12 +103,11 @@ export default function SignUpPage() {
     const finalUser = user || nativeResult?.user;
     if (finalUser) {
       await handleUserData(finalUser);
-      // تأخير بسيط لضمان ثبات الجلسة في الـ WebView قبل التوجيه
       setTimeout(() => {
         router.replace('/');
       }, 600);
     } else {
-      throw new Error("فشل مزامنة الجلسة");
+      throw new Error(strings.common.sync_error);
     }
   };
 
@@ -130,7 +126,7 @@ export default function SignUpPage() {
       }
     } catch (err) {
       console.error(err);
-      setError('فشل التسجيل بواسطة جوجل.');
+      setError(strings.signup.error_google);
       updateSubmitting(false);
     }
   };
@@ -154,14 +150,14 @@ export default function SignUpPage() {
       console.error("Apple Sign-In Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-      setError('فشل التسجيل بواسطة آبل.');
+      setError(strings.signup.error_apple);
     }
   };
 
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!firstName || !lastName) { setError('يرجى إدخال الاسم كاملًا'); return; }
+    if (!firstName || !lastName) { setError(strings.signup.error_name_required); return; }
     setError(null);
     updateSubmitting(true);
     try {
@@ -169,7 +165,7 @@ export default function SignUpPage() {
       await handleUserData(userCredential.user);
       router.replace('/');
     } catch (err) {
-      setError('حدث خطأ في إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.');
+      setError(strings.signup.error_generic);
       updateSubmitting(false);
     }
   };
@@ -177,38 +173,38 @@ export default function SignUpPage() {
   return (
     <div className={`${styles.container} ${styles.rtl}`}>
       <div className={styles.card}>
-        <h1 className={styles.title}>إنشاء حساب جديد</h1>
+        <h1 className={styles.title}>{strings.signup.title}</h1>
         <form onSubmit={handleAuth} className={styles.form}>
           <div className={styles.nameRow}>
-            <input type="text" placeholder="الاسم الأول" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
-            <input type="text" placeholder="الاسم الأخير" value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+            <input type="text" placeholder={strings.signup.first_name} value={firstName} onChange={(e) => setFirstName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+            <input type="text" placeholder={strings.signup.last_name} value={lastName} onChange={(e) => setLastName(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           </div>
-          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
-          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          <input type="email" placeholder={strings.common.email} value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          <input type="password" placeholder={strings.common.password} value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           {error && <div className={styles.errorBox}>{error}</div>}
           <button type="submit" className={styles.button} disabled={isSubmitting}>
-            {isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
+            {isSubmitting ? strings.signup.submitting : strings.signup.submit}
           </button>
         </form>
 
         {!isIOS && (
           <>
-            <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
+            <div className={styles.divider}><span className={styles.dividerText}>{strings.common.or}</span></div>
             <div className={styles.socialButtons}>
               <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
                 <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-                <span>جوجل</span>
+                <span>{strings.common.google}</span>
               </button>
               <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
                 <Apple size={20} />
-                <span>آبل</span>
+                <span>{strings.common.apple}</span>
               </button>
             </div>
           </>
         )}
 
         <p className={styles.toggleMode}>
-          لديك حساب بالفعل؟ <span onClick={() => router.push('/login')} className={styles.link}>تسجيل الدخول</span>
+          {strings.signup.has_account} <span onClick={() => router.push('/login')} className={styles.link}>{strings.signup.login}</span>
         </p>
       </div>
     </div>

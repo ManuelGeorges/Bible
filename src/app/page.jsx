@@ -35,6 +35,7 @@ import { getCairoDate, getCairoDateInfo, getCairoYesterday, getCairoIsoString } 
 
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
+import strings from './data/ar.json';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -352,12 +353,12 @@ const LandingPage = () => {
                         );
 
                         const goals = [
-                            { id: 'dailyLogin', label: 'التفاعل اليومي', completed: data.lastActiveDate === today },
-                            { id: 'dailyQuestion', label: 'سؤال التحدي', completed: !!data.answeredQuestions?.[today]?.answered },
-                            { id: 'mapExploration', label: 'استكشاف الخريطة', completed: completedTodayTypes.has('mapExploration') },
-                            { id: 'share', label: 'المشاركة اليومية', completed: completedTodayTypes.has('share') },
-                            { id: 'completedChapter', label: 'قراءة أصحاح', completed: completedTodayTypes.has('completedChapter') },
-                            { id: 'favouriteVerse', label: 'تظليل آية', completed: completedTodayTypes.has('favouriteVerse') },
+                            { id: 'dailyLogin', label: strings.home.goals.dailyLogin, completed: data.lastActiveDate === today },
+                            { id: 'dailyQuestion', label: strings.home.goals.dailyQuestion, completed: !!data.answeredQuestions?.[today]?.answered },
+                            { id: 'mapExploration', label: strings.home.goals.mapExploration, completed: completedTodayTypes.has('mapExploration') },
+                            { id: 'share', label: strings.home.goals.share, completed: completedTodayTypes.has('share') },
+                            { id: 'completedChapter', label: strings.home.goals.completedChapter, completed: completedTodayTypes.has('completedChapter') },
+                            { id: 'favouriteVerse', label: strings.home.goals.favouriteVerse, completed: completedTodayTypes.has('favouriteVerse') },
                         ];
                         setDailyGoals(goals);
                         setIsLoading(false);
@@ -436,12 +437,12 @@ const LandingPage = () => {
                 const lastActive = await StorageService.get(KEYS.LAST_ACTIVE);
 
                 const goals = [
-                    { id: 'dailyLogin', label: 'التفاعل اليومي', completed: lastActive === today },
-                    { id: 'dailyQuestion', label: 'سؤال التحدي', completed: !!localAnswered[today]?.answered },
-                    { id: 'mapExploration', label: 'استكشاف الخريطة', completed: completedTodayTypes.has('mapExploration') },
-                    { id: 'share', label: 'المشاركة اليومية', completed: completedTodayTypes.has('share') },
-                    { id: 'completedChapter', label: 'قراءة أصحاح', completed: completedTodayTypes.has('completedChapter') },
-                    { id: 'favouriteVerse', label: 'تظليل آية', completed: completedTodayTypes.has('favouriteVerse') },
+                    { id: 'dailyLogin', label: strings.home.goals.dailyLogin, completed: lastActive === today },
+                    { id: 'dailyQuestion', label: strings.home.goals.dailyQuestion, completed: !!localAnswered[today]?.answered },
+                    { id: 'mapExploration', label: strings.home.goals.mapExploration, completed: completedTodayTypes.has('mapExploration') },
+                    { id: 'share', label: strings.home.goals.share, completed: completedTodayTypes.has('share') },
+                    { id: 'completedChapter', label: strings.home.goals.completedChapter, completed: completedTodayTypes.has('completedChapter') },
+                    { id: 'favouriteVerse', label: strings.home.goals.favouriteVerse, completed: completedTodayTypes.has('favouriteVerse') },
                 ];
                 setDailyGoals(goals);
 
@@ -497,7 +498,7 @@ const LandingPage = () => {
             if (shareCount >= 1) await unlockBadge('share_1');
             if (shareCount >= 50) await unlockBadge('social_influencer');
         }
-        toast.success('أحسنت! تم تسجيل المشاركة اليومية +10 نقاط 📢');
+        toast.success(strings.home.toasts.share_success);
     };
 
     const handleOptionClick = async (index) => {
@@ -528,7 +529,7 @@ const LandingPage = () => {
             };
 
             if (isCorrect) {
-                toast.success('إجابة صحيحة! 🎉');
+                toast.success(strings.home.toasts.correct_answer);
                 await updateDoc(userRef, {
                     ...updatePayload,
                     totalPoints: increment(20),
@@ -541,7 +542,7 @@ const LandingPage = () => {
                     })
                 });
             } else {
-                toast.error('إجابة خاطئة 😔');
+                toast.error(strings.home.toasts.wrong_answer);
                 await updateDoc(userRef, updatePayload);
             }
             if (qStreak >= 30) await unlockBadge('verse_sync');
@@ -553,7 +554,7 @@ const LandingPage = () => {
             if (Object.keys(localQuestions).length >= 30) await unlockBadge('verse_sync');
 
             if (isCorrect) {
-                toast.success('إجابة صحيحة! 🎉');
+                toast.success(strings.home.toasts.correct_answer);
                 await StorageService.addPoints(20);
                 const history = await StorageService.get('points_history') || [];
                 history.push({
@@ -565,7 +566,7 @@ const LandingPage = () => {
                 await StorageService.save('points_history', history);
                 setUserStats(prev => ({ ...prev, points: prev.points + 20 }));
             } else {
-                toast.error('إجابة خاطئة 😔');
+                toast.error(strings.home.toasts.wrong_answer);
             }
         }
     };
@@ -582,12 +583,12 @@ const LandingPage = () => {
                     delete newFavs[verseKey];
                     setFavouriteVerses(newFavs);
                     await updateDoc(userRef, { [`favorites.verses.${verseKey}`]: deleteField() });
-                    toast.error('تم الحذف من كنوزك');
+                    toast.error(strings.home.toasts.deleted_from_treasures);
                 }
             } else {
                 const updatedFavs = await StorageService.toggleFavorite(verseKey, null);
                 setFavouriteVerses(updatedFavs);
-                toast.error('تم الحذف من تفضيلاتك ');
+                toast.error(strings.home.toasts.deleted_from_favs);
             }
             setShowColorPicker(false);
             return;
@@ -627,13 +628,13 @@ const LandingPage = () => {
                 }) : arrayUnion()
             });
             if (isNew) {
-                toast.success('رائع! تمت الإضافة لتفضيلاتك +5 نقاط ');
+                toast.success(strings.home.toasts.added_to_favs_points);
                 const favCount = Object.keys(newFavs).length;
                 if (favCount >= 1) await unlockBadge('fav_1');
                 if (favCount >= 20) await unlockBadge('fav_20');
                 if (favCount >= 100) await unlockBadge('fav_100');
             } else {
-                toast.success('تم تحديث لون التظليل');
+                toast.success(strings.home.toasts.highlight_updated);
             }
         } else {
             const updatedFavs = await StorageService.toggleFavorite(verseKey, verseData);
@@ -649,14 +650,14 @@ const LandingPage = () => {
                 });
                 await StorageService.save('points_history', history);
                 setUserStats(prev => ({ ...prev, points: prev.points + 5 }));
-                toast.success('رائع! تمت الإضافة +5 نقاط ');
+                toast.success(strings.home.toasts.added_points);
 
                 const favCount = Object.keys(updatedFavs).length;
                 if (favCount >= 1) await unlockBadge('fav_1');
                 if (favCount >= 20) await unlockBadge('fav_20');
                 if (favCount >= 100) await unlockBadge('fav_100');
             } else {
-                toast.error('تم الحذف من تفضيلاتك ');
+                toast.error(strings.home.toasts.deleted_from_favs);
             }
         }
         setShowColorPicker(false);
@@ -686,12 +687,12 @@ const LandingPage = () => {
     };
 
     const quickLinks = [
-        { name: 'الكتاب المقدس', icon: <BookOpenText size={24} />, path: '/bible', color: '#6366f1' },
-        { name: 'الخرائط', icon: <Map size={24} />, path: '/maps', color: '#10b981' },
-        { name: 'البحث', icon: <Search size={24} />, path: '/search', color: '#f59e0b' },
-        { name: 'الخطط الدراسية', icon: <BookMarked size={24} />, path: '/studyPlans', color: '#ec4899' },
-        { name: 'المسابقات', icon: <Trophy size={24} />, path: '/competitions', color: '#8b5cf6' },
-        { name: 'المفضلة', icon: <Heart size={24} />, path: '/favourites', color: '#ef4444' },
+        { name: strings.home.quick_links.bible, icon: <BookOpenText size={24} />, path: '/bible', color: '#6366f1' },
+        { name: strings.home.quick_links.maps, icon: <Map size={24} />, path: '/maps', color: '#10b981' },
+        { name: strings.home.quick_links.search, icon: <Search size={24} />, path: '/search', color: '#f59e0b' },
+        { name: strings.home.quick_links.plans, icon: <BookMarked size={24} />, path: '/studyPlans', color: '#ec4899' },
+        { name: strings.home.quick_links.competitions, icon: <Trophy size={24} />, path: '/competitions', color: '#8b5cf6' },
+        { name: strings.home.quick_links.favorites, icon: <Heart size={24} />, path: '/favourites', color: '#ef4444' },
     ];
 
     const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);
@@ -771,7 +772,9 @@ const LandingPage = () => {
                     <div className={styles.welcomeInfo}>
                         <h1 className={styles.siteTitle}>Agios Bible</h1>
                         <p className={styles.userGreeting}>
-                            {user ? `أهلاً، ${user.displayName?.split(' ')[0] || 'بك'}` : 'أهلاً بك في رحلتك'}
+                            {user
+                              ? strings.home.greeting_user.replace('{name}', user.displayName?.split(' ')[0] || '')
+                              : strings.home.greeting_guest}
                         </p>
                     </div>
                     <div className={styles.topActions}>
@@ -793,7 +796,7 @@ const LandingPage = () => {
                     </Link>
                     <div className={styles.statPill}>
                         <Flame size={16} color="#ff4500" />
-                        <span>{userStats.streak} يوم</span>
+                        <span>{userStats.streak} {strings.common.day}</span>
                     </div>
                 </div>
             </header>
@@ -861,11 +864,15 @@ const LandingPage = () => {
             ) : (
                 <section className={styles.dailyGoalsSummary}>
                     <div className={styles.goalsHeader}>
-                        <div className={styles.goalsTitle}><Award size={18} color="#f59e0b" /><span>مهام اليوم</span></div>
-                        <Link href="/points" className={styles.viewMoreLink}>التفاصيل <ArrowUpRight size={14} /></Link>
+                        <div className={styles.goalsTitle}><Award size={18} color="#f59e0b" /><span>{strings.home.daily_goals}</span></div>
+                        <Link href="/points" className={styles.viewMoreLink}>{strings.common.details} <ArrowUpRight size={14} /></Link>
                     </div>
                     <div className={styles.goalsProgressWrapper}>
-                        <div className={styles.goalsProgressText}>أنجزت {convertToArabicNumber(completedGoalsCount)} من {convertToArabicNumber(dailyGoals.length)} مهام</div>
+                        <div className={styles.goalsProgressText}>
+                            {strings.home.goals_progress
+                              .replace('{done}', convertToArabicNumber(completedGoalsCount))
+                              .replace('{total}', convertToArabicNumber(dailyGoals.length))}
+                        </div>
                         <div className={styles.miniProgressBar}><div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / Math.max(1, dailyGoals.length)) * 100}%` }} /></div>
                     </div>
                     <div className={styles.goalsMiniList}>
@@ -897,18 +904,18 @@ const LandingPage = () => {
 
             {(highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
                 <section className={styles.badgesHighlightSection}>
-                    <div className={styles.sectionHeader}>
+                    <div className={sectionHeader}>
                         <div className={styles.sectionTitleWithIcon}>
                             <Trophy size={20} color="#f59e0b" />
-                            <h2 className={styles.sectionTitleMini}>أوسمتك وإنجازاتك</h2>
+                            <h2 className={styles.sectionTitleMini}>{strings.home.badges_section}</h2>
                         </div>
-                        <Link href="/points" className={styles.viewMoreLink}>كل الأوسمة <ArrowUpRight size={14} /></Link>
+                        <Link href="/points" className={styles.viewMoreLink}>{strings.home.badges_all} <ArrowUpRight size={14} /></Link>
                     </div>
 
                     <div className={styles.badgesDashboard}>
                         {highlightBadges.acquired.length > 0 && (
                             <div className={styles.badgeColumn}>
-                                <span className={styles.columnLabel}>أهم المقتنيات</span>
+                                <span className={styles.columnLabel}>{strings.home.badges_owned}</span>
                                 <div className={styles.badgeHorizontalGrid}>
                                     {highlightBadges.acquired.map(badge => (
                                         <Badge
@@ -923,7 +930,7 @@ const LandingPage = () => {
                         )}
                         {highlightBadges.near.length > 0 && (
                             <div className={styles.badgeColumn}>
-                                <span className={styles.columnLabel}>اقتربت من اقتنائها</span>
+                                <span className={styles.columnLabel}>{strings.home.badges_near}</span>
                                 <div className={styles.badgeHorizontalGrid}>
                                     {highlightBadges.near.map(badge => (
                                         <div key={badge.id} className={styles.badgeWithProgressWrapper}>
@@ -962,8 +969,8 @@ const LandingPage = () => {
                     <div className={styles.lastReadContent}>
                         <ChevronLeft size={18} />
                         <div className={styles.lastReadText}>
-                            <small>واصل القراءة</small>
-                            <strong>{lastRead.bookName} - إصحاح {lastRead.chapterIndex + 1}</strong>
+                            <small>{strings.common.continue_reading}</small>
+                            <strong>{lastRead.bookName} - {strings.common.chapter} {lastRead.chapterIndex + 1}</strong>
                         </div>
                     </div>
                     <div className={styles.lastReadIcon}><BookOpenText size={20} /></div>
@@ -972,7 +979,7 @@ const LandingPage = () => {
 
             <section className={styles.dailyHighlight} id="daily-verse">
                 <div className={styles.verseGlass}>
-                    <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>آية اليوم</span></div>
+                    <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>{strings.home.daily_verse}</span></div>
                     {isLoading ? <div className={styles.skeletonText} /> : (
                         <>
                             <p className={styles.verseText} style={{
@@ -986,10 +993,10 @@ const LandingPage = () => {
                             <div className={styles.verseActions}>
                                 <button onClick={() => {
                                     navigator.clipboard.writeText(`"${dailyVerse?.verse}" ${formattedDailyRef}`);
-                                    toast.success('تم النسخ');
-                                }} className={`${styles.glassBtn} ${styles.copyBtn}`}>نسخ</button>
+                                    toast.success(strings.home.toasts.copied);
+                                }} className={`${styles.glassBtn} ${styles.copyBtn}`}>{strings.home.verse_copy}</button>
                                 <button onClick={() => setShowColorPicker(!showColorPicker)} className={`${styles.glassBtn} ${favouriteVerses[dailyVerseKey] ? styles.activeFav : ''}`}>
-                                    {favouriteVerses[dailyVerseKey] ? 'مظللة' : 'تظليل'}
+                                    {favouriteVerses[dailyVerseKey] ? strings.home.verse_highlighted : strings.home.verse_highlight}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -1005,7 +1012,7 @@ const LandingPage = () => {
                                     className={`${styles.glassBtn} ${styles.aiAskBtn}`}
                                 >
                                     <Bot size={18} />
-                                    <span>اسأل أجيوس</span>
+                                    <span>{strings.home.ask_agios}</span>
                                 </button>
                                 <div className={styles.fullWidthAction}>
                                     <ShareVerseCard
@@ -1019,7 +1026,7 @@ const LandingPage = () => {
                             {showColorPicker && (
                                 <div className={styles.dailyColorPalette}>
                                     <div className={styles.paletteHeader}>
-                                        <span>اختر لون التظليل</span>
+                                        <span>{strings.home.color_palette_title}</span>
                                         <button onClick={() => setShowColorPicker(false)} className={styles.closePalette}><X size={16} /></button>
                                     </div>
                                     <div className={styles.colorsGrid}>
@@ -1033,7 +1040,7 @@ const LandingPage = () => {
                                                 {favouriteVerses[dailyVerseKey]?.color === color && <Check size={14} color="white" />}
                                             </div>
                                         ))}
-                                        <div className={styles.clearColor} onClick={() => handleUpdateDailyVerse(null, true)} title="حذف التظليل">
+                                        <div className={styles.clearColor} onClick={() => handleUpdateDailyVerse(null, true)} title={strings.home.clear_highlight}>
                                             <Trash2 size={16} />
                                         </div>
                                     </div>
@@ -1044,7 +1051,7 @@ const LandingPage = () => {
                     <div className={styles.bottomDivider} style={{margin: '20px 0', opacity: 0.1, height: '1px', background: 'var(--color-text-primary)'}} />
                     {dailyQuestion && (
                         <div className={styles.questionSection} id="daily-question">
-                            <div className={styles.glassHeader}><Trophy size={18} color="#f59e0b" /><span>تحدي اليوم</span></div>
+                            <div className={styles.glassHeader}><Trophy size={18} color="#f59e0b" /><span>{strings.home.daily_challenge}</span></div>
                             {isLoading ? <div className={styles.skeletonText} style={{height: '100px'}} /> : (
                                 <>
                                     <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
@@ -1061,15 +1068,15 @@ const LandingPage = () => {
             </section>
 
             <section className={styles.aiFeaturesSection}>
-                <h2 className={styles.sectionTitle}>جرب مميزات الذكاء الاصطناعي</h2>
+                <h2 className={styles.sectionTitle}>{strings.home.ai_features_title}</h2>
                 <div className={styles.aiFeaturesGrid}>
                     <Link href="/search?type=derivatives" className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                             <Search size={24} />
                         </div>
                         <div className={styles.aiFeatureInfo}>
-                            <h3>البحث بالمشتقات</h3>
-                            <p>ابحث عن الكلمات وجذورها اللغوية بذكاء</p>
+                            <h3>{strings.home.ai_features.derivatives.title}</h3>
+                            <p>{strings.home.ai_features.derivatives.desc}</p>
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
@@ -1078,8 +1085,8 @@ const LandingPage = () => {
                             <Sparkles size={24} />
                         </div>
                         <div className={styles.aiFeatureInfo}>
-                            <h3>البحث بالمعنى والشرح</h3>
-                            <p>ابحث عن آيات بالكتاب المقدس عن طريق شرحها او شرح سياقها لمساعد آجيوس الذكي</p>
+                            <h3>{strings.home.ai_features.semantic.title}</h3>
+                            <p>{strings.home.ai_features.semantic.desc}</p>
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
@@ -1088,8 +1095,8 @@ const LandingPage = () => {
                             <Wand2 size={24} />
                         </div>
                         <div className={styles.aiFeatureInfo}>
-                            <h3>إنشاء خطة بالذكاء الاصطناعي</h3>
-                            <p>أخبر "أجيوس" بما تشعر به ليقترح لك خطة</p>
+                            <h3>{strings.home.ai_features.custom_plan.title}</h3>
+                            <p>{strings.home.ai_features.custom_plan.desc}</p>
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
@@ -1098,8 +1105,8 @@ const LandingPage = () => {
                             <BrainCircuit size={24} />
                         </div>
                         <div className={styles.aiFeatureInfo}>
-                            <h3>مساعد آجيوس (تحليل وتفسير)</h3>
-                            <p>تحليل لاهوتي وتفسير آبائي عميق ومدعوم بالذكاء الاصطناعي لكل النصوص</p>
+                            <h3>{strings.home.ai_features.analysis.title}</h3>
+                            <p>{strings.home.ai_features.analysis.desc}</p>
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
@@ -1108,14 +1115,21 @@ const LandingPage = () => {
 
             {startedPlans.length > 0 && (
                 <section className={styles.startedPlansSection}>
-                    <h2 className={styles.sectionTitle}>خططك الجارية</h2>
+                    <h2 className={styles.sectionTitle}>{strings.home.active_plans}</h2>
                     <div className={styles.plansVerticalList}>
                         {startedPlans.map((plan) => (
                             <button key={plan.id} onClick={() => router.push(`/studyPlans/details?id=${plan.id}${plan.isCustom || plan.isShared || plan.type === 'shared' ? '&type=' + (plan.isCustom ? 'custom' : 'shared') : ''}`)} className={styles.planProgressCardVertical}>
                                 <div className={styles.planInfo}>
                                     <div className={styles.planNameRow}><span className={styles.planTitle}>{plan.title}</span><span className={styles.planPercent}>{plan.stats?.percent}%</span></div>
                                     <div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${plan.stats?.percent}%` }} /></div>
-                                    <div className={styles.planMeta}><span>يوم {plan.stats?.daysDone} من {plan.stats?.totalDays}</span><div className={styles.planActionText}>واصل القراءة <ArrowRight size={14} /></div></div>
+                                    <div className={styles.planMeta}>
+                                        <span>
+                                            {strings.home.plan_progress
+                                              .replace('{done}', plan.stats?.daysDone)
+                                              .replace('{total}', plan.stats?.totalDays)}
+                                        </span>
+                                        <div className={styles.planActionText}>{strings.common.continue_reading} <ArrowRight size={14} /></div>
+                                    </div>
                                 </div>
                             </button>
                         ))}

@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { Sparkles, User, Share2, Search, X } from 'lucide-react';
 import { useBadge } from '../context/BadgeContext';
 import { StorageService, KEYS } from '../../lib/storage';
+import strings from '../data/ar.json';
 
 const staticPlans = studyPlansData.plans;
 
@@ -29,7 +30,7 @@ const normalizeArabic = (text) => {
 export default function StudyPlans() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const [activeFilter, setActiveFilter] = useState('الكل');
+  const [activeFilter, setActiveFilter] = useState(strings.studyPlans.filters.all);
   const [searchQuery, setSearchQuery] = useState('');
   const [completionData, setCompletionData] = useState({});
   const [customPlans, setCustomPlans] = useState({});
@@ -41,7 +42,11 @@ export default function StudyPlans() {
   const [showScrollHint, setShowScrollHint] = useState(false);
 
   const filtersList = useMemo(() => {
-    const baseFilters = ['الكل', 'مخصصة', 'خطط مشاركة'];
+    const baseFilters = [
+      strings.studyPlans.filters.all,
+      strings.studyPlans.filters.custom,
+      strings.studyPlans.filters.shared
+    ];
     const types = [...new Set(staticPlans.map(plan => plan.type))];
     return [...baseFilters, ...types];
   }, []);
@@ -112,7 +117,7 @@ export default function StudyPlans() {
     const unsubscribeAuth = onAuthStateChanged(auth, async (loggedInUser) => {
       setUser(loggedInUser);
       if (loggedInUser) {
-        const userRef = doc(db, 'users', loggedInUser.uid);
+        const userRef = doc(db, "users", loggedInUser.uid);
         unsubFirestore = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
@@ -170,7 +175,7 @@ export default function StudyPlans() {
     toast((t) => (
       <div style={{ direction: 'rtl', textAlign: 'center' }}>
         <p style={{ marginBottom: '12px', fontWeight: 'bold', fontSize: '1.1rem' }}>
-          هل تريد حذف هذه الخطة نهائياً؟
+          {strings.studyPlans.delete_toast.confirm_title}
         </p>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
           <button 
@@ -197,7 +202,7 @@ export default function StudyPlans() {
                   setCompletionData(localCompletion);
                 }
               }
-              toast.success("تم الحذف بنجاح");
+              toast.success(strings.studyPlans.delete_toast.delete_success);
             }}
             style={{ 
               background: '#ef4444', color: '#fff', border: 'none', 
@@ -205,10 +210,10 @@ export default function StudyPlans() {
               fontWeight: 'bold', fontSize: '1rem'
             }}
           >
-            تأكيد
+            {strings.common.confirm}
           </button>
           <button onClick={() => toast.dismiss(t.id)} style={{ background: 'var(--color-bg-end)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontSize: '1rem' }}>
-            تراجع
+            {strings.common.undo}
           </button>
         </div>
       </div>
@@ -218,7 +223,6 @@ export default function StudyPlans() {
   const allAvailablePlans = useMemo(() => {
     let basePlans = [];
 
-    // All "personal" plans: Custom (AI) + Joined Shared Plans (ones with readings saved)
     const personalPlans = [
       ...Object.values(customPlans).map(plan => ({ ...plan, isCustom: true })),
       ...Object.values(completionData).filter(plan => plan.isShared && plan.readings)
@@ -228,12 +232,11 @@ export default function StudyPlans() {
       return dateB - dateA;
     });
 
-    if (activeFilter === 'خطط مشاركة') {
+    if (activeFilter === strings.studyPlans.filters.shared) {
       basePlans = sharedPlans;
-    } else if (activeFilter === 'مخصصة') {
+    } else if (activeFilter === strings.studyPlans.filters.custom) {
       basePlans = personalPlans;
-    } else if (activeFilter === 'الكل') {
-      // Merge unique plans, prioritizing personal copies
+    } else if (activeFilter === strings.studyPlans.filters.all) {
       const personalIds = new Set(personalPlans.map(p => String(p.id)));
       const filteredShared = sharedPlans.filter(p => !personalIds.has(String(p.id)));
 
@@ -249,19 +252,18 @@ export default function StudyPlans() {
 
     return basePlans.filter(plan => {
       const planContent = normalizeArabic(`${plan.title} ${plan.description} ${plan.type}`);
-      // flexible search: matches if all words are present in any order, or if the whole query matches as a substring
       return queryWords.every(word => planContent.includes(word));
     });
   }, [customPlans, sharedPlans, completionData, activeFilter, searchQuery]);
 
-  if (loading) return <div className={styles.container}><div className={styles.loading}>جاري التحميل...</div></div>;
+  if (loading) return <div className={styles.container}><div className={styles.loading}>{strings.common.loading}</div></div>;
 
   return (
     <div className={styles.container}>
       <div className={styles.heroSection}>
-        <h1 className={styles.title}>خطط القراءة</h1>
+        <h1 className={styles.title}>{strings.studyPlans.title}</h1>
         <Link href="/studyPlans/custom" className={styles.aiCreateButton}>
-          <Sparkles size={18} /> صمم خطة ذكية الآن
+          <Sparkles size={18} /> {strings.studyPlans.ai_button}
         </Link>
       </div>
 
@@ -270,7 +272,7 @@ export default function StudyPlans() {
           <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="ابحث عن خطة (مثلاً: إنجيل، مزامير...)"
+            placeholder={strings.studyPlans.search_placeholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}
@@ -315,30 +317,45 @@ export default function StudyPlans() {
               <div key={plan.id} className={styles.card}>
                 {isPersonalCopy && <button className={styles.deleteBtn} onClick={(e) => handleDeletePlan(e, plan.id)}>✕</button>}
                 <div className={styles.cardContent}>
-                  {plan.isCustom && <span className={styles.aiBadge}><Sparkles size={14} /> مساعد آجيوس الذكي</span>}
-                  {isSharedPlan && <span className={styles.sharedBadge}><Share2 size={14} /> خطة مشاركة</span>}
+                  {plan.isCustom && <span className={styles.aiBadge}><Sparkles size={14} /> {strings.studyPlans.card.ai_badge}</span>}
+                  {isSharedPlan && <span className={styles.sharedBadge}><Share2 size={14} /> {strings.studyPlans.card.shared_badge}</span>}
 
                   <h3 className={styles.cardTitle}>{plan.title}</h3>
                   <p className={styles.cardType}>
-                    {isSharedPlan ? 'خطة من المجتمع' : (plan.isCustom ? 'خطة شخصية' : plan.type)}
+                    {isSharedPlan ? strings.studyPlans.card.community_type : (plan.isCustom ? strings.studyPlans.card.personal_type : plan.type)}
                   </p>
 
                   {isSharedPlan && plan.authorName && (
                     <div className={styles.authorInfo}>
-                      <User size={12} /> بواسطة: {plan.authorName}
+                      <User size={12} /> {strings.studyPlans.card.by_author.replace('{name}', plan.authorName)}
                     </div>
                   )}
 
-                  {hasStarted && <div className={styles.progressContainer}><div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${progress.percent}%` }}></div></div><span className={styles.percentageText}>{progress.percent}% مكتمل</span></div>}
-                  <Link href={planUrl} className={styles.cardButton}>{hasStarted ? 'متابعة' : 'ابدأ الآن'}</Link>
+                  {hasStarted && (
+                    <div className={styles.progressContainer}>
+                      <div className={styles.progressBar}>
+                        <div className={styles.progressFill} style={{ width: `${progress.percent}%` }}></div>
+                      </div>
+                      <span className={styles.percentageText}>
+                        {strings.studyPlans.card.completed_percent.replace('{percent}', progress.percent)}
+                      </span>
+                    </div>
+                  )}
+                  <Link href={planUrl} className={styles.cardButton}>
+                    {hasStarted ? strings.studyPlans.card.continue : strings.studyPlans.card.start}
+                  </Link>
                 </div>
               </div>
             );
           })
         ) : (
           <div className={styles.emptyState}>
-            <h3>{searchQuery ? 'لا توجد نتائج لهذا البحث' : 'لا توجد خطط حالياً'}</h3>
-            {searchQuery && <button onClick={() => setSearchQuery('')} className={styles.resetSearch}>عرض كل الخطط</button>}
+            <h3>{searchQuery ? strings.studyPlans.empty.no_search_results : strings.studyPlans.empty.no_plans}</h3>
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className={styles.resetSearch}>
+                {strings.studyPlans.empty.reset_search}
+              </button>
+            )}
           </div>
         )}
       </div>

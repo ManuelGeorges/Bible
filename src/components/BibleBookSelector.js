@@ -12,6 +12,7 @@ import {
     Hammer, Lamp, History, Wind, Search
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import strings from '../app/data/ar.json';
 
 // ذاكرة خارجية لحفظ البيانات ومنع التحميل المتكرر (Instant Load)
 let cachedBookNames = null;
@@ -150,13 +151,13 @@ export default function BibleBookSelector() {
     return (
         <div className={styles.container}>
             <div className={styles.mainHeader}>
-                <h2 className={styles.title}><BookOpen size={22} className={styles.titleIcon} />اقرأ الأسفار</h2>
+                <h2 className={styles.title}><BookOpen size={22} className={styles.titleIcon} />{strings.components.book_selector.title}</h2>
                 <div className={styles.searchWrapper}>
                     <div className={styles.searchContainer}>
                         <Search className={styles.searchIcon} size={20} />
                         <input
                             type="text"
-                            placeholder="ابحث عن سفر..."
+                            placeholder={strings.components.book_selector.search_placeholder}
                             className={styles.searchInput}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -166,12 +167,12 @@ export default function BibleBookSelector() {
                 </div>
             </div>
 
-            <BookRow title="العهد القديم" books={filteredBooks.ot} onBookClick={handleBookClick} />
-            <BookRow title="العهد الجديد" books={filteredBooks.nt} onBookClick={handleBookClick} />
+            <BookRow title={strings.components.book_selector.testament_ot} books={filteredBooks.ot} onBookClick={handleBookClick} />
+            <BookRow title={strings.components.book_selector.testament_nt} books={filteredBooks.nt} onBookClick={handleBookClick} />
 
             {filteredBooks.ot.length === 0 && filteredBooks.nt.length === 0 && bookNames.length > 0 && (
                 <div className={styles.noResults}>
-                    <p>لم نجد سفراً بهذا الاسم "{searchTerm}"</p>
+                    <p>{strings.components.book_selector.no_results.replace('{name}', searchTerm)}</p>
                 </div>
             )}
         </div>

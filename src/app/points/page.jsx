@@ -15,6 +15,7 @@ import Badge from '../../components/Badge/Badge';
 import { toast } from 'react-hot-toast';
 import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
+import strings from '../data/ar.json';
 
 const convertToArabicNumber = (num) => {
   const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -114,12 +115,12 @@ const calculatePointsFromData = (data, isLocal = false) => {
   const lastActiveDate = data.lastActiveDate || data.lastActive || "";
 
   const dailyGoals = [
-    { id: 'dailyLogin', label: 'تسجيل الدخول اليومي', points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
-    { id: 'dailyQuestion', label: 'حل سؤال التحدي', points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
-    { id: 'mapExploration', label: 'استكشاف معلم في الخريطة', points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
-    { id: 'share', label: 'مشاركة آية أو محتوى', points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
-    { id: 'completedChapter', label: 'قراءة أصحاح كامل', points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
-    { id: 'favouriteVerse', label: 'تظليل آية أعجبتك', points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
+    { id: 'dailyLogin', label: strings.points.goals.dailyLogin, points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
+    { id: 'dailyQuestion', label: strings.points.goals.dailyQuestion, points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
+    { id: 'mapExploration', label: strings.points.goals.mapExploration, points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
+    { id: 'share', label: strings.points.goals.share, points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
+    { id: 'completedChapter', label: strings.points.goals.completedChapter, points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
+    { id: 'favouriteVerse', label: strings.points.goals.favouriteVerse, points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
   ];
 
   return { 
@@ -204,21 +205,23 @@ export default function Points() {
   const familyRef = useRef(null);
 
   const rarities = [
-    { id: 'all', name: 'كل الندرة' }, { id: 'عادي', name: 'عادي' }, { id: 'مميز', name: 'مميز' },
-    { id: 'نادر', name: 'نادر' }, { id: 'أسطوري', name: 'أسطوري' }, { id: 'خرافي', name: 'خرافي' }
+    { id: 'all', name: strings.points.rarity.all },
+    { id: 'عادي', name: strings.points.rarity.common },
+    { id: 'مميز', name: strings.points.rarity.uncommon },
+    { id: 'نادر', name: strings.points.rarity.rare },
+    { id: 'أسطوري', name: strings.points.rarity.epic },
+    { id: 'خرافي', name: strings.points.rarity.mythic }
   ];
 
-  const unlockBadge = async (badgeId, badgeName) => {
-    if (!user) return;
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      const currentBadges = userSnap.data()?.badges || [];
-      if (!currentBadges.includes(badgeId)) {
-        await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-        toast.success(`🎉 وسام جديد: ${badgeName}`, { icon: '🏅' });
-      }
-    } catch (e) { console.error(e); }
+  const handleGoalClick = (goalId) => {
+    switch (goalId) {
+        case 'dailyQuestion': router.push('/#daily-question'); break;
+        case 'mapExploration': router.push('/maps'); break;
+        case 'share': router.push('/#daily-verse'); break;
+        case 'completedChapter': router.push('/bible'); break;
+        case 'favouriteVerse': router.push('/bible'); break;
+        default: break;
+    }
   };
 
   useEffect(() => {
@@ -237,8 +240,8 @@ export default function Points() {
             const newData = calculatePointsFromData(data);
             const today = getCairoDate();
             if (data.lastActiveDate !== today) {
-              awardPoints(currentUser.uid, 'dailyLogin', 10, 'تسجيل دخول يومي');
-              toast.success('حصلت على ١٠ نقاط لتفاعلك اليوم! 🔥', { icon: '✨' });
+              awardPoints(currentUser.uid, 'dailyLogin', 10, strings.points.points_reasons.daily_login);
+              toast.success(strings.points.daily_bonus_toast, { icon: '✨' });
             }
             setPointsData(newData);
           }
@@ -329,17 +332,17 @@ export default function Points() {
 
   return (
     <div className={styles.container} dir="rtl">
-      <h1 className={styles.header}>النقاط والإنجازات</h1>
+      <h1 className={styles.header}>{strings.points.title}</h1>
 
       <nav className={styles.topNav}>
         <button className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`} onClick={() => setActiveTab('points')}>
-          <FaChartLine /> النقاط
+          <FaChartLine /> {strings.points.tab_points}
         </button>
         <button className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`} onClick={() => setActiveTab('badges')}>
-          <FaTrophy /> الأوسمة
+          <FaTrophy /> {strings.points.tab_badges}
         </button>
         <button className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`} onClick={() => setActiveTab('history')}>
-          <FaHistory /> السجل
+          <FaHistory /> {strings.points.tab_history}
         </button>
       </nav>
 
@@ -349,23 +352,23 @@ export default function Points() {
             <div className={styles.levelContainer}>
               <div className={styles.levelBadge}>
                   <FaStar className={styles.levelStar} />
-                  <span>المستوى {convertToArabicNumber(pointsData?.levelInfo.level || 1)}</span>
+                  <span>{strings.points.level.replace('{level}', convertToArabicNumber(pointsData?.levelInfo.level || 1))}</span>
               </div>
               <div className={styles.levelBarOuter}>
                   <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
               </div>
-              <p className={styles.nextLevelText}>تبقّى {convertToArabicNumber(pointsData?.levelInfo.nextXP || 0)} نقطة للمستوى التالي</p>
+              <p className={styles.nextLevelText}>{strings.points.next_level.replace('{points}', convertToArabicNumber(pointsData?.levelInfo.nextXP || 0))}</p>
             </div>
             <div className={styles.pointsTotal}>
               <span className={styles.pointsNumber}>{convertToArabicNumber(pointsData?.totalPoints || 0)}</span>
-              <span className={styles.pointsLabel}>نقطة إجمالية</span>
+              <span className={styles.pointsLabel}>{strings.points.total_points_label}</span>
             </div>
             <div className={styles.streakBadge}>
               <FaFire className={styles.fireIcon} />
-              <span>سلسلة تفاعل: {convertToArabicNumber(pointsData?.streak || 0)} يوم</span>
+              <span>{strings.points.streak_label.replace('{streak}', convertToArabicNumber(pointsData?.streak || 0))}</span>
             </div>
             <div className={styles.dailyGoalsSection}>
-              <h3 className={styles.subTitle}>أهداف اليوم</h3>
+              <h3 className={styles.subTitle}>{strings.points.daily_goals_title}</h3>
               <div className={styles.goalsGrid}>
                   {pointsData?.dailyGoals.map(goal => (
                       <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`} onClick={() => handleGoalClick(goal.id)}>
@@ -418,7 +421,7 @@ export default function Points() {
                 </div>
                 <span className={styles.activityPoints}>+{convertToArabicNumber(item.points)}</span>
               </li>
-            )) : <p>لا يوجد سجل نشاط حتى الآن.</p>}
+            )) : <p>{strings.points.no_history}</p>}
           </ul>
         </section>
       )}

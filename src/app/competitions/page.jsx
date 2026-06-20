@@ -12,8 +12,8 @@ import { useBadge } from '../context/BadgeContext';
 import { getCairoIsoString } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
 import { HapticService } from '../../lib/hapticsService';
+import strings from '../data/ar.json';
 
-// 1. تحسين الـ Normalize مع إضافة Cache للسرعة القصوى
 const normalizationCache = new Map();
 const normalizeArabic = (text) => {
   if (typeof text !== 'string') return '';
@@ -33,13 +33,11 @@ const normalizeArabic = (text) => {
   return result;
 };
 
-// 2. فهرسة الأسئلة مسبقاً (Pre-indexing) خارج الـ Component لمنع تكرار العملية
 const INDEXED_QUESTIONS = new Map();
 allQuestions.forEach(q => {
   const normCat = normalizeArabic(q.category);
   if (!INDEXED_QUESTIONS.has(normCat)) INDEXED_QUESTIONS.set(normCat, []);
 
-  // حفظ الإجابات مخزنة بصيغة Normalized لتقليل وقت المعالجة أثناء المسابقة
   INDEXED_QUESTIONS.get(normCat).push({
     ...q,
     normCorrectAnswer: normalizeArabic(q.correctAnswer),
@@ -53,7 +51,7 @@ allQuestions.forEach(q => {
 export default function CompetitionsPage() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [isPending, startTransition] = useTransition(); // لضمان سلاسة الـ UI أثناء التنقل
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
 
@@ -119,7 +117,7 @@ export default function CompetitionsPage() {
         await updateDoc(userRef, { badges: arrayUnion(badgeId) });
         triggerBadgeUnlock(badgeId);
         setUserBadges(prev => [...prev, badgeId]);
-        HapticService.success(); // اهتزاز عند فتح وسام جديد
+        HapticService.success();
       } catch (e) { console.error(e); }
     } else {
       const localBadges = await StorageService.get('local_badges') || [];
@@ -149,7 +147,6 @@ export default function CompetitionsPage() {
     if (quizState.answered || questions.length === 0) return;
 
     const currentQuestion = questions[quizState.currentIndex];
-    // المقارنة الآن تتم بـ O(1) لأن القيم جاهزة مسبقاً
     const correct = selectedOption.normalized === currentQuestion.normCorrectAnswer;
     const newStreak = correct ? quizState.streak + 1 : 0;
 
@@ -172,10 +169,10 @@ export default function CompetitionsPage() {
 
   const finalizeQuiz = async (record, isPerfect) => {
     let pointsToAdd = 30;
-    let reason = `إكمال مسابقة: ${record.category}`;
+    let reason = strings.competitions.points_reason_complete.replace('{category}', record.category);
     if (isPerfect) {
       pointsToAdd += 50;
-      reason = `العلامة الكاملة: ${record.category}`;
+      reason = strings.competitions.points_reason_perfect.replace('{category}', record.category);
       HapticService.success();
     }
 
@@ -204,7 +201,6 @@ export default function CompetitionsPage() {
       await StorageService.save('points_history', history);
     }
 
-    // Badge Logic for all users
     if (updatedHistory.length >= 1) await unlockBadge('quiz_first');
     if (updatedHistory.length >= 3) await unlockBadge('scholar_3');
     if (updatedHistory.length >= 10) await unlockBadge('scholar_10');
@@ -228,7 +224,7 @@ export default function CompetitionsPage() {
       const filtered = INDEXED_QUESTIONS.get(cleanName) || [];
 
       if (filtered.length === 0) {
-        alert("عذراً، لا توجد أسئلة متوفرة حالياً لهذه الفئة.");
+        alert(strings.competitions.error_no_questions);
         return;
       }
 
@@ -278,22 +274,22 @@ export default function CompetitionsPage() {
     setUserAnswer('');
   };
 
-  if (authLoading || isLoading) return <div className={styles.loading}>جاري التحميل...</div>;
+  if (authLoading || isLoading) return <div className={styles.loading}>{strings.common.loading}</div>;
 
   return (
     <div dir="rtl" className={styles.mainContainer} style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 0.2s' }}>
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
       
       <header className={styles.header}>
-        <h1 className={styles.title}>مسابقات أجيوس</h1>
-        <p className={styles.userBadge}>أهلاً، {user?.displayName || 'ضيف أجيوس'}</p>
+        <h1 className={styles.title}>{strings.competitions.title}</h1>
+        <p className={styles.userBadge}>{strings.competitions.greeting.replace('{name}', user?.displayName || strings.competitions.guest_user)}</p>
       </header>
 
       {!quizState.category && (
         <div className={styles.controls}>
           <div className={styles.customSelectWrapper} ref={categoryRef}>
             <div className={styles.selectTrigger} onClick={() => { HapticService.selection(); setIsCategoryOpen(!isCategoryOpen); }}>
-              {quizState.category || "اختر سفراً للبدء"}
+              {quizState.category || strings.competitions.select_book}
             </div>
             <AnimatePresence>
               {isCategoryOpen && (
@@ -317,20 +313,20 @@ export default function CompetitionsPage() {
         {!quizState.category ? (
           <>
             <div className={styles.welcomeMessage}>
-              <h2>تحدي أسفار الكتاب المقدس 📖</h2>
-              <p>اختبر معلوماتك في كلمة الله واجمع النقاط والأوسمة</p>
+              <h2>{strings.competitions.welcome_title}</h2>
+              <p>{strings.competitions.welcome_desc}</p>
             </div>
 
             {completedQuizzes.length > 0 && (
               <div className={styles.historyContainer}>
-                <h3>سجل نتائجك {user ? '☁️' : '📱'}</h3>
+                <h3>{strings.competitions.history_title} {user ? '☁️' : '📱'}</h3>
                 {completedQuizzes.map((quiz, idx) => (
                   <div key={idx} className={styles.historyItem}>
                     <div className={styles.historyInfo}>
                       <span className={styles.historyCategory}>{quiz.category}</span>
-                      <span className={styles.historyScore}>النتيجة: {quiz.score} / {quiz.total}</span>
+                      <span className={styles.historyScore}>{quiz.score} / {quiz.total}</span>
                     </div>
-                    <button className={styles.redoButton} onClick={() => loadQuestionsByCategory(quiz.category)}>إعادة</button>
+                    <button className={styles.redoButton} onClick={() => loadQuestionsByCategory(quiz.category)}>{strings.competitions.redo}</button>
                   </div>
                 ))}
               </div>
@@ -338,15 +334,15 @@ export default function CompetitionsPage() {
           </>
         ) : quizState.showResults ? (
           <div className={styles.resultsContainer}>
-            <h2 className={styles.questionText}>النتائج النهائية 📊</h2>
+            <h2 className={styles.questionText}>{strings.competitions.final_results}</h2>
             <div className={styles.mainScore}>{quizState.score} / {questions.length}</div>
-            <button className={styles.playAgainButton} onClick={resetQuiz}>العودة للأسفار</button>
+            <button className={styles.playAgainButton} onClick={resetQuiz}>{strings.competitions.back_to_books}</button>
           </div>
         ) : (
           <div className={styles.quizActive}>
             <div className={styles.quizStats}>
-              <span>السؤال {quizState.currentIndex + 1} من {questions.length}</span>
-              <span>🔥 {quizState.streak} متتالي</span>
+              <span>{strings.competitions.question_progress.replace('{current}', quizState.currentIndex + 1).replace('{total}', questions.length)}</span>
+              <span>🔥 {strings.competitions.streak_count.replace('{count}', quizState.streak)}</span>
             </div>
 
             <div className={styles.questionCard}>
@@ -365,14 +361,14 @@ export default function CompetitionsPage() {
               {quizState.answered && (
                 <div className={styles.feedbackContainer}>
                   <p className={quizState.isCorrect ? styles.correctFeedback : styles.incorrectFeedback}>
-                    {quizState.isCorrect ? 'إجابة صحيحة ✅' : `الإجابة الصحيحة هي: ${questions[quizState.currentIndex].correctAnswer}`}
+                    {quizState.isCorrect ? strings.competitions.correct_feedback : strings.competitions.incorrect_feedback.replace('{answer}', questions[quizState.currentIndex].correctAnswer)}
                   </p>
                 </div>
               )}
 
               <div className={styles.quizActions}>
-                {quizState.answered && <button onClick={nextQuestion} className={styles.nextButton}>السؤال التالي</button>}
-                <button className={styles.cancelButton} onClick={resetQuiz}>إلغاء المسابقة</button>
+                {quizState.answered && <button onClick={nextQuestion} className={styles.nextButton}>{strings.competitions.next_question}</button>}
+                <button className={styles.cancelButton} onClick={resetQuiz}>{strings.competitions.cancel_quiz}</button>
               </div>
             </div>
           </div>

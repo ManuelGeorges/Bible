@@ -12,10 +12,11 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor } from '@capacitor-core';
 import { auth, db } from '../../lib/firebase';
 import styles from './login.module.css';
 import { Apple } from 'lucide-react';
+import strings from '../data/ar.json';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -51,8 +52,8 @@ const LoginPage = () => {
       if (!userSnap.exists()) {
         const [fName, ...lName] = (user.displayName || "").split(' ');
         await setDoc(userRef, {
-          firstName: fName || "مستخدم",
-          lastName: lName.join(' ') || "جديد",
+          firstName: fName || strings.common.default_first_name,
+          lastName: lName.join(' ') || strings.common.default_last_name,
           email: user.email,
           createdAt: new Date().toISOString(),
           favorites: { verses: {} },
@@ -107,7 +108,7 @@ const LoginPage = () => {
         router.replace('/');
       }, 600);
     } else {
-      throw new Error("فشل مزامنة الجلسة");
+      throw new Error(strings.common.sync_error);
     }
   };
 
@@ -126,7 +127,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('فشل تسجيل الدخول بواسطة جوجل.');
+      setError(strings.login.error_google);
       updateSubmitting(false);
     }
   };
@@ -150,7 +151,7 @@ const LoginPage = () => {
       console.error("Apple Auth Error:", err);
       updateSubmitting(false);
       if (err.message?.includes('cancel') || err.code === '1' || err.code === 'auth/cancelled-popup-request') return;
-      setError('فشل تسجيل الدخول بواسطة آبل.');
+      setError(strings.login.error_apple);
     }
   };
 
@@ -164,7 +165,7 @@ const LoginPage = () => {
       await handleUserData(userCredential.user);
       router.replace('/');
     } catch (err) {
-      setError('خطأ في البريد الإلكتروني أو كلمة المرور.');
+      setError(strings.login.error_auth);
       updateSubmitting(false);
     }
   };
@@ -172,34 +173,34 @@ const LoginPage = () => {
   return (
     <div className={`${styles.container} ${styles.rtl}`}>
       <div className={styles.card}>
-        <h1 className={styles.title}>تسجيل الدخول</h1>
+        <h1 className={styles.title}>{strings.login.title}</h1>
         <form onSubmit={handleAuth} className={styles.form}>
-          <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
-          <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          <input type="email" placeholder={strings.common.email} value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} disabled={isSubmitting} required />
+          <input type="password" placeholder={strings.common.password} value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} disabled={isSubmitting} required />
           {error && <div className={styles.errorBox}>{error}</div>}
           <button type="submit" className={styles.button} disabled={isSubmitting}>
-            {isSubmitting ? 'جاري الدخول...' : 'دخول'}
+            {isSubmitting ? strings.login.submitting : strings.login.submit}
           </button>
         </form>
 
         {!isIOS && (
           <>
-            <div className={styles.divider}><span className={styles.dividerText}>أو</span></div>
+            <div className={styles.divider}><span className={styles.dividerText}>{strings.common.or}</span></div>
             <div className={styles.socialButtons}>
               <button onClick={handleGoogleAuth} className={styles.googleButton} disabled={isSubmitting}>
                 <img src="/images/google.png" alt="Google" className={styles.googleIcon} />
-                <span>جوجل</span>
+                <span>{strings.common.google}</span>
               </button>
               <button onClick={handleAppleAuth} className={styles.appleButton} disabled={isSubmitting}>
                 <Apple size={20} />
-                <span>آبل</span>
+                <span>{strings.common.apple}</span>
               </button>
             </div>
           </>
         )}
 
         <p className={styles.toggleMode}>
-          ليس لديك حساب؟ <span onClick={() => router.push('/signup')} className={styles.link}>إنشاء حساب</span>
+          {strings.login.no_account} <span onClick={() => router.push('/signup')} className={styles.link}>{strings.login.create_account}</span>
         </p>
       </div>
     </div>

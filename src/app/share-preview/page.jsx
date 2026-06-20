@@ -14,6 +14,7 @@ import {
   Sparkles, Move, Type, Maximize2, AlignCenter, ArrowUpDown
 } from 'lucide-react';
 import styles from './SharePreview.module.css';
+import strings from '../data/ar.json';
 
 const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
   id: i + 1,
@@ -39,7 +40,6 @@ function PreviewContent() {
   const verse = searchParams.get('verse');
   const reference = searchParams.get('ref');
 
-  // States
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATES[0]);
   const [fontSize, setFontSize] = useState(32);
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
@@ -48,7 +48,6 @@ function PreviewContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // 1. تحميل الإعدادات من الكاش عند البداية
   useEffect(() => {
     try {
       const saved = localStorage.getItem(CACHE_KEY);
@@ -72,7 +71,6 @@ function PreviewContent() {
     setIsInitialized(true);
   }, []);
 
-  // 2. حفظ الإعدادات في الكاش عند أي تغيير
   useEffect(() => {
     if (!isInitialized) return;
     const config = {
@@ -89,18 +87,14 @@ function PreviewContent() {
     if (!templateRef.current) return;
     setIsProcessing(true);
     try {
-      // إعدادات لضمان أعلى جودة ممكنة
       const dataUrl = await toPng(templateRef.current, {
         pixelRatio: 4,
         cacheBust: true,
-        style: {
-          transform: 'scale(1)',
-        }
+        style: { transform: 'scale(1)' }
       });
       const fileName = `Agios-Verse-${Date.now()}.png`;
       const base64Data = dataUrl.split(',')[1];
 
-      // استخدام منطق مشابه لـ BibleContent لضمان التوافق مع كل الأجهزة
       if (Capacitor.isNativePlatform()) {
         const cacheFile = await Filesystem.writeFile({
           path: fileName,
@@ -111,12 +105,11 @@ function PreviewContent() {
         if (type === 'share') {
           await Share.share({
             files: [cacheFile.uri],
-            title: 'آية من تطبيق أجيوس',
-            dialogTitle: 'مشاركة التصميم عبر...',
+            title: strings.share_preview.share_title,
+            dialogTitle: strings.share_preview.share_dialog,
           });
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
         } else {
-          // حفظ الصورة في المعرض بناءً على النظام
           const platform = Capacitor.getPlatform();
           if (platform === 'ios') {
             await Media.savePhoto({ path: cacheFile.uri, album: 'Agios Bible' });
@@ -128,34 +121,31 @@ function PreviewContent() {
               recursive: true
             });
           }
-          await Toast.show({ text: 'تم حفظ الآية بنجاح ✨' });
+          await Toast.show({ text: strings.share_preview.save_success });
         }
       } else {
-        // الويب (Web/Electron)
         if (type === 'share' && navigator.share) {
           try {
             const blob = await fetch(dataUrl).then(res => res.blob());
             const file = new File([blob], fileName, { type: 'image/png' });
             await navigator.share({
               files: [file],
-              title: 'آية من تطبيق أجيوس',
+              title: strings.share_preview.share_title,
               text: `"${verse}" (${reference})`
             });
           } catch (err) {
-            // في حالة خطأ الـ gesture أو عدم دعم الملفات، نقوم بالتحميل كبديل
             console.warn("Share failed, falling back to download:", err);
             const link = document.createElement('a');
             link.download = fileName; link.href = dataUrl; link.click();
           }
         } else {
-          // التحميل العادي
           const link = document.createElement('a');
           link.download = fileName; link.href = dataUrl; link.click();
         }
       }
     } catch (e) {
       console.error(e);
-      toast.error("حدث خطأ أثناء معالجة الطلب");
+      toast.error(strings.share_preview.error_generic);
     } finally {
       setIsProcessing(false);
     }
@@ -163,20 +153,18 @@ function PreviewContent() {
 
   return (
     <div className={styles.container} dir="rtl">
-      {/* استيراد الخطوط */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700;900&family=El+Messiri:wght@400;700&family=Lateef&family=Tajawal:wght@400;700&display=swap');
       `}</style>
 
       <div className={styles.header}>
         <div className={styles.headerTitle}>
-           <h1>استوديو التصميم</h1>
-           <p>خصص الآية وحركها كما تشاء</p>
+           <h1>{strings.share_preview.title}</h1>
+           <p>{strings.share_preview.subtitle}</p>
         </div>
       </div>
 
       <div className={styles.mainLayout}>
-        {/* منطقة المعاينة */}
         <div className={styles.previewContainer} ref={constraintsRef}>
           <div
             ref={templateRef}
@@ -185,7 +173,6 @@ function PreviewContent() {
           >
             <div className={styles.cardOverlay}></div>
             
-            {/* النص القابل للسحب - تم إيقاف المومنتوم (الزحلقة) */}
             <motion.div
               drag 
               dragConstraints={constraintsRef}
@@ -205,7 +192,6 @@ function PreviewContent() {
               </div>
             </motion.div>
 
-            {/* براند التطبيق - أسفل اليمين (أصغر وأكثر طرفية) */}
             <div className={styles.brandTag}>
                <Sparkles size={10} color="#38bdf8" />
                <span className={styles.brandName}>AGIOS BIBLE</span>
@@ -213,10 +199,9 @@ function PreviewContent() {
           </div>
         </div>
 
-        {/* لوحة التحكم */}
         <div className={styles.editorPanel}>
           <div className={styles.controlRow}>
-            <label><Type size={18} /> نوع الخط</label>
+            <label><Type size={18} /> {strings.share_preview.label_font}</label>
             <div className={styles.fontScroll}>
               {FONTS.map(f => (
                 <button 
@@ -232,7 +217,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><Maximize2 size={18} /> حجم الخط: {fontSize}px</label>
+            <label><Maximize2 size={18} /> {strings.share_preview.label_font_size.replace('{size}', fontSize)}</label>
             <input
               type="range"
               min="16"
@@ -244,7 +229,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><AlignCenter size={18} /> عرض الصندوق: {containerWidth}%</label>
+            <label><AlignCenter size={18} /> {strings.share_preview.label_box_width.replace('{width}', containerWidth)}</label>
             <input
               type="range"
               min="40"
@@ -256,7 +241,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><ArrowUpDown size={18} /> تباعد الأسطر: {lineHeight}</label>
+            <label><ArrowUpDown size={18} /> {strings.share_preview.label_line_height.replace('{height}', lineHeight)}</label>
             <input
               type="range"
               min="1"
@@ -269,7 +254,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><Move size={18} /> اختر الخلفية</label>
+            <label><Move size={18} /> {strings.share_preview.label_background}</label>
             <div className={styles.templatesGrid}>
               {TEMPLATES.map(t => (
                 <div
@@ -292,10 +277,10 @@ function PreviewContent() {
 
       <div className={styles.actionFooter}>
         <button onClick={() => handleAction('share')} className={styles.shareBtn} disabled={isProcessing}>
-          <Share2 size={20} /> مشاركة
+          <Share2 size={20} /> {strings.share_preview.share_btn}
         </button>
         <button onClick={() => handleAction('download')} className={styles.saveBtn} disabled={isProcessing}>
-          {isProcessing ? <Loader2 className={styles.spin} /> : <Download size={20} />} حفظ الصورة
+          {isProcessing ? <Loader2 className={styles.spin} /> : <Download size={20} />} {strings.share_preview.download_btn}
         </button>
       </div>
     </div>

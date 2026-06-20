@@ -1,12 +1,12 @@
-
-import tafsirData from './interpretations.json'; 
+import tafsirData from './interpretations.json';
 import styles from './interpretations.module.css';
 import ChapterCard from './chapterCard';
+import strings from '../data/ar.json';
 
 const firstBook = tafsirData && Array.isArray(tafsirData) && tafsirData.length > 0 ? tafsirData[0] : null;
 
 export function generateMetadata() {
-  const title = firstBook ? `تفسير سفر ${firstBook.book}` : 'تفسير الكتاب المقدس';
+  const title = firstBook ? `${strings.interpretations.title_prefix} ${firstBook.book}` : strings.interpretations.default_title;
   return {
     title: title,
   };
@@ -19,7 +19,7 @@ export default function InterpretationsPage() {
         return (
             <div className={styles.container}>
                 <main className={styles.main}>
-                    <h1 className={styles.bookTitle}>لم يتم العثور على بيانات التفسير</h1>
+                    <h1 className={styles.bookTitle}>{strings.interpretations.no_data}</h1>
                 </main>
             </div>
         );
@@ -29,8 +29,8 @@ export default function InterpretationsPage() {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.bookTitle}>تفسير سفر {book.book}</h1>
-                <p className={styles.bookSubtitle}>تحليل وشرح إصحاحات السفر</p>
+                <h1 className={styles.bookTitle}>{strings.interpretations.title_prefix} {book.book}</h1>
+                <p className={styles.bookSubtitle}>{strings.interpretations.subtitle}</p>
             </header>
             <main className={styles.main}>
                 {book.chapters.map((chap) => (

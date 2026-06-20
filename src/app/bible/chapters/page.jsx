@@ -11,6 +11,7 @@ import {
     Cross, Users, MessageCircle, Scroll, Book
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import strings from '../../data/ar.json';
 
 const bookIconMap = {
     "Gen": <Sun size={24} />, "Exo": <Compass size={24} />, "LEV": <Flame size={24} />, "NUM": <MapPin size={24} />, "DEU": <Scroll size={24} />,
@@ -56,7 +57,7 @@ function ChaptersContent() {
             });
     }, [bookName]);
 
-    if (!book) return <div className={styles.container}>جاري التحميل...</div>;
+    if (!book) return <div className={styles.container}>{strings.common.loading}</div>;
 
     const hue = getBookHue(book.book_id || book.id);
 
@@ -76,7 +77,7 @@ function ChaptersContent() {
                 </div>
             </header>
 
-            <p className={styles.subtitle}>اختر الأصحاح الذي تود قراءته:</p>
+            <p className={styles.subtitle}>{strings.bible.chapters_subtitle}</p>
 
             <div className={styles.chaptersGrid}>
                 {Array.from({ length: book.chapters || 1 }).map((_, i) => (
@@ -96,7 +97,7 @@ function ChaptersContent() {
 
 export default function ChaptersPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>{strings.common.loading}</div>}>
             <ChaptersContent />
         </Suspense>
     );

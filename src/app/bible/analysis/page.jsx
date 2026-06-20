@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
+import strings from '../../data/ar.json';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -167,7 +168,7 @@ ${targetText}
     };
 
     try {
-      setStatus('مساعد آجيوس الذكي يقوم بتحليل النص الآن...');
+      setStatus(strings.analysis.status_analyzing);
       await withRetry(
         attemptGeneration,
         (attempt) => setStatus(`محاولة ${convertToArabicNumber(attempt)}: مساعد آجيوس الذكي يقوم بتحليل النص...`),
@@ -178,9 +179,9 @@ ${targetText}
       console.error("Final Analysis Error:", e);
       if (analysisRef.current.length > 100) {
         setIsLoading(false);
-        toast.error("انقطع الاتصال، قد يكون التحليل غير مكتمل");
+        toast.error(strings.analysis.error_incomplete);
       } else {
-        setError('حدث خطأ أثناء تحميل التحليل. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+        setError(strings.analysis.error_generic);
         setIsLoading(false);
       }
     }
@@ -213,15 +214,15 @@ ${targetText}
     if (!analysis) return;
     navigator.clipboard.writeText(analysis);
     setCopied(true);
-    toast.success('تم نسخ التحليل بنجاح');
+    toast.success(strings.analysis.toast_copy);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShare = async () => {
     if (!analysis) return;
     const shareTitle = verses
-      ? `دراسة ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
-      : `دراسة ${book} ${convertToArabicNumber(chapter)}`;
+      ? `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
+      : `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)}`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -229,7 +230,7 @@ ${targetText}
           title: shareTitle,
           text: analysis,
           url: window.location.href,
-          dialogTitle: 'مشاركة التحليل عبر...',
+          dialogTitle: strings.share_preview.share_dialog,
         });
       } else if (navigator.share) {
         await navigator.share({
@@ -250,7 +251,7 @@ ${targetText}
       if (Capacitor.isNativePlatform()) {
         await Share.share({
           text: text,
-          dialogTitle: 'مشاركة النص...',
+          dialogTitle: strings.share_preview.share_dialog,
         });
       } else if (navigator.share) {
         await navigator.share({
@@ -258,7 +259,7 @@ ${targetText}
         });
       } else {
         navigator.clipboard.writeText(text);
-        toast.success('تم النسخ');
+        toast.success(strings.common.copied);
       }
     } catch (err) {
       console.error('Share error', err);
@@ -286,17 +287,17 @@ ${targetText}
             <button
               onClick={() => {
                 navigator.clipboard.writeText(originalRaw.replace(/[#*]/g, '').trim());
-                toast.success('تم نسخ الفقرة');
+                toast.success(strings.analysis.toast_copy_paragraph);
               }}
               className={styles.miniActionBtn}
-              title="نسخ"
+              title={strings.common.copy}
             >
               <Copy size={14} />
             </button>
             <button
               onClick={() => shareText(originalRaw.replace(/[#*]/g, '').trim())}
               className={styles.miniActionBtn}
-              title="مشاركة"
+              title={strings.common.share}
             >
               <Share2 size={14} />
             </button>
@@ -331,28 +332,28 @@ ${targetText}
   };
 
   const displayTitle = verses
-    ? `دراسة ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
-    : `دراسة ${book} ${convertToArabicNumber(chapter)}`;
+    ? `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
+    : `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)}`;
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerRight}>
-          <button onClick={() => router.back()} className={styles.backBtn} title="رجوع">
+          <button onClick={() => router.back()} className={styles.backBtn} title={strings.common.back}>
             <ArrowRight size={24} />
           </button>
           <div className={styles.titleInfo}>
             <h1 className={styles.title}>{displayTitle}</h1>
-            <span className={styles.aiBadge}><Sparkles size={12} /> مدعوم بالذكاء الاصطناعي</span>
+            <span className={styles.aiBadge}><Sparkles size={12} /> {strings.analysis.ai_badge}</span>
           </div>
         </div>
 
         {!isLoading && analysis && (
           <div className={styles.actionButtons}>
-            <button onClick={handleShare} className={styles.iconBtn} title="مشاركة">
+            <button onClick={handleShare} className={styles.iconBtn} title={strings.common.share}>
               <Share2 size={20} />
             </button>
-            <button onClick={handleCopy} className={styles.iconBtn} title="نسخ">
+            <button onClick={handleCopy} className={styles.iconBtn} title={strings.common.copy}>
               {copied ? <Check size={20} color="#4caf50" /> : <Copy size={20} />}
             </button>
           </div>
@@ -365,9 +366,9 @@ ${targetText}
             <div className={styles.countdownCircle}>
                <span className={styles.countdownNumber}>{convertToArabicNumber(countdown)}</span>
             </div>
-            <h2 className={styles.waitTitle}>يرجى الانتظار قليلاً</h2>
+            <h2 className={styles.waitTitle}>{strings.analysis.wait_title}</h2>
             <p className={styles.statusText}>
-              لحماية الخادم، يرجى الانتظار قبل طلب تحليل جديد. سيتم بدء التحليل تلقائياً بعد انتهاء العد التنازلي.
+              {strings.analysis.wait_desc}
             </p>
           </div>
         ) : isLoading && !analysis ? (
@@ -383,9 +384,9 @@ ${targetText}
         ) : (error && !analysis) ? (
           <div className={styles.errorWrapper}>
             <AlertCircle size={50} className={styles.errorIcon} />
-            <h3>عذراً، حدث خطأ</h3>
+            <h3>{strings.common.error_occurred}</h3>
             <p>{error}</p>
-            <button onClick={() => { hasFetched.current = false; fetchAnalysis(); }} className={styles.retryBtn}>إعادة المحاولة</button>
+            <button onClick={() => { hasFetched.current = false; fetchAnalysis(); }} className={styles.retryBtn}>{strings.common.retry}</button>
           </div>
         ) : (
           <div className={styles.analysisContainer}>
@@ -397,14 +398,14 @@ ${targetText}
                   <div className={styles.typingDots}>
                     <span></span><span></span><span></span>
                   </div>
-                  <span>مساعد أجيوس الذكي يكتب لك الآن...</span>
+                  <span>{strings.analysis.streaming_text}</span>
                </div>
             )}
 
             {!isLoading && (
               <footer className={styles.analysisFooter}>
                  <p className={styles.disclaimer}>
-                   هذا التحليل تم توليده بواسطة الذكاء الاصطناعي للمساعدة في الدراسة. دائماً يرجى الرجوع للآباء الكهنة وكتب التفسير المعتمدة للكنيسة القبطية.
+                   {strings.analysis.disclaimer}
                  </p>
               </footer>
             )}
@@ -417,7 +418,7 @@ ${targetText}
 
 export default function AnalysisPage() {
   return (
-    <Suspense fallback={<div>جاري التحميل...</div>}>
+    <Suspense fallback={<div>{strings.common.loading}</div>}>
       <AnalysisContent />
     </Suspense>
   );

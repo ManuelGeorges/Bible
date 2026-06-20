@@ -1,0 +1,693 @@
+{
+  "common": {
+    "or": "أو",
+    "google": "جوجل",
+    "apple": "آبل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "default_first_name": "مستخدم",
+    "default_last_name": "جديد",
+    "sync_error": "فشل مزامنة الجلسة",
+    "day": "يوم",
+    "chapter": "إصحاح",
+    "details": "التفاصيل",
+    "view_all": "عرض الكل",
+    "continue_reading": "واصل القراءة",
+    "cancel": "إلغاء",
+    "open_settings": "فتح الإعدادات",
+    "loading": "جارٍ التحميل...",
+    "save": "حفظ",
+    "delete": "حذف",
+    "share": "مشاركة",
+    "copy": "نسخ",
+    "search": "بحث",
+    "all": "الكل",
+    "no_results": "لا توجد نتائج",
+    "confirm": "تأكيد",
+    "undo": "تراجع",
+    "download": "تحميل",
+    "back": "رجوع",
+    "retry": "إعادة المحاولة",
+    "error_occurred": "عذراً، حدث خطأ"
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "submit": "دخول",
+    "submitting": "جاري الدخول...",
+    "error_auth": "خطأ في البريد الإلكتروني أو كلمة المرور.",
+    "error_google": "فشل تسجيل الدخول بواسطة جوجل.",
+    "error_apple": "فشل تسجيل الدخول بواسطة آبل.",
+    "no_account": "ليس لديك حساب؟",
+    "create_account": "إنشاء حساب"
+  },
+  "signup": {
+    "title": "إنشاء حساب جديد",
+    "first_name": "الاسم الأول",
+    "last_name": "الاسم الأخير",
+    "submit": "إنشاء حساب",
+    "submitting": "جاري إنشاء الحساب...",
+    "error_name_required": "يرجى إدخال الاسم كاملًا",
+    "error_generic": "حدث خطأ في إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.",
+    "error_google": "فشل التسجيل بواسطة جوجل.",
+    "error_apple": "فشل التسجيل بواسطة آبل.",
+    "has_account": "لديك حساب بالفعل؟",
+    "login": "تسجيل الدخول"
+  },
+  "home": {
+    "greeting_guest": "أهلاً بك في رحلتك",
+    "greeting_user": "أهلاً، {name}",
+    "daily_goals": "مهام اليوم",
+    "goals_progress": "أنجزت {done} من {total} مهام",
+    "goals": {
+      "dailyLogin": "التفاعل اليومي",
+      "dailyQuestion": "سؤال التحدي",
+      "mapExploration": "استكشاف الخريطة",
+      "share": "المشاركة اليومية",
+      "completedChapter": "قراءة أصحاح",
+      "favouriteVerse": "تظليل آية"
+    },
+    "quick_links": {
+      "bible": "الكتاب المقدس",
+      "maps": "الخرائط",
+      "search": "البحث",
+      "plans": "الخطط الدراسية",
+      "competitions": "المسابقات",
+      "favorites": "المفضلة"
+    },
+    "badges_section": "أوسمتك وإنجازاتك",
+    "badges_all": "كل الأوسمة",
+    "badges_owned": "أهم المقتنيات",
+    "badges_near": "اقتربت من اقتنائها",
+    "last_read": "واصل القراءة",
+    "daily_verse": "آية اليوم",
+    "verse_copy": "نسخ",
+    "verse_highlight": "تظليل",
+    "verse_highlighted": "مظللة",
+    "ask_agios": "اسأل أجيوس",
+    "color_palette_title": "اختر لون التظليل",
+    "clear_highlight": "حذف التظليل",
+    "daily_challenge": "تحدي اليوم",
+    "ai_features_title": "جرب مميزات الذكاء الاصطناعي",
+    "ai_features": {
+      "derivatives": {
+        "title": "البحث بالمشتقات",
+        "desc": "ابحث عن الكلمات وجذورها اللغوية بذكاء"
+      },
+      "semantic": {
+        "title": "البحث بالمعنى والشرح",
+        "desc": "ابحث عن آيات بالكتاب المقدس عن طريق شرحها او شرح سياقها لمساعد آجيوس الذكي"
+      },
+      "custom_plan": {
+        "title": "إنشاء خطة بالذكاء الاصطناعي",
+        "desc": "أخبر \"أجيوس\" بما تشعر به ليقترح لك خطة"
+      },
+      "analysis": {
+        "title": "مساعد آجيوس (تحليل وتفسير)",
+        "desc": "تحليل لاهوتي وتفسير آبائي عميق ومدعوم بالذكاء الاصطناعي لكل النصوص"
+      }
+    },
+    "active_plans": "خططك الجارية",
+    "plan_progress": "يوم {done} من {total}",
+    "toasts": {
+      "copied": "تم النسخ",
+      "share_success": "أحسنت! تم تسجيل المشاركة اليومية +10 نقاط ",
+      "correct_answer": "إجابة صحيحة! ",
+      "wrong_answer": "إجابة خاطئة ",
+      "deleted_from_treasures": "تم الحذف من كنوزك",
+      "deleted_from_favs": "تم الحذف من تفضيلاتك",
+      "added_to_favs_points": "رائع! تمت الإضافة لتفضيلاتك +5 نقاط",
+      "highlight_updated": "تم تحديث لون التظليل",
+      "added_points": "رائع! تمت الإضافة +5 نقاط"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "appearance": {
+      "title": "مظهر التطبيق",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "تلقائي"
+    },
+    "bible": {
+      "title": "إعدادات الآيات",
+      "verse_per_line": "كل آية في سطر مستقل",
+      "verse_per_line_desc": "عرض النص كقائمة مرتبة بدلاً من فقرة",
+      "show_tashkeel": "إظهار التشكيل",
+      "show_tashkeel_desc": "عرض النص بالتشكيل أو بدونه",
+      "font_type": "نوع الخط (عربي)",
+      "font_weight": "ثقل الخط ({weight})",
+      "font_size": "حجم خط القراءة ({size}px)",
+      "preview": {
+        "line_1": "١ هكذا سيبدو شكل الآيات",
+        "line_2": "٢ عند تفعيل خيار السطر المستقل",
+        "paragraph": "١ هكذا سيبدو شكل الآيات في نظام الفقرة المستمرة حيث تظهر الأرقام بجانب بعضها البعض."
+      }
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "master_label": "تفعيل الإشعارات",
+      "alert_time": "وقت التنبيه:",
+      "verse": {
+        "title": "آية اليوم",
+        "desc": "استلام آية مشجعة يومياً"
+      },
+      "question": {
+        "title": "سؤال اليوم",
+        "desc": "تحديات ومسابقات يومية"
+      },
+      "study_plans": {
+        "title": "تذكير الخطط الدراسية",
+        "desc": "تنبيه بمتابعة ورد القراءة المتبقي"
+      },
+      "streak": {
+        "title": "تنبيه حماية الستريك",
+        "desc": "تذكيرك قبل انتهاء اليوم للحفاظ على أيامك"
+      },
+      "app_suggestions": {
+        "title": "اقتراحات ومزايا التطبيق",
+        "desc": "تعرف على خصائص أجيوس الجديدة"
+      },
+      "updates": {
+        "title": "إشعارات التحديثات",
+        "desc": "تنبيه فور توفر نسخة جديدة من التطبيق"
+      }
+    },
+    "account": {
+      "title": "إدارة الحساب",
+      "desc": "يمكنك إدارة حسابك من هنا. يرجى العلم أن حذف الحساب سيؤدي لمسح جميع بياناتك نهائياً.",
+      "logout": "تسجيل الخروج",
+      "delete_account": "حذف الحساب نهائياً",
+      "delete_confirm": "هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح جميع بياناتك من السحابة.",
+      "fresh_login_required": "لدواعي أمنية، يتطلب حذف الحساب تسجيل دخول حديث. يرجى تسجيل الخروج ثم الدخول مرة أخرى والمحاولة مجدداً.",
+      "delete_success": "تم حذف الحساب والبيانات بنجاح.",
+      "delete_error": "حدث خطأ أثناء حذف الحساب. يرجى المحاولة لاحقاً.",
+      "reauth_required": "انتهت صلاحية الجلسة الأمنية. يرجى إعادة تسجيل الدخول ثم المحاولة مرة أخرى."
+    },
+    "sync": {
+      "title": "المزامنة والسحابة",
+      "desc": "سجل دخولك الآن للحفاظ على تقدمك، ملاحظاتك، ونقاطك من الضياع، ومزامنتها عبر جميع أجهزتك.",
+      "login_button": "تسجيل الدخول للمزامنة"
+    },
+    "permission_modal": {
+      "title": "تفعيل الإشعارات",
+      "desc": "يرجى تفعيل الإشعارات من إعدادات الهاتف لتتمكن من استلام المحتوى اليومي."
+    }
+  },
+  "about": {
+    "title": "عن تطبيق Agios",
+    "tagline": "\"كلمتك هي سراج لرجلي ونور لسبيلي\" (مز 119: 105)",
+    "story": {
+      "title": "القصة والهدف",
+      "p1": "انطلق مشروع Agios برؤية تهدف إلى تقديم تجربة رقمية متطورة لدراسة الكتاب المقدس. كانت البداية من خلال المشاركة في مهرجان الكرازة المرقسية بالإسكندرية، حيث سعى المشروع لتقديم حلول تقنية مبتكرة، مثل البحث اللغوي المتقدم، الخرائط التفاعلية للأماكن المقدسة، وواجهة مستخدم عصرية تساعد على التركيز والنمو الروحي.",
+      "p2": "بعد النجاح في مراحله الأولى، استمر العمل على تطوير المنصة لتصبح مرجعاً شاملاً يجمع بين أدوات الدراسة اليومية والخصائص التقنية الحديثة، بما يخدم احتياجات الشباب والدارسين في العصر الرقمي."
+    },
+    "vision": {
+      "title": "رؤيتنا",
+      "desc": "تتمثل رؤية Agios in أن يكون جسراً تقنياً يربط الأجيال بكلمة الله، مستخدماً أدوات العصر الحديث في تقديم المحتوى الكتابي بصورة جذابة ومبسطة، مع الالتزام الكامل بأسس العقيدة الأرثوذكسية القويمة وتسليمات الكنيسة الجامعة."
+    },
+    "thanks": {
+      "title": "شكر وتقدير",
+      "priest_name": "قدس القمص أثناسيوس",
+      "priest_desc": "نتقدم بوافر الشكر والمحبة {name} لرعايته الأبوية الدائمة لهذا العمل منذ لحظاته الأولى، وتبنيه للفكرة ودعمها لتخرج بصورة تليق بكلمة الله وتكون بركة ومنفعة لكل مستخدميها.",
+      "fcbh": "نتوجه بشكر خاص لمؤسسة Faith Comes By Hearing على توفير المكتبة الصوتية الرائعة بصوت الأستاذ عادل نصحي، ولدعمهم التقني المستمر الذي ساهم في إثراء تجربة المستخدم الاستماعية في هذا التطبيق.",
+      "church": "نتوجه بالشكر والتقدير لبيتنا العامر كنيسة رئيس الملائكة الجليل ميخائيل بمصطفى كامل - الإسكندرية على الدعم والتشجيع المستمر، وإلى لجنة مهرجان الكرازة المرقسية التي تتيح الفرص للإبداع والابتكار في خدمة الكنيسة والمجتمع.",
+      "general": "شكر خاص لكل من ساهم بتقديم نصيحة تقنية أو روحية، ولكل من شارك في نشر هذا العمل لتعم البركة. نطلب من الله أن يجعل هذا التطبيق سبباً في قراءة وفهم أعمق لكلمته المحيية."
+    },
+    "footer": "© 2026 Agios System - جميع الحقوق محفوظة"
+  },
+  "audio": {
+    "artist_default": "الكتاب المقدس",
+    "album": "أجيوس ميديا",
+    "track_title": "عادل نصحي - {book} {chapter}"
+  },
+  "bible": {
+    "title": "الكتاب المقدس",
+    "chapter_label": "إصحاح",
+    "loading": "جارٍ تحميل المحتوى...",
+    "share_title": "آية من الكتاب المقدس",
+    "share_dialog": "مشاركة الآية عبر...",
+    "share_not_supported": "المشاركة غير مدعومة، تم نسخ النص بدلاً من ذلك",
+    "reasons": {
+      "share_verse": "مشاركة آية",
+      "copy_verse": "نسخ آية",
+      "share_verses": "مشاركة مجموعة آيات",
+      "favourite": "إضافة آية للمفضلة",
+      "note": "كتابة تأمل شخصي",
+      "undo_chapter": "إلغاء قراءة إصحاح",
+      "complete_chapter": "قراءة إصحاح كامل"
+    },
+    "toasts": {
+      "copied": "تم النسخ",
+      "copied_precise": "تم النسخ بدقة ",
+      "highlighted": "تم التظليل ",
+      "highlight_removed": "تم حذف التظليل ",
+      "note_saved": "تم حفظ ملاحظتك ",
+      "plan_day_complete": "مبروك! أتممت قراءات اليوم في الخطة ",
+      "plan_all_complete": "رائع! لقد أنهيت الخطة الدراسية بالكامل ",
+      "chapter_undo": "تم إلغاء تحديد الإصحاح",
+      "audio_not_found": "الأوديو غير متوفر لهذا الإصحاح"
+    },
+    "tooltips": {
+      "copy": "نسخ",
+      "image_design": "تصميم صورة",
+      "note": "ملاحظة",
+      "ai_analysis": "تحليل بالذكاء الاصطناعي",
+      "text_settings": "إعدادات النص"
+    },
+    "notes": {
+      "title": "أضف تأملك الشخصي",
+      "placeholder": "اكتب هنا ما لمسه قلبك في هذه الآية..."
+    },
+    "chapter_complete_btn": "أتممت الإصحاح",
+    "books_title": "اختر السفر",
+    "testament_ot": "العهد القديم",
+    "testament_nt": "العهد الجديد",
+    "search_book": "ابحث عن سفر...",
+    "chapters_subtitle": "اختر الأصحاح الذي تود قراءته:"
+  },
+  "maps": {
+    "title": "خرائط الكتاب المقدس",
+    "search_placeholder": "ابحث عن مكان أو مدينة...",
+    "no_results": "لا توجد نتائج تطابق بحثك",
+    "eras_placeholder": "الحقب الزمنية",
+    "choose_era": "اختر الحقبة الزمنية",
+    "all_eras": "كل الحقب",
+    "jump_to_place": "انتقل إلى مكان...",
+    "style_map": "خريطة",
+    "style_satellite": "قمر اصطناعي",
+    "style_topo": "تضاريس 3D",
+    "default_point_book": "معلم تاريخي",
+    "no_info": "لا تتوفر معلومات إضافية لهذا الموقع.",
+    "read_in_bible": "اقرأ في الكتاب المقدس",
+    "era_names": {
+      "0": "أيام إبراهيم",
+      "1": "الخروج والغزو",
+      "2": "القضاة والمملكة الموحدة",
+      "3": "المملكة المنقسمة والسبي",
+      "4": "ما بعد السبي والعهد القديم",
+      "5": "الأناجيل",
+      "6": "الكنيسة المبكرة ورحلات الرسل"
+    },
+    "points_reason": "اكتشاف معلم: {name}",
+    "error_offline": "خرائط الـ 3D تتطلب اتصالاً بالإنترنت"
+  },
+  "search": {
+    "title": "الباحث الإنجيلي",
+    "placeholder_derivatives": "أدخل كلمة واحدة فقط...",
+    "placeholder_default": "أدخل كلمة البحث...",
+    "button_search": "بحث الآن",
+    "type_literal": "بحث حرفي",
+    "type_derivatives": "بحث بالمشتقات (AI)",
+    "type_semantic": "بحث بالمعنى (AI)",
+    "cooldown_text": "متاح خلال {time} ث",
+    "display_settings": "إعدادات العرض:",
+    "option_title": "العنوان",
+    "option_reason": "الشرح",
+    "label_testament": "العهد",
+    "testament_all": "كل العهدين",
+    "testament_ot": "العهد القديم",
+    "testament_nt": "العهد الجديد",
+    "label_book": "السفر",
+    "book_all": "كل الأسفار",
+    "label_chapter": "الأصحاح",
+    "chapter_all": "الكل",
+    "status_analyzing": "جاري تحليل الكلمة لغوياً...",
+    "status_searching": "جاري البحث في الكتاب المقدس...",
+    "warning_static_word": "تنبيه: كلمة جامدة أو اسم علم",
+    "warning_static_word_desc": "هذه الكلمة لا تملك اشتقاقات فعلية تصريفية في اللغة العربية. تم البحث عن صور ورودها المباشرة فقط لضمان أدق النتائج.",
+    "ai_verified": "تم التحقق لغوياً بواسطة مساعد أجيوس الذكي",
+    "toggle_derivatives_hide": "إخفاء خيارات المشتقات ▲",
+    "toggle_derivatives_show": "تخصيص كلمات البحث ▼",
+    "extracted_root": "الجذر المستخرج:",
+    "select_all": "تحديد الكل",
+    "deselect_all": "إلغاء الكل",
+    "loading_wait": "جاري البحث، يرجى الانتظار...",
+    "results_count_semantic": "نتائج البحث الذكي: {count} آية",
+    "results_count_default": "نتائج البحث: {count} آية",
+    "copy_all": "نسخ الكل",
+    "share_all": "مشاركة الكل",
+    "selection_copy": "نسخ {count} آيات",
+    "selection_share": "مشاركة {count} آيات",
+    "selection_fav": "تفضيل الكل",
+    "selection_analyze": "تحليل ذكي",
+    "selection_cancel": "إلغاء",
+    "copy_group": "نسخ المقطع",
+    "share_group": "مشاركة المقطع",
+    "toast_login_required": "سجل دخولك أولاً",
+    "toast_delete_success": "تم حذف التظليل",
+    "toast_save_success": "تم الحفظ بنجاح",
+    "toast_fav_exists": "الآيات المختارة موجودة بالفعل في المفضلة",
+    "toast_fav_added": "تم إضافة {count} آيات للمفضلة",
+    "toast_analyze_chapter_limit": "التحليل متاح للآيات من نفس الإصحاح فقط",
+    "toast_copy_success": "تم نسخ الآية ✨",
+    "toast_semantic_error": "عذراً، الخادم مضغوط حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.",
+    "error_derivatives_limit": "نظام البحث بالمشتقات يتطلب كلمة واحدة فقط لضمان الدقة.",
+    "error_arabic_only": "يرجى إدخال كلمة عربية صحيحة فقط.",
+    "reason_search": "البحث عن آية/كلمة",
+    "reason_highlight": "تظليل آية من البحث",
+    "reason_highlight_multi": "تظليل مجموعة آيات",
+    "reason_copy": "نسخ آية من البحث",
+    "reason_share": "مشاركة آية من البحث",
+    "reason_copy_multi": "نسخ مجموعة آيات",
+    "reason_share_multi": "مشاركة مجموعة آيات",
+    "reason_copy_all": "نسخ جميع نتائج البحث",
+    "reason_share_all": "مشاركة جميع نتائج البحث",
+    "reason_copy_semantic": "نسخ مقطع من البحث الذكي",
+    "reason_share_semantic": "مشاركة مقطع من البحث الذكي",
+    "note_placeholder": "اكتب تأملك الشخصي هنا...",
+    "select_prompt": "اختر {label}"
+  },
+  "more": {
+    "title": "المزيد",
+    "items": {
+      "favourites": "الملاحظات والتفضيلات",
+      "competitions": "المسابقات",
+      "studyPlans": "خطط القراءة",
+      "profile": "الملف الشخصي",
+      "settings": "الإعدادات",
+      "points": "الانجازات"
+    },
+    "footer": {
+      "about": "من نحن",
+      "contact": "تواصل معنا",
+      "versions": "التحديثات",
+      "privacy": "سياسة الخصوصية"
+    }
+  },
+  "profile": {
+    "guest_date": "زائر",
+    "guest_user": "حساب زائر",
+    "friend_agios": "صديق أجيوس",
+    "member_since": "عضو منذ: {date}",
+    "fav_verses": "آيات مفضلة",
+    "xp": "XP",
+    "active_plans_count": "خطط نشطة",
+    "account_section": "الحساب",
+    "logout": "تسجيل الخروج",
+    "general_options": "الخيارات العامة",
+    "app_settings": "إعدادات التطبيق",
+    "points_badges": "النقاط والأوسمة",
+    "invite_friend": "دعوة صديق للتطبيق",
+    "delete_account": "حذف الحساب",
+    "delete_confirm": "هل أنت متأكد من حذف حسابك نهائياً؟",
+    "version": "تطبيق أجيوس - الإصدار 1.2.0",
+    "share_title": "تطبيق أجيوس",
+    "share_text": "حمل أبليكيشن أجيوس واقرأ الكتاب المقدس بطريقة جديدة!",
+    "share_dialog": "مشاركة التطبيق مع الأصدقاء",
+    "share_not_supported": "المشاركة غير مدعومة في المتصفح",
+    "points_label": "XP"
+  },
+  "points": {
+    "title": "النقاط والإنجازات",
+    "tab_points": "النقاط",
+    "tab_badges": "الأوسمة",
+    "tab_history": "السجل",
+    "level": "المستوى {level}",
+    "next_level": "تبقّى {points} نقطة للمستوى التالي",
+    "total_points_label": "نقطة إجمالية",
+    "streak_label": "سلسلة تفاعل: {streak} يوم",
+    "daily_goals_title": "أهداف اليوم",
+    "rarity": {
+      "all": "كل الندرة",
+      "common": "عادي",
+      "uncommon": "مميز",
+      "rare": "نادر",
+      "epic": "أسطوري",
+      "mythic": "خرافي"
+    },
+    "no_history": "لا يوجد سجل نشاط حتى الآن.",
+    "daily_bonus_toast": "حصلت على ١٠ نقاط لتفاعلك اليوم! ",
+    "goals": {
+      "dailyLogin": "تسجيل الدخول اليومي",
+      "dailyQuestion": "حل سؤال التحدي",
+      "mapExploration": "استكشاف معلم في الخريطة",
+      "share": "مشاركة آية أو محتوى",
+      "completedChapter": "قراءة أصحاح كامل",
+      "favouriteVerse": "تظليل آية أعجبتك"
+    },
+    "points_reasons": {
+      "daily_login": "تسجيل دخول يومي"
+    }
+  },
+  "competitions": {
+    "title": "مسابقات أجيوس",
+    "greeting": "أهلاً، {name}",
+    "guest_user": "ضيف أجيوس",
+    "select_book": "اختر سفراً للبدء",
+    "welcome_title": "تحدي أسفار الكتاب المقدس ",
+    "welcome_desc": "اختبر معلوماتك في كلمة الله واجمع النقاط والأوسمة",
+    "history_title": "سجل نتائجك",
+    "redo": "إعادة",
+    "final_results": "النتائج النهائية ",
+    "back_to_books": "العودة للأسفار",
+    "question_progress": "السؤال {current} من {total}",
+    "streak_count": "{count} متتالي",
+    "correct_feedback": "إجابة صحيحة ",
+    "incorrect_feedback": "الإجابة الصحيحة هي: {answer}",
+    "next_question": "السؤال التالي",
+    "cancel_quiz": "إلغاء المسابقة",
+    "error_no_questions": "عذراً، لا توجد أسئلة متوفرة حالياً لهذه الفئة.",
+    "points_reason_complete": "إكمال مسابقة: {category}",
+    "points_reason_perfect": "العلامة الكاملة: {category}"
+  },
+  "studyPlans": {
+    "title": "خطط القراءة",
+    "ai_button": "صمم خطة ذكية الآن",
+    "search_placeholder": "ابحث عن خطة (مثلاً: إنجيل، مزامير...)",
+    "filters": {
+      "all": "الكل",
+      "custom": "مخصصة",
+      "shared": "خطط مشاركة"
+    },
+    "card": {
+      "ai_badge": "مساعد آجيوس الذكي",
+      "shared_badge": "خطة مشاركة",
+      "community_type": "خطة من المجتمع",
+      "personal_type": "خطة شخصية",
+      "by_author": "بواسطة: {name}",
+      "completed_percent": "{percent}% مكتمل",
+      "continue": "متابعة",
+      "start": "ابدأ الآن"
+    },
+    "empty": {
+      "no_search_results": "لا توجد نتائج لهذا البحث",
+      "no_plans": "لا توجد خطط حالياً",
+      "reset_search": "عرض كل الخطط"
+    },
+    "delete_toast": {
+      "confirm_title": "هل تريد حذف هذه الخطة نهائياً؟",
+      "delete_success": "تم الحذف بنجاح"
+    },
+    "details": {
+      "loading": "جاري تحميل خطتك...",
+      "not_found": "الخطة غير موجودة",
+      "progress_label": "نسبة الإنجاز",
+      "by_author": "بواسطة: {name}",
+      "undo_manual": "تم إلغاء التحديد اليدوي",
+      "done_manual": "تم التحديد يدوياً",
+      "sync_error": "حدث خطأ أثناء مزامنة البيانات",
+      "day_label": "اليوم {day}"
+    },
+    "custom": {
+      "loading_title": "أجيوس يصمم لك رحلة روحية خاصة...",
+      "loading_sub": "قد يستغرق هذا بضع ثوانٍ",
+      "form_title": "مُصمم الخطط الذكي",
+      "form_subtitle": "أخبر \"أجيوس\" بما يمر به قلبك اليوم، وسيقترح لك قراءات كتابية مخصصة.",
+      "mood_label": "بماذا تشعر حالياً؟ أو ما الموضوع الذي تبحث عنه؟",
+      "mood_placeholder": "مثلاً: أشعر بالقلق من المستقبل، أو أريد دراسة عن الصبر..",
+      "duration_label": "ما هي المدة المفضلة للخطة؟",
+      "duration_custom_placeholder": "مثلاً: 40",
+      "duration_suffix": "يوماً",
+      "duration_limit_hint": "(الحد الأقصى 180 يوماً)",
+      "intensity_label": "كم أصحاحاً تود قراءته يومياً؟",
+      "share_label": "خيارات المشاركة",
+      "share_check": "مشاركة هذه الخطة مع الآخرين في قسم \"خطط مشاركة\"",
+      "author_check": "إظهار اسمي كمؤلف لهذه الخطة",
+      "author_preview": "ستظهر الخطة بواسطة: {name}",
+      "author_default": "مستخدم أجيوس",
+      "guest_hint": "سيتم نشر الخطة كـ \"مشارك مجهول\" لأنك لست مسجلاً.",
+      "submit_btn": "ابدأ رحلتي المخصصة ",
+      "submitting": "جاري التحضير...",
+      "error_incomplete": "من فضلك أكمل البيانات أولاً",
+      "error_duration": "من فضلك حدد عدد الأيام",
+      "error_duration_max": "الحد الأقصى للمدة المخصصة هو 180 يوماً لضمان جودة الخطة",
+      "error_mood_short": "الوصف قصير جداً، أخبرنا بمزيد من التفاصيل لنصمم خطة أفضل.",
+      "success_toast": "تم إنشاء خطتك بنجاح!",
+      "ai_error": "فشل الذكاء الاصطناعي في تكوين الخطة",
+      "generic_error": "حدث خطأ أثناء إنشاء الخطة",
+      "durations": {
+        "3": "3 أيام",
+        "7": "أسبوع",
+        "14": "أسبوعين",
+        "30": "شهر",
+        "90": "3 أشهر",
+        "180": "6 أشهر",
+        "custom": "مدة مخصصة"
+      },
+      "intensities": {
+        "1": "أصحاح يومياً",
+        "2": "أصحاحين يومياً",
+        "3": "3 أصحاحات يومياً",
+        "default": "أصحاح واحد يومياً"
+      }
+    }
+  },
+  "intro": {
+    "title": "لا تنسى تسجيل الدخول",
+    "subtitle": "احصل على المزيد من المزايا عقب إنشاءك لحساب جديد",
+    "features_title": "لماذا يجب أن تسجل الدخول؟",
+    "features": [
+      { "title": "مجاني تماماً", "desc": "هذه المنظومة لا تضم أي اشتراكات أو رسوم أو تكاليف لأنها في الأساس بهدف الخدمة" },
+      { "title": "معلوماتك آمنة", "desc": "كل المعلومات التي تدخلها هي آمنة تماماً ومشفرة كما أنك لست ملزماً بادخال معلوماتك الحقيقية" },
+      { "title": "المزيد من الأجهزة", "desc": "الآن سيمكنك فتح نفس الحساب من العديد من الأجهزة مع الاحتفاظ بكل المعلومات والتقدم" },
+      { "title": "اضافة الآيات للمفضلة", "desc": "لن تفقد بعد الآن أي من آياتك المفضلة أو ملاحظاتك" },
+      { "title": "استكمال الخطط الدراسية", "desc": "حافظ على تقدمك في الخطط الكتابية والدراسية " },
+      { "title": "نظام النقاط", "desc": "جرب حصرياً نظام النقاط وتتبع حياتك الروحية في قراءة الكتاب المقدس" },
+      { "title": "المزيد من المزايا", "desc": "من لديهم حسابات يحصلون على صلاحية مبكرة لمزايا جديدة ومزايا حصرية لهم" }
+    ],
+    "cta_text": "ابدأ رحلتك الروحية اليوم وانضم إلينا.",
+    "signup_btn": "ليس لديك حساب؟ أنشئ حساباً جديداً",
+    "login_btn": "لديك حساب بالفعل؟ سجل دخولك"
+  },
+  "contact": {
+    "title": "تواصل معنا",
+    "tagline": "يسعدنا سماع آرائكم واقتراحاتكم لتطوير الخدمة",
+    "reasons_title": "لماذا قد تحتاج للتواصل معنا؟",
+    "reasons": [
+      "المشاركة باقتراحات لتطوير خصائص التطبيق.",
+      "الإبلاغ عن مشكلة تقنية أو خطأ في النصوص.",
+      "تقديم الدعم الفني أو التطوع في تحسين المحتوى.",
+      "الاستفسارات العامة حول خدمات Agios."
+    ],
+    "methods_title": "طرق التواصل الرسمية",
+    "email_btn": "إرسال بريد إلكتروني",
+    "facebook_btn": "صفحة الفيسبوك",
+    "footer": "نعمل على الرد على جميع الاستفسارات في أقرب وقت ممكن."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "Agios Bible Application",
+    "sections": {
+      "desc": "This privacy policy applies to the Agios Bible app (Application) for mobile devices created by Agios System (Service Provider) as a Free service. This service is intended for use \"AS IS\".",
+      "collection_title": "Information Collection and Use",
+      "collection_text": "The Application collects information when you download and use it. This may include:",
+      "collection_items": [
+        "Your device's IP address.",
+        "Pages visited and time spent within the Application.",
+        "Operating system version of your mobile device."
+      ],
+      "ai_title": "Artificial Intelligence (AI)",
+      "ai_text": "The Application uses AI technologies to enhance user experience. These components may process user data to deliver personalized content or automated functionalities in accordance with this policy.",
+      "third_party_title": "Third Party Access",
+      "third_party_text": "We utilize trusted third-party services to improve our service:",
+      "children_title": "Children's Privacy",
+      "children_text": "The Application does not address anyone under the age of 13. We do not knowingly collect data from children under 13. If discovered, such data is immediately deleted.",
+      "contact_title": "Contact Us",
+      "contact_text": "For any questions regarding privacy, please contact the Service Provider at:"
+    },
+    "footer_effective": "Effective Date: 2026-03-22",
+    "footer_rights": "© 2026 Agios System. All rights reserved."
+  },
+  "favourites": {
+    "title": "تفضيلاتي",
+    "tab_favs": "المفضلة",
+    "tab_notes": "الملحوظات",
+    "color_categories": "تصنيفات الألوان:",
+    "no_title": "بدون عنوان",
+    "modal_title": "تسمية اللون",
+    "modal_placeholder": "مثلاً: آيات تعزية، وعود...",
+    "empty_color_prompt": "اختر تصنيفاً من الأعلى لعرض الآيات",
+    "empty_list": "لا توجد عناصر هنا بعد",
+    "error_save": "حدث خطأ أثناء حفظ التسمية"
+  },
+  "share_preview": {
+    "title": "استوديو التصميم",
+    "subtitle": "خصص الآية وحركها كما تشاء",
+    "label_font": "نوع الخط",
+    "label_font_size": "حجم الخط: {size}px",
+    "label_box_width": "عرض الصندوق: {width}%",
+    "label_line_height": "تباعد الأسطر: {height}",
+    "label_background": "اختر الخلفية",
+    "share_btn": "مشاركة",
+    "download_btn": "حفظ الصورة",
+    "save_success": "تم حفظ الآية بنجاح ",
+    "error_generic": "حدث خطأ أثناء معالجة الطلب",
+    "share_title": "آية من تطبيق أجيوس",
+    "share_dialog": "مشاركة التصميم عبر..."
+  },
+  "versions": {
+    "title": "سجل التحديثات",
+    "intro": "نحن حالياً في مرحلة الاختبار والتحسين المستمر للوصول لأفضل أداء.",
+    "labels": {
+      "features": "الميزات والتحسينات",
+      "fixes": "الإصلاحات والحلول"
+    }
+  },
+  "offline": {
+    "title": "لا يوجد اتصال بالإنترنت",
+    "desc": "يبدو أنك غير متصل بالشبكة حالياً. يمكنك الاستمرار في قراءة الأجزاء المحملة مسبقاً."
+  },
+  "analysis": {
+    "title_prefix": "دراسة",
+    "ai_badge": "مدعوم بالذكاء الاصطناعي",
+    "status_analyzing": "مساعد آجيوس الذكي يقوم بتحليل النص الآن...",
+    "wait_title": "يرجى الانتظار قليلاً",
+    "wait_desc": "لحماية الخادم، يرجى الانتظار قبل طلب تحليل جديد. سيتم بدء التحليل تلقائياً بعد انتهاء العد التنازلي.",
+    "streaming_text": "مساعد أجيوس الذكي يكتب لك الآن...",
+    "disclaimer": "هذا التحليل تم توليده بواسطة الذكاء الاصطناعي للمساعدة في الدراسة. دائماً يرجى الرجوع للآباء الكهنة وكتب التفسير المعتمدة للكنيسة القبطية.",
+    "toast_copy": "تم نسخ التحليل بنجاح",
+    "toast_copy_paragraph": "تم نسخ الفقرة",
+    "error_incomplete": "انقطع الاتصال، قد يكون التحليل غير مكتمل",
+    "error_generic": "حدث خطأ أثناء تحميل التحليل. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى."
+  },
+  "interpretations": {
+    "no_data": "لم يتم العثور على بيانات التفسير",
+    "title_prefix": "تفسير سفر",
+    "subtitle": "تحليل وشرح إصحاحات السفر",
+    "default_title": "تفسير الكتاب المقدس",
+    "chapter_title": "الإصحاح رقم {chapter}"
+  },
+  "components": {
+    "bible_nav": {
+      "title": "الفهرس السريع",
+      "search_placeholder": "ابحث عن سفر...",
+      "home": "الرئيسية",
+      "read": "قراءة",
+      "maps": "الخرائط",
+      "search": "بحث",
+      "more": "المزيد"
+    },
+    "audio_player": {
+      "loading": "جاري التحميل...",
+      "speed": "السرعة",
+      "settings": "إعدادات التشغيل",
+      "volume": "مستوى الصوت",
+      "repeat": "تكرار",
+      "auto_play": "تلقائي",
+      "highlight": "تلوين",
+      "stop": "إيقاف"
+    },
+    "book_selector": {
+      "title": "اقرأ الأسفار",
+      "search_placeholder": "ابحث عن سفر...",
+      "no_results": "لم نجد سفراً بهذا الاسم \"{name}\"",
+      "testament_ot": "العهد القديم",
+      "testament_nt": "العهد الجديد"
+    },
+    "top_header": {
+      "back": "الرجوع"
+    },
+    "badges": {
+      "congrats": "مبروك! إنجاز جديد",
+      "share_achievement": "مشاركة الإنجاز",
+      "view_all": "عرض كل الأوسمة",
+      "share_title": "وسام جديد!",
+      "share_text": "🎉 حصلت على وسام جديد في تطبيق أجيوس: {badge}!\n\"{req}\"\nحمّل التطبيق وانضم إلينا في رحلتنا الروحية.",
+      "share_dialog": "مشاركة الوسام عبر..."
+    }
+  },
+  "metadata": {
+    "title": "الموقع الرسمي | Agios Bible",
+    "description": "موقع متكامل للكتاب المقدس يشمل خصائص فريدة مثل البحث متطور وخرائط تفاعلية وخطط دراسة ومسابقات"
+  }
+}

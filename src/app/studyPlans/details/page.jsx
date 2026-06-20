@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { useBadge } from '../../context/BadgeContext';
 import { getCairoIsoString } from '../../../lib/dateUtils';
 import { StorageService, KEYS } from '../../../lib/storage';
+import strings from '../../data/ar.json';
 
 const allPlans = studyPlansData.plans;
 
@@ -54,7 +55,6 @@ function PlanDetailsContent() {
           setCompletedDays(aiPlan.completedDays || {});
         }
       } else if (planType === 'shared') {
-          // Check if we already have a local copy of this shared plan
           const savedShared = localCompletedPlans[planId];
           if (savedShared && savedShared.readings) {
               setPlan(savedShared);
@@ -177,7 +177,6 @@ function PlanDetailsContent() {
                 setCompletedDays(aiPlan.completedDays || {});
               }
             } else if (planType === 'shared') {
-                // Priority to user's personal copy of the shared plan
                 const userCopy = data.completedPlans?.[planId];
                 if (userCopy && userCopy.readings) {
                     setPlan(userCopy);
@@ -262,13 +261,13 @@ function PlanDetailsContent() {
 
     if (isCurrentlyManual) {
       delete newCompletedDays[day];
-      toast.success("تم إلغاء التحديد اليدوي");
+      toast.success(strings.studyPlans.details.undo_manual);
     } else {
       newCompletedDays[day] = { 
         isCompleted: true, 
         dateCompleted: getCairoIsoString()
       };
-      toast.success("تم التحديد يدوياً");
+      toast.success(strings.studyPlans.details.done_manual);
     }
 
     const totalDays = plan.readings.length;
@@ -296,7 +295,6 @@ function PlanDetailsContent() {
             isShared: plan.isShared || planType === 'shared'
         };
 
-        // If it's a shared plan, copy the readings to make it a personal copy
         if (planType === 'shared' || plan.isShared) {
             updatedUserData.completedPlans[planId].readings = plan.readings;
             if (plan.description) updatedUserData.completedPlans[planId].description = plan.description;
@@ -329,7 +327,7 @@ function PlanDetailsContent() {
         checkAndUnlockBadges(updatedUserData);
       } catch (e) {
         console.error(e);
-        toast.error("حدث خطأ أثناء مزامنة البيانات");
+        toast.error(strings.studyPlans.details.sync_error);
       }
     } else {
       if (planType === 'custom') {
@@ -346,8 +344,8 @@ function PlanDetailsContent() {
     }
   };
 
-  if (loading) return <div className={styles.container}>جاري تحميل خطتك...</div>;
-  if (!plan) return notFound();
+  if (loading) return <div className={styles.container}>{strings.studyPlans.details.loading}</div>;
+  if (!plan) return <div className={styles.container}>{strings.studyPlans.details.not_found}</div>;
 
   const progressPercentage = Math.round(
     (plan.readings.filter(r => (completedDays[r.day]?.isCompleted || isDayAutoCompleted(r))).length / plan.readings.length) * 100
@@ -364,13 +362,13 @@ function PlanDetailsContent() {
 
       {(plan.isShared || planType === 'shared') && plan.authorName && (
           <div className={styles.authorSection}>
-              بواسطة: <span>{plan.authorName}</span>
+              {strings.studyPlans.details.by_author.replace('{name}', plan.authorName)}
           </div>
       )}
 
       <div className={styles.progressWrapper}>
         <div className={styles.progressInfo}>
-          <span>نسبة الإنجاز</span>
+          <span>{strings.studyPlans.details.progress_label}</span>
           <span>%{progressPercentage}</span>
         </div>
         <div className={styles.progressBar}>
@@ -387,7 +385,7 @@ function PlanDetailsContent() {
           return (
             <li key={reading.day} className={`${styles.readingItem} ${isCompleted ? styles.completed : ''}`}>
               <div className={styles.dayHeader}>
-                <div className={styles.dayLabel}>اليوم {reading.day}</div>
+                <div className={styles.dayLabel}>{strings.studyPlans.details.day_label.replace('{day}', reading.day)}</div>
                 <div className={styles.checkboxContainer}>
                   <input
                     type="checkbox"
@@ -420,7 +418,7 @@ function PlanDetailsContent() {
 
 export default function PlanDetailsPage() {
   return (
-    <Suspense fallback={<div className={styles.container}>جاري التحميل...</div>}>
+    <Suspense fallback={<div className={styles.container}>{strings.common.loading}</div>}>
       <PlanDetailsContent />
     </Suspense>
   );
