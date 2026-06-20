@@ -3,12 +3,12 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Capacitor } from '@capacitor/core';
-import { useLanguage } from './LanguageContext'; // استيراد سياق اللغة
+import { useLanguage } from './LanguageContext';
 
 const AudioContext = createContext();
 
 export function AudioProvider({ children }) {
-    const { strings, language } = useLanguage(); // الحصول على النصوص واللغة الحالية
+    const { strings, language, bookNames } = useLanguage();
 
     const [audioUrl, setAudioUrl] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -32,7 +32,6 @@ export function AudioProvider({ children }) {
 
     // Navigation & Data
     const [currentLocation, setCurrentLocation] = useState({ bookIdx: -1, chapIdx: -1 });
-    const [bookNames, setBookNames] = useState([]);
     const [bibleData, setBibleData] = useState(null);
     const [navigationCallback, setNavigationCallback] = useState(null);
 
@@ -174,7 +173,6 @@ export function AudioProvider({ children }) {
                 } catch (e) {}
             }
 
-            // استخدام أرقام عربية أو إنجليزية بناءً على اللغة
             const displayChapter = language === 'ar' ? chapter.toLocaleString('ar-EG') : chapter;
             const title = strings.audio.track_title
                 .replace('{book}', book.name)
@@ -219,11 +217,7 @@ export function AudioProvider({ children }) {
     useEffect(() => {
         const loadInitialData = async () => {
             try {
-                const [namesRes, bibleRes] = await Promise.all([
-                    fetch('/data/bookNames.json').then(r => r.json()),
-                    fetch('/data/bibles/ar_svd.json').then(r => r.json())
-                ]);
-                setBookNames(namesRes.ar || []);
+                const bibleRes = await fetch('/data/bibles/ar_svd.json').then(r => r.json());
                 setBibleData(bibleRes);
             } catch (e) { console.error(e); }
         };

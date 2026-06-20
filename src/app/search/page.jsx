@@ -16,7 +16,7 @@ import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../lib/kv';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -105,10 +105,10 @@ function normalizeArabicText(text) {
     .trim();
 }
 
-function CustomSelect({ label, options, value, onChange, dir }) {
+function CustomSelect({ label, options, value, onChange, placeholder }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
-  const selectedLabel = options.find(opt => opt.value.toString() === (value || "").toString())?.label || strings.search.select_prompt.replace('{label}', label);
+  const selectedLabel = options.find(opt => opt.value.toString() === (value || "").toString())?.label || placeholder;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -121,7 +121,7 @@ function CustomSelect({ label, options, value, onChange, dir }) {
   return (
     <div className={styles.customSelectWrapper} ref={selectRef} style={{ zIndex: isOpen ? 9999 : 1 }}>
       <label className={styles.label}>{label}</label>
-      <div className={`${styles.selectTrigger} ${isOpen ? styles.active : ''}`} onClick={() => setIsOpen(!isOpen)} dir={dir}>
+      <div className={`${styles.selectTrigger} ${isOpen ? styles.active : ''}`} onClick={() => setIsOpen(!isOpen)}>
         <span>{selectedLabel}</span>
         <div className={styles.arrow}></div>
       </div>
@@ -137,6 +137,7 @@ function CustomSelect({ label, options, value, onChange, dir }) {
 }
 
 function SearchContent() {
+  const { language, strings, bookNames: bookNamesData } = useLanguage();
   const [user, setUser] = useState(null);
   const { triggerBadgeUnlock } = useBadge();
   const searchParams = useSearchParams();
@@ -147,7 +148,6 @@ function SearchContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState(initialType);
   const [bibleData, setBibleData] = useState(null);
-  const [bookNamesData, setBookNamesData] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [semanticResults, setSemanticResults] = useState([]);
   const [searchInfo, setSearchInfo] = useState(null);
@@ -197,14 +197,28 @@ function SearchContent() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (bookNamesData.length === 0) return;
       try {
-        const [bRes, nRes] = await Promise.all([fetch('/data/bibles/ar_svd.json'), fetch('/data/bookNames.json')]);
-        const bJson = await bRes.json();
-        const nJson = await nRes.json();
+        let biblePath = '';
+        if (language === 'ar') {
+          biblePath = '/data/bibles/ar_svd.json';
+        } else if (language === 'en') {
+          biblePath = '/data/bibles/en_kjv.json';
+        } else if (language === 'fr') {
+          biblePath = '/data/bibles/fr_apee.json';
+        } else if (language === 'de') {
+          biblePath = '/data/bibles/de_schlachter.json';
+        } else {
+          biblePath = '/data/bibles/ar_svd.json';
+        }
+
+        const bibleRes = await fetch(biblePath);
+        const bJson = await bibleRes.json();
         setBibleData(bJson);
-        setBookNamesData(nJson);
+
         const flattened = bJson.flatMap((book, bIdx) => {
-          const meta = nJson?.ar?.[bIdx];
+          const meta = bookNamesData[bIdx];
+          if (!meta) return [];
           return book.chapters.flatMap((ch, chIdx) => ch.map((v, vIdx) => ({
             text: v,
             normText: normalizeArabicText(v),
@@ -220,7 +234,7 @@ function SearchContent() {
       } catch (e) { setIsLoading(false); }
     };
     fetchData();
-  }, []);
+  }, [bookNamesData, language]);
 
   useEffect(() => {
     const requestTimes = JSON.parse(localStorage.getItem('aiSearchTimestamps') || '[]');
@@ -285,7 +299,7 @@ function SearchContent() {
     if (searchType !== 'semantic' || semanticResults.length === 0) return [];
 
     return semanticResults.filter(res => {
-      if (selectedTestament && bookNamesData?.ar[res.bookIndex]?.testament !== selectedTestament) return false;
+      if (selectedTestament && bookNamesData[res.bookIndex]?.testament !== selectedTestament) return false;
       if (selectedBookIndex !== '' && res.bookIndex !== parseInt(selectedBookIndex)) return false;
       if (selectedChapter !== '' && res.chapter !== (parseInt(selectedChapter) + 1)) return false;
       return true;
@@ -530,10 +544,10 @@ function SearchContent() {
     const searchId = ++currentSearchIdRef.current;
 
     const attemptSemantic = async (attemptIndex) => {
-      const allowedBooks = bookNamesData?.ar?.map(b => b.name).join(', ') || '';
+      const allowedBooks = bookNamesData?.map(b => b.name).join(', ') || '';
       const filterContext = `
         ${selectedTestament ? `Testament: ${selectedTestament === 'OT' ? 'Old' : 'New'}` : ''}
-        ${selectedBookIndex !== '' ? `Book: ${bookNamesData.ar[parseInt(selectedBookIndex)].name}` : ''}
+        ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
       const genAIInstance = getGenAI(attemptIndex);
@@ -566,7 +580,7 @@ function SearchContent() {
       const data = JSON.parse(jsonMatch[0]);
 
       const enriched = data.results.map(ref => {
-        const bookIdx = bookNamesData.ar.findIndex(b => b.name === ref.book);
+        const bookIdx = bookNamesData.findIndex(b => b.name === ref.book);
         if (bookIdx === -1) return null;
 
         const bookData = bibleData[bookIdx];
@@ -588,7 +602,7 @@ function SearchContent() {
           ...ref,
           bookIndex: bookIdx,
           versesContent,
-          book: bookNamesData.ar[bookIdx].name
+          book: bookNamesData[bookIdx].name
         };
       }).filter(r => r !== null);
 
@@ -1005,8 +1019,7 @@ function SearchContent() {
     router.push(`/bible/analysis/?book=${encodeURIComponent(first.book)}&chapter=${first.chapter + 1}&verses=${verseNumbers}`);
   };
 
-  const booksList = bookNamesData?.ar || [];
-  const filteredBooks = selectedTestament ? booksList.filter(b => b.testament === selectedTestament) : booksList;
+  const filteredBooks = selectedTestament ? bookNamesData.filter(b => b.testament === selectedTestament) : bookNamesData;
   const chaptersCount = (selectedBookIndex !== '' && bibleData) ? bibleData[parseInt(selectedBookIndex)].chapters.length : 0;
 
   const VerseCard = ({ v }) => {
@@ -1102,7 +1115,7 @@ function SearchContent() {
   };
 
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className={styles.card}>
         <h1 className={styles.heading}>{strings.search.title}</h1>
         <form onSubmit={(e) => { e.preventDefault(); performSearch(); }} className={styles.controls}>
@@ -1161,9 +1174,9 @@ function SearchContent() {
             )}
           </div>
           <div className={styles.filterGrid}>
-            <CustomSelect label={strings.search.label_testament} options={[{ value: '', label: strings.search.testament_all }, { value: 'OT', label: strings.search.testament_ot }, { value: 'NT', label: strings.search.testament_nt }]} value={selectedTestament} onChange={e => { setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter(''); }} />
-            <CustomSelect label={strings.search.label_book} options={[{ value: '', label: strings.search.book_all }, ...filteredBooks.map(b => ({ value: booksList.indexOf(b).toString(), label: b.name }))]} value={selectedBookIndex} onChange={e => { setSelectedBookIndex(e.target.value); setSelectedChapter(''); }} />
-            {selectedBookIndex !== '' && <CustomSelect label={strings.search.label_chapter} options={[{ value: '', label: strings.search.chapter_all }, ...Array.from({ length: chaptersCount }, (_, i) => ({ value: i.toString(), label: convertToArabicNumber(i + 1) }))]} value={selectedChapter} onChange={e => setSelectedChapter(e.target.value)} />}
+            <CustomSelect label={strings.search.label_testament} options={[{ value: '', label: strings.search.testament_all }, { value: 'OT', label: strings.search.testament_ot }, { value: 'NT', label: strings.search.testament_nt }]} value={selectedTestament} onChange={e => { setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter(''); }} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_testament)} />
+            <CustomSelect label={strings.search.label_book} options={[{ value: '', label: strings.search.book_all }, ...filteredBooks.map(b => ({ value: bookNamesData.indexOf(b).toString(), label: b.name }))]} value={selectedBookIndex} onChange={e => { setSelectedBookIndex(e.target.value); setSelectedChapter(''); }} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_book)} />
+            {selectedBookIndex !== '' && <CustomSelect label={strings.search.label_chapter} options={[{ value: '', label: strings.search.chapter_all }, ...Array.from({ length: chaptersCount }, (_, i) => ({ value: i.toString(), label: convertToArabicNumber(i + 1) }))]} value={selectedChapter} onChange={e => setSelectedChapter(e.target.value)} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_chapter)} />}
           </div>
         </form>
 
@@ -1317,6 +1330,7 @@ function SearchContent() {
 }
 
 export default function BibleSearchPage() {
+  const { strings } = useLanguage();
   return (
     <Suspense fallback={<div>{strings.common.loading}</div>}>
       <SearchContent />

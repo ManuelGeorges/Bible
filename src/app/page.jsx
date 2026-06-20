@@ -86,7 +86,7 @@ const formatReference = (ref) => {
 };
 
 const LandingPage = () => {
-    const { language, strings } = useLanguage();
+    const { language, strings, allBookNames } = useLanguage();
     const router = useRouter();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -182,19 +182,18 @@ const LandingPage = () => {
     }, []);
 
     const fetchDailyContent = useCallback(async () => {
+        if (!allBookNames) return;
         const { month, day } = getCairoDateInfo();
 
         try {
-            const [verseRefsRes, bookNamesRes, questRes] = await Promise.all([
+            const [verseRefsRes, questRes] = await Promise.all([
                 fetch('/data/dailyVerses.json'),
-                fetch('/data/bookNames.json'),
                 fetch(`/data/dailyQuestions${language !== 'ar' ? '_' + language : ''}.json`)
             ]);
 
-            if (!verseRefsRes.ok || !bookNamesRes.ok) throw new Error("Data files not found");
+            if (!verseRefsRes.ok) throw new Error("Daily verses file not found");
 
             const verseRefs = await verseRefsRes.json();
-            const bookNamesData = await bookNamesRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
             if (todayRef) {
@@ -210,10 +209,10 @@ const LandingPage = () => {
                 const bibleRes = await fetch(`/data/bibles/${bibleFile}`);
                 const bibleData = await bibleRes.json();
 
-                const bookInfo = bookNamesData[language]?.find(b => b.book_id === todayRef.book) ||
-                                bookNamesData['en']?.find(b => b.book_id === todayRef.book);
+                const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.book) ||
+                                allBookNames['en']?.find(b => b.book_id === todayRef.book);
 
-                const bookIndex = bookNamesData['ar'].findIndex(b => b.book_id === todayRef.book);
+                const bookIndex = allBookNames['ar'].findIndex(b => b.book_id === todayRef.book);
 
                 if (bookIndex !== -1 && bibleData[bookIndex]) {
                     const verseText = bibleData[bookIndex].chapters[todayRef.chapter - 1][todayRef.verse - 1];
@@ -238,7 +237,7 @@ const LandingPage = () => {
         } catch (e) {
             console.error("Home Fetch Error:", e);
         }
-    }, [language]);
+    }, [language, allBookNames]);
 
     useEffect(() => {
         setMounted(true);
@@ -1019,7 +1018,7 @@ const LandingPage = () => {
                                 "{dailyVerse?.verse}"
                             </p>
                             <span className={styles.verseRef}>{formattedDailyRef}</span>
-                            <div className={styles.verseActions}>
+                            <div className={verseActions}>
                                 <button onClick={() => {
                                     navigator.clipboard.writeText(`"${dailyVerse?.verse}" ${formattedDailyRef}`);
                                     toast.success(strings.home.toasts.copied);

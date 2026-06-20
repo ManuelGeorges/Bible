@@ -5,7 +5,6 @@ import ar from '../data/ar.json';
 import en from '../data/en.json';
 import de from '../data/de.json';
 import fr from '../data/fr.json';
-import { bookNames as allBookNames } from '../data/bookNames';
 
 const LanguageContext = createContext();
 
@@ -15,6 +14,21 @@ export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
     const [isFirstTime, setIsFirstTime] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
+    const [allBookNames, setAllBookNames] = useState(null);
+
+    // تحميل أسماء الكتب من ملف JSON الخارجي
+    useEffect(() => {
+        const fetchBookNames = async () => {
+            try {
+                const response = await fetch('/data/bookNames.json');
+                const data = await response.json();
+                setAllBookNames(data);
+            } catch (error) {
+                console.error("Failed to load book names:", error);
+            }
+        };
+        fetchBookNames();
+    }, []);
 
     useEffect(() => {
         const savedLang = localStorage.getItem('app_lang');
@@ -22,14 +36,19 @@ export function LanguageProvider({ children }) {
             setLanguage(savedLang);
             setIsFirstTime(false);
         } else {
-            // إذا لم توجد لغة محفوظة، نعتبرها أول زيارة
             setIsFirstTime(true);
         }
         setIsHydrated(true);
     }, []);
 
     const strings = useMemo(() => translations[language] || translations.ar, [language]);
-    const bookNames = useMemo(() => allBookNames[language] || allBookNames.ar, [language]);
+
+    // توفير أسماء الكتب بناءً على اللغة المختارة
+    const bookNames = useMemo(() => {
+        if (!allBookNames) return [];
+        return allBookNames[language] || allBookNames.ar || [];
+    }, [language, allBookNames]);
+
     const dir = useMemo(() => (language === 'ar' ? 'rtl' : 'ltr'), [language]);
 
     useEffect(() => {
@@ -43,7 +62,7 @@ export function LanguageProvider({ children }) {
         if (translations[newLang]) {
             setLanguage(newLang);
             localStorage.setItem('app_lang', newLang);
-            setIsFirstTime(false); // إخفاء واجهة الترحيب بمجرد الاختيار
+            setIsFirstTime(false);
         }
     };
 
@@ -51,6 +70,7 @@ export function LanguageProvider({ children }) {
         language,
         strings,
         bookNames,
+        allBookNames, // ربما تحتاجه في بعض الحالات للوصول لكل اللغات
         dir,
         changeLanguage,
         isFirstTime,

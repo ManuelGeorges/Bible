@@ -55,7 +55,7 @@ export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const { language, strings, dir: pageDir } = useLanguage();
+  const { language, strings, dir: pageDir, bookNames: bookNamesData } = useLanguage();
 
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
@@ -66,7 +66,6 @@ export default function BibleContent() {
   const [user, setUser] = useState(null);
   const [bibleData, setBibleData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [bookNamesData, setBookNamesData] = useState([]);
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
@@ -409,21 +408,15 @@ export default function BibleContent() {
           biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         }
 
-        const [namesRes, bibleRes] = await Promise.all([
-          fetch('/data/bookNames.json').then(r => r.json()),
-          fetch(biblePath).then(r => r.json())
-        ]);
-
-        const names = namesRes[language] || namesRes.ar || [];
-        setBookNamesData(names);
+        const bibleRes = await fetch(biblePath).then(r => r.json());
         setBibleData(bibleRes);
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
         const savedLastRead = await StorageService.get(KEYS.LAST_READ);
 
-        if (bParam) {
-          const idx = names.findIndex(b => b.name === decodeURIComponent(bParam));
+        if (bParam && bookNamesData.length > 0) {
+          const idx = bookNamesData.findIndex(b => b.name === decodeURIComponent(bParam));
           if (idx !== -1) setSelectedBookIndex(idx);
           if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
         } else if (savedLastRead) {
@@ -434,7 +427,7 @@ export default function BibleContent() {
       } catch (e) { setIsLoading(false); }
     };
     loadData();
-  }, [searchParams, useTashkeel, language]);
+  }, [searchParams, useTashkeel, language, bookNamesData]);
 
   useEffect(() => {
     const initUserData = async () => {

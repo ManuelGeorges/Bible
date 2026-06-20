@@ -1,21 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef, memo, useDeferredValue } from 'react';
+import React, { useState, useMemo, useRef, memo, useDeferredValue } from 'react';
 import styles from './BibleBookSelector.module.css';
 import {
     Book, Scroll, Heart, Star, Flame, Music,
     Lightbulb, Users, Crown, Shield, MapPin,
     Compass, Sun, Moon, Sparkles, Wand2,
     Eye, Anchor, Sword, Cross, MessageCircle,
-    ChevronLeft, ChevronRight, X, BookOpen,
-    Feather, Mountain, Landmark, Ghost,
+    X, BookOpen, Feather, Mountain, Landmark, Ghost,
     Hammer, Lamp, History, Wind, Search
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import strings from '../app/data/ar.json';
-
-// ذاكرة خارجية لحفظ البيانات ومنع التحميل المتكرر (Instant Load)
-let cachedBookNames = null;
+import { useLanguage } from '../app/context/LanguageContext';
 
 const bookIconMap = {
     "Gen": <Sun size={38} />, "Exo": <Compass size={38} />, "LEV": <Flame size={38} />,
@@ -68,7 +64,6 @@ const BookCard = memo(({ book, onBookClick }) => {
     const icon = bookIconMap[book.book_id] || (book.testament === 'OT' ? <Scroll size={32} /> : <Book size={32} />);
     const router = useRouter();
 
-    // Prefetching: يحمل الصفحة القادمة أول ما المستخدم يلمس الزرار (Native Feeling)
     const handleTouchStart = () => {
         router.prefetch(`/bible/chapters?book=${encodeURIComponent(book.name)}`);
     };
@@ -109,25 +104,10 @@ const BookRow = ({ title, books, onBookClick }) => {
 };
 
 export default function BibleBookSelector() {
-    const [bookNames, setBookNames] = useState(cachedBookNames || []);
+    const { strings, bookNames } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
-    // Deferred Value: بيخلي الواجهة ماتهنجش وانت بتكتب بسرعة في البحث
     const deferredSearch = useDeferredValue(searchTerm);
     const router = useRouter();
-
-    useEffect(() => {
-        if (cachedBookNames) return; // لا تحمل البيانات لو كانت موجودة مسبقاً
-
-        fetch('/data/bookNames.json')
-            .then(res => res.json())
-            .then(data => {
-                if (data?.ar) {
-                    cachedBookNames = data.ar;
-                    setBookNames(data.ar);
-                }
-            })
-            .catch(err => console.error("Error:", err));
-    }, []);
 
     const filteredBooks = useMemo(() => {
         const normalizedSearch = normalizeArabic(deferredSearch);

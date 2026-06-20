@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import styles from './books.module.css';
 import { useRouter } from 'next/navigation';
-import strings from '../../data/ar.json';
+import { useLanguage } from '../../context/LanguageContext';
 import {
-     Search, Book, Hash, X, ArrowRight,
-    Sun, Compass, Flame, MapPin, Scroll, Sword, Shield, Heart, Crown,
+     Search, Scroll, Sun, Compass, Flame, MapPin, Sword, Shield, Heart, Crown,
     Landmark, History, Hammer, Star, Anchor, Music, Lightbulb, Wind,
     Eye, Feather, Sparkles, Ghost, Mountain, Lamp, Users, Cross,
     MessageCircle, BookOpen
@@ -97,20 +96,10 @@ const normalizeArabic = (text) => {
 };
 
 function BooksContent() {
+    const { strings, language, bookNames } = useLanguage();
     const router = useRouter();
-    const [bookNames, setBookNames] = useState([]);
     const [activeTab, setActiveTab] = useState('OT');
     const [searchQuery, setSearchQuery] = useState('');
-
-    useEffect(() => {
-        fetch('/data/bookNames.json')
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.ar) {
-                    setBookNames(data.ar);
-                }
-            });
-    }, []);
 
     const filteredBooks = useMemo(() => {
         const normalizedQuery = normalizeArabic(searchQuery);
@@ -122,7 +111,7 @@ function BooksContent() {
     }, [bookNames, activeTab, searchQuery]);
 
     return (
-        <div dir="rtl" className={styles.container}>
+        <div dir={language === 'ar' ? 'rtl' : 'ltr'} className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>{strings.bible.books_title}</h1>
             </header>
@@ -172,6 +161,7 @@ function BooksContent() {
 }
 
 export default function BooksPage() {
+    const { strings } = useLanguage();
     return (
         <Suspense fallback={<div>{strings.common.loading}</div>}>
             <BooksContent />

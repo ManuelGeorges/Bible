@@ -12,7 +12,7 @@ import { useBadge } from '../context/BadgeContext';
 import { getCairoIsoString } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
 import { HapticService } from '../../lib/hapticsService';
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const normalizationCache = new Map();
 const normalizeArabic = (text) => {
@@ -49,6 +49,7 @@ allQuestions.forEach(q => {
 });
 
 export default function CompetitionsPage() {
+  const { strings, language, bookNames: bookNamesData } = useLanguage();
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -70,8 +71,6 @@ export default function CompetitionsPage() {
   const [userAnswer, setUserAnswer] = useState('');
   const [completedQuizzes, setCompletedQuizzes] = useState([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [bookNamesData, setBookNamesData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [userBadges, setUserBadges] = useState([]);
   const [copiedMessage, setCopiedMessage] = useState('');
   const categoryRef = useRef(null);
@@ -130,18 +129,6 @@ export default function CompetitionsPage() {
       }
     }
   }, [user, userBadges, triggerBadgeUnlock]);
-
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const res = await fetch('/data/bookNames.json');
-        const data = await res.json();
-        setBookNamesData((data.ar || []).map(b => ({ ...b, name: b.name.trim() })));
-      } catch (e) { console.error(e); }
-      finally { setIsLoading(false); }
-    };
-    loadInitialData();
-  }, []);
 
   const handleAnswer = useCallback(async (selectedOption) => {
     if (quizState.answered || questions.length === 0) return;
@@ -241,7 +228,7 @@ export default function CompetitionsPage() {
       });
       setUserAnswer('');
     });
-  }, []);
+  }, [strings.competitions.error_no_questions]);
 
   const nextQuestion = async () => {
     HapticService.light();
@@ -274,10 +261,10 @@ export default function CompetitionsPage() {
     setUserAnswer('');
   };
 
-  if (authLoading || isLoading) return <div className={styles.loading}>{strings.common.loading}</div>;
+  if (authLoading || bookNamesData.length === 0) return <div className={styles.loading}>{strings.common.loading}</div>;
 
   return (
-    <div dir="rtl" className={styles.mainContainer} style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 0.2s' }}>
+    <div dir={language === 'ar' ? 'rtl' : 'ltr'} className={styles.mainContainer} style={{ opacity: isPending ? 0.7 : 1, transition: 'opacity 0.2s' }}>
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
       
       <header className={styles.header}>
