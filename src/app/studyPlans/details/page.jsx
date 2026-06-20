@@ -12,11 +12,12 @@ import toast from 'react-hot-toast';
 import { useBadge } from '../../context/BadgeContext';
 import { getCairoIsoString } from '../../../lib/dateUtils';
 import { StorageService, KEYS } from '../../../lib/storage';
-import strings from '../../data/ar.json';
+import { useLanguage } from '../../context/LanguageContext';
 
 const allPlans = studyPlansData.plans;
 
 function PlanDetailsContent() {
+  const { strings, bookNames, language } = useLanguage();
   const searchParams = useSearchParams();
   const planId = searchParams.get('id');
   const planType = searchParams.get('type');
@@ -28,7 +29,6 @@ function PlanDetailsContent() {
   const [plan, setPlan] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
-  const [bookNames, setBookNames] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadLocalData = useCallback(async () => {
@@ -145,13 +145,6 @@ function PlanDetailsContent() {
     if (finishedCount >= 10) unlockBadge('plan_finish_10', currentBadges);
     if (finishedCount >= 20) unlockBadge('plan_finish_20', currentBadges);
   }, [unlockBadge]);
-
-  useEffect(() => {
-    fetch('/data/bookNames.json')
-      .then(res => res.json())
-      .then(data => setBookNames(data.ar || []))
-      .catch(err => console.error("Error loading book names:", err));
-  }, []);
 
   useEffect(() => {
     if (!planId) return;
@@ -352,7 +345,7 @@ function PlanDetailsContent() {
   );
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <h1 className={styles.title}>{plan.title}</h1>
       {plan.description && (
         <div className={styles.descriptionWrapper}>
@@ -417,6 +410,7 @@ function PlanDetailsContent() {
 }
 
 export default function PlanDetailsPage() {
+  const { strings } = useLanguage();
   return (
     <Suspense fallback={<div className={styles.container}>{strings.common.loading}</div>}>
       <PlanDetailsContent />

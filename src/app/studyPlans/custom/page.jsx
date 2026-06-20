@@ -11,12 +11,13 @@ import { getCairoIsoString } from '../../../lib/dateUtils';
 import { Sparkles, Calendar, BookOpen, MessageCircle, Share2, User } from 'lucide-react';
 import { StorageService, KEYS } from '../../../lib/storage';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
-import strings from '../../data/ar.json';
+import { useLanguage } from '../../context/LanguageContext';
 
 const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export default function CustomPlanForm() {
+    const { strings, bookNames } = useLanguage();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
@@ -91,9 +92,7 @@ export default function CustomPlanForm() {
                 console.error("Redis Read Error:", e);
             }
 
-            const response = await fetch('/data/bookNames.json');
-            const bookNamesData = await response.json();
-            const allowedBooks = bookNamesData.ar.map(book => book.name).join(', ');
+            const allowedBooks = bookNames.map(book => book.name).join(', ');
 
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 

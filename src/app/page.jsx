@@ -1018,7 +1018,7 @@ const LandingPage = () => {
                                 "{dailyVerse?.verse}"
                             </p>
                             <span className={styles.verseRef}>{formattedDailyRef}</span>
-                            <div className={verseActions}>
+                            <div className={styles.verseActions}>
                                 <button onClick={() => {
                                     navigator.clipboard.writeText(`"${dailyVerse?.verse}" ${formattedDailyRef}`);
                                     toast.success(strings.home.toasts.copied);

@@ -8,10 +8,10 @@ import {
     Sword, Shield, Heart, Crown, Landmark, History,
     Hammer, Star, Anchor, Music, Lightbulb, Wind,
     Eye, Feather, Sparkles, Ghost, Mountain, Lamp,
-    Cross, Users, MessageCircle, Scroll, Book
+    Cross, Users, MessageCircle, Scroll, Book as BookIcon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import strings from '../../data/ar.json';
+import { useLanguage } from '../../context/LanguageContext';
 
 const bookIconMap = {
     "Gen": <Sun size={24} />, "Exo": <Compass size={24} />, "LEV": <Flame size={24} />, "NUM": <MapPin size={24} />, "DEU": <Scroll size={24} />,
@@ -43,25 +43,25 @@ const getBookHue = (id) => {
 };
 
 function ChaptersContent() {
+    const { strings, language, bookNames } = useLanguage();
     const searchParams = useSearchParams();
     const router = useRouter();
     const [book, setBook] = useState(null);
-    const bookName = searchParams.get('book');
+    const bookNameParam = searchParams.get('book');
 
     useEffect(() => {
-        fetch('/data/bookNames.json')
-            .then(res => res.json())
-            .then(data => {
-                const found = data.ar.find(b => b.name === bookName);
-                if (found) setBook(found);
-            });
-    }, [bookName]);
+        if (bookNames.length > 0 && bookNameParam) {
+            const found = bookNames.find(b => b.name === decodeURIComponent(bookNameParam));
+            if (found) setBook(found);
+        }
+    }, [bookNames, bookNameParam]);
 
     if (!book) return <div className={styles.container}>{strings.common.loading}</div>;
 
     const hue = getBookHue(book.book_id || book.id);
 
-    const convertToArabicNumber = (num) => {
+    const formatNumber = (num) => {
+        if (language !== 'ar') return num.toString();
         const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
         return num.toString().split('').map(d => arabicNums[+d] || d).join('');
     };
@@ -72,7 +72,7 @@ function ChaptersContent() {
                 <div className={styles.bookInfo}>
                     <h1 className={styles.title}>{book.name}</h1>
                     <div className={styles.iconWrapper}>
-                        {bookIconMap[book.book_id] || (book.testament === 'OT' ? <Scroll size={24} /> : <Book size={24} />)}
+                        {bookIconMap[book.book_id] || (book.testament === 'OT' ? <Scroll size={24} /> : <BookIcon size={24} />)}
                     </div>
                 </div>
             </header>
@@ -87,7 +87,7 @@ function ChaptersContent() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => router.push(`/bible?book=${encodeURIComponent(book.name)}&chapter=${i + 1}`)}
                     >
-                        {convertToArabicNumber(i + 1)}
+                        {formatNumber(i + 1)}
                     </motion.button>
                 ))}
             </div>
@@ -96,6 +96,7 @@ function ChaptersContent() {
 }
 
 export default function ChaptersPage() {
+    const { strings } = useLanguage();
     return (
         <Suspense fallback={<div>{strings.common.loading}</div>}>
             <ChaptersContent />

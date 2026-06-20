@@ -217,7 +217,7 @@ export function AudioProvider({ children }) {
     useEffect(() => {
         const loadInitialData = async () => {
             try {
-                const bibleRes = await fetch('/data/bibles/ar_svd.json').then(r => r.json());
+                const bibleRes = await fetch('/data/bibles/ar_svd_no_tashkeel.json').then(r => r.json());
                 setBibleData(bibleRes);
             } catch (e) { console.error(e); }
         };

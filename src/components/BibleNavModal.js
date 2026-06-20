@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './Bible.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../app/context/LanguageContext';
 import {
     ChevronRight, Search, Book, Hash, X,
     Sun, Compass, Flame, MapPin, Scroll, Sword, Shield, Heart, Crown,
@@ -94,7 +95,8 @@ export default function BibleNavModal({
   selectedChapterIndex,
   onSelectLocation 
 }) {
-  const [step, setStep] = useState('books'); 
+  const { strings, language } = useLanguage();
+  const [step, setStep] = useState('books');
   const [tempSelectedBook, setTempSelectedBook] = useState(selectedBookIndex);
   const [activeTab, setActiveTab] = useState(selectedBookIndex < 39 ? 'OT' : 'NT');
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,7 +110,8 @@ export default function BibleNavModal({
     }
   }, [isOpen, selectedBookIndex]);
 
-  const convertToArabicNumber = (num) => {
+  const formatNumber = (num) => {
+    if (language !== 'ar') return num.toString();
     const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return num.toString().split('').map(d => arabicNums[+d] || d).join('');
   };
@@ -140,7 +143,7 @@ export default function BibleNavModal({
             <div className={styles.stickyHeader}>
               <div className={styles.navModalHeader}>
                 <h3 className={styles.navModalTitle}>
-                  {step === 'books' ? 'اختر السفر' : 'اختر الإصحاح'}
+                  {step === 'books' ? strings.bible.nav_modal.select_book : strings.bible.nav_modal.select_chapter}
                 </h3>
                 <button className={styles.closeBtn} onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
                   <X size={24} />
@@ -153,7 +156,7 @@ export default function BibleNavModal({
                   onClick={() => setStep('books')}
                 >
                   <Book size={18} />
-                  <span>{bookNamesData[tempSelectedBook]?.name || 'السفر'}</span>
+                  <span>{bookNamesData[tempSelectedBook]?.name || strings.bible.nav_modal.book_placeholder}</span>
                 </button>
                 <button
                   className={`${styles.tabBtn} ${step === 'chapters' ? styles.activeTabHighlight : ''}`}
@@ -161,7 +164,7 @@ export default function BibleNavModal({
                   onClick={() => setStep('chapters')}
                 >
                   <Hash size={18} />
-                  <span>إصحاح {convertToArabicNumber((selectedChapterIndex || 0) + 1)}</span>
+                  <span>{strings.bible.chapter_label} {formatNumber((selectedChapterIndex || 0) + 1)}</span>
                 </button>
               </div>
 
@@ -172,13 +175,13 @@ export default function BibleNavModal({
                       className={activeTab === 'OT' ? styles.activeTab : ''}
                       onClick={() => setActiveTab('OT')}
                     >
-                      العهد القديم
+                      {strings.bible.testament_ot}
                     </button>
                     <button
                       className={activeTab === 'NT' ? styles.activeTab : ''}
                       onClick={() => setActiveTab('NT')}
                     >
-                      العهد الجديد
+                      {strings.bible.testament_nt}
                     </button>
                   </div>
                   <div className={styles.searchWrapper}>
@@ -186,7 +189,7 @@ export default function BibleNavModal({
                     <input
                       type="text"
                       className={styles.bookSearchInput}
-                      placeholder="ابحث عن سفر..."
+                      placeholder={strings.bible.search_book}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -198,7 +201,7 @@ export default function BibleNavModal({
                 <div style={{ padding: '0 24px 15px' }}>
                   <button className={styles.backBtn} onClick={() => setStep('books')}>
                     <ChevronRight size={18} />
-                    الرجوع للأسفار
+                    {strings.bible.nav_modal.back_to_books}
                   </button>
                 </div>
               )}
@@ -249,7 +252,7 @@ export default function BibleNavModal({
                           onClose();
                         }}
                       >
-                        {convertToArabicNumber(i + 1)}
+                        {formatNumber(i + 1)}
                       </button>
                     ))}
                   </motion.div>

@@ -201,7 +201,7 @@ function SearchContent() {
       try {
         let biblePath = '';
         if (language === 'ar') {
-          biblePath = '/data/bibles/ar_svd.json';
+          biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
           biblePath = '/data/bibles/en_kjv.json';
         } else if (language === 'fr') {
@@ -209,7 +209,7 @@ function SearchContent() {
         } else if (language === 'de') {
           biblePath = '/data/bibles/de_schlachter.json';
         } else {
-          biblePath = '/data/bibles/ar_svd.json';
+          biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         }
 
         const bibleRes = await fetch(biblePath);
