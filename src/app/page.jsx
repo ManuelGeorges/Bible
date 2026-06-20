@@ -904,7 +904,7 @@ const LandingPage = () => {
 
             {(highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
                 <section className={styles.badgesHighlightSection}>
-                    <div className={sectionHeader}>
+                    <div className={styles.sectionHeader}>
                         <div className={styles.sectionTitleWithIcon}>
                             <Trophy size={20} color="#f59e0b" />
                             <h2 className={styles.sectionTitleMini}>{strings.home.badges_section}</h2>

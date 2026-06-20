@@ -391,7 +391,7 @@ export default function BibleContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel';
+        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel.json';
         const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch(biblePath).then(r => r.json())
