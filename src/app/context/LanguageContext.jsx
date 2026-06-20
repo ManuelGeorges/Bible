@@ -8,7 +8,7 @@ import fr from '../data/fr.json';
 
 const LanguageContext = createContext();
 
-const translations = { ar, en, de, it, fr };
+const translations = { ar, en, de, fr };
 
 export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');

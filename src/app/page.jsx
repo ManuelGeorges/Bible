@@ -32,10 +32,10 @@ import Badge from '../components/Badge/Badge';
 import { useBadge } from './context/BadgeContext';
 import BibleBookSelector from '../components/BibleBookSelector';
 import { getCairoDate, getCairoDateInfo, getCairoYesterday, getCairoIsoString } from '../lib/dateUtils';
+import { useLanguage } from './context/LanguageContext';
 
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
-import strings from './data/ar.json';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -86,6 +86,7 @@ const formatReference = (ref) => {
 };
 
 const LandingPage = () => {
+    const { language, strings } = useLanguage();
     const router = useRouter();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -184,25 +185,60 @@ const LandingPage = () => {
         const { month, day } = getCairoDateInfo();
 
         try {
-            const [verseRes, questRes] = await Promise.all([
+            const [verseRefsRes, bookNamesRes, questRes] = await Promise.all([
                 fetch('/data/dailyVerses.json'),
-                fetch('/data/dailyQuestions.json')
+                fetch('/data/bookNames.json'),
+                fetch(`/data/dailyQuestions${language !== 'ar' ? '_' + language : ''}.json`)
             ]);
 
-            if (!verseRes.ok || !questRes.ok) throw new Error("Data files not found");
+            if (!verseRefsRes.ok || !bookNamesRes.ok) throw new Error("Data files not found");
 
-            const verseData = await verseRes.json();
-            const questData = await questRes.json();
+            const verseRefs = await verseRefsRes.json();
+            const bookNamesData = await bookNamesRes.json();
+            const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
-            const todayVerse = verseData.find(v => Number(v.month) === month && Number(v.day) === day);
-            const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
+            if (todayRef) {
+                const bibleMapping = {
+                    'ar': 'ar_svd_tashkeel_site.json',
+                    'en': 'en_kjv.json',
+                    'fr': 'fr_apee.json',
+                    'de': 'de_schlachter.json',
+                    'it': 'en_kjv.json'
+                };
 
-            setDailyVerse(todayVerse);
-            setDailyQuestion(todayQuest);
+                const bibleFile = bibleMapping[language] || 'ar_svd_tashkeel_site.json';
+                const bibleRes = await fetch(`/data/bibles/${bibleFile}`);
+                const bibleData = await bibleRes.json();
+
+                const bookInfo = bookNamesData[language]?.find(b => b.book_id === todayRef.book) ||
+                                bookNamesData['en']?.find(b => b.book_id === todayRef.book);
+
+                const bookIndex = bookNamesData['ar'].findIndex(b => b.book_id === todayRef.book);
+
+                if (bookIndex !== -1 && bibleData[bookIndex]) {
+                    const verseText = bibleData[bookIndex].chapters[todayRef.chapter - 1][todayRef.verse - 1];
+
+                    setDailyVerse({
+                        verse: verseText,
+                        reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
+                        month,
+                        day,
+                        bookId: todayRef.book,
+                        chapter: todayRef.chapter,
+                        verseNum: todayRef.verse
+                    });
+                }
+            }
+
+            if (questRes.ok) {
+                const questData = await questRes.json();
+                const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
+                setDailyQuestion(todayQuest);
+            }
         } catch (e) {
             console.error("Home Fetch Error:", e);
         }
-    }, []);
+    }, [language]);
 
     useEffect(() => {
         setMounted(true);
@@ -463,7 +499,7 @@ const LandingPage = () => {
             unsubAuth?.();
             if (unsubSnap) unsubSnap();
         };
-    }, [calculatePlanStats, checkStreakBadges]);
+    }, [calculatePlanStats, checkStreakBadges, language]);
 
     const handleShareSuccess = async () => {
         if (user) {
@@ -573,7 +609,7 @@ const LandingPage = () => {
 
     const handleUpdateDailyVerse = async (color = null, isDelete = false) => {
         if (!dailyVerse) return;
-        const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-ar`;
+        const verseKey = `daily-verse-${dailyVerse.month}-${dailyVerse.day}-${language}`;
 
         if (isDelete) {
             if (user) {
@@ -594,19 +630,12 @@ const LandingPage = () => {
             return;
         }
 
-        const cleanRef = dailyVerse.reference.replace(/[()]/g, '').trim();
-        const parts = cleanRef.split(' ');
-        const rawNumbers = parts[parts.length - 1];
-        const bookName = parts.slice(0, -1).join(' ');
-        const [rawCh, rawV] = rawNumbers.split(':');
-        const convertNumbers = (str) => str?.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '') || "";
-
         const verseData = {
             text: dailyVerse.verse,
             reference: formatReference(dailyVerse.reference),
-            book: bookName,
-            ch: convertNumbers(rawCh),
-            v: convertNumbers(rawV),
+            book: dailyVerse.bookId,
+            ch: dailyVerse.chapter,
+            v: dailyVerse.verseNum,
             color: color || '#FFC107',
             dateAdded: getCairoIsoString()
         };
@@ -763,7 +792,7 @@ const LandingPage = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };
 
-    const dailyVerseKey = `daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-ar`;
+    const dailyVerseKey = `daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-${language}`;
 
     return (
         <main className={`${styles.hubContainer} ${styles.rtl}`}>
@@ -1000,14 +1029,7 @@ const LandingPage = () => {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        const cleanRef = dailyVerse?.reference?.replace(/[()]/g, '').trim();
-                                        const parts = cleanRef.split(' ');
-                                        const rawNumbers = parts[parts.length - 1];
-                                        const bookName = parts.slice(0, -1).join(' ');
-                                        const [rawCh] = rawNumbers.split(':');
-                                        const convertNumbers = (str) => str?.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d]/g, '') || "";
-
-                                        router.push(`/bible/analysis?book=${encodeURIComponent(bookName)}&chapter=${convertNumbers(rawCh)}`);
+                                        router.push(`/bible/analysis?book=${encodeURIComponent(dailyVerse?.bookId)}&chapter=${dailyVerse?.chapter}`);
                                     }}
                                     className={`${styles.glassBtn} ${styles.aiAskBtn}`}
                                 >
