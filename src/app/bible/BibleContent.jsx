@@ -399,7 +399,7 @@ export default function BibleContent() {
         if (language === 'ar') {
           biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_kjv.json';
+          biblePath = '/data/bibles/asv.json';
         } else if (language === 'fr') {
           biblePath = '/data/bibles/fr_apee.json';
         } else if (language === 'de') {

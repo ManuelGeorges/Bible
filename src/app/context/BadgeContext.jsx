@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import BadgeUnlockModal from '../../components/BadgeUnlockModal/BadgeUnlockModal';
 import { AnimatePresence } from 'framer-motion';
 import { StorageService, KEYS } from '../../lib/storage';
+import { useLanguage } from './LanguageContext';
 
 const BadgeContext = createContext();
 
@@ -13,20 +14,46 @@ export const BadgeProvider = ({ children }) => {
   const [badgesData, setBadgesData] = useState(null);
   const pendingIdsRef = useRef([]);
   const shownBadgesRef = useRef(new Set());
+  const { language } = useLanguage();
 
   useEffect(() => {
-    // تحميل بيانات الأوسمة
-    fetch('/data/badges.json')
-      .then(res => res.json())
-      .then(data => {
+    const badgeFileMap = {
+      ar: '/data/badges.json',
+      en: '/data/badges_en.json',
+      fr: '/data/badges_fr.json',
+      de: '/data/badges_de.json'
+    };
+    const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
+    setBadgesData(null);
+    const loadBadgeData = async () => {
+      try {
+        const response = await fetch(fetchPath);
+        if (!response.ok) throw new Error(`Failed to fetch ${fetchPath}`);
+        const data = await response.json();
         setBadgesData(data);
-        // معالجة الأوسمة التي تم استدعاؤها قبل اكتمال التحميل
         if (pendingIdsRef.current.length > 0) {
           pendingIdsRef.current.forEach(id => processBadgeId(id, data));
           pendingIdsRef.current = [];
         }
-      })
-      .catch(err => console.error("Failed to load badges data:", err));
+      } catch (err) {
+        console.error(`Failed to load badges data for ${language}:`, err);
+        if (language !== 'ar') {
+          try {
+            const fallbackResponse = await fetch('/data/badges.json');
+            if (!fallbackResponse.ok) throw new Error('Failed fallback fetch');
+            const fallbackData = await fallbackResponse.json();
+            setBadgesData(fallbackData);
+            if (pendingIdsRef.current.length > 0) {
+              pendingIdsRef.current.forEach(id => processBadgeId(id, fallbackData));
+              pendingIdsRef.current = [];
+            }
+          } catch (fallbackErr) {
+            console.error('Failed to load fallback badges data:', fallbackErr);
+          }
+        }
+      }
+    };
+    loadBadgeData();
 
     // تحميل الأوسمة التي عُرضت سابقاً لمنع تكرارها
     const loadShownBadges = async () => {
@@ -40,7 +67,7 @@ export const BadgeProvider = ({ children }) => {
       }
     };
     loadShownBadges();
-  }, []);
+  }, [language]);
 
   const processBadgeId = (badgeId, data) => {
     if (shownBadgesRef.current.has(badgeId)) return;

@@ -199,10 +199,9 @@ const LandingPage = () => {
             if (todayRef) {
                 const bibleMapping = {
                     'ar': 'ar_svd_tashkeel_site.json',
-                    'en': 'en_kjv.json',
+                    'en': 'asv.json',
                     'fr': 'fr_apee.json',
                     'de': 'de_schlachter.json',
-                    'it': 'en_kjv.json'
                 };
 
                 const bibleFile = bibleMapping[language] || 'ar_svd_tashkeel_site.json';
@@ -242,7 +241,21 @@ const LandingPage = () => {
     useEffect(() => {
         setMounted(true);
         fetchDailyContent();
-        fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data)).catch(() => {});
+        const badgeFileMap = {
+            ar: '/data/badges.json',
+            en: '/data/badges_en.json',
+            fr: '/data/badges_fr.json',
+            de: '/data/badges_de.json'
+        };
+        const badgePath = badgeFileMap[language] || badgeFileMap.ar;
+        fetch(badgePath)
+            .then(res => res.json())
+            .then(data => setBadgesData(data))
+            .catch(() => {
+                if (language !== 'ar') {
+                    fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data)).catch(() => {});
+                }
+            });
         checkTimeBadges();
     }, [fetchDailyContent, checkTimeBadges]);
 

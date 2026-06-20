@@ -105,6 +105,11 @@ function normalizeArabicText(text) {
     .trim();
 }
 
+function normalizeText(text) {
+  if (!text || typeof text !== 'string') return '';
+  return normalizeArabicText(text).toLowerCase();
+}
+
 function CustomSelect({ label, options, value, onChange, placeholder }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
@@ -203,7 +208,7 @@ function SearchContent() {
         if (language === 'ar') {
           biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_kjv.json';
+          biblePath = '/data/bibles/asv.json';
         } else if (language === 'fr') {
           biblePath = '/data/bibles/fr_apee.json';
         } else if (language === 'de') {
@@ -221,7 +226,7 @@ function SearchContent() {
           if (!meta) return [];
           return book.chapters.flatMap((ch, chIdx) => ch.map((v, vIdx) => ({
             text: v,
-            normText: normalizeArabicText(v),
+            normText: normalizeText(v),
             book: meta.name,
             book_index: bIdx,
             chapter: chIdx,
@@ -258,7 +263,7 @@ function SearchContent() {
   useEffect(() => {
     if (allVerses.length === 0) return;
 
-    const normQuery = normalizeArabicText(searchQuery);
+    const normQuery = normalizeText(searchQuery);
     const isFilterActive = selectedTestament !== '' || selectedBookIndex !== '' || selectedChapter !== '';
 
     if (!normQuery && !isFilterActive && (searchType !== 'derivatives' || selectedDerivatives.length === 0)) {
@@ -267,16 +272,23 @@ function SearchContent() {
     }
 
     if (searchType === 'derivatives' && selectedDerivatives.length > 0) {
-      const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
-      const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
-      const regex = new RegExp(pattern, 'i');
+      let regex;
+      if (language === 'ar') {
+        const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
+        const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
+        regex = new RegExp(pattern, 'i');
+      } else {
+        const boundary = `(^|\\s|\\.|,|:|!|\\?|\\(|\\)|\\[|\\]|"|'|“|”|«|»|;|/|\\\\)`;
+        const pattern = `${boundary}(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})(?=${boundary}|$)`;
+        regex = new RegExp(pattern, 'i');
+      }
 
       let filtered = allVerses;
       if (selectedTestament) filtered = filtered.filter(v => v.testament === selectedTestament);
       if (selectedBookIndex !== '') filtered = filtered.filter(v => v.book_index === parseInt(selectedBookIndex));
       if (selectedChapter !== '') filtered = filtered.filter(v => v.chapter === parseInt(selectedChapter));
 
-      const finalFiltered = filtered.filter(v => regex.test(v.normText || normalizeArabicText(v.text)));
+      const finalFiltered = filtered.filter(v => regex.test(v.normText || normalizeText(v.text)));
       setSearchResults(finalFiltered.slice(0, 500));
     } else if (searchType === 'literal') {
       let filtered = allVerses;
@@ -419,12 +431,14 @@ function SearchContent() {
     return true;
   };
 
-  const readLegacyCache = async (newKey, legacyKey) => {
+  const readLegacyCache = async (newKey, legacyKeys = []) => {
     try {
       const cached = await kv.get(newKey);
       if (cached) return { cached, legacy: false };
-      const legacyCached = await kv.get(legacyKey);
-      if (legacyCached) return { cached: legacyCached, legacy: true };
+      for (const legacyKey of legacyKeys) {
+        const legacyCached = await kv.get(legacyKey);
+        if (legacyCached) return { cached: legacyCached, legacy: true };
+      }
       return { cached: null, legacy: false };
     } catch (e) {
       console.error('Upstash Read Error:', e);
@@ -699,14 +713,20 @@ Regeln:
 
   const searchWithGeminiDerivativesMultilingual = async (term) => {
     const cacheKey = `${CACHE_KEYS.SEMANTIC}deriv:${language}:${term}`;
-    try {
-      const cached = await kv.get(cacheKey);
-      if (cached) {
-        setSearchInfo(cached);
-        setSelectedDerivatives(cached.derivatives);
-        return cached;
+    const legacyKeys = [
+      `${CACHE_KEYS.SEMANTIC}deriv:${term}`,
+      `${CACHE_KEYS.SEMANTIC}deriv:${normalizeArabicText(term)}`
+    ];
+    const { cached, legacy } = await readLegacyCache(cacheKey, legacyKeys);
+    if (cached) {
+      setSearchInfo(cached);
+      setSelectedDerivatives(cached.derivatives);
+      if (legacy) {
+        const migrationKey = `${CACHE_KEYS.SEMANTIC}deriv:ar:${term}`;
+        kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
       }
-    } catch (e) { console.error("Upstash Read Error:", e); }
+      return cached;
+    }
 
     if (!checkRateLimit()) return null;
 
@@ -862,10 +882,6 @@ Regeln:
             toast.error(strings.search.error_derivatives_limit);
             return;
         }
-        if (!/^[\u0600-\u06FF]+$/.test(currentQuery)) {
-            toast.error(strings.search.error_arabic_only);
-            return;
-        }
     }
 
     setIsLoading(true);
@@ -894,13 +910,18 @@ Regeln:
   const renderHighlightedText = (text, highlight, verseColor) => {
     if (!highlight || !text) return <span style={{ backgroundColor: verseColor ? `${verseColor} 66` : 'transparent' }}>{text}</span>;
 
-    const normalizedHighlight = normalizeArabicText(highlight);
+    const normalizedHighlight = language === 'ar' ? normalizeArabicText(highlight) : normalizeText(highlight);
     let regex;
 
     if (searchType === 'derivatives' && selectedDerivatives.length > 0) {
-      const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
-      const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
-      regex = new RegExp(pattern, 'gi');
+      if (language === 'ar') {
+        const suffixes = "(ه|ها|هم|هن|ك|كما|كم|كن|نا|ي|ت|تم|تن|وا|ون|ين|ات)?";
+        const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
+        regex = new RegExp(pattern, 'gi');
+      } else {
+        const pattern = `(^|\\W)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})(?=$|\\W)`;
+        regex = new RegExp(pattern, 'gi');
+      }
     } else {
       const tashkeelRegex = "[ًٌٍَُِْ]*";
       const fuzzyPattern = normalizedHighlight.split('').map(char => {
@@ -918,11 +939,15 @@ Regeln:
       <span style={{ backgroundColor: verseColor ? `${verseColor} 66` : 'transparent', borderRadius: '4px', padding: '2px 0' }}>
         {parts.map((p, i) => {
           if (!p) return null;
-          const normalizedP = normalizeArabicText(p);
+          const normalizedP = language === 'ar' ? normalizeArabicText(p) : normalizeText(p);
           let isMatch = false;
 
           if (searchType === 'derivatives') {
-            isMatch = selectedDerivatives.some(d => normalizedP.startsWith(d));
+            if (language === 'ar') {
+              isMatch = selectedDerivatives.some(d => normalizedP.startsWith(d));
+            } else {
+              isMatch = selectedDerivatives.some(d => normalizedP === normalizeText(d));
+            }
           } else {
             isMatch = normalizedP === normalizedHighlight;
           }
