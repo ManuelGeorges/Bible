@@ -4,18 +4,18 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './Bible.module.css';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, updateDoc, increment, arrayUnion, deleteField } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, Type, ChevronDown, Settings } from 'lucide-react';
+import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, ChevronDown, Settings } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
 import { useAudio } from '../context/AudioContext';
+import { useLanguage } from '../context/LanguageContext';
 import studyPlansData from '../studyPlans/studyPlansData.json';
 import { getCairoIsoString } from '../../lib/dateUtils';
-import strings from '../data/ar.json';
 
 // Local-first imports
 import { StorageService, KEYS } from '../../lib/storage';
@@ -39,11 +39,6 @@ const fontOptionsMap = {
   'ReemKufi': "'Reem Kufi', sans-serif"
 };
 
-function convertToArabicNumber(num) {
-  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num.toString().split('').map(d => arabicNums[+d] || d).join('');
-}
-
 const variants = {
   enter: (direction) => ({
     x: direction > 0 ? 30 : direction < 0 ? -30 : 0,
@@ -60,10 +55,11 @@ export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
+  const { language, strings, dir: pageDir } = useLanguage();
 
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
-    audioUrl: globalAudioUrl, setTimestamps, setNavigationCallback,
+    audioUrl: globalAudioUrl, setNavigationCallback,
     isAutoNext, fetchAudioData: contextFetchAudio, isAudioLoading: contextAudioLoading
   } = useAudio();
 
@@ -93,6 +89,12 @@ export default function BibleContent() {
   const touchStartPos = useRef({ x: 0, y: 0 });
   const lastAudioSyncRef = useRef("");
 
+  const formatNumber = useCallback((num) => {
+    if (language !== 'ar') return num.toString();
+    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return num.toString().split('').map(d => arabicNums[+d] || d).join('');
+  }, [language]);
+
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
   const unlockBadge = async (badgeId) => {
@@ -107,7 +109,7 @@ export default function BibleContent() {
         }
       } catch (e) { console.error(e); }
     } else {
-      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || await StorageService.get('local_badges') || [];
+      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || [];
       if (!localBadges.includes(badgeId)) {
         localBadges.push(badgeId);
         await StorageService.save(KEYS.LOCAL_BADGES, localBadges);
@@ -195,7 +197,7 @@ export default function BibleContent() {
 
   useEffect(() => {
     const syncAudio = async () => {
-        if (isLoading || bookNamesData.length === 0) return;
+        if (isLoading || bookNamesData.length === 0 || language !== 'ar') return;
 
         const book = bookNamesData[selectedBookIndex];
         const chapter = selectedChapterIndex + 1;
@@ -216,7 +218,7 @@ export default function BibleContent() {
         }
     };
     syncAudio();
-  }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, contextFetchAudio, globalAudioUrl, isPlaying, isAutoNext, playTrack]);
+  }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, contextFetchAudio, globalAudioUrl, isPlaying, isAutoNext, playTrack, language]);
 
   useEffect(() => {
     if (!globalAudioUrl) {
@@ -226,6 +228,10 @@ export default function BibleContent() {
 
   const handleAudioButtonClick = async () => {
     if (contextAudioLoading) return;
+    if (language !== 'ar') {
+      toast.error(strings.bible.toasts.audio_not_available_lang);
+      return;
+    }
 
     const book = bookNamesData[selectedBookIndex];
     const chapter = selectedChapterIndex + 1;
@@ -320,7 +326,6 @@ export default function BibleContent() {
               timestamp: getCairoIsoString()
             })
           });
-          if (!isNegative) toast.success(`${reason}: +${amount} نقطة ✨`);
         } catch (e) {
           console.error(e);
         }
@@ -328,7 +333,7 @@ export default function BibleContent() {
         const finalAmount = isNegative ? -amount : amount;
         if (!isNegative) {
             await StorageService.addPoints(amount);
-            const history = await StorageService.get(KEYS.POINTS_HISTORY) || await StorageService.get('points_history') || [];
+            const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
             history.push({
               type: type,
               points: finalAmount,
@@ -336,16 +341,15 @@ export default function BibleContent() {
               timestamp: getCairoIsoString()
             });
             await StorageService.save(KEYS.POINTS_HISTORY, history);
-            toast.success(`${reason}: +${amount} نقطة`);
         }
     }
   };
 
   const shareVerse = async (text, index) => {
-    const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
-    const verseLabel = convertToArabicNumber(index + 1);
+    const chapterLabel = formatNumber(selectedChapterIndex + 1);
+    const verseLabel = formatNumber(index + 1);
     const bookName = getBookName(selectedBookIndex);
-    const rlm = "\u200F";
+    const rlm = language === 'ar' ? "\u200F" : "";
     const fullText = `${text} ${rlm}(${bookName} ${verseLabel}:${chapterLabel})`;
 
     try {
@@ -391,13 +395,26 @@ export default function BibleContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel.json';
+        setIsLoading(true);
+        let biblePath = '';
+        if (language === 'ar') {
+          biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel.json';
+        } else if (language === 'en') {
+          biblePath = '/data/bibles/en_kjv.json';
+        } else if (language === 'fr') {
+          biblePath = '/data/bibles/fr_apee.json';
+        } else if (language === 'de') {
+          biblePath = '/data/bibles/de_schlachter.json';
+        } else {
+          biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
+        }
+
         const [namesRes, bibleRes] = await Promise.all([
           fetch('/data/bookNames.json').then(r => r.json()),
           fetch(biblePath).then(r => r.json())
         ]);
 
-        const names = namesRes.ar || [];
+        const names = namesRes[language] || namesRes.ar || [];
         setBookNamesData(names);
         setBibleData(bibleRes);
 
@@ -417,7 +434,7 @@ export default function BibleContent() {
       } catch (e) { setIsLoading(false); }
     };
     loadData();
-  }, [searchParams, useTashkeel]);
+  }, [searchParams, useTashkeel, language]);
 
   useEffect(() => {
     const initUserData = async () => {
@@ -435,7 +452,7 @@ export default function BibleContent() {
       } else {
         const localStats = await StorageService.getLocalStats();
         setFavouriteVerses(localStats.favorites || {});
-        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || await StorageService.get('local_completed_plans') || {};
+        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
         setCompletedChapters(localCompleted);
       }
     };
@@ -443,9 +460,9 @@ export default function BibleContent() {
   }, []);
 
   const copyVerse = (text, index) => {
-    const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
-    const verseLabel = convertToArabicNumber(index + 1);
-    const rlm = "\u200F";
+    const chapterLabel = formatNumber(selectedChapterIndex + 1);
+    const verseLabel = formatNumber(index + 1);
+    const rlm = language === 'ar' ? "\u200F" : "";
     const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${verseLabel}:${chapterLabel})`;
     navigator.clipboard.writeText(fullText);
     setCopiedMessage(strings.bible.toasts.copied);
@@ -455,15 +472,15 @@ export default function BibleContent() {
   };
 
   const copySelected = () => {
-    const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const chapterLabel = formatNumber(selectedChapterIndex + 1);
+    const rlm = language === 'ar' ? "\u200F" : "";
+    const lrm = language === 'ar' ? "\u200E" : "";
     const bookName = getBookName(selectedBookIndex);
     const sortedVerses = [...selectedVerses].sort((a, b) => a.index - b.index);
     const versesText = sortedVerses.map(sv => sv.text).join(' ');
     let verseRange = sortedVerses.length === 1
-      ? convertToArabicNumber(sortedVerses[0].index + 1)
-      : `${convertToArabicNumber(sortedVerses[0].index + 1)} - ${convertToArabicNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
+      ? formatNumber(sortedVerses[0].index + 1)
+      : `${formatNumber(sortedVerses[0].index + 1)} - ${formatNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
 
     const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
     navigator.clipboard.writeText(fullText);
@@ -678,7 +695,6 @@ export default function BibleContent() {
           toast.success(strings.bible.toasts.plan_day_complete);
           if (percentage === 100) {
             unlockBadge(`plan_finish_${planId}`);
-            toast.success(strings.bible.toasts.plan_all_complete);
           }
         }
       } catch (e) { console.error(e); }
@@ -759,7 +775,7 @@ export default function BibleContent() {
   const versesList = chaptersList[selectedChapterIndex] || [];
 
   return (
-    <div dir="rtl" className={styles.container}>
+    <div dir={pageDir} className={styles.container}>
       {selectedVerses.length > 0 && (
         <div className={styles.selectionBar}>
           <div className={styles.selectionActions}>
@@ -775,8 +791,8 @@ export default function BibleContent() {
                 onClick={() => {
                   const verseText = selectedVerses[0].text;
                   const bookName = getBookName(selectedBookIndex);
-                  const chapterLabel = convertToArabicNumber(selectedChapterIndex + 1);
-                  const verseLabel = convertToArabicNumber(selectedVerses[0].index + 1);
+                  const chapterLabel = formatNumber(selectedChapterIndex + 1);
+                  const verseLabel = formatNumber(selectedVerses[0].index + 1);
                   const refText = `${bookName} ${verseLabel}:${chapterLabel}`;
                   router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
                 }}
@@ -838,7 +854,7 @@ export default function BibleContent() {
           <div className={styles.navContent}>
             <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
             <span className={styles.navSeparator}>|</span>
-            <span className={styles.navText}>{`${strings.bible.chapter_label} ${convertToArabicNumber(selectedChapterIndex + 1)}`}</span>
+            <span className={styles.navText}>{`${strings.bible.chapter_label} ${formatNumber(selectedChapterIndex + 1)}`}</span>
           </div>
           <ChevronDown size={20} className={styles.navIcon} />
         </button>
@@ -855,7 +871,7 @@ export default function BibleContent() {
           style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
         >
           <div className={styles.chapterHeader}>
-            <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {convertToArabicNumber(selectedChapterIndex + 1)}</h2>
+            <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {formatNumber(selectedChapterIndex + 1)}</h2>
             <button
               className={styles.aiBtn}
               onClick={() => router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}`)}
@@ -891,7 +907,7 @@ export default function BibleContent() {
                     transition: 'background-color 0.2s ease'
                   }}
                 >
-                  <span className={styles.styledVerseNumber}>{convertToArabicNumber(i + 1)}</span>
+                  <span className={styles.styledVerseNumber}>{formatNumber(i + 1)}</span>
                   <span className={styles.verseText}>{v} </span>
                   {annotation?.note && <span className={styles.miniNoteIndicator} onClick={(e) => { e.stopPropagation(); openNoteEditor(key); }}> 📝 </span>}
                 </span>
@@ -915,7 +931,6 @@ export default function BibleContent() {
         <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> « </button>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          {/* زر الإعدادات الجديد */}
           <button
             onClick={() => router.push('/settings#text-settings')}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}

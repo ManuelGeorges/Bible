@@ -5,6 +5,7 @@ import ar from '../data/ar.json';
 import en from '../data/en.json';
 import de from '../data/de.json';
 import fr from '../data/fr.json';
+import { bookNames as allBookNames } from '../data/bookNames';
 
 const LanguageContext = createContext();
 
@@ -28,6 +29,7 @@ export function LanguageProvider({ children }) {
     }, []);
 
     const strings = useMemo(() => translations[language] || translations.ar, [language]);
+    const bookNames = useMemo(() => allBookNames[language] || allBookNames.ar, [language]);
     const dir = useMemo(() => (language === 'ar' ? 'rtl' : 'ltr'), [language]);
 
     useEffect(() => {
@@ -48,6 +50,7 @@ export function LanguageProvider({ children }) {
     const value = {
         language,
         strings,
+        bookNames,
         dir,
         changeLanguage,
         isFirstTime,
