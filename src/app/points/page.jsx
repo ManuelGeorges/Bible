@@ -63,7 +63,7 @@ const awardPoints = async (userId, type, points, reason) => {
   }
 };
 
-const calculatePointsFromData = (data, isLocal = false) => {
+const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => {
   let totalPoints = data.totalPoints || data.points || 0;
   const history = [];
   const today = getCairoDate();
@@ -114,13 +114,14 @@ const calculatePointsFromData = (data, isLocal = false) => {
 
   const lastActiveDate = data.lastActiveDate || data.lastActive || "";
 
+  const S = stringsParam || {};
   const dailyGoals = [
-    { id: 'dailyLogin', label: strings.points.goals.dailyLogin, points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
-    { id: 'dailyQuestion', label: strings.points.goals.dailyQuestion, points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
-    { id: 'mapExploration', label: strings.points.goals.mapExploration, points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
-    { id: 'share', label: strings.points.goals.share, points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
-    { id: 'completedChapter', label: strings.points.goals.completedChapter, points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
-    { id: 'favouriteVerse', label: strings.points.goals.favouriteVerse, points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
+    { id: 'dailyLogin', label: S.points?.goals?.dailyLogin || 'Daily login', points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
+    { id: 'dailyQuestion', label: S.points?.goals?.dailyQuestion || 'Daily question', points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
+    { id: 'mapExploration', label: S.points?.goals?.mapExploration || 'Explore map', points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
+    { id: 'share', label: S.points?.goals?.share || 'Share', points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
+    { id: 'completedChapter', label: S.points?.goals?.completedChapter || 'Complete chapter', points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
+    { id: 'favouriteVerse', label: S.points?.goals?.favouriteVerse || 'Favourite verse', points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
   ];
 
   return { 
@@ -187,7 +188,7 @@ const categorizeActivities = (history) => {
 };
 
 export default function Points() {
-  const { strings, dir } = useLanguage();
+  const { strings, dir, language } = useLanguage();
   const router = useRouter();
   const [pointsData, setPointsData] = useState(null);
   const [badgesData, setBadgesData] = useState(null);
@@ -226,8 +227,38 @@ export default function Points() {
   };
 
   useEffect(() => {
-    fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data));
-  }, []);
+    const badgeFileMap = {
+      ar: '/data/badges.json',
+      en: '/data/badges_en.json',
+      fr: '/data/badges_fr.json',
+      de: '/data/badges_de.json'
+    };
+    const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
+    setBadgesData(null);
+    const load = async () => {
+      try {
+        const res = await fetch(fetchPath);
+        if (!res.ok) throw new Error('Badges file not found');
+        const data = await res.json();
+        setBadgesData(data);
+      } catch (err) {
+        if (language !== 'ar') {
+          try {
+            const fallback = await fetch('/data/badges.json');
+            if (fallback.ok) {
+              const fallbackData = await fallback.json();
+              setBadgesData(fallbackData);
+            }
+          } catch (e) {
+            console.error('Failed to load fallback badges:', e);
+          }
+        } else {
+          console.error('Failed to load badges:', err);
+        }
+      }
+    };
+    load();
+  }, [language]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -236,9 +267,9 @@ export default function Points() {
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const unsubFirestore = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
+            if (docSnap.exists()) {
             const data = docSnap.data();
-            const newData = calculatePointsFromData(data);
+            const newData = calculatePointsFromData(data, false, strings);
             const today = getCairoDate();
             if (data.lastActiveDate !== today) {
               awardPoints(currentUser.uid, 'dailyLogin', 10, strings.points.points_reasons.daily_login);
@@ -263,7 +294,7 @@ export default function Points() {
           lastActiveDate: await StorageService.get(KEYS.LAST_ACTIVE) || ""
         };
 
-        const newData = calculatePointsFromData(localDataMapped, true);
+        const newData = calculatePointsFromData(localDataMapped, true, strings);
         setPointsData(newData);
         setLoading(false);
       }

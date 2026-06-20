@@ -605,9 +605,25 @@ Rules:
 2. Strictly use only these book names: [${allowedBooks}]
 3. For topics: find direct verses and stories that illustrate them.
 4. High accuracy in chapter and verse numbers.`,
+      en: (term, allowedBooks, filterContext) => `You are a theological search engine for the "Agios" Bible app.
+Extract 5-7 references related to: "${term}"
+Context: ${filterContext}
+
+Important: Respond in English and keep all explanation/reason text in English.
+
+Rules:
+1. Return JSON only in this exact format:
+{
+  "results": [{"book": "book name", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
+}
+2. Strictly use only these book names: [${allowedBooks}]
+3. For topics: find direct verses and stories that illustrate them.
+4. High accuracy in chapter and verse numbers.`,
       fr: (term, allowedBooks, filterContext) => `Vous êtes un moteur de recherche théologique pour l'application Bible "Agios".
 Extrayez 5-7 références liées à: "${term}"
 Contexte: ${filterContext}
+
+Important: Répondez en français et gardez tout le texte d'explication/raison en français.
 
 Règles:
 1. Renvoyez JSON uniquement dans ce format exact:
@@ -615,11 +631,13 @@ Règles:
   "results": [{"book": "nom du livre", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
 }
 2. Utilisez strictement uniquement ces noms de livres: [${allowedBooks}]
-3. Pour les sujets: trouvez les versets directs et les histoires qui les illustrent.
+3. Pour les sujets: trouvez des versets directs et les histoires qui les illustrent.
 4. Haute précision dans les numéros de chapitre et de verset.`,
       de: (term, allowedBooks, filterContext) => `Sie sind eine theologische Suchmaschine für die "Agios" -Bibel-App.
 Extrahieren Sie 5-7 Verweise auf: "${term}"
 Kontext: ${filterContext}
+
+Wichtig: Antworten Sie auf Deutsch und halten Sie alle Erklärungs-/Begründungstexte auf Deutsch.
 
 Regeln:
 1. Geben Sie JSON nur in diesem genauen Format zurück:
@@ -736,6 +754,7 @@ Regeln:
 
     const languagePrompts = {
       en: `You are a linguistic expert specializing in English morphology. Target word: "${term}".
+Respond in English and keep explanation text in English.
 Return JSON only in this exact format:
 {
   "root": "root or base form",
@@ -750,6 +769,7 @@ Rules:
 3. For derivable words: extract all valid morphological forms (past, present, gerund, agent, adjective, noun forms).
 4. Return JSON only, no additional text.`,
       fr: `Vous êtes un expert linguistique spécialisé dans la morphologie française. Mot cible: "${term}".
+Répondez en français et gardez l'explication en français.
 Renvoyez JSON uniquement dans ce format exact:
 {
   "root": "racine ou forme de base",
@@ -764,6 +784,7 @@ Règles:
 3. Pour les mots dérivables: extrayez toutes les formes morphologiques valides (passé, présent, gérondif, agent, adjectif).
 4. Renvoyez JSON uniquement, pas de texte supplémentaire.`,
       de: `Sie sind ein Sprachexperte, der sich auf deutsche Morphologie spezialisiert hat. Zielwort: "${term}".
+Antworten Sie auf Deutsch und halten Sie die Erklärung auf Deutsch.
 Geben Sie JSON nur in diesem exakten Format zurück:
 {
   "root": "Wurzel oder Basisform",
