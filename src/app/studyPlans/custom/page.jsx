@@ -17,7 +17,7 @@ const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export default function CustomPlanForm() {
-    const { strings, bookNames } = useLanguage();
+    const { strings, bookNames, language } = useLanguage();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
@@ -96,7 +96,8 @@ export default function CustomPlanForm() {
 
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 
-            const prompt = `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
+            const prompts = {
+                ar: `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
 
 ### [بيانات الحالة]
 - مدخلات المستخدم: "${data.mood}"
@@ -117,7 +118,80 @@ export default function CustomPlanForm() {
 ملاحظة هامة:
 1. يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية.
 2. يجب أن يحتوي مصفوفة readings على عدد كائنات يساوي تماماً عدد الأيام (${durationDays}).
-3. إذا كان الموضوع متخصصاً جداً، ابدأ به ثم توسع لأسفار ومفاهيم روحية مرتبطة لضمان اكتمال الخطة بجودة عالية.`;
+3. إذا كان الموضوع متخصصاً جداً، ابدأ به ثم توسع لأسفار ومفاهيم روحية مرتبطة لضمان اكتمال الخطة بجودة عالية.
+`,
+                en: `You are "Agios", a spiritual and theological guide. Your task is to create a personalized Bible reading journey that fits the user's need.
+
+### [State Data]
+- User input: "${data.mood}"
+- Plan duration: "${durationDays}" days.
+- Intensity: "${intensityLabel}"
+
+### [Output JSON only]
+{
+  "title": "Inspiring title",
+  "description": "A short encouraging message based on the user's state",
+  "duration": "${durationDays} days",
+  "readings": [
+    { "day": 1, "books": ["Book_Name Chapter_Number"] }
+  ]
+}
+
+Available books list: [${allowedBooks}]
+Important note:
+1. The result must be valid JSON only with no extra text.
+2. The readings array must contain exactly ${durationDays} objects.
+3. If the topic is very specific, start there then expand to related spiritual books and concepts to ensure a high-quality plan.
+`,
+                fr: `Vous êtes "Agios", un guide spirituel et théologique. Votre tâche est de créer un voyage de lecture biblique personnalisé adapté au besoin de l'utilisateur.
+
+### [Données d'état]
+- Entrée utilisateur : "${data.mood}"
+- Durée du plan : "${durationDays}" jours.
+- Intensité : "${intensityLabel}"
+
+### [JSON de sortie seulement]
+{
+  "title": "Titre inspirant",
+  "description": "Un court message encourageant basé sur l'état de l'utilisateur",
+  "duration": "${durationDays} jours",
+  "readings": [
+    { "day": 1, "books": ["Nom_du_livre Numéro_du_chapitre"] }
+  ]
+}
+
+Liste des livres disponibles : [${allowedBooks}]
+Note importante :
+1. Le résultat doit être un JSON valide uniquement sans texte supplémentaire.
+2. Le tableau readings doit contenir exactement ${durationDays} objets.
+3. Si le sujet est très spécifique, commencez par là puis élargissez aux livres et concepts spirituels liés pour garantir un plan de haute qualité.
+`,
+                de: `Du bist "Agios", ein spiritueller und theologischer Führer. Deine Aufgabe ist es, eine personalisierte Bibellesereise zu erstellen, die den Bedarf des Benutzers erfüllt.
+
+### [Statusdaten]
+- Benutzereingabe: "${data.mood}"
+- Planlänge: "${durationDays}" Tage.
+- Intensität: "${intensityLabel}"
+
+### [Nur JSON-Ausgabe]
+{
+  "title": "Inspirierender Titel",
+  "description": "Eine kurze ermutigende Nachricht basierend auf dem Zustand des Benutzers",
+  "duration": "${durationDays} Tage",
+  "readings": [
+    { "day": 1, "books": ["Buchname Kapitelnummer"] }
+  ]
+}
+
+Verfügbare Bücherliste: [${allowedBooks}]
+Wichtiger Hinweis:
+1. Das Ergebnis muss gültiges JSON sein, ohne zusätzlichen Text.
+2. Das readings-Array muss genau ${durationDays} Objekte enthalten.
+3. Wenn das Thema sehr spezifisch ist, beginne damit und erweitere dann auf verwandte spirituelle Bücher und Konzepte, um einen hochwertigen Plan zu gewährleisten.
+`
+            };
+
+            const prompt = prompts[language] || prompts.en;
 
             const model = genAI.getGenerativeModel({
                 model: "gemini-3.1-flash-lite",

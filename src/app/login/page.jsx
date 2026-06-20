@@ -19,7 +19,7 @@ import { Apple } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const LoginPage = () => {
-  const { strings } = useLanguage();
+  const { strings, dir } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
