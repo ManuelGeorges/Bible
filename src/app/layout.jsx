@@ -12,7 +12,9 @@ import UserTracker from '../components/UserTracker';
 import StatsWatcher from '../components/StatsWatcher';
 import { BadgeProvider } from './context/BadgeContext';
 import { AudioProvider } from './context/AudioContext';
+import { LanguageProvider } from './context/LanguageContext';
 import GlobalAudioPlayer from '../components/GlobalAudioPlayer';
+import LanguageWelcome from '../components/LanguageWelcome';
 import TopHeader from '../components/TopHeader';
 import strings from './data/ar.json';
 
@@ -76,45 +78,48 @@ export default function RootLayout({ children }) {
         <meta name="color-scheme" content="light dark" />
       </head>
       <body>
-        <BadgeProvider>
-          <AudioProvider>
-            <StatsWatcher />
-            <ThemeProvider
-              attribute="data-theme"
-              defaultTheme="system"
-              enableSystem={true}
-              storageKey="theme"
-            >
-              <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
-              <UserTracker />
-              <TopHeader />
-              <BibleNavbar />
+        <LanguageProvider>
+          <LanguageWelcome />
+          <BadgeProvider>
+            <AudioProvider>
+              <StatsWatcher />
+              <ThemeProvider
+                attribute="data-theme"
+                defaultTheme="system"
+                enableSystem={true}
+                storageKey="theme"
+              >
+                <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
+                <UserTracker />
+                <TopHeader />
+                <BibleNavbar />
 
-              <SplashHandler>
-                <main className={styles.mainContent}>
-                  <div className={styles.container}>{children}</div>
-                </main>
-                <GlobalAudioPlayer />
-                <Footer />
-                <CapacitorFeatures />
-                <SEOlinks />
-              </SplashHandler>
+                <SplashHandler>
+                  <main className={styles.mainContent}>
+                    <div className={styles.container}>{children}</div>
+                  </main>
+                  <GlobalAudioPlayer />
+                  <Footer />
+                  <CapacitorFeatures />
+                  <SEOlinks />
+                </SplashHandler>
 
-              <Script
-                src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
-                strategy="lazyOnload"
-              />
-              <Script id="google-analytics" strategy="lazyOnload">
-                {`
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', 'G-J90H6JXHNG');
-                `}
-              </Script>
-            </ThemeProvider>
-          </AudioProvider>
-        </BadgeProvider>
+                <Script
+                  src="https://www.googletagmanager.com/gtag/js?id=G-J90H6JXHNG"
+                  strategy="lazyOnload"
+                />
+                <Script id="google-analytics" strategy="lazyOnload">
+                  {`
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-J90H6JXHNG');
+                  `}
+                </Script>
+              </ThemeProvider>
+            </AudioProvider>
+          </BadgeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

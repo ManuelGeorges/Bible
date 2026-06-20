@@ -1,0 +1,82 @@
+[
+  {
+    "month": 1,
+    "day": 1,
+    "question": "Combien y a-t-il d'Évangiles dans le Nouveau Testament ?",
+    "options": ["2", "4", "6", "12"],
+    "answerIndex": 1,
+    "hint": "Évangiles de Matthieu, Marc, Luc, Jean."
+  },
+  {
+    "month": 1,
+    "day": 2,
+    "question": "Qui a été le premier homme créé par Dieu ?",
+    "options": ["Noé", "Adam", "Abraham", "Moïse"],
+    "answerIndex": 1,
+    "hint": "Notre premier père dans le livre de la Genèse."
+  },
+  {
+    "month": 1,
+    "day": 3,
+    "question": "Quel prophète a été avalé par une baleine ?",
+    "options": ["Élie", "Ésaïe", "Jonas", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Son histoire est célèbre dans l'Ancien Testament."
+  },
+  {
+    "month": 1,
+    "day": 4,
+    "question": "Dans quelle ville Jésus-Christ est-il né ?",
+    "options": ["Nazareth", "Bethléem", "Jérusalem", "Galilée"],
+    "answerIndex": 1,
+    "hint": "La ville prophétisée par les prophètes."
+  },
+  {
+    "month": 1,
+    "day": 5,
+    "question": "Quel est le premier des Dix Commandements ?",
+    "options": ["Tu ne tueras point", "Honore ton père et ta mère", "Tu n'auras pas d'autres dieux devant ma face", "Tu ne déroberas point"],
+    "answerIndex": 2,
+    "hint": "Un commandement concernant le culte de Dieu seul."
+  },
+  {
+    "month": 1,
+    "day": 6,
+    "question": "Quel disciple de Jésus était collecteur d'impôts ?",
+    "options": ["Pierre", "Matthieu", "Jean", "Juda"],
+    "answerIndex": 1,
+    "hint": "L'auteur de l'un des quatre Évangiles."
+  },
+  {
+    "month": 1,
+    "day": 7,
+    "question": "Dans quelle mer Moïse a-t-il fendu les eaux ?",
+    "options": ["Mer Morte", "Mer Rouge", "Mer de Galilée", "Mer Méditerranée"],
+    "answerIndex": 1,
+    "hint": "Ce miracle s'est produit lors de l'Exode d'Égypte."
+  },
+  {
+    "month": 1,
+    "day": 8,
+    "question": "Qui est l'homme le plus fort de la Bible avec de longs cheveux ?",
+    "options": ["Saül", "David", "Samson", "Salomon"],
+    "answerIndex": 2,
+    "hint": "Son histoire avec Dalila est célèbre."
+  },
+  {
+    "month": 1,
+    "day": 9,
+    "question": "Combien de jours et de nuits Christ est-il resté dans le tombeau avant de ressusciter ?",
+    "options": ["Un jour", "Deux jours", "Trois jours", "Quatre jours"],
+    "answerIndex": 2,
+    "hint": "La Résurrection s'est produite après trois jours."
+  },
+  {
+    "month": 1,
+    "day": 10,
+    "question": "Qui fut le premier roi d'Israël ?",
+    "options": ["David", "Saül", "Salomon", "Samuel"],
+    "answerIndex": 1,
+    "hint": "Choisi par Samuel pour être roi."
+  }
+]

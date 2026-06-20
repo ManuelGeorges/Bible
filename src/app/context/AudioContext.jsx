@@ -3,11 +3,13 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Capacitor } from '@capacitor/core';
-import strings from '../data/ar.json';
+import { useLanguage } from './LanguageContext'; // استيراد سياق اللغة
 
 const AudioContext = createContext();
 
 export function AudioProvider({ children }) {
+    const { strings, language } = useLanguage(); // الحصول على النصوص واللغة الحالية
+
     const [audioUrl, setAudioUrl] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -172,9 +174,11 @@ export function AudioProvider({ children }) {
                 } catch (e) {}
             }
 
+            // استخدام أرقام عربية أو إنجليزية بناءً على اللغة
+            const displayChapter = language === 'ar' ? chapter.toLocaleString('ar-EG') : chapter;
             const title = strings.audio.track_title
                 .replace('{book}', book.name)
-                .replace('{chapter}', chapter.toLocaleString('ar-EG'));
+                .replace('{chapter}', displayChapter);
 
             return { url, title, times };
         } catch (error) {
@@ -184,7 +188,7 @@ export function AudioProvider({ children }) {
             if (fetchingRef.current === locKey) fetchingRef.current = null;
             setIsAudioLoading(false);
         }
-    }, [bookNames]);
+    }, [bookNames, strings, language]);
 
     const goToChapter = useCallback(async (direction, forceOpen = false) => {
         if (navigationCallback) {
@@ -233,7 +237,6 @@ export function AudioProvider({ children }) {
         }
     }, [playbackSpeed, volume]);
 
-    // Media Session API for notification controls (Spotify-like experience)
     useEffect(() => {
         if (typeof window !== 'undefined' && 'mediaSession' in navigator && audioUrl) {
             const book = bookNames[currentLocation.bookIdx];
@@ -276,9 +279,8 @@ export function AudioProvider({ children }) {
                 } catch (e) {}
             });
         }
-    }, [audioUrl, trackTitle, currentLocation, bookNames, goToChapter]);
+    }, [audioUrl, trackTitle, currentLocation, bookNames, goToChapter, strings]);
 
-    // Keep screen and CPU awake while playing on mobile
     useEffect(() => {
         if (Capacitor.isNativePlatform()) {
             if (isPlaying) {

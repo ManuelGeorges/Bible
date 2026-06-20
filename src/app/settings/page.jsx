@@ -6,7 +6,7 @@ import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
-  Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold
+  Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold, Languages
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
@@ -16,7 +16,7 @@ import { doc, deleteDoc } from 'firebase/firestore';
 import { auth, db, getFirebaseRemoteConfig } from '../../lib/firebase';
 import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
 import styles from './Settings.module.css'
-import strings from '../data/ar.json';
+import { useLanguage } from '../context/LanguageContext';
 
 const fontOptions = [
   { id: 'Cairo', name: 'القاهرة (الأساسي)', value: "'Cairo', sans-serif" },
@@ -26,8 +26,16 @@ const fontOptions = [
   { id: 'ReemKufi', name: 'ريم كوفي (تراثي)', value: "'Reem Kufi', sans-serif" }
 ]
 
+const languages = [
+    { id: 'ar', name: 'العربية', flag: '🇪🇬' },
+    { id: 'en', name: 'English', flag: '🇺🇸' },
+    { id: 'fr', name: 'Français', flag: '🇫🇷' },
+    { id: 'de', name: 'Deutsch', flag: '🇩🇪' },
+];
+
 const Settings = () => {
   const { theme, setTheme } = useTheme()
+  const { language: currentLang, changeLanguage, strings, dir } = useLanguage();
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [fontSize, setFontSize] = useState(18)
@@ -276,8 +284,27 @@ const Settings = () => {
   const currentFontValue = fontOptions.find(f => f.id === fontFamily)?.value || fontOptions[0].value
 
   return (
-    <div className={styles.container} dir="rtl">
+    <div className={styles.container} dir={dir}>
       <h1 className={styles.title}>{strings.settings.title}</h1>
+
+      {/* Language Section */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <Languages size={22} className={styles.iconPrimary} /> {strings.settings.language || (dir === 'rtl' ? 'لغة التطبيق' : 'App Language')}
+        </h2>
+        <div className={styles.fontOptionsList}>
+          {languages.map(lang => (
+            <button
+              key={lang.id}
+              className={`${styles.fontChip} ${currentLang === lang.id ? styles.activeChip : ''}`}
+              onClick={() => changeLanguage(lang.id)}
+            >
+              <span style={{ marginRight: dir === 'rtl' ? '0' : '8px', marginLeft: dir === 'rtl' ? '8px' : '0' }}>{lang.flag}</span>
+              {lang.name}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
@@ -324,7 +351,7 @@ const Settings = () => {
         <div className={styles.settingItem}>
           <div className={styles.settingInfo}>
             <div className={styles.textContainer}>
-              <span className={strings.settings.bible.verse_per_line}>
+              <span className={styles.settingLabel}>
                 <LayoutList size={20} className={styles.iconPrimary} />
                 {strings.settings.bible.verse_per_line}
               </span>

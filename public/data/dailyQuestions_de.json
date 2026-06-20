@@ -1,0 +1,82 @@
+[
+  {
+    "month": 1,
+    "day": 1,
+    "question": "Wie viele Evangelien gibt es im Neuen Testament?",
+    "options": ["2", "4", "6", "12"],
+    "answerIndex": 1,
+    "hint": "Evangelien nach Matthäus, Markus, Lukas, Johannes."
+  },
+  {
+    "month": 1,
+    "day": 2,
+    "question": "Wer war der erste von Gott erschaffene Mensch?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 1,
+    "day": 3,
+    "question": "Welcher Prophet wurde von einem Wal verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 1,
+    "day": 4,
+    "question": "In welcher Stadt wurde Jesus Christus geboren?",
+    "options": ["Nazaret", "Betlehem", "Jerusalem", "Galiläa"],
+    "answerIndex": 1,
+    "hint": "Die Stadt, die von den Propheten vorhergesagt wurde."
+  },
+  {
+    "month": 1,
+    "day": 5,
+    "question": "Was ist das erste der Zehn Gebote?",
+    "options": ["Du sollst nicht töten", "Du sollst deinen Vater und deine Mutter ehren", "Du sollst keine anderen Götter neben mir haben", "Du sollst nicht stehlen"],
+    "answerIndex": 2,
+    "hint": "Ein Gebot, das die Anbetung Gottes allein betrifft."
+  },
+  {
+    "month": 1,
+    "day": 6,
+    "question": "Welcher Jünger Jesu war ein Zolleinnehmer?",
+    "options": ["Petrus", "Matthäus", "Johannes", "Judas"],
+    "answerIndex": 1,
+    "hint": "Der Verfasser eines der vier Evangelien."
+  },
+  {
+    "month": 1,
+    "day": 7,
+    "question": "In welchem Meer teilte Mose das Wasser?",
+    "options": ["Totes Meer", "Rotes Meer", "See von Galiläa", "Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah während des Auszugs aus Ägypten."
+  },
+  {
+    "month": 1,
+    "day": 8,
+    "question": "Wer ist der stärkste Mann in der Bibel mit langen Haaren?",
+    "options": ["Saul", "David", "Simson", "Salomo"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte mit Delila ist berühmt."
+  },
+  {
+    "month": 1,
+    "day": 9,
+    "question": "Wie viele Tage und Nächte blieb Christus im Grab, bevor er auferstand?",
+    "options": ["Einen Tag", "Zwei Tage", "Drei Tage", "Vier Tage"],
+    "answerIndex": 2,
+    "hint": "Die Auferstehung geschah nach drei Tagen."
+  },
+  {
+    "month": 1,
+    "day": 10,
+    "question": "Wer war der erste König von Israel?",
+    "options": ["David", "Saul", "Salomo", "Samuel"],
+    "answerIndex": 1,
+    "hint": "Von Samuel zum König gewählt."
+  }
+]

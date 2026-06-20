@@ -122,6 +122,7 @@
   },
   "settings": {
     "title": "الإعدادات",
+    "language": "لغة التطبيق",
     "appearance": {
       "title": "مظهر التطبيق",
       "light": "فاتح",

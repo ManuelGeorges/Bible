@@ -1,0 +1,250 @@
+[
+  {
+    "month": 1,
+    "day": 1,
+    "question": "How many Gospels are in the New Testament?",
+    "options": ["2", "4", "6", "12"],
+    "answerIndex": 1,
+    "hint": "Gospels of Matthew, Mark, Luke, John."
+  },
+  {
+    "month": 1,
+    "day": 2,
+    "question": "Who was the first human created by God?",
+    "options": ["Noah", "Adam", "Abraham", "Moses"],
+    "answerIndex": 1,
+    "hint": "Our first father in the book of Genesis."
+  },
+  {
+    "month": 1,
+    "day": 3,
+    "question": "Which prophet was swallowed by a whale?",
+    "options": ["Elijah", "Isaiah", "Jonah", "Daniel"],
+    "answerIndex": 2,
+    "hint": "His story is well-known in the Old Testament."
+  },
+  {
+    "month": 1,
+    "day": 4,
+    "question": "In which city was Jesus Christ born?",
+    "options": ["Nazareth", "Bethlehem", "Jerusalem", "Galilee"],
+    "answerIndex": 1,
+    "hint": "The city prophesied by the prophets."
+  },
+  {
+    "month": 1,
+    "day": 5,
+    "question": "What is the first of the Ten Commandments?",
+    "options": ["Thou shalt not kill", "Honor thy father and mother", "Thou shalt have no other gods before me", "Thou shalt not steal"],
+    "answerIndex": 2,
+    "hint": "A commandment concerning the worship of God alone."
+  },
+  {
+    "month": 1,
+    "day": 6,
+    "question": "Which disciple of Jesus was a tax collector?",
+    "options": ["Peter", "Matthew", "John", "Judas"],
+    "answerIndex": 1,
+    "hint": "The author of one of the four Gospels."
+  },
+  {
+    "month": 1,
+    "day": 7,
+    "question": "In which sea did Moses part the waters?",
+    "options": ["Dead Sea", "Red Sea", "Sea of Galilee", "Mediterranean Sea"],
+    "answerIndex": 1,
+    "hint": "This miracle occurred during the Exodus from Egypt."
+  },
+  {
+    "month": 1,
+    "day": 8,
+    "question": "Who is the strongest man in the Bible with long hair?",
+    "options": ["Saul", "David", "Samson", "Solomon"],
+    "answerIndex": 2,
+    "hint": "His story with Delilah is famous."
+  },
+  {
+    "month": 1,
+    "day": 9,
+    "question": "How many days and nights did Christ remain in the tomb before rising?",
+    "options": ["One day", "Two days", "Three days", "Four days"],
+    "answerIndex": 2,
+    "hint": "The Resurrection happened after three days."
+  },
+  {
+    "month": 1,
+    "day": 10,
+    "question": "Who was the first king of Israel?",
+    "options": ["David", "Saul", "Solomon", "Samuel"],
+    "answerIndex": 1,
+    "hint": "Chosen by Samuel to be king."
+  },
+  {
+    "month": 1,
+    "day": 11,
+    "question": "What is the name of the tree Adam and Eve ate from in the Garden of Eden?",
+    "options": ["Tree of Life", "Fig Tree", "Tree of Knowledge of Good and Evil", "Olive Tree"],
+    "answerIndex": 2,
+    "hint": "The forbidden fruit."
+  },
+  {
+    "month": 1,
+    "day": 12,
+    "question": "Who built the ark before the flood?",
+    "options": ["Abraham", "Joseph", "Moses", "Noah"],
+    "answerIndex": 3,
+    "hint": "Saved his family and pairs of every animal."
+  },
+  {
+    "month": 1,
+    "day": 13,
+    "question": "Which prophet was thrown into the lions' den?",
+    "options": ["Jeremiah", "Ezekiel", "Daniel", "Jonah"],
+    "answerIndex": 2,
+    "hint": "He prayed three times a day."
+  },
+  {
+    "month": 1,
+    "day": 14,
+    "question": "What was the first miracle performed by Jesus?",
+    "options": ["Raising Lazarus", "Feeding the multitude", "Turning water into wine", "Healing the blind"],
+    "answerIndex": 2,
+    "hint": "Occurred at the wedding in Cana of Galilee."
+  },
+  {
+    "month": 1,
+    "day": 15,
+    "question": "Which shepherd became King of Israel?",
+    "options": ["Saul", "Joseph", "Solomon", "David"],
+    "answerIndex": 3,
+    "hint": "He killed Goliath."
+  },
+  {
+    "month": 1,
+    "day": 16,
+    "question": "How many books are in the Old Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "The Bible consists of 46 books in the OT and 27 in the NT."
+  },
+  {
+    "month": 1,
+    "day": 17,
+    "question": "Who sold his birthright for a bowl of lentil stew?",
+    "options": ["Jacob", "Joseph", "Esau", "Isaac"],
+    "answerIndex": 2,
+    "hint": "Jacob's twin brother."
+  },
+  {
+    "month": 1,
+    "day": 18,
+    "question": "Which prophet ascended to heaven in a whirlwind with a chariot of fire?",
+    "options": ["Elisha", "Elijah", "Amos", "Jeremiah"],
+    "answerIndex": 1,
+    "hint": "His disciple was Elisha."
+  },
+  {
+    "month": 1,
+    "day": 19,
+    "question": "What is the name of the woman who was barren and gave birth to the prophet Samuel?",
+    "options": ["Sarah", "Rebekah", "Hannah", "Mary"],
+    "answerIndex": 2,
+    "hint": "She prayed in the temple and gave her son to God."
+  },
+  {
+    "month": 1,
+    "day": 20,
+    "question": "What is the first word spoken by God in the Bible?",
+    "options": ["Let there be light", "Let there be Adam", "Let there be a firmament", "Let the waters gather"],
+    "answerIndex": 0,
+    "hint": "On the first day of creation."
+  },
+  {
+    "month": 1,
+    "day": 21,
+    "question": "What is the name of the mountain where Moses received the Ten Commandments?",
+    "options": ["Mount of Olives", "Mount Sinai", "Mount Carmel", "Mount Tabor"],
+    "answerIndex": 1,
+    "hint": "The mountain of the Commandments."
+  },
+  {
+    "month": 1,
+    "day": 22,
+    "question": "What was the last thing Jesus said on the cross?",
+    "options": ["My God, my God, why hast thou forsaken me", "Father, forgive them", "It is finished", "I thirst"],
+    "answerIndex": 2,
+    "hint": "Before he gave up the spirit."
+  },
+  {
+    "month": 1,
+    "day": 23,
+    "question": "Which king built the Temple in Jerusalem?",
+    "options": ["David", "Solomon", "Saul", "Herod"],
+    "answerIndex": 1,
+    "hint": "Son of King David."
+  },
+  {
+    "month": 1,
+    "day": 24,
+    "question": "Who denied Jesus three times before the rooster crowed?",
+    "options": ["John", "Peter", "Judas", "Matthew"],
+    "answerIndex": 1,
+    "hint": "The leader of the disciples."
+  },
+  {
+    "month": 1,
+    "day": 25,
+    "question": "How many apostles (disciples) did Jesus choose?",
+    "options": ["7", "10", "12", "15"],
+    "answerIndex": 2,
+    "hint": "His close circle of messengers."
+  },
+  {
+    "month": 1,
+    "day": 26,
+    "question": "What is the name of the city whose walls fell down at the sound of shouts and trumpets?",
+    "options": ["Jericho", "Jerusalem", "Sodom", "Gibeon"],
+    "answerIndex": 0,
+    "hint": "Joshua led the Israelites to conquer it."
+  },
+  {
+    "month": 1,
+    "day": 27,
+    "question": "Which prophet was thrown into a cistern with no water?",
+    "options": ["Elijah", "Jonah", "Joseph", "Jeremiah"],
+    "answerIndex": 3,
+    "hint": "Known as 'The Weeping Prophet'."
+  },
+  {
+    "month": 1,
+    "day": 28,
+    "question": "What does the word 'Amen' mean?",
+    "options": ["Hello", "So be it", "Thank you", "Goodbye"],
+    "answerIndex": 1,
+    "hint": "A word used at the end of a prayer."
+  },
+  {
+    "month": 1,
+    "day": 29,
+    "question": "Which disciple doubted the resurrection of Christ until he saw the wounds?",
+    "options": ["Peter", "Thomas", "Matthew", "Judas"],
+    "answerIndex": 1,
+    "hint": "He is called 'Doubting Thomas'."
+  },
+  {
+    "month": 1,
+    "day": 30,
+    "question": "On which day of creation did God create man?",
+    "options": ["Fourth", "Fifth", "Sixth", "Seventh"],
+    "answerIndex": 2,
+    "hint": "Before the day of rest."
+  },
+  {
+    "month": 1,
+    "day": 31,
+    "question": "Which leader ordered the slaughter of the children of Bethlehem?",
+    "options": ["Herod", "Pontius Pilate", "Caiaphas", "Caesar"],
+    "answerIndex": 0,
+    "hint": "He feared Christ would replace him as king."
+  }
+]
