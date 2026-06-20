@@ -1,3 +1,5 @@
+"use client";
+
 import styles from './versions.module.css';
 import { useLanguage } from '../context/LanguageContext';
 import updates from '../data/updates.json';

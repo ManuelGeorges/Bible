@@ -419,6 +419,19 @@ function SearchContent() {
     return true;
   };
 
+  const readLegacyCache = async (newKey, legacyKey) => {
+    try {
+      const cached = await kv.get(newKey);
+      if (cached) return { cached, legacy: false };
+      const legacyCached = await kv.get(legacyKey);
+      if (legacyCached) return { cached: legacyCached, legacy: true };
+      return { cached: null, legacy: false };
+    } catch (e) {
+      console.error('Upstash Read Error:', e);
+      return { cached: null, legacy: false };
+    }
+  };
+
   const searchWithGeminiDerivatives = async (term) => {
     if (geminiCache[term]) {
       setSearchInfo(geminiCache[term]);
@@ -428,15 +441,18 @@ function SearchContent() {
 
     const normalizedTerm = normalizeArabicText(term);
     const cacheKey = `${CACHE_KEYS.SEMANTIC}deriv:${normalizedTerm}`;
-    try {
-      const cached = await kv.get(cacheKey);
-      if (cached) {
-        setSearchInfo(cached);
-        setSelectedDerivatives(cached.derivatives);
-        geminiCache[term] = cached;
-        return cached;
+    const legacyKey = `${CACHE_KEYS.SEMANTIC}deriv:${term}`;
+    const { cached, legacy } = await readLegacyCache(cacheKey, legacyKey);
+    if (cached) {
+      setSearchInfo(cached);
+      setSelectedDerivatives(cached.derivatives);
+      geminiCache[term] = cached;
+      if (legacy) {
+        const migrationKey = `${CACHE_KEYS.SEMANTIC}deriv:ar:${term}`;
+        kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
       }
-    } catch (e) { console.error("Upstash Read Error:", e); }
+      return cached;
+    }
 
     if (!checkRateLimit()) return null;
 
@@ -530,13 +546,21 @@ function SearchContent() {
 
   const handleSemanticSearch = async (term) => {
     const cacheKey = `${CACHE_KEYS.SEMANTIC}semantic:${language}:${term}`;
-    try {
-      const cached = await kv.get(cacheKey);
-      if (cached) {
+    const legacyKeys = [
+      `${CACHE_KEYS.SEMANTIC}semantic:${term}`,
+      `${CACHE_KEYS.SEMANTIC}semantic:${normalizeArabicText(term)}`
+    ];
+    const { cached, legacy } = await readLegacyCache(cacheKey, legacyKeys);
+    if (cached) {
+      if (legacy) {
+        const migrationKey = `${CACHE_KEYS.SEMANTIC}semantic:ar:${term}`;
+        kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
+      }
+      if (language === 'ar') {
         setSemanticResults(cached);
         return cached;
       }
-    } catch (e) { console.error("Upstash Read Error:", e); }
+    }
 
     if (!checkRateLimit()) return null;
 

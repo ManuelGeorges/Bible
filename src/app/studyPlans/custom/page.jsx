@@ -65,6 +65,21 @@ export default function CustomPlanForm() {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    const readLegacyCache = async (newKey, legacyKeys) => {
+        try {
+            const cached = await kv.get(newKey);
+            if (cached) return { cached, legacy: false };
+            for (const legacyKey of legacyKeys) {
+                const legacyCached = await kv.get(legacyKey);
+                if (legacyCached) return { cached: legacyCached, legacy: true };
+            }
+            return { cached: null, legacy: false };
+        } catch (e) {
+            console.error('Redis Read Error:', e);
+            return { cached: null, legacy: false };
+        }
+    };
+
     const cleanPlanData = (plan) => {
         if (!plan.readings || !Array.isArray(plan.readings)) return plan;
         return {
@@ -83,6 +98,17 @@ export default function CustomPlanForm() {
             const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
 
             const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+            const legacyKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+            const { cached, legacy } = await readLegacyCache(cacheKey, [legacyKey]);
+            if (cached) {
+                if (legacy) {
+                    const migrationKey = `${CACHE_KEYS.STUDY_PLAN}ar:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+                    kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
+                }
+                if (language === 'ar') {
+                    return cached;
+                }
+            }
             try {
                 const cached = await kv.get(cacheKey);
                 if (cached) {
