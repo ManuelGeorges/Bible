@@ -13653,7 +13653,7 @@
     "name": "Nehemiah"
   },
   {
-    "abbrev": "TOB",
+    "abbrev": "EST",
     "chapters": [
       [
         "Now it came to pass in the days of Ahasuerus, (this {is} Ahasuerus which reigned, from India even unto Ethiopia, {over} an hundred and seven and twenty provinces:)",
@@ -13843,10 +13843,10 @@
         "For Mordecai the Jew {was} next unto king Ahasuerus, and great among the Jews, and accepted of the multitude of his brethren, seeking the wealth of his people, and speaking peace to all his seed."
       ]
     ],
-    "name": "Tobit"
+    "name": "Esther"
   },
   {
-    "abbrev": "JDT",
+    "abbrev": "JOB",
     "chapters": [
       [
         "There was a man in the land of Uz, whose name {was} Job; and that man was perfect and upright, and one that feared God, and eschewed evil.",
@@ -15003,10 +15003,10 @@
         "So Job died, {being} old and full of days."
       ]
     ],
-    "name": "Judith"
+    "name": "Job"
   },
   {
-    "abbrev": "EST",
+    "abbrev": "PSA",
     "chapters": [
       [
         "Blessed {is} the man that walketh not in the counsel of the ungodly, nor standeth in the way of sinners, nor sitteth in the seat of the scornful. {ungodly: or, wicked}",
@@ -17770,10 +17770,10 @@
         "Let every thing that hath breath praise the LORD. Praise ye the LORD."
       ]
     ],
-    "name": "Esther"
+    "name": "Psalms"
   },
   {
-    "abbrev": "JOB",
+    "abbrev": "PRO",
     "chapters": [
       [
         "The proverbs of Solomon the son of David, king of Israel;",
@@ -18753,10 +18753,10 @@
         "Give her of the fruit of her hands; and let her own works praise her in the gates."
       ]
     ],
-    "name": "Job"
+    "name": "Proverbs"
   },
   {
-    "abbrev": "PSA",
+    "abbrev": "ECC",
     "chapters": [
       [
         "The words of the Preacher, the son of David, king in Jerusalem.",
@@ -19005,10 +19005,10 @@
         "For God shall bring every work into judgment, with every secret thing, whether {it be} good, or whether {it be} evil."
       ]
     ],
-    "name": "Psalms"
+    "name": "Ecclesiastes"
   },
   {
-    "abbrev": "PRO",
+    "abbrev": "SNG",
     "chapters": [
       [
         "The song of songs, which {is} Solomon's.",
@@ -19144,10 +19144,10 @@
         "Make haste, my beloved, and be thou like to a roe or to a young hart upon the mountains of spices. {Make...: Heb. Flee away}"
       ]
     ],
-    "name": "Proverbs"
+    "name": "Song of Solomon"
   },
   {
-    "abbrev": "ECC",
+    "abbrev": "ISA",
     "chapters": [
       [
         "The vision of Isaiah the son of Amoz, which he saw concerning Judah and Jerusalem in the days of Uzziah, Jotham, Ahaz, {and} Hezekiah, kings of Judah.",
@@ -20574,10 +20574,10 @@
         "And they shall go forth, and look upon the carcases of the men that have transgressed against me: for their worm shall not die, neither shall their fire be quenched; and they shall be an abhorring unto all flesh."
       ]
     ],
-    "name": "Ecclesiastes"
+    "name": "Isaiah"
   },
   {
-    "abbrev": "SNG",
+    "abbrev": "JER",
     "chapters": [
       [
         "The words of Jeremiah the son of Hilkiah, of the priests that {were} in Anathoth in the land of Benjamin:",
@@ -22048,10 +22048,10 @@
         "And {for} his diet, there was a continual diet given him of the king of Babylon, every day a portion until the day of his death, all the days of his life. {every...: Heb. the matter of the day in his day}"
       ]
     ],
-    "name": "Song of Solomon"
+    "name": "Jeremiah"
   },
   {
-    "abbrev": "WIS",
+    "abbrev": "LAM",
     "chapters": [
       [
         "How doth the city sit solitary, {that was} full of people! {how} is she become as a widow! she {that was} great among the nations, {and} princess among the provinces, {how} is she become tributary!",
@@ -22218,10 +22218,10 @@
         "But thou hast utterly rejected us; thou art very wroth against us. {But...: or, For wilt thou utterly reject us?}"
       ]
     ],
-    "name": "Wisdom of Solomon"
+    "name": "Lamentations"
   },
   {
-    "abbrev": "SIR",
+    "abbrev": "EZK",
     "chapters": [
       [
         "Now it came to pass in the thirtieth year, in the fourth {month}, in the fifth {day} of the month, as I {was} among the captives by the river of Chebar, {that} the heavens were opened, and I saw visions of God. {captives: Heb. captivity}",
@@ -23593,10 +23593,10 @@
         "{It was} round about eighteen thousand {measures}: and the name of the city from {that} day {shall be}, The LORD {is} there. {The LORD...: Heb. Jehovahshammah}"
       ]
     ],
-    "name": "Sirach"
+    "name": "Ezekiel"
   },
   {
-    "abbrev": "ISA",
+    "abbrev": "DAN",
     "chapters": [
       [
         "In the third year of the reign of Jehoiakim king of Judah came Nebuchadnezzar king of Babylon unto Jerusalem, and besieged it.",
@@ -23980,10 +23980,10 @@
         "But go thou thy way till the end {be}: for thou shalt rest, and stand in thy lot at the end of the days. {for thou: or, and thou, etc}"
       ]
     ],
-    "name": "Isaiah"
+    "name": "Daniel"
   },
   {
-    "abbrev": "JER",
+    "abbrev": "HOS",
     "chapters": [
       [
         "The word of the LORD that came unto Hosea, the son of Beeri, in the days of Uzziah, Jotham, Ahaz, {and} Hezekiah, kings of Judah, and in the days of Jeroboam the son of Joash, king of Israel.",
@@ -24211,10 +24211,10 @@
         "Who {is} wise, and he shall understand these {things}? prudent, and he shall know them? for the ways of the LORD {are} right, and the just shall walk in them: but the transgressors shall fall therein."
       ]
     ],
-    "name": "Jeremiah"
+    "name": "Hosea"
   },
   {
-    "abbrev": "LAM",
+    "abbrev": "JOL",
     "chapters": [
       [
         "The word of the LORD that came to Joel the son of Pethuel.",
@@ -24296,10 +24296,10 @@
         "For I will cleanse their blood {that} I have not cleansed: for the LORD dwelleth in Zion. {for the...: or, even I the LORD that}"
       ]
     ],
-    "name": "Lamentations"
+    "name": "Joel"
   },
   {
-    "abbrev": "BAR",
+    "abbrev": "AMO",
     "chapters": [
       [
         "The words of Amos, who was among the herdmen of Tekoa, which he saw concerning Israel in the days of Uzziah king of Judah, and in the days of Jeroboam the son of Joash king of Israel, two years before the earthquake.",
@@ -24466,10 +24466,10 @@
         "And I will plant them upon their land, and they shall no more be pulled up out of their land which I have given them, saith the LORD thy God."
       ]
     ],
-    "name": "Baruch"
+    "name": "Amos"
   },
   {
-    "abbrev": "EZK",
+    "abbrev": "OBA",
     "chapters": [
       [
         "The vision of Obadiah. Thus saith the Lord GOD concerning Edom; We have heard a rumour from the LORD, and an ambassador is sent among the heathen, Arise ye, and let us rise up against her in battle.",
@@ -24495,10 +24495,10 @@
         "And saviours shall come up on mount Zion to judge the mount of Esau; and the kingdom shall be the LORD'S."
       ]
     ],
-    "name": "Ezekiel"
+    "name": "Obadiah"
   },
   {
-    "abbrev": "DAN",
+    "abbrev": "JON",
     "chapters": [
       [
         "Now the word of the LORD came unto Jonah the son of Amittai, saying, {Jonah: Gr. Jonas}",
@@ -24557,10 +24557,10 @@
         "And should not I spare Nineveh, that great city, wherein are more than sixscore thousand persons that cannot discern between their right hand and their left hand; and {also} much cattle?"
       ]
     ],
-    "name": "Daniel"
+    "name": "Jonah"
   },
   {
-    "abbrev": "HOS",
+    "abbrev": "MIC",
     "chapters": [
       [
         "The word of the LORD that came to Micah the Morasthite in the days of Jotham, Ahaz, {and} Hezekiah, kings of Judah, which he saw concerning Samaria and Jerusalem.",
@@ -24682,10 +24682,10 @@
         "Thou wilt perform the truth to Jacob, {and} the mercy to Abraham, which thou hast sworn unto our fathers from the days of old."
       ]
     ],
-    "name": "Hosea"
+    "name": "Micah"
   },
   {
-    "abbrev": "JOL",
+    "abbrev": "NAM",
     "chapters": [
       [
         "The burden of Nineveh. The book of the vision of Nahum the Elkoshite.",
@@ -24741,10 +24741,10 @@
         "{There is} no healing of thy bruise; thy wound is grievous: all that hear the bruit of thee shall clap the hands over thee: for upon whom hath not thy wickedness passed continually? {healing: Heb. wrinkling}"
       ]
     ],
-    "name": "Joel"
+    "name": "Nahum"
   },
   {
-    "abbrev": "AMO",
+    "abbrev": "HAB",
     "chapters": [
       [
         "The burden which Habakkuk the prophet did see.",
@@ -24809,10 +24809,10 @@
         "The LORD God {is} my strength, and he will make my feet like hinds' {feet}, and he will make me to walk upon mine high places. To the chief singer on my stringed instruments. {chief...: or, overseer} {stringed...: Heb. Neginoth}"
       ]
     ],
-    "name": "Amos"
+    "name": "Habakkuk"
   },
   {
-    "abbrev": "OBA",
+    "abbrev": "ZEP",
     "chapters": [
       [
         "The word of the LORD which came unto Zephaniah the son of Cushi, the son of Gedaliah, the son of Amariah, the son of Hizkiah, in the days of Josiah the son of Amon, king of Judah.",
@@ -24874,10 +24874,10 @@
         "At that time will I bring you {again}, even in the time that I gather you: for I will make you a name and a praise among all people of the earth, when I turn back your captivity before your eyes, saith the LORD."
       ]
     ],
-    "name": "Obadiah"
+    "name": "Zephaniah"
   },
   {
-    "abbrev": "JON",
+    "abbrev": "HAG",
     "chapters": [
       [
         "In the second year of Darius the king, in the sixth month, in the first day of the month, came the word of the LORD by Haggai the prophet unto Zerubbabel the son of Shealtiel, governor of Judah, and to Joshua the son of Josedech, the high priest, saying, {by: Heb. by the hand of} {governor: or, captain}",
@@ -24922,10 +24922,10 @@
         "In that day, saith the LORD of hosts, will I take thee, O Zerubbabel, my servant, the son of Shealtiel, saith the LORD, and will make thee as a signet: for I have chosen thee, saith the LORD of hosts."
       ]
     ],
-    "name": "Jonah"
+    "name": "Haggai"
   },
   {
-    "abbrev": "MIC",
+    "abbrev": "ZEC",
     "chapters": [
       [
         "In the eighth month, in the second year of Darius, came the word of the LORD unto Zechariah, the son of Berechiah, the son of Iddo the prophet, saying,",
@@ -25167,10 +25167,10 @@
         "Yea, every pot in Jerusalem and in Judah shall be holiness unto the LORD of hosts: and all they that sacrifice shall come and take of them, and seethe therein: and in that day there shall be no more the Canaanite in the house of the LORD of hosts."
       ]
     ],
-    "name": "Micah"
+    "name": "Zechariah"
   },
   {
-    "abbrev": "NAM",
+    "abbrev": "MAL",
     "chapters": [
       [
         "The burden of the word of the LORD to Israel by Malachi. {by...: Heb. by the hand of}",
@@ -25236,10 +25236,10 @@
         "And he shall turn the heart of the fathers to the children, and the heart of the children to their fathers, lest I come and smite the earth with a curse."
       ]
     ],
-    "name": "Nahum"
+    "name": "Malachi"
   },
   {
-    "abbrev": "HAB",
+    "abbrev": "MAT",
     "chapters": [
       [
         "The book of the generation of Jesus Christ, the son of David, the son of Abraham.",
@@ -26366,10 +26366,10 @@
         "Teaching them to observe all things whatsoever I have commanded you: and, lo, I am with you alway, {even} unto the end of the world. Amen."
       ]
     ],
-    "name": "Habakkuk"
+    "name": "Matthew"
   },
   {
-    "abbrev": "ZEP",
+    "abbrev": "MRK",
     "chapters": [
       [
         "The beginning of the gospel of Jesus Christ, the Son of God;",
@@ -27079,10 +27079,10 @@
         "And they went forth, and preached every where, the Lord working with {them}, and confirming the word with signs following. Amen."
       ]
     ],
-    "name": "Zephaniah"
+    "name": "Mark"
   },
   {
-    "abbrev": "HAG",
+    "abbrev": "LUK",
     "chapters": [
       [
         "Forasmuch as many have taken in hand to set forth in order a declaration of those things which are most surely believed among us,",
@@ -28284,10 +28284,10 @@
         "And were continually in the temple, praising and blessing God. Amen."
       ]
     ],
-    "name": "Haggai"
+    "name": "Luke"
   },
   {
-    "abbrev": "ZEC",
+    "abbrev": "JHN",
     "chapters": [
       [
         "In the beginning was the Word, and the Word was with God, and the Word was God.",
@@ -29211,10 +29211,10 @@
         "And there are also many other things which Jesus did, the which, if they should be written every one, I suppose that even the world itself could not contain the books that should be written. Amen."
       ]
     ],
-    "name": "Zechariah"
+    "name": "John"
   },
   {
-    "abbrev": "MAL",
+    "abbrev": "ACT",
     "chapters": [
       [
         "The former treatise have I made, O Theophilus, of all that Jesus began both to do and teach,",
@@ -30280,10 +30280,10 @@
         "Preaching the kingdom of God, and teaching those things which concern the Lord Jesus Christ, with all confidence, no man forbidding him."
       ]
     ],
-    "name": "Malachi"
+    "name": "Acts"
   },
   {
-    "abbrev": "1MA",
+    "abbrev": "ROM",
     "chapters": [
       [
         "Paul, a servant of Jesus Christ, called {to be} an apostle, separated unto the gospel of God,",
@@ -30751,10 +30751,10 @@
         "To God only wise, {be} glory through Jesus Christ for ever. Amen. «{Written to the Romans from Corinthus, and sent} by Phebe servant of the church at Cenchrea.}»"
       ]
     ],
-    "name": "1 Maccabees"
+    "name": "Romans"
   },
   {
-    "abbrev": "2MA",
+    "abbrev": "1CO",
     "chapters": [
       [
         "Paul, called {to be} an apostle of Jesus Christ through the will of God, and Sosthenes {our} brother,",
@@ -31226,10 +31226,10 @@
         "My love {be} with you all in Christ Jesus. Amen. «{The first epistle} to the Corinthians was written from Philippi by Stephanas and Fortunatus and Achaicus and Timotheus.}»"
       ]
     ],
-    "name": "2 Maccabees"
+    "name": "1 Corinthians"
   },
   {
-    "abbrev": "MAT",
+    "abbrev": "2CO",
     "chapters": [
       [
         "Paul, an apostle of Jesus Christ by the will of God, and Timothy {our} brother, unto the church of God which is at Corinth, with all the saints which are in all Achaia:",
@@ -31515,10 +31515,10 @@
         "The grace of the Lord Jesus Christ, and the love of God, and the communion of the Holy Ghost, {be} with you all. Amen. «{The second epistle} to the Corinthians was written from Philippi, {a city} of Macedonia, by Titus and Lucas.»"
       ]
     ],
-    "name": "Matthew"
+    "name": "2 Corinthians"
   },
   {
-    "abbrev": "MRK",
+    "abbrev": "GAL",
     "chapters": [
       [
         "Paul, an apostle, (not of men, neither by man, but by Jesus Christ, and God the Father, who raised him from the dead;)",
@@ -31682,10 +31682,10 @@
         "Brethren, the grace of our Lord Jesus Christ {be} with your spirit. Amen. «{To the} Galatians written from Rome.»"
       ]
     ],
-    "name": "Mark"
+    "name": "Galatians"
   },
   {
-    "abbrev": "LUK",
+    "abbrev": "EPH",
     "chapters": [
       [
         "Paul, an apostle of Jesus Christ by the will of God, to the saints which are at Ephesus, and to the faithful in Christ Jesus:",
@@ -31855,10 +31855,10 @@
         "Grace {be} with all them that love our Lord Jesus Christ in sincerity. Amen. «{To the} Ephesians written from Rome, by Tychicus.» {in sincerity: or, with incorruption}"
       ]
     ],
-    "name": "Luke"
+    "name": "Ephesians"
   },
   {
-    "abbrev": "JHN",
+    "abbrev": "PHP",
     "chapters": [
       [
         "Paul and Timotheus, the servants of Jesus Christ, to all the saints in Christ Jesus which are at Philippi, with the bishops and deacons:",
@@ -31973,10 +31973,10 @@
         "The grace of our Lord Jesus Christ {be} with you all. Amen. «{To the} Philippians written from Rome, by Epaphroditus.»"
       ]
     ],
-    "name": "John"
+    "name": "Philippians"
   },
   {
-    "abbrev": "ACT",
+    "abbrev": "COL",
     "chapters": [
       [
         "Paul, an apostle of Jesus Christ by the will of God, and Timotheus {our} brother,",
@@ -32082,10 +32082,10 @@
         "The salutation by the hand of me Paul. Remember my bonds. Grace {be} with you. Amen. «{Written from Rome to Colossians by Tychicus and Onesimus.}»"
       ]
     ],
-    "name": "Acts"
+    "name": "Colossians"
   },
   {
-    "abbrev": "ROM",
+    "abbrev": "1TH",
     "chapters": [
       [
         "Paul, and Silvanus, and Timotheus, unto the church of the Thessalonians {which is} in God the Father and {in} the Lord Jesus Christ: Grace {be} unto you, and peace, from God our Father, and the Lord Jesus Christ.",
@@ -32187,10 +32187,10 @@
         "The grace of our Lord Jesus Christ {be} with you. Amen. «{The first epistle} to the Thessalonians was written from Athens.»"
       ]
     ],
-    "name": "Romans"
+    "name": "1 Thessalonians"
   },
   {
-    "abbrev": "1CO",
+    "abbrev": "2TH",
     "chapters": [
       [
         "Paul, and Silvanus, and Timotheus, unto the church of the Thessalonians in God our Father and the Lord Jesus Christ:",
@@ -32246,10 +32246,10 @@
         "The grace of our Lord Jesus Christ {be} with you all. Amen. «{The second epistle} to the Thessalonians was written from Athens.»"
       ]
     ],
-    "name": "1 Corinthians"
+    "name": "2 Thessalonians"
   },
   {
-    "abbrev": "2CO",
+    "abbrev": "1TI",
     "chapters": [
       [
         "Paul, an apostle of Jesus Christ by the commandment of God our Saviour, and Lord Jesus Christ, {which is} our hope;",
@@ -32377,10 +32377,10 @@
         "Which some professing have erred concerning the faith. Grace {be} with thee. Amen. «{The first to Timothy was written from Laodicea, which is the chiefest city of Phrygia Pacatiana.}»"
       ]
     ],
-    "name": "2 Corinthians"
+    "name": "1 Timothy"
   },
   {
-    "abbrev": "GAL",
+    "abbrev": "2TI",
     "chapters": [
       [
         "Paul, an apostle of Jesus Christ by the will of God, according to the promise of life which is in Christ Jesus,",
@@ -32474,10 +32474,10 @@
         "The Lord Jesus Christ {be} with thy spirit. Grace {be} with you. Amen. «{The second epistle} unto Timotheus, ordained the first bishop of the church of the Ephesians, was written from Rome, when Paul was brought before Nero the second time.»"
       ]
     ],
-    "name": "Galatians"
+    "name": "2 Timothy"
   },
   {
-    "abbrev": "EPH",
+    "abbrev": "TIT",
     "chapters": [
       [
         "Paul, a servant of God, and an apostle of Jesus Christ, according to the faith of God's elect, and the acknowledging of the truth which is after godliness;",
@@ -32532,10 +32532,10 @@
         "All that are with me salute thee. Greet them that love us in the faith. Grace {be} with you all. Amen. «{It was written to Titus, ordained the first bishop of the church of the Cretians, from Nicopolis of Macedonia.}»"
       ]
     ],
-    "name": "Ephesians"
+    "name": "Titus"
   },
   {
-    "abbrev": "PHP",
+    "abbrev": "PHM",
     "chapters": [
       [
         "Paul, a prisoner of Jesus Christ, and Timothy {our} brother, unto Philemon our dearly beloved, and fellowlabourer,",
@@ -32565,10 +32565,10 @@
         "The grace of our Lord Jesus Christ {be} with your spirit. Amen. «{Written from Rome to Philemon, by Onesimus a servant.}»"
       ]
     ],
-    "name": "Philippians"
+    "name": "Philemon"
   },
   {
-    "abbrev": "COL",
+    "abbrev": "HEB",
     "chapters": [
       [
         "God, who at sundry times and in divers manners spake in time past unto the fathers by the prophets,",
@@ -32900,10 +32900,10 @@
         "Grace {be} with you all. Amen. «{Written to the Hebrews from Italy, by Timothy.}»"
       ]
     ],
-    "name": "Colossians"
+    "name": "Hebrews"
   },
   {
-    "abbrev": "1TH",
+    "abbrev": "JAS",
     "chapters": [
       [
         "James, a servant of God and of the Lord Jesus Christ, to the twelve tribes which are scattered abroad, greeting.",
@@ -33024,10 +33024,10 @@
         "Let him know, that he which converteth the sinner from the error of his way shall save a soul from death, and shall hide a multitude of sins."
       ]
     ],
-    "name": "1 Thessalonians"
+    "name": "James"
   },
   {
-    "abbrev": "2TH",
+    "abbrev": "1PE",
     "chapters": [
       [
         "Peter, an apostle of Jesus Christ, to the strangers scattered throughout Pontus, Galatia, Cappadocia, Asia, and Bithynia,",
@@ -33145,10 +33145,10 @@
         "Greet ye one another with a kiss of charity. Peace {be} with you all that are in Christ Jesus. Amen."
       ]
     ],
-    "name": "2 Thessalonians"
+    "name": "1 Peter"
   },
   {
-    "abbrev": "1TI",
+    "abbrev": "2PE",
     "chapters": [
       [
         "Simon Peter, a servant and an apostle of Jesus Christ, to them that have obtained like precious faith with us through the righteousness of God and our Saviour Jesus Christ: {Simon: or, Symeon} {God...: Gr. of our God and Saviour}",
@@ -33218,10 +33218,10 @@
         "But grow in grace, and {in} the knowledge of our Lord and Saviour Jesus Christ. To him {be} glory both now and for ever. Amen."
       ]
     ],
-    "name": "1 Timothy"
+    "name": "2 Peter"
   },
   {
-    "abbrev": "2TI",
+    "abbrev": "1JN",
     "chapters": [
       [
         "That which was from the beginning, which we have heard, which we have seen with our eyes, which we have looked upon, and our hands have handled, of the Word of life;",
@@ -33339,10 +33339,10 @@
         "Little children, keep yourselves from idols. Amen."
       ]
     ],
-    "name": "2 Timothy"
+    "name": "1 John"
   },
   {
-    "abbrev": "TIT",
+    "abbrev": "2JN",
     "chapters": [
       [
         "The elder unto the elect lady and her children, whom I love in the truth; and not I only, but also all they that have known the truth;",
@@ -33360,10 +33360,10 @@
         "The children of thy elect sister greet thee. Amen."
       ]
     ],
-    "name": "Titus"
+    "name": "2 John"
   },
   {
-    "abbrev": "PHM",
+    "abbrev": "3JN",
     "chapters": [
       [
         "The elder unto the wellbeloved Gaius, whom I love in the truth. {in...: or, truly}",
@@ -33383,10 +33383,10 @@
         "Peace {be} to thee. {Our} friends salute thee. Greet the friends by name. {face to...: Gr. mouth to mouth}"
       ]
     ],
-    "name": "Philemon"
+    "name": "3 John"
   },
   {
-    "abbrev": "HEB",
+    "abbrev": "JUD",
     "chapters": [
       [
         "Jude, the servant of Jesus Christ, and brother of James, to them that are sanctified by God the Father, and preserved in Jesus Christ, {and} called:",
@@ -33416,10 +33416,10 @@
         "To the only wise God, our Saviour, {be} glory and majesty, dominion and power, both now and ever. Amen."
       ]
     ],
-    "name": "Hebrews"
+    "name": "Jude"
   },
   {
-    "abbrev": "JAS",
+    "abbrev": "REV",
     "chapters": [
       [
         "The Revelation of Jesus Christ, which God gave unto him, to shew unto his servants things which must shortly come to pass; and he sent and signified {it} by his angel unto his servant John:",
@@ -33871,6 +33871,6 @@
         "The grace of our Lord Jesus Christ {be} with you all. Amen."
       ]
     ],
-    "name": "James"
+    "name": "Revelation"
   }
 ]
