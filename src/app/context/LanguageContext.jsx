@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import ar from '../data/ar.json';
 import en from '../data/en.json';
 import de from '../data/de.json';
-import it from '../data/it.json';
 import fr from '../data/fr.json';
 
 const LanguageContext = createContext();
