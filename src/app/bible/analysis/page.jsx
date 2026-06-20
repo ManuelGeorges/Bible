@@ -479,7 +479,7 @@ Formatting rules (strict):
 
 export default function AnalysisPage() {
   return (
-    <Suspense fallback={<div>{strings.common.loading}</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <AnalysisContent />
     </Suspense>
   );
