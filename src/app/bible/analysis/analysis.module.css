@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 20px;
   min-height: 100vh;
-  direction: rtl;
+  /* direction: rtl; تمت إزالتها ليتبع اتجاه اللغة */
   color: var(--color-text-primary);
   background: var(--color-bg);
 }
@@ -73,7 +73,6 @@
 .backBtn:hover {
   background: var(--color-accent);
   color: white;
-  transform: translateX(3px);
 }
 
 .actionButtons {
@@ -111,15 +110,15 @@
 
 .sectionHeader {
   color: var(--color-accent);
-  background: linear-gradient(to left, rgba(0, 71, 171, 0.08), transparent);
   padding: 16px 20px;
   margin-top: 45px;
   margin-bottom: 25px;
   font-size: 1.5rem;
   font-weight: 800;
-  border-right: 6px solid var(--color-accent);
+  border-inline-start: 6px solid var(--color-accent); /* استخدام خصائص منطقية */
   border-radius: 4px 15px 15px 4px;
   line-height: 1.4;
+  background: linear-gradient(to var(--inline-end, left), rgba(0, 71, 171, 0.08), transparent);
 }
 
 .sectionHeader:first-child {

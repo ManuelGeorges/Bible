@@ -249,7 +249,7 @@
   z-index: 9999 ;
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3) ;
   border: 1.5px solid var(--color-accent) !important;
-  direction: ltr ;
+  /* direction: ltr ; تم إزالتها ليتبع اتجاه الصفحة */
   overflow-x: auto ;
   scrollbar-width: none ;
   -webkit-overflow-scrolling: touch ;
@@ -397,13 +397,13 @@
 .versesParagraph {
   display: block ;
   text-align: justify ;
-  direction: rtl ;
+  /* direction: rtl ; تم إزالتها ليتبع اتجاه اللغة المختارة */
 }
 
 .versesList {
   display: block ;
-  text-align: right ;
-  direction: rtl ;
+  text-align: start ; /* تم التغيير من right إلى start ليوافق اللغة */
+  /* direction: rtl ; تم إزالتها ليتبع اتجاه اللغة المختارة */
 }
 
 .inlineVerse {

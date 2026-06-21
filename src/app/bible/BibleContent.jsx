@@ -55,7 +55,7 @@ export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const { language, strings, dir: pageDir, bookNames: bookNamesData } = useLanguage();
+  const { language, strings, dir: pageDir, bookNames: bookNamesData, formatNumber } = useLanguage();
 
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
@@ -87,12 +87,6 @@ export default function BibleContent() {
   const isLongPressActive = useRef(false);
   const touchStartPos = useRef({ x: 0, y: 0 });
   const lastAudioSyncRef = useRef("");
-
-  const formatNumber = useCallback((num) => {
-    if (language !== 'ar') return num.toString();
-    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return num.toString().split('').map(d => arabicNums[+d] || d).join('');
-  }, [language]);
 
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
@@ -897,7 +891,8 @@ export default function BibleContent() {
                     display: versePerLine ? 'block' : 'inline',
                     marginBottom: versePerLine ? '15px' : '0',
                     padding: '2px 4px', borderRadius: '4px', position: 'relative',
-                    transition: 'background-color 0.2s ease'
+                    transition: 'background-color 0.2s ease',
+                    textAlign: 'start'
                   }}
                 >
                   <span className={styles.styledVerseNumber}>{formatNumber(i + 1)}</span>

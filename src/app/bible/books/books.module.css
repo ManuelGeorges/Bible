@@ -27,7 +27,7 @@
 
 .backBtn {
   position: absolute;
-  right: 0;
+  inset-inline-end: 0; /* تم التغيير من right */
   background: var(--color-border);
   border: none;
   color: var(--color-text-primary);
@@ -79,7 +79,7 @@
 
 .searchIcon {
   position: absolute;
-  right: 16px;
+  inset-inline-end: 16px; /* تم التغيير من right */
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-secondary);
@@ -87,7 +87,9 @@
 
 .searchInput {
   width: 100%;
-  padding: 14px 45px 14px 16px;
+  padding: 14px;
+  padding-inline-start: 16px;
+  padding-inline-end: 45px;
   border-radius: 18px;
   border: 2px solid var(--color-border);
   background: var(--color-card-bg);

@@ -88,7 +88,7 @@ body {
   font-family: 'Inter', 'Cairo', sans-serif;
   background-color: var(--color-bg-start);
   color: var(--color-text-primary);
-  direction: rtl;
+  /* direction: rtl; تمت إزالتها ليتم التحكم بها عبر LanguageContext */
 
   /* تحسين جودة الخطوط لتشبه الـ Native */
   -webkit-font-smoothing: antialiased;
@@ -201,7 +201,7 @@ input, textarea {
   box-shadow: var(--glass-shadow);
   position: relative;
   overflow: hidden;
-  direction: rtl;
+  /* direction: rtl; تمت إزالتها */
   animation: modalPop var(--transition-bounce) 0.5s;
 }
 

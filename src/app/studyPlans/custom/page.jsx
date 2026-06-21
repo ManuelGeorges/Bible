@@ -109,17 +109,8 @@ export default function CustomPlanForm() {
                     return cached;
                 }
             }
-            try {
-                const cached = await kv.get(cacheKey);
-                if (cached) {
-                    return cached;
-                }
-            } catch (e) {
-                console.error("Redis Read Error:", e);
-            }
 
             const allowedBooks = bookNames.map(book => book.name).join(', ');
-
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 
             const prompts = {
@@ -286,7 +277,8 @@ Wichtiger Hinweis:
                     type: 'custom',
                     createdAt: getCairoIsoString(),
                     completedDays: {},
-                    completionPercentage: 0
+                    completionPercentage: 0,
+                    language: language
                 };
 
                 if (currentUser) {
@@ -308,10 +300,11 @@ Wichtiger Hinweis:
                     await addDoc(sharedPlanRef, {
                         ...newPlanObject,
                         authorId: currentUser ? currentUser.uid : 'guest',
-                        authorName: (currentUser && formData.showAuthor) ? (userData?.displayName || strings.studyPlans.custom.author_default) : 'مشارك مجهول',
+                        authorName: (currentUser && formData.showAuthor) ? (userData?.displayName || strings.studyPlans.custom.author_default) : (language === 'ar' ? 'مشارك مجهول' : 'Anonymous User'),
                         isShared: true,
                         createdAt: serverTimestamp(),
-                        originalPlanId: planId
+                        originalPlanId: planId,
+                        language: language
                     });
                 }
 

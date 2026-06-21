@@ -60,7 +60,7 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
 }
 
 function AnalysisContent() {
-  const { strings, language, dir } = useLanguage();
+  const { strings, language, dir, formatNumber } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
   const book = searchParams.get('book');
@@ -76,11 +76,6 @@ function AnalysisContent() {
   const [copied, setCopied] = useState(false);
   const hasFetched = useRef(false);
 
-  const convertToArabicNumber = (num) => {
-    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return num?.toString().split('').map(d => arabicNums[+d] || d).join('') || '';
-  };
-
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
@@ -92,7 +87,6 @@ function AnalysisContent() {
         try {
           const parsed = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
           if (typeof parsed === 'string') {
-            // legacy string value
             setAnalysis(parsed);
             analysisRef.current = parsed;
             setIsLoading(false);
@@ -111,7 +105,6 @@ function AnalysisContent() {
             return;
           }
         } catch (e) {
-          // not JSON, treat as raw string
           setAnalysis(cachedRaw);
           analysisRef.current = cachedRaw;
           setIsLoading(false);
@@ -223,7 +216,7 @@ function AnalysisContent() {
     2. Linguistik: Herkunft der Wörter (Hebräisch/Griechisch/Aramäisch) nur für die Passage.
     3. Historischer Hintergrund: kultureller und historischer Kontext.
     4. Exegese: theologische/patristische Interpretation (koptisch-orthodoxe Tradition). Verwenden und zitieren Sie bei der Exegese die Werke oder Lehren von P. Tadros Ya'qub Malaty und P. Antonios Fikry (Arabisch: تادرس يعقوب ملطي، أنطونيوس فكري), wo relevant; fügen Sie ein kurzes Zitat oder eine Quellenangabe hinzu.
-    5. Anwendung: zeitgenössische praktische Implikationen.
+    5. Application: zeitgenössische praktische Implikationen.
     6. Einwände: Behandeln Sie nur Einwände, die sich AUF DIE PASSAGE beziehen.
 
     Formatierungsregeln (streng):
@@ -275,7 +268,11 @@ function AnalysisContent() {
       setStatus(strings.analysis.status_analyzing);
       await withRetry(
         attemptGeneration,
-        (attempt) => setStatus(`محاولة ${convertToArabicNumber(attempt)}: مساعد آجيوس الذكي يقوم بتحليل النص...`),
+        (attempt) => setStatus(
+            language === 'ar'
+            ? `محاولة ${formatNumber(attempt)}: مساعد آجيوس الذكي يقوم بتحليل النص...`
+            : `Attempt ${formatNumber(attempt)}: Agios AI is analyzing text...`
+        ),
         5
       );
       setIsLoading(false);
@@ -325,8 +322,8 @@ function AnalysisContent() {
   const handleShare = async () => {
     if (!analysis) return;
     const shareTitle = verses
-      ? `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
-      : `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)}`;
+      ? `${strings.analysis.title_prefix} ${book} ${formatNumber(chapter)} : ${formatNumber(verses)}`
+      : `${strings.analysis.title_prefix} ${book} ${formatNumber(chapter)}`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -414,7 +411,8 @@ function AnalysisContent() {
       let cleanLine = line.replace(/[#*]/g, '').trim();
       if (!cleanLine) return <div key={i} className={styles.spacer} />;
 
-      const headerMatch = cleanLine.match(/^([١٢٣٤٥٦]\.\s*[^:]{1,25}(?::|$))(.*)/);
+      // تعديل: دعم الأرقام العربية والإنجليزية في العناوين
+      const headerMatch = cleanLine.match(/^([123456١٢٣٤٥٦]\.\s*[^:]{1,25}(?::|$))(.*)/);
 
       if (headerMatch) {
         const headerPart = headerMatch[1].trim();
@@ -436,8 +434,8 @@ function AnalysisContent() {
   };
 
   const displayTitle = verses
-    ? `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)} : ${convertToArabicNumber(verses)}`
-    : `${strings.analysis.title_prefix} ${book} ${convertToArabicNumber(chapter)}`;
+    ? `${strings.analysis.title_prefix} ${book} ${formatNumber(chapter)} : ${formatNumber(verses)}`
+    : `${strings.analysis.title_prefix} ${book} ${formatNumber(chapter)}`;
 
   return (
     <div className={styles.container} dir={dir}>
@@ -468,7 +466,7 @@ function AnalysisContent() {
         {countdown > 0 ? (
           <div className={styles.loadingWrapper}>
             <div className={styles.countdownCircle}>
-               <span className={styles.countdownNumber}>{convertToArabicNumber(countdown)}</span>
+               <span className={styles.countdownNumber}>{formatNumber(countdown)}</span>
             </div>
             <h2 className={styles.waitTitle}>{strings.analysis.wait_title}</h2>
             <p className={styles.statusText}>

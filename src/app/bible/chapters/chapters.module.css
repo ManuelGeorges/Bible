@@ -2,7 +2,7 @@
     min-height: 100vh;
     padding: 20px 16px;
     background: var(--color-bg-primary);
-    direction: rtl;
+    /* direction: rtl;  تمت إزالتها ليتبع اتجاه اللغة */
     display: flex;
     flex-direction: column;
 }

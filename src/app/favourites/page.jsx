@@ -18,7 +18,7 @@ const HIGHLIGHT_COLORS = [
 
 export default function FavouritesPage() {
   const router = useRouter();
-  const { strings } = useLanguage();
+  const { strings, formatNumber } = useLanguage();
   const [activeTab, setActiveTab] = useState('favourites'); 
   const [selectedColor, setSelectedColor] = useState(null); 
   const [allData, setAllData] = useState([]);
@@ -27,11 +27,6 @@ export default function FavouritesPage() {
   const [tempLabel, setTempLabel] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
-
-  const convertToArabicNumber = (num) => {
-    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return num.toString().split('').map(d => arabicNums[+d] || d).join('');
-  };
 
   const fetchData = useCallback(async (u) => {
     setIsLoading(true);
@@ -151,7 +146,7 @@ export default function FavouritesPage() {
                     </span>
                     <button className={styles.inlineEditBtn}>✎</button>
                   </div>
-                  <span className={styles.colorCount}>({convertToArabicNumber(count)})</span>
+                  <span className={styles.colorCount}>({formatNumber(count)})</span>
                 </div>
               );
             })}
@@ -189,7 +184,7 @@ export default function FavouritesPage() {
                   {item.reference ? (
                     item.reference
                   ) : (
-                    `${item.book} ${convertToArabicNumber((item.ch || 0) + 1)}:${convertToArabicNumber((item.v || 0) + 1)}`
+                    `${item.book} ${formatNumber((item.ch || 0) + 1)}:${formatNumber((item.v || 0) + 1)}`
                   )}
                 </span>
               </div>

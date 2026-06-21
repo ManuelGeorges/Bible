@@ -1,0 +1,4324 @@
+{
+  "allQuestions": [
+    {
+      "id": 1,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "Who was the first human created by God?",
+      "options": ["Noah", "Adam", "Abraham", "Isaac"],
+      "correctAnswer": "Adam",
+      "verseReference": "Genesis 2:7"
+    },
+    {
+      "id": 2,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "What did Noah build to save himself from the flood?",
+      "options": ["A house", "A tower", "An ark (ship)", "A temple"],
+      "correctAnswer": "An ark (ship)",
+      "verseReference": "Genesis 6:14"
+    },
+    {
+      "id": 3,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "Who was the son of Abraham that he offered as a sacrifice of obedience to God?",
+      "options": ["Ishmael", "Jacob", "Isaac", "Joseph"],
+      "correctAnswer": "Isaac",
+      "verseReference": "Genesis 22:2"
+    },
+    {
+      "id": 4,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "How many sons did Jacob have (tribes of Israel)?",
+      "options": ["7", "10", "12", "40"],
+      "correctAnswer": "12",
+      "verseReference": "Genesis 35:22"
+    },
+    {
+      "id": 5,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "Who was the son that his brothers sold and went to Egypt?",
+      "options": ["Benjamin", "Reuben", "Judah", "Joseph"],
+      "correctAnswer": "Joseph",
+      "verseReference": "Genesis 37:28"
+    },
+    {
+      "id": 6,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "What did God create on the first day?",
+      "options": ["Light", "The sea", "Trees", "Animals"],
+      "correctAnswer": "Light",
+      "verseReference": "Genesis 1:3"
+    },
+    {
+      "id": 7,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "What is the name of Adam's wife?",
+      "options": ["Sarah", "Rebekah", "Eve", "Leah"],
+      "correctAnswer": "Eve",
+      "verseReference": "Genesis 3:20"
+    },
+    {
+      "id": 8,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "What was the sign that God set in the sky after the flood?",
+      "options": ["A star", "A rainbow", "A cloud", "The sun"],
+      "correctAnswer": "A rainbow",
+      "verseReference": "Genesis 9:13"
+    },
+    {
+      "id": 9,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "Where did God place Adam and Eve in the beginning?",
+      "options": ["In Egypt", "In the Garden of Eden", "In Jerusalem", "In Babylon"],
+      "correctAnswer": "In the Garden of Eden",
+      "verseReference": "Genesis 2:8"
+    },
+    {
+      "id": 10,
+      "category": "Genesis",
+      "difficulty": "easy",
+      "questionText": "Who is the person who lived the longest life in the Bible?",
+      "options": ["Adam", "Noah", "Methuselah", "Abraham"],
+      "correctAnswer": "Methuselah",
+      "verseReference": "Genesis 5:27"
+    },
+    {
+      "id": 11,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "Who was the prophet that led the Israelites out of Egypt?",
+      "options": ["David", "Moses", "Samuel", "Joshua"],
+      "correctAnswer": "Moses",
+      "verseReference": "Exodus 3:10"
+    },
+    {
+      "id": 12,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "Which sea was parted so the people could cross?",
+      "options": ["The Mediterranean Sea", "The Dead Sea", "The Red Sea", "The Nile River"],
+      "correctAnswer": "The Red Sea",
+      "verseReference": "Exodus 14:21"
+    },
+    {
+      "id": 13,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "How many commandments did God give to Moses?",
+      "options": ["5", "7", "10", "12"],
+      "correctAnswer": "10",
+      "verseReference": "Exodus 20"
+    },
+    {
+      "id": 14,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "Where was Moses found when he was a small child?",
+      "options": ["In the river", "In the temple", "In a house", "On a mountain"],
+      "correctAnswer": "In the river",
+      "verseReference": "Exodus 2:5"
+    },
+    {
+      "id": 15,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "Who was Moses' brother that he spoke for him?",
+      "options": ["Joshua", "Aaron", "Caleb", "Lot"],
+      "correctAnswer": "Aaron",
+      "verseReference": "Exodus 4:14"
+    },
+    {
+      "id": 16,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "What did the people eat in the wilderness (bread from heaven)?",
+      "options": ["Fruit", "Manna", "Honey", "Fish"],
+      "correctAnswer": "Manna",
+      "verseReference": "Exodus 16:15"
+    },
+    {
+      "id": 17,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "On which mountain did Moses receive the law?",
+      "options": ["Mount Sinai", "Mount of Olives", "Mount Carmel", "Mount Nebo"],
+      "correctAnswer": "Mount Sinai",
+      "verseReference": "Exodus 19:20"
+    },
+    {
+      "id": 18,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "What was the first plague with which God struck Egypt?",
+      "options": ["Frogs", "Darkness", "Blood", "Locusts"],
+      "correctAnswer": "Blood",
+      "verseReference": "Exodus 7:20"
+    },
+    {
+      "id": 19,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "What did the people make and worship when Moses delayed on the mountain?",
+      "options": ["A tent", "A golden calf", "A house", "A ship"],
+      "correctAnswer": "A golden calf",
+      "verseReference": "Exodus 32:4"
+    },
+    {
+      "id": 20,
+      "category": "Exodus",
+      "difficulty": "easy",
+      "questionText": "How did Moses strike the rock to bring water out of it?",
+      "options": ["With his hand", "With another rock", "With his staff", "With his sword"],
+      "correctAnswer": "With his staff",
+      "verseReference": "Exodus 17:6"
+    },
+    {
+      "id": 21,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "Which tribe was responsible for the service in the house of God?",
+      "options": ["Judah", "Levi", "Benjamin", "Reuben"],
+      "correctAnswer": "Levi",
+      "verseReference": "Leviticus 8"
+    },
+    {
+      "id": 22,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "Who was the first high priest?",
+      "options": ["Moses", "Aaron", "Joshua", "Samuel"],
+      "correctAnswer": "Aaron",
+      "verseReference": "Leviticus 8:12"
+    },
+    {
+      "id": 23,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "What quality does God seek from His people in this book?",
+      "options": ["Strength", "Wealth", "Holiness", "Speed"],
+      "correctAnswer": "Holiness",
+      "verseReference": "Leviticus 19:2"
+    },
+    {
+      "id": 24,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "What did people offer to God as an expression of love or repentance?",
+      "options": ["Gifts", "Sacrifices", "Money", "Clothes"],
+      "correctAnswer": "Sacrifices",
+      "verseReference": "Leviticus 1"
+    },
+    {
+      "id": 25,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "How many days does the people rest weekly (the Sabbath)?",
+      "options": ["One day", "Two days", "Three days", "No day"],
+      "correctAnswer": "One day",
+      "verseReference": "Leviticus 23:3"
+    },
+    {
+      "id": 26,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "What type of food was forbidden to eat in the Old Testament?",
+      "options": ["Fish", "Pork", "Sheep", "Cattle"],
+      "correctAnswer": "Pork",
+      "verseReference": "Leviticus 11:7"
+    },
+    {
+      "id": 27,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "Where did God dwell among His people in the wilderness?",
+      "options": ["In palaces", "In the tent of meeting", "In stone houses", "On Mount Sinai"],
+      "correctAnswer": "In the tent of meeting",
+      "verseReference": "Leviticus 1"
+    },
+    {
+      "id": 28,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "What was placed on the altar to be a sweet aroma to God?",
+      "options": ["Water", "Incense", "Dust", "Clothes"],
+      "correctAnswer": "Incense",
+      "verseReference": "Leviticus 16:12"
+    },
+    {
+      "id": 29,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "Who was responsible for offering the sacrifices to God?",
+      "options": ["Kings", "Priests", "Soldiers", "Children"],
+      "correctAnswer": "Priests",
+      "verseReference": "Leviticus 21"
+    },
+    {
+      "id": 30,
+      "category": "Leviticus",
+      "difficulty": "easy",
+      "questionText": "What was the festival in which they celebrated their exodus from Egypt?",
+      "options": ["Passover", "Harvest Festival", "Feast of Tabernacles", "Feast of Trumpets"],
+      "correctAnswer": "Passover",
+      "verseReference": "Leviticus 23:5"
+    },
+    {
+      "id": 31,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "Why was the book called 'Numbers'?",
+      "options": ["Because of many stories", "Because of the counting and census of the people", "Because of the number of mountains", "Because of the number of days"],
+      "correctAnswer": "Because of the counting and census of the people",
+      "verseReference": "Numbers 1"
+    },
+    {
+      "id": 32,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "How many spies did Moses send to the land?",
+      "options": ["2", "7", "10", "12"],
+      "correctAnswer": "12",
+      "verseReference": "Numbers 13:2"
+    },
+    {
+      "id": 33,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "Who were the two spies that did not fear and said that God is with us?",
+      "options": ["Moses and Aaron", "Joshua and Caleb", "Nadab and Abihu", "Korah and Dathan"],
+      "correctAnswer": "Joshua and Caleb",
+      "verseReference": "Numbers 14:6"
+    },
+    {
+      "id": 34,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "What did Moses raise in the wilderness to heal the people from snake bites?",
+      "options": ["A wooden cross", "A bronze serpent", "A white banner", "A sword"],
+      "correctAnswer": "A bronze serpent",
+      "verseReference": "Numbers 21:9"
+    },
+    {
+      "id": 35,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "What bird did God send to the people to eat meat?",
+      "options": ["Pigeon", "Eagle", "Quail", "Sparrow"],
+      "correctAnswer": "Quail",
+      "verseReference": "Numbers 11:31"
+    },
+    {
+      "id": 36,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "Who was the prophet whose donkey spoke to him?",
+      "options": ["Balaam", "Samuel", "Moses", "Elijah"],
+      "correctAnswer": "Balaam",
+      "verseReference": "Numbers 22:28"
+    },
+    {
+      "id": 37,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "For how many years did the Israelites wander in the wilderness?",
+      "options": ["10", "20", "40", "70"],
+      "correctAnswer": "40",
+      "verseReference": "Numbers 14:33"
+    },
+    {
+      "id": 38,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "What happened to Aaron's staff to show that he was chosen?",
+      "options": ["It became gold", "It budded (produced almonds)", "It broke", "It flew in the sky"],
+      "correctAnswer": "It budded (produced almonds)",
+      "verseReference": "Numbers 17:8"
+    },
+    {
+      "id": 39,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "What was the thing that led the people during the day?",
+      "options": ["Fire", "A cloud", "A loud voice", "Wind"],
+      "correctAnswer": "A cloud",
+      "verseReference": "Numbers 9:17"
+    },
+    {
+      "id": 40,
+      "category": "Numbers",
+      "difficulty": "easy",
+      "questionText": "What was the thing that led the people during the night?",
+      "options": ["Moon", "A pillar of fire", "Stars", "Incense"],
+      "correctAnswer": "A pillar of fire",
+      "verseReference": "Numbers 9:15"
+    },
+    {
+      "id": 41,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "What does the word 'Deuteronomy' mean?",
+      "options": ["The beginning", "The repetition of the law", "The end", "The war"],
+      "correctAnswer": "The repetition of the law",
+      "verseReference": "Deuteronomy 1"
+    },
+    {
+      "id": 42,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "On which mountain did Moses die?",
+      "options": ["Mount Sinai", "Mount Nebo", "Mount Carmel", "Mount of Olives"],
+      "correctAnswer": "Mount Nebo",
+      "verseReference": "Deuteronomy 34:1"
+    },
+    {
+      "id": 43,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "Who led the people after Moses' death?",
+      "options": ["Aaron", "Joshua", "David", "Gideon"],
+      "correctAnswer": "Joshua",
+      "verseReference": "Deuteronomy 34:9"
+    },
+    {
+      "id": 44,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "What was the greatest commandment that Moses emphasized?",
+      "options": ["Strength", "Love the Lord your God with all your heart", "Building houses", "Gathering gold"],
+      "correctAnswer": "Love the Lord your God with all your heart",
+      "verseReference": "Deuteronomy 6:5"
+    },
+    {
+      "id": 45,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "Where were Moses and the people when he gave these speeches?",
+      "options": ["In Egypt", "Near the land of Canaan", "In Babylon", "In Rome"],
+      "correctAnswer": "Near the land of Canaan",
+      "verseReference": "Deuteronomy 1:1"
+    },
+    {
+      "id": 46,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "What did Moses ask the people to do with the commandments?",
+      "options": ["Forget them", "Keep them in their hearts and teach them to their children", "Hide them", "Throw them away"],
+      "correctAnswer": "Keep them in their hearts and teach them to their children",
+      "verseReference": "Deuteronomy 6:6"
+    },
+    {
+      "id": 47,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "What was the land that God promised to the people?",
+      "options": ["The land of Egypt", "The land of Canaan", "The land of Greece", "The land of Ethiopia"],
+      "correctAnswer": "The land of Canaan",
+      "verseReference": "Deuteronomy 1:8"
+    },
+    {
+      "id": 48,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "What was the name of the promised land (that flows with...)?",
+      "options": ["Water and light", "Milk and honey", "Fruit and crops", "Gold and silver"],
+      "correctAnswer": "Milk and honey",
+      "verseReference": "Deuteronomy 6:3"
+    },
+    {
+      "id": 49,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "Did Moses enter the land of Canaan before his death?",
+      "options": ["Yes", "No (he only saw it from afar)", "He lived in it", "He became king over it"],
+      "correctAnswer": "No (he only saw it from afar)",
+      "verseReference": "Deuteronomy 34:4"
+    },
+    {
+      "id": 50,
+      "category": "Deuteronomy",
+      "difficulty": "easy",
+      "questionText": "What did Moses choose for the people at the end of his speech?",
+      "options": ["Death", "Life and blessing", "Fear", "Sorrow"],
+      "correctAnswer": "Life and blessing",
+      "verseReference": "Deuteronomy 30:19"
+    },
+    {
+      "id": 51,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What was the first city that Joshua and the people entered?",
+      "options": ["Babylon", "Jericho", "Nazareth", "Nineveh"],
+      "correctAnswer": "Jericho",
+      "verseReference": "Joshua 6"
+    },
+    {
+      "id": 52,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What happened to the walls of Jericho?",
+      "options": ["They fell with shouting and trumpets", "The soldiers destroyed them", "They burned", "They remained the same"],
+      "correctAnswer": "They fell with shouting and trumpets",
+      "verseReference": "Joshua 6:20"
+    },
+    {
+      "id": 53,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What river did the people cross with Joshua?",
+      "options": ["The Nile", "The Jordan", "The Euphrates", "The Dead Sea"],
+      "correctAnswer": "The Jordan",
+      "verseReference": "Joshua 3:17"
+    },
+    {
+      "id": 54,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "Who was the woman that helped the spies in Jericho?",
+      "options": ["Rahab", "Ruth", "Deborah", "Mary"],
+      "correctAnswer": "Rahab",
+      "verseReference": "Joshua 2:1"
+    },
+    {
+      "id": 55,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What was the priests carrying while crossing the Jordan?",
+      "options": ["Weapons", "The Ark of the Covenant", "Food", "Gold"],
+      "correctAnswer": "The Ark of the Covenant",
+      "verseReference": "Joshua 3:15"
+    },
+    {
+      "id": 56,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "How many times did the people march around Jericho on the seventh day?",
+      "options": ["Once", "Three times", "Seven times", "Twelve times"],
+      "correctAnswer": "Seven times",
+      "verseReference": "Joshua 6:4"
+    },
+    {
+      "id": 57,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What happened to the sun in Joshua's time to complete the war?",
+      "options": ["It disappeared", "It shone brightly", "It stood still (lasted)", "It set quickly"],
+      "correctAnswer": "It stood still (lasted)",
+      "verseReference": "Joshua 10:13"
+    },
+    {
+      "id": 58,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What did Joshua do with the land after the war ended?",
+      "options": ["He sold it", "He divided it among the tribes", "He left it", "He built palaces in it"],
+      "correctAnswer": "He divided it among the tribes",
+      "verseReference": "Joshua 14"
+    },
+    {
+      "id": 59,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "What is Joshua's famous motto (as for me and my house...)?",
+      "options": ["We will play", "We will serve the Lord", "We will sleep", "We will travel"],
+      "correctAnswer": "We will serve the Lord",
+      "verseReference": "Joshua 24:15"
+    },
+    {
+      "id": 60,
+      "category": "Joshua",
+      "difficulty": "easy",
+      "questionText": "How many stones did the people place as a memorial for crossing the Jordan?",
+      "options": ["3", "7", "10", "12"],
+      "correctAnswer": "12",
+      "verseReference": "Joshua 4:3"
+    },
+    {
+      "id": 61,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "Who was the judge that was very strong and had long hair?",
+      "options": ["David", "Samson", "Gideon", "Barak"],
+      "correctAnswer": "Samson",
+      "verseReference": "Judges 13"
+    },
+    {
+      "id": 62,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "Who was the judge and prophetess that sat under a palm tree?",
+      "options": ["Rahab", "Ruth", "Deborah", "Esther"],
+      "correctAnswer": "Deborah",
+      "verseReference": "Judges 4:4"
+    },
+    {
+      "id": 63,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "Who was the judge that chose his army by how they drank water?",
+      "options": ["Gideon", "Samson", "Jephthah", "Othniel"],
+      "correctAnswer": "Gideon",
+      "verseReference": "Judges 7:5"
+    },
+    {
+      "id": 64,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "What did Gideon's army of 300 men use in the war?",
+      "options": ["Swords and shields", "Trumpets, jars and torches", "Bows and arrows", "Horses and chariots"],
+      "correctAnswer": "Trumpets, jars and torches",
+      "verseReference": "Judges 7:16"
+    },
+    {
+      "id": 65,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "What animal did Samson kill with his bare hands?",
+      "options": ["A bear", "A lion", "A leopard", "A wolf"],
+      "correctAnswer": "A lion",
+      "verseReference": "Judges 14:6"
+    },
+    {
+      "id": 66,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "Who was the woman that deceived Samson to know the secret of his strength?",
+      "options": ["Rahab", "Delilah", "Jezebel", "Athaliah"],
+      "correctAnswer": "Delilah",
+      "verseReference": "Judges 16:4"
+    },
+    {
+      "id": 67,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "What was the secret of Samson's strength?",
+      "options": ["His muscles", "His sword", "His hair (a Nazarite vow to the Lord)", "His height"],
+      "correctAnswer": "His hair (a Nazarite vow to the Lord)",
+      "verseReference": "Judges 16:17"
+    },
+    {
+      "id": 68,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "What happened to the people when they turned away from God?",
+      "options": ["They succeeded", "They fell into the hands of their enemies", "They rejoiced", "They traveled"],
+      "correctAnswer": "They fell into the hands of their enemies",
+      "verseReference": "Judges 2:14"
+    },
+    {
+      "id": 69,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "How many men remained with Gideon to fight the Midianites?",
+      "options": ["100", "300", "1000", "10000"],
+      "correctAnswer": "300",
+      "verseReference": "Judges 7:7"
+    },
+    {
+      "id": 70,
+      "category": "Judges",
+      "difficulty": "easy",
+      "questionText": "What did the 'judges' do?",
+      "options": ["They built houses", "They saved the people from enemies", "They fished", "They farmed the land"],
+      "correctAnswer": "They saved the people from enemies",
+      "verseReference": "Judges 2:16"
+    },
+    {
+      "id": 71,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was the boy that heard God's voice calling him in the night?",
+      "options": ["David", "Solomon", "Samuel", "Joseph"],
+      "correctAnswer": "Samuel",
+      "verseReference": "1 Samuel 3:4"
+    },
+    {
+      "id": 72,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was the boy that defeated the giant Goliath?",
+      "options": ["Saul", "David", "Jonah", "Simon"],
+      "correctAnswer": "David",
+      "verseReference": "1 Samuel 17:49"
+    },
+    {
+      "id": 73,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "What did David use to defeat Goliath?",
+      "options": ["A sword and shield", "A sling and five stones", "A bow and arrows", "A spear"],
+      "correctAnswer": "A sling and five stones",
+      "verseReference": "1 Samuel 17:40"
+    },
+    {
+      "id": 74,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was the first king of Israel?",
+      "options": ["David", "Saul", "Solomon", "Samuel"],
+      "correctAnswer": "Saul",
+      "verseReference": "1 Samuel 10:1"
+    },
+    {
+      "id": 75,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "What was the musical instrument that David played?",
+      "options": ["A drum", "A pipe", "A harp (lyre)", "A trumpet"],
+      "correctAnswer": "A harp (lyre)",
+      "verseReference": "1 Samuel 16:23"
+    },
+    {
+      "id": 76,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was Saul's son and David's loyal friend?",
+      "options": ["Absalom", "Jonathan", "Solomon", "Adonijah"],
+      "correctAnswer": "Jonathan",
+      "verseReference": "1 Samuel 18:1"
+    },
+    {
+      "id": 77,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "What was David's profession before he became king?",
+      "options": ["A fisherman", "A shepherd of sheep", "A carpenter", "A scribe"],
+      "correctAnswer": "A shepherd of sheep",
+      "verseReference": "1 Samuel 16:11"
+    },
+    {
+      "id": 78,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was Samuel's mother that prayed so much for a son?",
+      "options": ["Sarah", "Hannah", "Elizabeth", "Mary"],
+      "correctAnswer": "Hannah",
+      "verseReference": "1 Samuel 1:20"
+    },
+    {
+      "id": 79,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Where did Samuel live when he was small?",
+      "options": ["In his father's house", "In the house of the Lord (the temple)", "In the wilderness", "In the palace"],
+      "correctAnswer": "In the house of the Lord (the temple)",
+      "verseReference": "1 Samuel 3:3"
+    },
+    {
+      "id": 80,
+      "category": "1 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was the priest that raised Samuel?",
+      "options": ["Aaron", "Eli the priest", "Abimelech", "Zadok"],
+      "correctAnswer": "Eli the priest",
+      "verseReference": "1 Samuel 1:25"
+    },
+    {
+      "id": 81,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who became king after Saul's death?",
+      "options": ["Samuel", "David", "Solomon", "Absalom"],
+      "correctAnswer": "David",
+      "verseReference": "2 Samuel 2:4"
+    },
+    {
+      "id": 82,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "What city did David make the capital of his kingdom?",
+      "options": ["Nazareth", "Jerusalem (the Holy City)", "Bethlehem", "Jericho"],
+      "correctAnswer": "Jerusalem (the Holy City)",
+      "verseReference": "2 Samuel 5:6"
+    },
+    {
+      "id": 83,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "What did David bring to Jerusalem with joy and dancing?",
+      "options": ["Gold and silver", "The Ark of the Covenant", "Horses and chariots", "Idols"],
+      "correctAnswer": "The Ark of the Covenant",
+      "verseReference": "2 Samuel 6:12"
+    },
+    {
+      "id": 84,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was the prophet that advised King David?",
+      "options": ["Samuel", "Nathan", "Isaiah", "Jeremiah"],
+      "correctAnswer": "Nathan",
+      "verseReference": "2 Samuel 7:2"
+    },
+    {
+      "id": 85,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who was the son of David that rebelled against him and tried to take the kingdom?",
+      "options": ["Solomon", "Absalom", "Adonijah", "Amnon"],
+      "correctAnswer": "Absalom",
+      "verseReference": "2 Samuel 15"
+    },
+    {
+      "id": 86,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "What happened to Absalom's hair while he was fleeing on a mule?",
+      "options": ["It fell", "It caught in the branches of an oak tree", "It burned", "He cut it himself"],
+      "correctAnswer": "It caught in the branches of an oak tree",
+      "verseReference": "2 Samuel 18:9"
+    },
+    {
+      "id": 87,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "What was the name of Jonathan's son that was lame and was honored by David?",
+      "options": ["Mephibosheth", "Abinadab", "Joab", "Ishbosheth"],
+      "correctAnswer": "Mephibosheth",
+      "verseReference": "2 Samuel 9:6"
+    },
+    {
+      "id": 88,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "What did David want to build for God?",
+      "options": ["A palace", "A house (temple)", "A wall", "A garden"],
+      "correctAnswer": "A house (temple)",
+      "verseReference": "2 Samuel 7:2"
+    },
+    {
+      "id": 89,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "Who said to David: 'You are the man' after the story about the lamb?",
+      "options": ["Saul", "Nathan the prophet", "Joab", "Absalom"],
+      "correctAnswer": "Nathan the prophet",
+      "verseReference": "2 Samuel 12:7"
+    },
+    {
+      "id": 90,
+      "category": "2 Samuel",
+      "difficulty": "easy",
+      "questionText": "How many years did David reign over Israel?",
+      "options": ["7 years", "12 years", "40 years", "70 years"],
+      "correctAnswer": "40 years",
+      "verseReference": "2 Samuel 5:4"
+    },
+    {
+      "id": 91,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the king that built the temple of God in Jerusalem?",
+      "options": ["David", "Solomon", "Saul", "Rehoboam"],
+      "correctAnswer": "Solomon",
+      "verseReference": "1 Kings 6"
+    },
+    {
+      "id": 92,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "What was King Solomon famous for?",
+      "options": ["Physical strength", "Wisdom", "Long hair", "Fishing"],
+      "correctAnswer": "Wisdom",
+      "verseReference": "1 Kings 4:29"
+    },
+    {
+      "id": 93,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the queen that visited Solomon to hear his wisdom?",
+      "options": ["Queen of Sheba", "Jezebel", "Esther", "Athaliah"],
+      "correctAnswer": "Queen of Sheba",
+      "verseReference": "1 Kings 10:1"
+    },
+    {
+      "id": 94,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the prophet that God sent ravens to feed?",
+      "options": ["Elisha", "Isaiah", "Elijah", "Jeremiah"],
+      "correctAnswer": "Elijah",
+      "verseReference": "1 Kings 17:4"
+    },
+    {
+      "id": 95,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "On which mountain did Elijah confront the prophets of Baal?",
+      "options": ["Mount Sinai", "Mount Carmel", "Mount of Olives", "Mount Nebo"],
+      "correctAnswer": "Mount Carmel",
+      "verseReference": "1 Kings 18:19"
+    },
+    {
+      "id": 96,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "What came down from heaven to eat Elijah's sacrifice?",
+      "options": ["Rain", "Wind", "Fire from the Lord", "Birds"],
+      "correctAnswer": "Fire from the Lord",
+      "verseReference": "1 Kings 18:38"
+    },
+    {
+      "id": 97,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the wicked king that was married to Jezebel?",
+      "options": ["Ahab", "Josiah", "Hezekiah", "Jehoiakim"],
+      "correctAnswer": "Ahab",
+      "verseReference": "1 Kings 16:30"
+    },
+    {
+      "id": 98,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the son that reigned after Solomon and the kingdom was divided during his time?",
+      "options": ["Jeroboam", "Rehoboam", "Asa", "Omri"],
+      "correctAnswer": "Rehoboam",
+      "verseReference": "1 Kings 12:1"
+    },
+    {
+      "id": 99,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "How did the Lord speak to Elijah on the mountain?",
+      "options": ["In an earthquake", "In fire", "In a still small voice", "In a fierce wind"],
+      "correctAnswer": "In a still small voice",
+      "verseReference": "1 Kings 19:12"
+    },
+    {
+      "id": 100,
+      "category": "1 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the man that refused to sell his vineyard to King Ahab?",
+      "options": ["Naboth of Jezreel", "Obadiah", "Ahijah", "Micah"],
+      "correctAnswer": "Naboth of Jezreel",
+      "verseReference": "1 Kings 21:1"
+    },
+    {
+      "id": 101,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "How did Elijah the prophet ascend to heaven?",
+      "options": ["In a ship", "In a chariot of fire with horses of fire", "He died and was buried", "On a cloud"],
+      "correctAnswer": "In a chariot of fire with horses of fire",
+      "verseReference": "2 Kings 2:11"
+    },
+    {
+      "id": 102,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the prophet that came after Elijah and took his mantle?",
+      "options": ["Isaiah", "Jeremiah", "Elisha", "Daniel"],
+      "correctAnswer": "Elisha",
+      "verseReference": "2 Kings 2:13"
+    },
+    {
+      "id": 103,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "What is the name of the Syrian commander that was healed of leprosy in the Jordan?",
+      "options": ["Hazael", "Naaman the Syrian", "Ben-Hadad", "Sennacherib"],
+      "correctAnswer": "Naaman the Syrian",
+      "verseReference": "2 Kings 5:1"
+    },
+    {
+      "id": 104,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the king that began to reign at the age of 8 and was righteous?",
+      "options": ["Josiah", "Manasseh", "Ahaz", "Jehoiakim"],
+      "correctAnswer": "Josiah",
+      "verseReference": "2 Kings 22:1"
+    },
+    {
+      "id": 105,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "What did the priests find in the temple during King Josiah's time?",
+      "options": ["Gold", "The Book of the Law", "Idols", "Weapons"],
+      "correctAnswer": "The Book of the Law",
+      "verseReference": "2 Kings 22:8"
+    },
+    {
+      "id": 106,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "Which king prayed to the Lord and his life was extended by 15 years?",
+      "options": ["Hezekiah", "David", "Solomon", "Asa"],
+      "correctAnswer": "Hezekiah",
+      "verseReference": "2 Kings 20:6"
+    },
+    {
+      "id": 107,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "What was the miracle that happened with the sinking iron axe?",
+      "options": ["It floated on the water", "It disappeared", "It turned to gold", "It broke"],
+      "correctAnswer": "It floated on the water",
+      "verseReference": "2 Kings 6:6"
+    },
+    {
+      "id": 108,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "Who was the king that destroyed the temple of Jerusalem and captured the people to Babylon?",
+      "options": ["Pharaoh Necho", "Nebuchadnezzar", "Cyrus", "Darius"],
+      "correctAnswer": "Nebuchadnezzar",
+      "verseReference": "2 Kings 25"
+    },
+    {
+      "id": 109,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "How many times did Naaman the Syrian dip in the Jordan to be healed?",
+      "options": ["Once", "Three times", "Seven times", "Twelve times"],
+      "correctAnswer": "Seven times",
+      "verseReference": "2 Kings 5:14"
+    },
+    {
+      "id": 110,
+      "category": "2 Kings",
+      "difficulty": "easy",
+      "questionText": "What happened to the army of Sennacherib that besieged Jerusalem in one night?",
+      "options": ["They fled", "An angel of the Lord struck them", "They drowned in the sea", "They burned"],
+      "correctAnswer": "An angel of the Lord struck them",
+      "verseReference": "2 Kings 19:35"
+    },
+    {
+      "id": 111,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "What does 1 Chronicles focus on in its beginning?",
+      "options": ["Only wars", "The genealogies of peoples and tribes", "Proverbs", "Visions"],
+      "correctAnswer": "The genealogies of peoples and tribes",
+      "verseReference": "1 Chronicles 1"
+    },
+    {
+      "id": 112,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who died because he touched the Ark of the Covenant to steady it?",
+      "options": ["Uzza", "Obed-Edom", "Zadok", "Abiathar"],
+      "correctAnswer": "Uzza",
+      "verseReference": "1 Chronicles 13:10"
+    },
+    {
+      "id": 113,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Where did David place the Ark of the Covenant in Jerusalem?",
+      "options": ["In the king's palace", "In a tent he pitched for it", "In a cave", "In Saul's house"],
+      "correctAnswer": "In a tent he pitched for it",
+      "verseReference": "1 Chronicles 15:1"
+    },
+    {
+      "id": 114,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the king that prepared all the tools and materials and gold and silver for building the temple?",
+      "options": ["Solomon", "David", "Saul", "Asa"],
+      "correctAnswer": "David",
+      "verseReference": "1 Chronicles 22:14"
+    },
+    {
+      "id": 115,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Why did God not allow David to build the temple himself?",
+      "options": ["Because he was small", "Because he was a man of war and shed much blood", "Because he was not a king", "Because he refused"],
+      "correctAnswer": "Because he was a man of war and shed much blood",
+      "verseReference": "1 Chronicles 22:8"
+    },
+    {
+      "id": 116,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the son that God chose from David's sons to be king and to build the temple?",
+      "options": ["Absalom", "Adonijah", "Solomon", "Amnon"],
+      "correctAnswer": "Solomon",
+      "verseReference": "1 Chronicles 22:9"
+    },
+    {
+      "id": 117,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "With what did the Levites praise before the Ark of the Covenant?",
+      "options": ["In silence", "With musical instruments and songs", "Only dancing", "Shouting"],
+      "correctAnswer": "With musical instruments and songs",
+      "verseReference": "1 Chronicles 15:16"
+    },
+    {
+      "id": 118,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the man whose house the Lord blessed because the Ark was with him?",
+      "options": ["Uzza the Gittite", "Obed-Edom the Gittite", "Nathan", "Gad"],
+      "correctAnswer": "Obed-Edom the Gittite",
+      "verseReference": "1 Chronicles 13:14"
+    },
+    {
+      "id": 119,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "What did David ask the people to do at the end of his life regarding the temple?",
+      "options": ["To tear it down", "To contribute generously to build it", "To forget about it", "To leave it to Solomon alone"],
+      "correctAnswer": "To contribute generously to build it",
+      "verseReference": "1 Chronicles 29:5"
+    },
+    {
+      "id": 120,
+      "category": "1 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the writer of 1 Chronicles (according to tradition)?",
+      "options": ["David", "Ezra", "Nehemiah", "Daniel"],
+      "correctAnswer": "Ezra",
+      "verseReference": "Jewish Tradition"
+    },
+    {
+      "id": 121,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "What did Solomon ask from God at the beginning of his reign?",
+      "options": ["Wealth", "A wise heart to discern between good and evil", "Long life", "To kill his enemies"],
+      "correctAnswer": "A wise heart to discern between good and evil",
+      "verseReference": "2 Chronicles 1:10"
+    },
+    {
+      "id": 122,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Where did Solomon build the temple in Jerusalem?",
+      "options": ["Mount Moriah", "Mount Sinai", "Mount Gerizim", "Mount Nebo"],
+      "correctAnswer": "Mount Moriah",
+      "verseReference": "2 Chronicles 3:1"
+    },
+    {
+      "id": 123,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "What filled the temple after Solomon's prayer on the day of dedication?",
+      "options": ["Water", "A cloud and the glory of the Lord", "Fire", "Wind"],
+      "correctAnswer": "A cloud and the glory of the Lord",
+      "verseReference": "2 Chronicles 5:14"
+    },
+    {
+      "id": 124,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the king that led the people in great praise and won the war without fighting?",
+      "options": ["Ahaz", "Jehoshaphat", "Asa", "Manasseh"],
+      "correctAnswer": "Jehoshaphat",
+      "verseReference": "2 Chronicles 20"
+    },
+    {
+      "id": 125,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "What were the words that the singers repeated in Jehoshaphat's army?",
+      "options": ["We are strong", "Give thanks to the Lord for His mercy endures forever", "Death to enemies", "Come let us fight"],
+      "correctAnswer": "Give thanks to the Lord for His mercy endures forever",
+      "verseReference": "2 Chronicles 20:21"
+    },
+    {
+      "id": 126,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the king that repaired the temple and held a great Passover for the people as they hadn't seen in years?",
+      "options": ["Manasseh", "Hezekiah", "Amon", "Zedekiah"],
+      "correctAnswer": "Hezekiah",
+      "verseReference": "2 Chronicles 30"
+    },
+    {
+      "id": 127,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the wicked king that repented in prison in Babylon and was restored to his kingdom?",
+      "options": ["Josiah", "Manasseh", "Ahaz", "Jehoiakim"],
+      "correctAnswer": "Manasseh",
+      "verseReference": "2 Chronicles 33:12"
+    },
+    {
+      "id": 128,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the Persian king that allowed the Jews to return and build the temple?",
+      "options": ["Nebuchadnezzar", "Cyrus", "Darius", "Artaxerxes"],
+      "correctAnswer": "Cyrus",
+      "verseReference": "2 Chronicles 36:22"
+    },
+    {
+      "id": 129,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "What happened to the kingdom after Solomon's death?",
+      "options": ["It ended", "It was divided into two kingdoms (northern and southern)", "It became stronger", "It disappeared"],
+      "correctAnswer": "It was divided into two kingdoms (northern and southern)",
+      "verseReference": "2 Chronicles 10"
+    },
+    {
+      "id": 130,
+      "category": "2 Chronicles",
+      "difficulty": "easy",
+      "questionText": "Who was the righteous king that died in war with Pharaoh Necho?",
+      "options": ["Josiah", "Asa", "Jehoshaphat", "Hezekiah"],
+      "correctAnswer": "Josiah",
+      "verseReference": "2 Chronicles 35:23"
+    },
+    {
+      "id": 131,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "What was the main purpose of the people's return in Ezra?",
+      "options": ["Building palaces", "Building the house of God (the temple)", "War", "Trade"],
+      "correctAnswer": "Building the house of God (the temple)",
+      "verseReference": "Ezra 1:3"
+    },
+    {
+      "id": 132,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "Who was the leader that led the first group of returning exiles to build the temple?",
+      "options": ["Nehemiah", "Ezra", "Zerubbabel", "Mordecai"],
+      "correctAnswer": "Zerubbabel",
+      "verseReference": "Ezra 2:2"
+    },
+    {
+      "id": 133,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "What was the role of Ezra?",
+      "options": ["A soldier", "A priest and a skilled scribe in the law of the Lord", "A carpenter", "A king"],
+      "correctAnswer": "A priest and a skilled scribe in the law of the Lord",
+      "verseReference": "Ezra 7:6"
+    },
+    {
+      "id": 134,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "Who tried to hinder the building of the temple?",
+      "options": ["Friends", "The enemies round about (the Samaritans)", "Priests", "Children"],
+      "correctAnswer": "The enemies round about (the Samaritans)",
+      "verseReference": "Ezra 4:1"
+    },
+    {
+      "id": 135,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "For how many years approximately was the building of the temple stopped due to opposition?",
+      "options": ["One year", "16 years", "50 years", "70 years"],
+      "correctAnswer": "16 years",
+      "verseReference": "Ezra 4"
+    },
+    {
+      "id": 136,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "Who were the two prophets that encouraged the people to complete the building of the temple?",
+      "options": ["Isaiah and Jeremiah", "Haggai and Zechariah", "Elijah and Elisha", "Amos and Hosea"],
+      "correctAnswer": "Haggai and Zechariah",
+      "verseReference": "Ezra 5:1"
+    },
+    {
+      "id": 137,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "What did the people do when they laid the foundation of the temple?",
+      "options": ["They slept", "They shouted with joy and the old men wept", "They fled", "They quarreled"],
+      "correctAnswer": "They shouted with joy and the old men wept",
+      "verseReference": "Ezra 3:11"
+    },
+    {
+      "id": 138,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "From where did Ezra come to Jerusalem?",
+      "options": ["From Egypt", "From Babylon", "From Tyre", "From Nineveh"],
+      "correctAnswer": "From Babylon",
+      "verseReference": "Ezra 7:1"
+    },
+    {
+      "id": 139,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "What did Ezra do when he knew of the sins of the people and their marriage to foreign women?",
+      "options": ["Laughed", "Tore his clothes and prayed with humility before God", "Left them and returned", "Rejoiced in them"],
+      "correctAnswer": "Tore his clothes and prayed with humility before God",
+      "verseReference": "Ezra 9:3"
+    },
+    {
+      "id": 140,
+      "category": "Ezra",
+      "difficulty": "easy",
+      "questionText": "At which river did the returning exiles gather with Ezra to fast and pray?",
+      "options": ["The Nile", "The Ahava", "The Jordan", "The Euphrates"],
+      "correctAnswer": "The Ahava",
+      "verseReference": "Ezra 8:21"
+    },
+    {
+      "id": 141,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "What was Nehemiah's main objective when he returned to Jerusalem?",
+      "options": ["Building the temple", "Building the walls of Jerusalem that were broken down", "Farming", "Trading"],
+      "correctAnswer": "Building the walls of Jerusalem that were broken down",
+      "verseReference": "Nehemiah 2:17"
+    },
+    {
+      "id": 142,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "What was Nehemiah's position under King Artaxerxes?",
+      "options": ["A soldier", "The king's cupbearer", "A scribe", "A cook"],
+      "correctAnswer": "The king's cupbearer",
+      "verseReference": "Nehemiah 1:11"
+    },
+    {
+      "id": 143,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "What did Nehemiah do when he heard that Jerusalem's walls were broken down?",
+      "options": ["Rejoiced", "Wept, fasted and prayed for days", "Didn't care", "Traveled for tourism"],
+      "correctAnswer": "Wept, fasted and prayed for days",
+      "verseReference": "Nehemiah 1:4"
+    },
+    {
+      "id": 144,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "How many days did it take to build the walls of Jerusalem?",
+      "options": ["A year", "52 days", "100 days", "7 years"],
+      "correctAnswer": "52 days",
+      "verseReference": "Nehemiah 6:15"
+    },
+    {
+      "id": 145,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "Who were the enemies that mocked Nehemiah and the building of the wall?",
+      "options": ["Friends", "Sanballat and Tobiah", "Ahab and Jezebel", "Goliath"],
+      "correctAnswer": "Sanballat and Tobiah",
+      "verseReference": "Nehemiah 2:19"
+    },
+    {
+      "id": 146,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "How did the people build the wall and protect themselves at the same time?",
+      "options": ["They fled", "One hand building and one hand holding a weapon", "They built at night only", "The angels built the wall"],
+      "correctAnswer": "One hand building and one hand holding a weapon",
+      "verseReference": "Nehemiah 4:17"
+    },
+    {
+      "id": 147,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "Who read the law of God to the people when they were gathered?",
+      "options": ["Nehemiah", "Ezra the scribe", "David", "Saul"],
+      "correctAnswer": "Ezra the scribe",
+      "verseReference": "Nehemiah 8:1"
+    },
+    {
+      "id": 148,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "What was the response of the people when they heard the law?",
+      "options": ["They laughed", "All the people wept and repented", "They slept", "They refused to listen"],
+      "correctAnswer": "All the people wept and repented",
+      "verseReference": "Nehemiah 8:9"
+    },
+    {
+      "id": 149,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "What did Nehemiah ask the rich to do for the poor?",
+      "options": ["To drive them away", "To return their money and release them from debts", "To enslave them", "To escape"],
+      "correctAnswer": "To return their money and release them from debts",
+      "verseReference": "Nehemiah 5"
+    },
+    {
+      "id": 150,
+      "category": "Nehemiah",
+      "difficulty": "easy",
+      "questionText": "How did Nehemiah close his book (remember me, O God, with...)? ",
+      "options": ["With evil", "With good", "With strength", "With money"],
+      "correctAnswer": "With good",
+      "verseReference": "Nehemiah 13:31"
+    },
+    {
+      "id": 151,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "What is the name of the king that Esther married?",
+      "options": ["Cyrus", "Ahasuerus", "Darius", "Pharaoh"],
+      "correctAnswer": "Ahasuerus",
+      "verseReference": "Esther 2:17"
+    },
+    {
+      "id": 152,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "Who was Esther's relative that raised her and guided her?",
+      "options": ["Haman", "Mordecai", "Nehemiah", "Ezra"],
+      "correctAnswer": "Mordecai",
+      "verseReference": "Esther 2:7"
+    },
+    {
+      "id": 153,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "Who was the wicked man that wanted to destroy all the Jews?",
+      "options": ["Haman", "Mordecai", "Sanballat", "Tobiah"],
+      "correctAnswer": "Haman",
+      "verseReference": "Esther 3:6"
+    },
+    {
+      "id": 154,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "What did Esther do before she went to the king to ask for the salvation of her people?",
+      "options": ["Ran away", "She and her maids fasted for three days", "Wore a mask", "Ignored the situation"],
+      "correctAnswer": "She and her maids fasted for three days",
+      "verseReference": "Esther 4:16"
+    },
+    {
+      "id": 155,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "What was the famous phrase that Mordecai said to Esther?",
+      "options": ["Run away in your skin", "Who knows if you have not come to the kingdom for such a time as this", "The king will kill you", "Do nothing"],
+      "correctAnswer": "Who knows if you have not come to the kingdom for such a time as this",
+      "verseReference": "Esther 4:14"
+    },
+    {
+      "id": 156,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "What did the king do to honor Mordecai because he saved his life before?",
+      "options": ["Gave him gold", "He made him ride on the king's horse and wear the king's robes", "Made him a priest", "Threw him out"],
+      "correctAnswer": "He made him ride on the king's horse and wear the king's robes",
+      "verseReference": "Esther 6:11"
+    },
+    {
+      "id": 157,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "What happened to Haman in the end?",
+      "options": ["He escaped", "He was hanged on the gallows he prepared for Mordecai", "He became a king", "He died of illness"],
+      "correctAnswer": "He was hanged on the gallows he prepared for Mordecai",
+      "verseReference": "Esther 7:10"
+    },
+    {
+      "id": 158,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "What is the name of the festival that Jews celebrate in memory of being saved from Haman?",
+      "options": ["Passover", "Purim", "Feast of Tabernacles", "Harvest Festival"],
+      "correctAnswer": "Purim",
+      "verseReference": "Esther 9:26"
+    },
+    {
+      "id": 159,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "Which book of the Bible does not mention the name of 'God' explicitly?",
+      "options": ["Psalms", "Esther", "Genesis", "Revelation"],
+      "correctAnswer": "Esther",
+      "verseReference": "Esther"
+    },
+    {
+      "id": 160,
+      "category": "Esther",
+      "difficulty": "easy",
+      "questionText": "Where did the events of Esther take place?",
+      "options": ["In Jerusalem", "In Susa the palace (in Persia)", "In Egypt", "In Babylon"],
+      "correctAnswer": "In Susa the palace (in Persia)",
+      "verseReference": "Esther 1:2"
+    },
+    {
+      "id": 161,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "What was Job the righteous man famous for?",
+      "options": ["Strength", "Patience", "Speed", "Extreme wealth only"],
+      "correctAnswer": "Patience",
+      "verseReference": "Job 1"
+    },
+    {
+      "id": 162,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "What did Job say when he lost all his wealth and children?",
+      "options": ["Why Lord?", "The Lord gave and the Lord has taken away blessed be the name of the Lord", "I hate my life", "I will run away"],
+      "correctAnswer": "The Lord gave and the Lord has taken away blessed be the name of the Lord",
+      "verseReference": "Job 1:21"
+    },
+    {
+      "id": 163,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "How many friends of Job came to comfort him?",
+      "options": ["2", "3", "7", "12"],
+      "correctAnswer": "3",
+      "verseReference": "Job 2:11"
+    },
+    {
+      "id": 164,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "What did the Satan test Job with in his body?",
+      "options": ["Blindness", "Severe boils from the sole of his foot to the crown of his head", "Broken bones", "Fever"],
+      "correctAnswer": "Severe boils from the sole of his foot to the crown of his head",
+      "verseReference": "Job 2:7"
+    },
+    {
+      "id": 165,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "Who said to Job: 'Curse God and die' (meaning abandon your faith)?",
+      "options": ["His friend", "His wife", "His son", "His servant"],
+      "correctAnswer": "His wife",
+      "verseReference": "Job 2:9"
+    },
+    {
+      "id": 166,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "How did the Lord speak to Job in the end of the book?",
+      "options": ["In a dream", "Out of a whirlwind (a storm)", "By an angel", "By a human voice"],
+      "correctAnswer": "Out of a whirlwind (a storm)",
+      "verseReference": "Job 38:1"
+    },
+    {
+      "id": 167,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "What did God do for Job in the end of the book?",
+      "options": ["Left him sick", "Restored him and gave him twice all that he had before", "Took him to heaven immediately", "Forgot him"],
+      "correctAnswer": "Restored him and gave him twice all that he had before",
+      "verseReference": "Job 42:10"
+    },
+    {
+      "id": 168,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "What was the famous verse expressing Job's faith in redemption?",
+      "options": ["I am sick", "I know my Redeemer lives and in the end He will stand on the earth", "Where is God?", "There is no hope"],
+      "correctAnswer": "I know my Redeemer lives and in the end He will stand on the earth",
+      "verseReference": "Job 19:25"
+    },
+    {
+      "id": 169,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "Did Job sin with his lips against God in all his first trials?",
+      "options": ["Yes", "No", "Sometimes", "We don't know"],
+      "correctAnswer": "No",
+      "verseReference": "Job 1:22"
+    },
+    {
+      "id": 170,
+      "category": "Job",
+      "difficulty": "easy",
+      "questionText": "Where did Job live?",
+      "options": ["Land of Uz", "Egypt", "Babylon", "Nazareth"],
+      "correctAnswer": "Land of Uz",
+      "verseReference": "Job 1:1"
+    },
+    {
+      "id": 171,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "Who was the primary writer of the Psalms?",
+      "options": ["Solomon", "David", "Moses", "Asaph"],
+      "correctAnswer": "David",
+      "verseReference": "Psalms"
+    },
+    {
+      "id": 172,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "What is the most famous psalm that begins with 'The Lord is my shepherd I shall not want'?",
+      "options": ["Psalm 1", "Psalm 23", "Psalm 51", "Psalm 150"],
+      "correctAnswer": "Psalm 23",
+      "verseReference": "Psalm 23:1"
+    },
+    {
+      "id": 173,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "Which Psalm did David write for repentance after his sin?",
+      "options": ["Psalm 51 (Have mercy on me O God)", "Psalm 100", "Psalm 150", "Psalm 1"],
+      "correctAnswer": "Psalm 51 (Have mercy on me O God)",
+      "verseReference": "Psalm 51"
+    },
+    {
+      "id": 174,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "What is the longest psalm in the Bible?",
+      "options": ["Psalm 1", "Psalm 119", "Psalm 150", "Psalm 19"],
+      "correctAnswer": "Psalm 119",
+      "verseReference": "Psalm 119"
+    },
+    {
+      "id": 175,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "How does the Psalms conclude in the last psalm?",
+      "options": ["With sorrow", "Let everything that has breath praise the Lord Praise the Lord", "With a request", "With history"],
+      "correctAnswer": "Let everything that has breath praise the Lord Praise the Lord",
+      "verseReference": "Psalm 150:6"
+    },
+    {
+      "id": 176,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "To what does Psalm 1 compare the righteous man?",
+      "options": ["To gold", "To a tree planted by streams of water", "To wind", "To a mountain"],
+      "correctAnswer": "To a tree planted by streams of water",
+      "verseReference": "Psalm 1:3"
+    },
+    {
+      "id": 177,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "How many psalms are there in the Bible?",
+      "options": ["100", "150", "151", "200"],
+      "correctAnswer": "151",
+      "verseReference": "Psalms"
+    },
+    {
+      "id": 178,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "What is the verse that says: 'Your word is a lamp to my feet and...'?",
+      "options": ["Light to my heart", "Light to my path", "Strength to my hand", "Joy to my soul"],
+      "correctAnswer": "Light to my path",
+      "verseReference": "Psalm 119:105"
+    },
+    {
+      "id": 179,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "What did David say in the Psalm: 'The heavens declare the glory of God and...'?",
+      "options": ["The earth is silent", "The heavens show the work of His hands", "Man sleeps", "The sea roars"],
+      "correctAnswer": "The heavens show the work of His hands",
+      "verseReference": "Psalm 19:1"
+    },
+    {
+      "id": 180,
+      "category": "Psalms",
+      "difficulty": "easy",
+      "questionText": "How does the Psalm begin: 'I will bless the Lord at all times and...'?",
+      "options": ["Always His praise be in my mouth", "I will be silent before Him", "I will hide from Him", "I will ask Him for money"],
+      "correctAnswer": "Always His praise be in my mouth",
+      "verseReference": "Psalm 34:1"
+    },
+    {
+      "id": 181,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "Who is the primary author of the book of Proverbs?",
+      "options": ["David", "Solomon", "Jeremiah", "Isaiah"],
+      "correctAnswer": "Solomon",
+      "verseReference": "Proverbs 1:1"
+    },
+    {
+      "id": 182,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What is the famous opening of Proverbs about wisdom?",
+      "options": ["Wisdom is foolish", "The fear of the Lord is the beginning of wisdom", "Wisdom is easy", "Knowledge is dangerous"],
+      "correctAnswer": "The fear of the Lord is the beginning of wisdom",
+      "verseReference": "Proverbs 1:7"
+    },
+    {
+      "id": 183,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What should you do if someone strikes you on one cheek?",
+      "options": ["Strike them back harder", "Run away", "Forgive and show kindness", "Tell the authorities"],
+      "correctAnswer": "Forgive and show kindness",
+      "verseReference": "Proverbs"
+    },
+    {
+      "id": 184,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What is compared to 'a pleasant aroma' in Proverbs?",
+      "options": ["Gold", "A good answer", "Pleasant words", "Incense"],
+      "correctAnswer": "Pleasant words",
+      "verseReference": "Proverbs 15:26"
+    },
+    {
+      "id": 185,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What does Proverbs say about a soft answer?",
+      "options": ["It is weak", "A soft answer turns away wrath", "It is foolish", "It brings anger"],
+      "correctAnswer": "A soft answer turns away wrath",
+      "verseReference": "Proverbs 15:1"
+    },
+    {
+      "id": 186,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What is the advice about pride in Proverbs?",
+      "options": ["Be proud", "Pride comes before a fall", "Pride is good", "Pride is nothing"],
+      "correctAnswer": "Pride comes before a fall",
+      "verseReference": "Proverbs 16:18"
+    },
+    {
+      "id": 187,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What does Proverbs say about a lazy person?",
+      "options": ["He is wise", "His desire slays him for his hands refuse to work", "He will be rich", "He is strong"],
+      "correctAnswer": "His desire slays him for his hands refuse to work",
+      "verseReference": "Proverbs 21:25"
+    },
+    {
+      "id": 188,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What kind of person does Proverbs praise?",
+      "options": ["The cruel one", "The wise who fears the Lord and works hard", "The fool", "The lazy one"],
+      "correctAnswer": "The wise who fears the Lord and works hard",
+      "verseReference": "Proverbs"
+    },
+    {
+      "id": 189,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What does Proverbs say about anger?",
+      "options": ["Always express it", "A fool vents all his anger but a wise man holds it back", "Anger is good", "Hold it forever"],
+      "correctAnswer": "A fool vents all his anger but a wise man holds it back",
+      "verseReference": "Proverbs 29:11"
+    },
+    {
+      "id": 190,
+      "category": "Proverbs",
+      "difficulty": "easy",
+      "questionText": "What is the reward for diligence according to Proverbs?",
+      "options": ["Poverty", "The diligent will rule but laziness ends in servitude", "Shame", "Disease"],
+      "correctAnswer": "The diligent will rule but laziness ends in servitude",
+      "verseReference": "Proverbs 12:24"
+    },
+    {
+      "id": 191,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "Who is traditionally considered the author of Ecclesiastes?",
+      "options": ["David", "Solomon", "Jeremiah", "Isaiah"],
+      "correctAnswer": "Solomon",
+      "verseReference": "Ecclesiastes 1:1"
+    },
+    {
+      "id": 192,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What is the famous phrase that opens Ecclesiastes?",
+      "options": ["Praise the Lord", "Vanity of vanities all is vanity", "Wisdom is great", "Gold is precious"],
+      "correctAnswer": "Vanity of vanities all is vanity",
+      "verseReference": "Ecclesiastes 1:2"
+    },
+    {
+      "id": 193,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What does Ecclesiastes say about work and toil?",
+      "options": ["It is useless", "All toil and striving has a purpose under God", "It is a curse", "Ignore it"],
+      "correctAnswer": "All toil and striving has a purpose under God",
+      "verseReference": "Ecclesiastes 4:4"
+    },
+    {
+      "id": 194,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What is the conclusion of Ecclesiastes about the meaning of life?",
+      "options": ["There is no meaning", "Fear God and keep His commandments for this is man's all", "Life is just to have fun", "Work only for money"],
+      "correctAnswer": "Fear God and keep His commandments for this is man's all",
+      "verseReference": "Ecclesiastes 12:13"
+    },
+    {
+      "id": 195,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What does Ecclesiastes say about time?",
+      "options": ["There is only one time", "To everything there is a season and a time for every purpose under heaven", "Time doesn't exist", "Time is a lie"],
+      "correctAnswer": "To everything there is a season and a time for every purpose under heaven",
+      "verseReference": "Ecclesiastes 3:1"
+    },
+    {
+      "id": 196,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What is the theme of Ecclesiastes?",
+      "options": ["War stories", "The search for meaning and purpose in life", "Love stories", "Cooking recipes"],
+      "correctAnswer": "The search for meaning and purpose in life",
+      "verseReference": "Ecclesiastes"
+    },
+    {
+      "id": 197,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What does Ecclesiastes advise about enjoying life?",
+      "options": ["Never enjoy anything", "Eat drink and enjoy the fruit of your labor for this is from the hand of God", "Work all day", "Sleep all day"],
+      "correctAnswer": "Eat drink and enjoy the fruit of your labor for this is from the hand of God",
+      "verseReference": "Ecclesiastes 2:24"
+    },
+    {
+      "id": 198,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What does Ecclesiastes say about wisdom and foolishness?",
+      "options": ["Wisdom is worthless", "There is more hope for a fool than for him who is wise in his own eyes", "Foolishness is good", "Wisdom doesn't matter"],
+      "correctAnswer": "There is more hope for a fool than for him who is wise in his own eyes",
+      "verseReference": "Ecclesiastes 26:12"
+    },
+    {
+      "id": 199,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What was Solomon's conclusion about earthly pleasures?",
+      "options": ["They are everything", "They are meaningless without God", "They are all good", "We should pursue them only"],
+      "correctAnswer": "They are meaningless without God",
+      "verseReference": "Ecclesiastes 2"
+    },
+    {
+      "id": 200,
+      "category": "Ecclesiastes",
+      "difficulty": "easy",
+      "questionText": "What does Ecclesiastes teach about the company we keep?",
+      "options": ["Be alone always", "Two are better than one for if they fall one will lift up his companion", "Many people are all bad", "Company doesn't matter"],
+      "correctAnswer": "Two are better than one for if they fall one will lift up his companion",
+      "verseReference": "Ecclesiastes 4:9"
+    },
+    {
+      "id": 201,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What is the main theme of Song of Solomon?",
+      "options": ["War", "Love and romance between two people", "Death", "Travel"],
+      "correctAnswer": "Love and romance between two people",
+      "verseReference": "Song of Solomon 1"
+    },
+    {
+      "id": 202,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "Who is the primary author of Song of Solomon?",
+      "options": ["David", "Solomon", "Jeremiah", "Isaiah"],
+      "correctAnswer": "Solomon",
+      "verseReference": "Song of Solomon 1:1"
+    },
+    {
+      "id": 203,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What is the book of Song of Solomon also called?",
+      "options": ["The Book of War", "The Song of Songs", "The Book of Death", "The Book of Gold"],
+      "correctAnswer": "The Song of Songs",
+      "verseReference": "Song of Solomon 1:1"
+    },
+    {
+      "id": 204,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What does the beloved say about her lover?",
+      "options": ["He is ugly", "He is to me like an apple tree among the trees of the forest", "He is weak", "He is mean"],
+      "correctAnswer": "He is to me like an apple tree among the trees of the forest",
+      "verseReference": "Song of Solomon 2:3"
+    },
+    {
+      "id": 205,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What is the famous line about love?",
+      "options": ["Love is weak", "Love is strong as death jealousy is cruel as the grave", "Love is easy", "Love is false"],
+      "correctAnswer": "Love is strong as death jealousy is cruel as the grave",
+      "verseReference": "Song of Solomon 8:6"
+    },
+    {
+      "id": 206,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What does the lover compare his beloved to?",
+      "options": ["An enemy", "A lily among thorns", "A rock", "A tree"],
+      "correctAnswer": "A lily among thorns",
+      "verseReference": "Song of Solomon 2:2"
+    },
+    {
+      "id": 207,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What does the song express about the union of lovers?",
+      "options": ["It is bad", "It is the greatest joy when two love each other", "It is shameful", "It brings only pain"],
+      "correctAnswer": "It is the greatest joy when two love each other",
+      "verseReference": "Song of Solomon"
+    },
+    {
+      "id": 208,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What refrain is repeated throughout the song?",
+      "options": ["Don't wake love", "Do not awaken love until it pleases", "Run away", "Hide forever"],
+      "correctAnswer": "Do not awaken love until it pleases",
+      "verseReference": "Song of Solomon 2:7"
+    },
+    {
+      "id": 209,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "What does the beloved wear or carry that is mentioned?",
+      "options": ["A sword", "A crown of gold", "Weapons", "A heavy cloak"],
+      "correctAnswer": "A crown of gold",
+      "verseReference": "Song of Solomon 3:11"
+    },
+    {
+      "id": 210,
+      "category": "Song of Solomon",
+      "difficulty": "easy",
+      "questionText": "How is love described in the final chapter?",
+      "options": ["Love fails", "Love is a flame of the Lord that many waters cannot quench", "Love is temporary", "Love is a lie"],
+      "correctAnswer": "Love is a flame of the Lord that many waters cannot quench",
+      "verseReference": "Song of Solomon 8:6"
+    },
+    {
+      "id": 211,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "In which year did Isaiah have his vision in the temple?",
+      "options": ["Year of King David", "The year King Uzziah died", "Year of Solomon", "Year of Abraham"],
+      "correctAnswer": "The year King Uzziah died",
+      "verseReference": "Isaiah 6:1"
+    },
+    {
+      "id": 212,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What did Isaiah see in his vision in the temple?",
+      "options": ["Angels", "The Lord sitting on a throne with the Seraphim", "Demons", "Gold and silver"],
+      "correctAnswer": "The Lord sitting on a throne with the Seraphim",
+      "verseReference": "Isaiah 6:1"
+    },
+    {
+      "id": 213,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What was Isaiah's first response to the vision?",
+      "options": ["Joy", "Woe is me I am ruined for I am a man of unclean lips", "Courage", "Laughter"],
+      "correctAnswer": "Woe is me I am ruined for I am a man of unclean lips",
+      "verseReference": "Isaiah 6:5"
+    },
+    {
+      "id": 214,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "How was Isaiah's lips cleansed in the vision?",
+      "options": ["With water", "With a coal from the altar", "With wine", "With oil"],
+      "correctAnswer": "With a coal from the altar",
+      "verseReference": "Isaiah 6:7"
+    },
+    {
+      "id": 215,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What prophecy did Isaiah make about a virgin giving birth?",
+      "options": ["A woman will have a son", "A virgin will be with child and give birth to a son", "No one will be born", "Many will be born"],
+      "correctAnswer": "A virgin will be with child and give birth to a son",
+      "verseReference": "Isaiah 7:14"
+    },
+    {
+      "id": 216,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What shall be the name of the child born to the virgin?",
+      "options": ["Joshua", "David", "Immanuel", "Solomon"],
+      "correctAnswer": "Immanuel",
+      "verseReference": "Isaiah 7:14"
+    },
+    {
+      "id": 217,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What does Immanuel mean?",
+      "options": ["The Lord is great", "God with us", "The Savior", "The King"],
+      "correctAnswer": "God with us",
+      "verseReference": "Isaiah 7:14"
+    },
+    {
+      "id": 218,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What is Isaiah's prophecy about the Messiah's birth place?",
+      "options": ["In Jerusalem", "In Nazareth", "In Bethlehem", "In Egypt"],
+      "correctAnswer": "In Bethlehem",
+      "verseReference": "Isaiah 11:1"
+    },
+    {
+      "id": 219,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What will the Messiah be called according to Isaiah?",
+      "options": ["A prophet", "The Suffering Servant", "The Lion", "The Eagle"],
+      "correctAnswer": "The Suffering Servant",
+      "verseReference": "Isaiah 53"
+    },
+    {
+      "id": 220,
+      "category": "Isaiah",
+      "difficulty": "easy",
+      "questionText": "What did Isaiah say about the Messiah's suffering?",
+      "options": ["He would be happy", "He was pierced for our transgressions bruised for our iniquities", "He would have no suffering", "He would be a king"],
+      "correctAnswer": "He was pierced for our transgressions bruised for our iniquities",
+      "verseReference": "Isaiah 53:5"
+    },
+    {
+      "id": 221,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What was the main message of the prophet Jeremiah?",
+      "options": ["Joy and celebration", "Repentance or face destruction", "Ignore God", "Pursue wealth"],
+      "correctAnswer": "Repentance or face destruction",
+      "verseReference": "Jeremiah 1"
+    },
+    {
+      "id": 222,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "How did God call Jeremiah to be a prophet?",
+      "options": ["In a dream", "God touched his mouth and said I put my words in your mouth", "In a vision", "With an angel"],
+      "correctAnswer": "God touched his mouth and said I put my words in your mouth",
+      "verseReference": "Jeremiah 1:9"
+    },
+    {
+      "id": 223,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What was the age of Jeremiah when he was called?",
+      "options": ["Old", "Young (very young man)", "40 years", "30 years"],
+      "correctAnswer": "Young (very young man)",
+      "verseReference": "Jeremiah 1:6"
+    },
+    {
+      "id": 224,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What did Jeremiah do in the potter's house?",
+      "options": ["Bought pottery", "Observed a potter making vessels as a lesson about God's work", "Made statues", "Nothing important"],
+      "correctAnswer": "Observed a potter making vessels as a lesson about God's work",
+      "verseReference": "Jeremiah 18:3"
+    },
+    {
+      "id": 225,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What was Jeremiah's experience in a dungeon?",
+      "options": ["He escaped easily", "He was thrown in and sank in mud and suffered", "He was released immediately", "He was happy"],
+      "correctAnswer": "He was thrown in and sank in mud and suffered",
+      "verseReference": "Jeremiah 38:6"
+    },
+    {
+      "id": 226,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What did Jeremiah prophesy about the temple?",
+      "options": ["It would stand forever", "It would be destroyed", "It would become more beautiful", "Nothing about it"],
+      "correctAnswer": "It would be destroyed",
+      "verseReference": "Jeremiah 7"
+    },
+    {
+      "id": 227,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What was the name of the king during most of Jeremiah's ministry?",
+      "options": ["David", "Solomon", "Zedekiah", "Hezekiah"],
+      "correctAnswer": "Zedekiah",
+      "verseReference": "Jeremiah 37:1"
+    },
+    {
+      "id": 228,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What did Jeremiah do with the vessels in the potter's hand?",
+      "options": ["Bought them", "Broke them as a sign of judgment", "Sold them", "Ignored them"],
+      "correctAnswer": "Broke them as a sign of judgment",
+      "verseReference": "Jeremiah 19:10"
+    },
+    {
+      "id": 229,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What is the New Covenant that Jeremiah prophesied about?",
+      "options": ["No covenant", "I will put my law within them and write it upon their hearts", "A covenant of war", "A covenant of gold"],
+      "correctAnswer": "I will put my law within them and write it upon their hearts",
+      "verseReference": "Jeremiah 31:33"
+    },
+    {
+      "id": 230,
+      "category": "Jeremiah",
+      "difficulty": "easy",
+      "questionText": "What did Jeremiah buy during the siege as a sign of hope?",
+      "options": ["Nothing", "A field in his native place showing that God would restore the land", "Gold", "Weapons"],
+      "correctAnswer": "A field in his native place showing that God would restore the land",
+      "verseReference": "Jeremiah 32:8"
+    },
+    {
+      "id": 231,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What is the main theme of Lamentations?",
+      "options": ["Joy", "Mourning over the destruction of Jerusalem", "Celebration", "War stories"],
+      "correctAnswer": "Mourning over the destruction of Jerusalem",
+      "verseReference": "Lamentations 1"
+    },
+    {
+      "id": 232,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "Who is traditionally believed to be the author of Lamentations?",
+      "options": ["Solomon", "Jeremiah", "David", "Isaiah"],
+      "correctAnswer": "Jeremiah",
+      "verseReference": "Jewish tradition"
+    },
+    {
+      "id": 233,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What is the opening statement of Lamentations?",
+      "options": ["How happy is the city", "How deserted sits the city once full of people", "The city is great", "God has abandoned us"],
+      "correctAnswer": "How deserted sits the city once full of people",
+      "verseReference": "Lamentations 1:1"
+    },
+    {
+      "id": 234,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What does Lamentations say about Jerusalem's sin?",
+      "options": ["She had no sin", "Her sins were great because of these things she weeps", "She was innocent", "God caused her suffering without reason"],
+      "correctAnswer": "Her sins were great because of these things she weeps",
+      "verseReference": "Lamentations 1:5"
+    },
+    {
+      "id": 235,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What is the message of hope in Lamentations?",
+      "options": ["No hope", "Because of the Lord's mercy which is new every morning great is His faithfulness", "Only despair", "Forget God"],
+      "correctAnswer": "Because of the Lord's mercy which is new every morning great is His faithfulness",
+      "verseReference": "Lamentations 3:22-23"
+    },
+    {
+      "id": 236,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "How many chapters does Lamentations have?",
+      "options": ["3", "5", "7", "10"],
+      "correctAnswer": "5",
+      "verseReference": "Lamentations"
+    },
+    {
+      "id": 237,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What was the cause of Jerusalem's destruction mentioned in Lamentations?",
+      "options": ["Natural disaster", "The people's sin and rebellion against God", "Foreign invasion without reason", "God's anger without cause"],
+      "correctAnswer": "The people's sin and rebellion against God",
+      "verseReference": "Lamentations 1"
+    },
+    {
+      "id": 238,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What does Lamentations say about the Lord's compassion?",
+      "options": ["He has no compassion", "His compassion will fail", "Though He brings grief He will show compassion according to His great mercy", "He is cruel"],
+      "correctAnswer": "Though He brings grief He will show compassion according to His great mercy",
+      "verseReference": "Lamentations 3:32"
+    },
+    {
+      "id": 239,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What is the style of Lamentations?",
+      "options": ["Narrative story", "Poetry (most chapters are acrostic poems)", "Law codes", "Proverbs"],
+      "correctAnswer": "Poetry (most chapters are acrostic poems)",
+      "verseReference": "Lamentations"
+    },
+    {
+      "id": 240,
+      "category": "Lamentations",
+      "difficulty": "easy",
+      "questionText": "What does the author say about waiting for the Lord?",
+      "options": ["Don't wait", "The Lord is good to those who wait for Him to the soul that seeks Him", "Waiting is useless", "Never trust the Lord"],
+      "correctAnswer": "The Lord is good to those who wait for Him to the soul that seeks Him",
+      "verseReference": "Lamentations 3:25"
+    },
+    {
+      "id": 241,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "Where was Ezekiel when he received his first vision?",
+      "options": ["In the temple", "Among the exiles by the River Kebar in Babylon", "In Jerusalem", "In Egypt"],
+      "correctAnswer": "Among the exiles by the River Kebar in Babylon",
+      "verseReference": "Ezekiel 1:3"
+    },
+    {
+      "id": 242,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What did Ezekiel see in his first vision?",
+      "options": ["A garden", "A chariot with wheels full of eyes surrounded by living creatures", "A temple", "A mountain"],
+      "correctAnswer": "A chariot with wheels full of eyes surrounded by living creatures",
+      "verseReference": "Ezekiel 1:5"
+    },
+    {
+      "id": 243,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What was Ezekiel asked to do with a scroll?",
+      "options": ["Burn it", "Eat it as it was as sweet as honey in his mouth", "Read it aloud", "Hide it"],
+      "correctAnswer": "Eat it as it was as sweet as honey in his mouth",
+      "verseReference": "Ezekiel 3:3"
+    },
+    {
+      "id": 244,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What was Ezekiel's role described as?",
+      "options": ["A king", "A watchman for the house of Israel", "A priest", "A soldier"],
+      "correctAnswer": "A watchman for the house of Israel",
+      "verseReference": "Ezekiel 3:17"
+    },
+    {
+      "id": 245,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What was Ezekiel's experience with the temple?",
+      "options": ["He lived in it", "He saw the glory of the Lord leave the temple", "He built it", "He ignored it"],
+      "correctAnswer": "He saw the glory of the Lord leave the temple",
+      "verseReference": "Ezekiel 11:23"
+    },
+    {
+      "id": 246,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What was Ezekiel's vision about dry bones?",
+      "options": ["They were dead and gone", "The Spirit of God brought them back to life as a sign of restoration", "They were cursed forever", "They meant nothing"],
+      "correctAnswer": "The Spirit of God brought them back to life as a sign of restoration",
+      "verseReference": "Ezekiel 37:10"
+    },
+    {
+      "id": 247,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What did the dry bones vision represent?",
+      "options": ["Death only", "The restoration of Israel from exile", "War", "Judgment alone"],
+      "correctAnswer": "The restoration of Israel from exile",
+      "verseReference": "Ezekiel 37:11"
+    },
+    {
+      "id": 248,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What prophecy did Ezekiel make about shepherds and sheep?",
+      "options": ["All shepherds are good", "There will be a true shepherd who will care for the sheep with justice and compassion", "Shepherds don't matter", "Sheep will lead themselves"],
+      "correctAnswer": "There will be a true shepherd who will care for the sheep with justice and compassion",
+      "verseReference": "Ezekiel 34:23"
+    },
+    {
+      "id": 249,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What did Ezekiel see in his vision of the new temple?",
+      "options": ["An old broken temple", "A river flowing from the temple bringing life and healing", "A destroyed temple", "An empty space"],
+      "correctAnswer": "A river flowing from the temple bringing life and healing",
+      "verseReference": "Ezekiel 47:1"
+    },
+    {
+      "id": 250,
+      "category": "Ezekiel",
+      "difficulty": "easy",
+      "questionText": "What does the title of Ezekiel's book mean?",
+      "options": ["Strong man", "God strengthens or God is strong", "The protector", "The savior"],
+      "correctAnswer": "God strengthens or God is strong",
+      "verseReference": "Ezekiel"
+    },
+    {
+      "id": 251,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "Where was Daniel taken as a captive?",
+      "options": ["Egypt", "To Babylon", "To Syria", "To Persia"],
+      "correctAnswer": "To Babylon",
+      "verseReference": "Daniel 1:1"
+    },
+    {
+      "id": 252,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What did Daniel and his friends refuse to eat?",
+      "options": ["Fruit", "The king's rich food and wine", "Bread", "Vegetables"],
+      "correctAnswer": "The king's rich food and wine",
+      "verseReference": "Daniel 1:8"
+    },
+    {
+      "id": 253,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What were Daniel and his friends given instead of the king's food?",
+      "options": ["Nothing", "Vegetables and water", "Meat", "Gold"],
+      "correctAnswer": "Vegetables and water",
+      "verseReference": "Daniel 1:12"
+    },
+    {
+      "id": 254,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What was the result after 10 days of eating vegetables and water?",
+      "options": ["They became weak", "They looked healthier and better nourished than the others", "They got sick", "Nothing changed"],
+      "correctAnswer": "They looked healthier and better nourished than the others",
+      "verseReference": "Daniel 1:15"
+    },
+    {
+      "id": 255,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What abilities did God give to Daniel and his friends?",
+      "options": ["Wealth and power", "Knowledge and skill in all learning and wisdom", "Beauty and strength", "Nothing special"],
+      "correctAnswer": "Knowledge and skill in all learning and wisdom",
+      "verseReference": "Daniel 1:17"
+    },
+    {
+      "id": 256,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What did Nebuchadnezzar have that Daniel interpreted?",
+      "options": ["A prophecy", "A dream and no one could interpret it until Daniel did", "A vision of angels", "A book"],
+      "correctAnswer": "A dream and no one could interpret it until Daniel did",
+      "verseReference": "Daniel 2:1"
+    },
+    {
+      "id": 257,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What was unique about Daniel's prayer life?",
+      "options": ["He never prayed", "He prayed three times a day toward Jerusalem even when it was forbidden", "He prayed only at night", "He didn't pray to God"],
+      "correctAnswer": "He prayed three times a day toward Jerusalem even when it was forbidden",
+      "verseReference": "Daniel 6:10"
+    },
+    {
+      "id": 258,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What happened to Daniel because he refused to stop praying?",
+      "options": ["He was promoted", "He was thrown into the lion's den", "He was killed", "He was exiled"],
+      "correctAnswer": "He was thrown into the lion's den",
+      "verseReference": "Daniel 6:16"
+    },
+    {
+      "id": 259,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What happened to Daniel in the lion's den?",
+      "options": ["He was eaten", "An angel shut the mouths of the lions and he was not harmed", "He escaped", "He stayed there forever"],
+      "correctAnswer": "An angel shut the mouths of the lions and he was not harmed",
+      "verseReference": "Daniel 6:22"
+    },
+    {
+      "id": 260,
+      "category": "Daniel",
+      "difficulty": "easy",
+      "questionText": "What did King Nebuchadnezzar see in his vision that Daniel interpreted?",
+      "options": ["A sheep", "A great image with a head of gold chest and arms of silver belly and thighs of bronze and legs of iron", "A lion", "A bird"],
+      "correctAnswer": "A great image with a head of gold chest and arms of silver belly and thighs of bronze and legs of iron",
+      "verseReference": "Daniel 2:31"
+    },
+    {
+      "id": 261,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What was the main message of Hosea?",
+      "options": ["God's love and faithfulness despite people's unfaithfulness", "God's judgment alone", "Punishment without mercy", "The end of the world"],
+      "correctAnswer": "God's love and faithfulness despite people's unfaithfulness",
+      "verseReference": "Hosea 1"
+    },
+    {
+      "id": 262,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What did God tell Hosea to do as a sign?",
+      "options": ["Build a temple", "Marry Gomer a woman representing Israel's unfaithfulness", "Plant a garden", "Run from the city"],
+      "correctAnswer": "Marry Gomer a woman representing Israel's unfaithfulness",
+      "verseReference": "Hosea 1:2"
+    },
+    {
+      "id": 263,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What did Hosea's children's names mean?",
+      "options": ["Happy names", "Names representing God's judgment on Israel like 'Not pitied' and 'Not my people'", "Names of joy", "Names with no meaning"],
+      "correctAnswer": "Names representing God's judgment on Israel like 'Not pitied' and 'Not my people'",
+      "verseReference": "Hosea 1:6,8"
+    },
+    {
+      "id": 264,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What was the nature of Hosea's prophecy about God's love?",
+      "options": ["God would never forgive", "I will not completely destroy Israel for my love is patient and merciful", "God would abandon them forever", "No redemption possible"],
+      "correctAnswer": "I will not completely destroy Israel for my love is patient and merciful",
+      "verseReference": "Hosea 11:8"
+    },
+    {
+      "id": 265,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What will God do with Israel's sins according to Hosea?",
+      "options": ["Remember them forever", "Forgive them and cast them into the sea", "Punish them eternally", "Ignore them"],
+      "correctAnswer": "Forgive them and cast them into the sea",
+      "verseReference": "Hosea 7:19"
+    },
+    {
+      "id": 266,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What does Hosea compare Israel to?",
+      "options": ["A strong nation", "A wife unfaithful to her husband", "A city", "A king"],
+      "correctAnswer": "A wife unfaithful to her husband",
+      "verseReference": "Hosea 2"
+    },
+    {
+      "id": 267,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What is the central metaphor of Hosea?",
+      "options": ["War and peace", "God's covenant love like a marriage relationship", "Kings and kingdoms", "Wealth and poverty"],
+      "correctAnswer": "God's covenant love like a marriage relationship",
+      "verseReference": "Hosea"
+    },
+    {
+      "id": 268,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What is the promise at the end of Hosea's prophecy?",
+      "options": ["Only punishment", "Israel will return to the Lord and He will heal them", "Destruction forever", "No hope"],
+      "correctAnswer": "Israel will return to the Lord and He will heal them",
+      "verseReference": "Hosea 14:1"
+    },
+    {
+      "id": 269,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What does the name Hosea mean?",
+      "options": ["Strong one", "Salvation or Savior", "Judge", "King"],
+      "correctAnswer": "Salvation or Savior",
+      "verseReference": "Hosea"
+    },
+    {
+      "id": 270,
+      "category": "Hosea",
+      "difficulty": "easy",
+      "questionText": "What does Hosea say about repentance?",
+      "options": ["Don't repent", "Return to the Lord with words and say Take away all iniquity", "Repentance is useless", "God doesn't want repentance"],
+      "correctAnswer": "Return to the Lord with words and say Take away all iniquity",
+      "verseReference": "Hosea 14:2"
+    },
+    {
+      "id": 271,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What catastrophe did Joel describe?",
+      "options": ["War", "A swarm of locusts devastating the land", "Earthquakes only", "Floods"],
+      "correctAnswer": "A swarm of locusts devastating the land",
+      "verseReference": "Joel 1:4"
+    },
+    {
+      "id": 272,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What was Joel's call to the people?",
+      "options": ["Ignore the disaster", "Repent and return to the Lord with all your heart", "Run away", "Build wealth"],
+      "correctAnswer": "Repent and return to the Lord with all your heart",
+      "verseReference": "Joel 2:12"
+    },
+    {
+      "id": 273,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What will happen when people repent according to Joel?",
+      "options": ["Nothing", "The Lord will restore what the locusts have eaten", "Only punishment remains", "More disaster"],
+      "correctAnswer": "The Lord will restore what the locusts have eaten",
+      "verseReference": "Joel 2:25"
+    },
+    {
+      "id": 274,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What prophecy did Joel make about the future?",
+      "options": ["No future hope", "I will pour out my Spirit on all people and all who call on the name of the Lord will be saved", "Only judgment ahead", "The world will end"],
+      "correctAnswer": "I will pour out my Spirit on all people and all who call on the name of the Lord will be saved",
+      "verseReference": "Joel 2:28-29"
+    },
+    {
+      "id": 275,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What is the main appeal in Joel?",
+      "options": ["Violence", "Blow the trumpet in Zion declare a holy fast call a sacred assembly", "Dance and celebrate", "Ignore warnings"],
+      "correctAnswer": "Blow the trumpet in Zion declare a holy fast call a sacred assembly",
+      "verseReference": "Joel 2:15"
+    },
+    {
+      "id": 276,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What comes before the great day of the Lord according to Joel?",
+      "options": ["Celebration", "Signs and wonders like blood and fire and pillars of smoke", "Nothing", "Wealth"],
+      "correctAnswer": "Signs and wonders like blood and fire and pillars of smoke",
+      "verseReference": "Joel 2:30"
+    },
+    {
+      "id": 277,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "How should people respond to God's judgment?",
+      "options": ["With fear only", "Rend your hearts and not your garments and return to the Lord with fasting tears and mourning", "Ignore it", "Escape"],
+      "correctAnswer": "Rend your hearts and not your garments and return to the Lord with fasting tears and mourning",
+      "verseReference": "Joel 2:13"
+    },
+    {
+      "id": 278,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What will happen to those who call on the Lord according to Joel?",
+      "options": ["They will be rejected", "They will be delivered and saved", "They will suffer", "They will be ignored"],
+      "correctAnswer": "They will be delivered and saved",
+      "verseReference": "Joel 2:32"
+    },
+    {
+      "id": 279,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What does Joel emphasize about God's nature?",
+      "options": ["God is cruel", "The Lord is gracious and merciful slow to anger and abounding in steadfast love", "God is harsh", "God is indifferent"],
+      "correctAnswer": "The Lord is gracious and merciful slow to anger and abounding in steadfast love",
+      "verseReference": "Joel 2:13"
+    },
+    {
+      "id": 280,
+      "category": "Joel",
+      "difficulty": "easy",
+      "questionText": "What is Joel's message about restoration?",
+      "options": ["No restoration", "The devastated land will be restored to abundance and fruitfulness", "Only punishment", "The world will be destroyed"],
+      "correctAnswer": "The devastated land will be restored to abundance and fruitfulness",
+      "verseReference": "Joel 3:18"
+    },
+    {
+      "id": 281,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What was Amos's profession before being a prophet?",
+      "options": ["A king", "A shepherd and a tender of sycamore trees", "A priest", "A soldier"],
+      "correctAnswer": "A shepherd and a tender of sycamore trees",
+      "verseReference": "Amos 7:14"
+    },
+    {
+      "id": 282,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What was Amos's main message?",
+      "options": ["Celebration", "Justice will roll down like waters and righteousness like an ever-flowing stream", "War preparation", "Accumulate wealth"],
+      "correctAnswer": "Justice will roll down like waters and righteousness like an ever-flowing stream",
+      "verseReference": "Amos 5:24"
+    },
+    {
+      "id": 283,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What did Amos condemn in society?",
+      "options": ["Nothing wrong", "Injustice exploitation of the poor and false worship", "Hard work", "Obedience to God"],
+      "correctAnswer": "Injustice exploitation of the poor and false worship",
+      "verseReference": "Amos 2"
+    },
+    {
+      "id": 284,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What kind of king had been ruling when Amos prophesied?",
+      "options": ["A just king", "Jeroboam II who allowed injustice and idolatry to flourish", "A righteous king", "No king"],
+      "correctAnswer": "Jeroboam II who allowed injustice and idolatry to flourish",
+      "verseReference": "Amos 1:1"
+    },
+    {
+      "id": 285,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What does Amos say about God's judgment?",
+      "options": ["There is no judgment", "The Lord will judge both Israel and the surrounding nations", "Only the rich will be judged", "No one will be judged"],
+      "correctAnswer": "The Lord will judge both Israel and the surrounding nations",
+      "verseReference": "Amos 1"
+    },
+    {
+      "id": 286,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What was Amos's warning about religious practices?",
+      "options": ["All worship is good", "I hate your festivals and I take no pleasure in your assemblies", "More worship is the solution", "Ignore God completely"],
+      "correctAnswer": "I hate your festivals and I take no pleasure in your assemblies",
+      "verseReference": "Amos 5:21"
+    },
+    {
+      "id": 287,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What visions did Amos have?",
+      "options": ["None", "Locusts fire plumb line and fruit symbolizing judgment", "Only dreams", "No visions of importance"],
+      "correctAnswer": "Locusts fire plumb line and fruit symbolizing judgment",
+      "verseReference": "Amos 7-9"
+    },
+    {
+      "id": 288,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What did Amos say about social responsibility?",
+      "options": ["Ignore the poor", "Let justice roll down and protect the vulnerable among you", "Wealth is everything", "Poverty is deserved"],
+      "correctAnswer": "Let justice roll down and protect the vulnerable among you",
+      "verseReference": "Amos 5:24"
+    },
+    {
+      "id": 289,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "What is the message at the end of Amos's book?",
+      "options": ["Only judgment", "I will restore the fallen house of David and rebuild it as in days of old", "Total destruction", "No hope"],
+      "correctAnswer": "I will restore the fallen house of David and rebuild it as in days of old",
+      "verseReference": "Amos 9:11"
+    },
+    {
+      "id": 290,
+      "category": "Amos",
+      "difficulty": "easy",
+      "questionText": "How did Amos receive his calling as a prophet?",
+      "options": ["He chose to be one", "God called him while he was with his flocks", "He inherited the position", "He was never called"],
+      "correctAnswer": "God called him while he was with his flocks",
+      "verseReference": "Amos 7:15"
+    },
+    {
+      "id": 291,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "Who was the main subject of Obadiah's prophecy?",
+      "options": ["Israel", "Judah", "Edom", "Babylon"],
+      "correctAnswer": "Edom",
+      "verseReference": "Obadiah 1"
+    },
+    {
+      "id": 292,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "What was Edom's relationship to Israel?",
+      "options": ["Friends", "Descendents of Esau Jacob's brother (distant cousins)", "Enemies from the beginning", "Unknown"],
+      "correctAnswer": "Descendents of Esau Jacob's brother (distant cousins)",
+      "verseReference": "Obadiah 1"
+    },
+    {
+      "id": 293,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "What did Obadiah predict would happen to Edom?",
+      "options": ["They would prosper", "They would be brought down from their pride and arrogance", "They would conquer the world", "Nothing would happen"],
+      "correctAnswer": "They would be brought down from their pride and arrogance",
+      "verseReference": "Obadiah 1:3"
+    },
+    {
+      "id": 294,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "Why was Edom being judged?",
+      "options": ["For no reason", "Because of their pride arrogance and violence against their brother Jacob", "They were too strong", "God was being unfair"],
+      "correctAnswer": "Because of their pride arrogance and violence against their brother Jacob",
+      "verseReference": "Obadiah 1:10"
+    },
+    {
+      "id": 295,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "How long is the book of Obadiah?",
+      "options": ["50 chapters", "21 verses (one chapter)", "100 verses", "10 chapters"],
+      "correctAnswer": "21 verses (one chapter)",
+      "verseReference": "Obadiah"
+    },
+    {
+      "id": 296,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "What is the promise for God's people at the end of Obadiah?",
+      "options": ["Only destruction", "Saviors will come to Mount Zion and the kingdom will belong to the Lord", "Eternal defeat", "No redemption"],
+      "correctAnswer": "Saviors will come to Mount Zion and the kingdom will belong to the Lord",
+      "verseReference": "Obadiah 1:21"
+    },
+    {
+      "id": 297,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "What did Obadiah emphasize about God's justice?",
+      "options": ["God doesn't care about injustice", "The day of the Lord is near for all the nations as you have done it will be done to you", "Injustice goes unpunished", "God is unjust"],
+      "correctAnswer": "The day of the Lord is near for all the nations as you have done it will be done to you",
+      "verseReference": "Obadiah 1:15"
+    },
+    {
+      "id": 298,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "What will happen to Edom according to Obadiah?",
+      "options": ["They will be restored", "They will be cut off forever because of their violence", "They will become stronger", "They will join with Israel"],
+      "correctAnswer": "They will be cut off forever because of their violence",
+      "verseReference": "Obadiah 1:10"
+    },
+    {
+      "id": 299,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "What is the main theme of Obadiah?",
+      "options": ["Mercy", "God's judgment on pride and vindication of His oppressed people", "Celebration", "Forgiveness always"],
+      "correctAnswer": "God's judgment on pride and vindication of His oppressed people",
+      "verseReference": "Obadiah"
+    },
+    {
+      "id": 300,
+      "category": "Obadiah",
+      "difficulty": "easy",
+      "questionText": "Is Obadiah the shortest book in the Old Testament?",
+      "options": ["Yes", "No (it's one of the shortest but not the shortest)", "It's the longest", "Unknown"],
+      "correctAnswer": "No (it's one of the shortest but not the shortest)",
+      "verseReference": "Obadiah"
+    },
+    {
+      "id": 301,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "Where did the Lord tell Jonah to go?",
+      "options": ["Egypt", "To Nineveh to proclaim judgment to the wicked city", "Jerusalem", "Babylon"],
+      "correctAnswer": "To Nineveh to proclaim judgment to the wicked city",
+      "verseReference": "Jonah 1:2"
+    },
+    {
+      "id": 302,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What did Jonah do when he received God's call?",
+      "options": ["Obeyed immediately", "He fled to Tarshish on a ship to escape from the presence of the Lord", "Stayed in his city", "Prepared to go"],
+      "correctAnswer": "He fled to Tarshish on a ship to escape from the presence of the Lord",
+      "verseReference": "Jonah 1:3"
+    },
+    {
+      "id": 303,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What happened to the ship in the sea?",
+      "options": ["It sailed smoothly", "A great storm arose because of Jonah's disobedience", "Nothing happened", "It went faster"],
+      "correctAnswer": "A great storm arose because of Jonah's disobedience",
+      "verseReference": "Jonah 1:4"
+    },
+    {
+      "id": 304,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What did Jonah tell the sailors to do to save the ship?",
+      "options": ["Nothing", "Throw him overboard so the sea will become calm", "Sail faster", "Pray to his God"],
+      "correctAnswer": "Throw him overboard so the sea will become calm",
+      "verseReference": "Jonah 1:12"
+    },
+    {
+      "id": 305,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What happened to Jonah when he was thrown into the sea?",
+      "options": ["He drowned", "He was swallowed by a great fish and was in its belly three days and three nights", "He was rescued by sailors", "He swam to shore"],
+      "correctAnswer": "He was swallowed by a great fish and was in its belly three days and three nights",
+      "verseReference": "Jonah 1:17"
+    },
+    {
+      "id": 306,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What did Jonah do while inside the fish?",
+      "options": ["Despaired", "Prayed to the Lord for deliverance", "Slept", "Did nothing"],
+      "correctAnswer": "Prayed to the Lord for deliverance",
+      "verseReference": "Jonah 2:1"
+    },
+    {
+      "id": 307,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "How was Jonah delivered from the fish?",
+      "options": ["He escaped", "The Lord commanded the fish to vomit him onto dry land", "He was eaten", "He stayed inside"],
+      "correctAnswer": "The Lord commanded the fish to vomit him onto dry land",
+      "verseReference": "Jonah 2:10"
+    },
+    {
+      "id": 308,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What happened when Jonah finally went to Nineveh?",
+      "options": ["They rejected him", "The people repented and turned from their evil ways", "They arrested him", "Nothing happened"],
+      "correctAnswer": "The people repented and turned from their evil ways",
+      "verseReference": "Jonah 3:10"
+    },
+    {
+      "id": 309,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "How did Jonah feel when Nineveh repented?",
+      "options": ["Happy", "Angry because he wanted to see the city destroyed", "Sad", "Confused"],
+      "correctAnswer": "Angry because he wanted to see the city destroyed",
+      "verseReference": "Jonah 4:1"
+    },
+    {
+      "id": 310,
+      "category": "Jonah",
+      "difficulty": "easy",
+      "questionText": "What did God do to teach Jonah about compassion?",
+      "options": ["Nothing", "He appointed a gourd plant to grow over Jonah and provide shade then made it wither to teach him about caring for others", "He sent rain", "He spoke loudly"],
+      "correctAnswer": "He appointed a gourd plant to grow over Jonah and provide shade then made it wither to teach him about caring for others",
+      "verseReference": "Jonah 4:6-7"
+    },
+    {
+      "id": 311,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What was Micah's main message?",
+      "options": ["Celebration only", "God requires justice mercy and humility from His people", "War and violence", "Accumulate wealth"],
+      "correctAnswer": "God requires justice mercy and humility from His people",
+      "verseReference": "Micah 6:8"
+    },
+    {
+      "id": 312,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What did Micah prophesy about the Messiah's birthplace?",
+      "options": ["Jerusalem", "Bethlehem Ephrathah though you are small among the clans", "Egypt", "Nazareth"],
+      "correctAnswer": "Bethlehem Ephrathah though you are small among the clans",
+      "verseReference": "Micah 5:2"
+    },
+    {
+      "id": 313,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What did Micah condemn in society?",
+      "options": ["Nothing wrong", "False prophets corrupt leaders and those who exploit the poor", "The rich", "Working people"],
+      "correctAnswer": "False prophets corrupt leaders and those who exploit the poor",
+      "verseReference": "Micah 3"
+    },
+    {
+      "id": 314,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What did Micah say about God's judgment on Israel?",
+      "options": ["No judgment", "I will make Samaria a heap of ruins as a place for planting vineyards", "Only blessing", "No consequences"],
+      "correctAnswer": "I will make Samaria a heap of ruins as a place for planting vineyards",
+      "verseReference": "Micah 1:6"
+    },
+    {
+      "id": 315,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What is the famous verse about what the Lord requires?",
+      "options": ["Riches and fame", "He has shown you what is good and what does the Lord require of you but to act justly love mercy and walk humbly", "Power and strength", "War and conquest"],
+      "correctAnswer": "He has shown you what is good and what does the Lord require of you but to act justly love mercy and walk humbly",
+      "verseReference": "Micah 6:8"
+    },
+    {
+      "id": 316,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What hope did Micah offer despite judgment?",
+      "options": ["No hope", "In the last days Zion will be restored and people from all nations will come to worship the Lord", "Only destruction", "Permanent defeat"],
+      "correctAnswer": "In the last days Zion will be restored and people from all nations will come to worship the Lord",
+      "verseReference": "Micah 4:1"
+    },
+    {
+      "id": 317,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What does Micah emphasize about God's character?",
+      "options": ["God is distant", "The Lord will show compassion and will trample our iniquities underfoot", "God is cruel", "God is indifferent"],
+      "correctAnswer": "The Lord will show compassion and will trample our iniquities underfoot",
+      "verseReference": "Micah 7:19"
+    },
+    {
+      "id": 318,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "When will Zion be restored according to Micah?",
+      "options": ["Never", "When rulers cease their unjust ways and justice flows like a river", "At the end of the world", "Immediately"],
+      "correctAnswer": "When rulers cease their unjust ways and justice flows like a river",
+      "verseReference": "Micah 4"
+    },
+    {
+      "id": 319,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "What was Micah's role in Judah?",
+      "options": ["A priest", "A prophet calling people to repentance and righteousness", "A king", "A merchant"],
+      "correctAnswer": "A prophet calling people to repentance and righteousness",
+      "verseReference": "Micah 1:1"
+    },
+    {
+      "id": 320,
+      "category": "Micah",
+      "difficulty": "easy",
+      "questionText": "How does Micah end his book?",
+      "options": ["With only judgment", "With a declaration of God's faithfulness and compassion toward His people", "With despair", "With uncertainty"],
+      "correctAnswer": "With a declaration of God's faithfulness and compassion toward His people",
+      "verseReference": "Micah 7:18-20"
+    },
+    {
+      "id": 321,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What is the main subject of Nahum?",
+      "options": ["Israel's blessing", "God's judgment on Nineveh the capital of Assyria", "Judah's success", "Salvation of all"],
+      "correctAnswer": "God's judgment on Nineveh the capital of Assyria",
+      "verseReference": "Nahum 1"
+    },
+    {
+      "id": 322,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "Why did Nineveh deserve judgment according to Nahum?",
+      "options": ["They worshipped God", "Because of their cruelty violence and wickedness toward other nations", "They were peaceful", "They had done nothing wrong"],
+      "correctAnswer": "Because of their cruelty violence and wickedness toward other nations",
+      "verseReference": "Nahum 1:14"
+    },
+    {
+      "id": 323,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What does Nahum say about God's nature regarding judgment?",
+      "options": ["God is weak", "The Lord is good a refuge in times of trouble He cares for those who trust in Him but will bring judgment on His enemies", "God is unjust", "God doesn't judge"],
+      "correctAnswer": "The Lord is good a refuge in times of trouble He cares for those who trust in Him but will bring judgment on His enemies",
+      "verseReference": "Nahum 1:7"
+    },
+    {
+      "id": 324,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What was the relationship between Nineveh and Judah?",
+      "options": ["Friends", "Nineveh was an enemy that had ravaged and oppressed Judah", "Allies", "Indifferent"],
+      "correctAnswer": "Nineveh was an enemy that had ravaged and oppressed Judah",
+      "verseReference": "Nahum"
+    },
+    {
+      "id": 325,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What is the message of hope in Nahum for Judah?",
+      "options": ["No hope", "Although the Assyrians have oppressed you their power will be broken and you will be freed", "Only despair", "Continued suffering"],
+      "correctAnswer": "Although the Assyrians have oppressed you their power will be broken and you will be freed",
+      "verseReference": "Nahum 1:13"
+    },
+    {
+      "id": 326,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What is the tone of Nahum?",
+      "options": ["Gentle and forgiving", "Forceful and judgmental describing Nineveh's destruction vividly", "Uncertain", "Peaceful"],
+      "correctAnswer": "Forceful and judgmental describing Nineveh's destruction vividly",
+      "verseReference": "Nahum 2-3"
+    },
+    {
+      "id": 327,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "How many chapters does Nahum have?",
+      "options": ["2", "3", "5", "7"],
+      "correctAnswer": "3",
+      "verseReference": "Nahum"
+    },
+    {
+      "id": 328,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What did Nahum announce about Nineveh's future?",
+      "options": ["It would prosper forever", "Your name will no longer be perpetuated Nineveh will be destroyed", "It would become a great kingdom", "It would rule over Judah"],
+      "correctAnswer": "Your name will no longer be perpetuated Nineveh will be destroyed",
+      "verseReference": "Nahum 1:14"
+    },
+    {
+      "id": 329,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What does the opening of Nahum declare about God?",
+      "options": ["God is weak", "The Lord is a jealous God taking vengeance He takes vengeance on His foes and maintains His wrath against His enemies", "God is passive", "God loves all equally without judgment"],
+      "correctAnswer": "The Lord is a jealous God taking vengeance He takes vengeance on His foes and maintains His wrath against His enemies",
+      "verseReference": "Nahum 1:2"
+    },
+    {
+      "id": 330,
+      "category": "Nahum",
+      "difficulty": "easy",
+      "questionText": "What is the purpose of Nahum's prophecy for God's people?",
+      "options": ["To frighten them", "To encourage them that God will deliver them from their oppressors", "To discourage them", "No clear purpose"],
+      "correctAnswer": "To encourage them that God will deliver them from their oppressors",
+      "verseReference": "Nahum"
+    },
+    {
+      "id": 331,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What was Habakkuk's main struggle in his prophecy?",
+      "options": ["With people", "With understanding why God allowed evil and why the righteous suffered", "With the government", "With wealth"],
+      "correctAnswer": "With understanding why God allowed evil and why the righteous suffered",
+      "verseReference": "Habakkuk 1:1"
+    },
+    {
+      "id": 332,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What did Habakkuk ask God about?",
+      "options": ["For wealth", "How long must I call for help while you do not listen", "For power", "For nothing"],
+      "correctAnswer": "How long must I call for help while you do not listen",
+      "verseReference": "Habakkuk 1:2"
+    },
+    {
+      "id": 333,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What was God's answer about judgment?",
+      "options": ["No judgment would come", "I am raising up the Babylonians to bring judgment on Judah", "Judah would remain peaceful", "God would stay silent"],
+      "correctAnswer": "I am raising up the Babylonians to bring judgment on Judah",
+      "verseReference": "Habakkuk 1:6"
+    },
+    {
+      "id": 334,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "How did Habakkuk respond to God's answer?",
+      "options": ["With acceptance", "He was confused and questioned further how could God use wicked Babylon to judge Judah", "He rejoiced", "He accepted without question"],
+      "correctAnswer": "He was confused and questioned further how could God use wicked Babylon to judge Judah",
+      "verseReference": "Habakkuk 1:13"
+    },
+    {
+      "id": 335,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What was God's final message to Habakkuk?",
+      "options": ["Despair", "The righteous will live by their faith in God even in difficult times", "Only judgment", "No redemption"],
+      "correctAnswer": "The righteous will live by their faith in God even in difficult times",
+      "verseReference": "Habakkuk 2:4"
+    },
+    {
+      "id": 336,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What is the main message of Habakkuk?",
+      "options": ["Faith is useless", "Even in suffering and uncertainty we can trust God and live by faith", "God doesn't care", "Life is meaningless"],
+      "correctAnswer": "Even in suffering and uncertainty we can trust God and live by faith",
+      "verseReference": "Habakkuk 3:17-19"
+    },
+    {
+      "id": 337,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "How does Habakkuk's complaint end?",
+      "options": ["With despair", "With a commitment to trust and rejoice in God despite circumstances", "With anger", "With abandonment of faith"],
+      "correctAnswer": "With a commitment to trust and rejoice in God despite circumstances",
+      "verseReference": "Habakkuk 3:17-19"
+    },
+    {
+      "id": 338,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What does Habakkuk say about God's holiness?",
+      "options": ["God is not holy", "Your eyes are too pure to look on evil and you cannot tolerate wrong", "God approves of sin", "God is indifferent to morality"],
+      "correctAnswer": "Your eyes are too pure to look on evil and you cannot tolerate wrong",
+      "verseReference": "Habakkuk 1:13"
+    },
+    {
+      "id": 339,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What is unique about the structure of Habakkuk?",
+      "options": ["It's a narrative", "It's a dialogue between the prophet and God where questions are answered", "It's a list", "It's poetry only"],
+      "correctAnswer": "It's a dialogue between the prophet and God where questions are answered",
+      "verseReference": "Habakkuk"
+    },
+    {
+      "id": 340,
+      "category": "Habakkuk",
+      "difficulty": "easy",
+      "questionText": "What does Habakkuk conclude about trusting God?",
+      "options": ["Trust is foolish", "Though the fig tree may not blossom the cattle barns be empty I will rejoice in God my Savior", "Trust brings only pain", "God cannot be trusted"],
+      "correctAnswer": "Though the fig tree may not blossom the cattle barns be empty I will rejoice in God my Savior",
+      "verseReference": "Habakkuk 3:17-18"
+    },
+    {
+      "id": 341,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What was the main warning of Zephaniah?",
+      "options": ["Good news only", "The coming day of the Lord will be a day of judgment and wrath against all who turn from God", "Joy ahead", "No judgment"],
+      "correctAnswer": "The coming day of the Lord will be a day of judgment and wrath against all who turn from God",
+      "verseReference": "Zephaniah 1:1"
+    },
+    {
+      "id": 342,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "Who did Zephaniah condemn in Judah?",
+      "options": ["The poor", "The arrogant who worshipped idols and lived without regard for God", "Children", "The righteous"],
+      "correctAnswer": "The arrogant who worshipped idols and lived without regard for God",
+      "verseReference": "Zephaniah 1:4"
+    },
+    {
+      "id": 343,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What did Zephaniah say about the day of the Lord?",
+      "options": ["It will bring joy", "It will be a day of darkness gloom clouds and blackness", "It will never come", "No judgment or darkness"],
+      "correctAnswer": "It will be a day of darkness gloom clouds and blackness",
+      "verseReference": "Zephaniah 1:15"
+    },
+    {
+      "id": 344,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What hope did Zephaniah offer despite judgment?",
+      "options": ["No hope", "Seek the Lord and seek righteousness and you may be sheltered on the day of the Lord's anger", "Only despair", "No redemption"],
+      "correctAnswer": "Seek the Lord and seek righteousness and you may be sheltered on the day of the Lord's anger",
+      "verseReference": "Zephaniah 2:3"
+    },
+    {
+      "id": 345,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What is the message at the end of Zephaniah?",
+      "options": ["Only judgment", "The Lord will restore His people and rejoice over them with joy", "Total destruction", "No future hope"],
+      "correctAnswer": "The Lord will restore His people and rejoice over them with joy",
+      "verseReference": "Zephaniah 3:14-17"
+    },
+    {
+      "id": 346,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What did Zephaniah prophesy about judgment on other nations?",
+      "options": ["No judgment on other nations", "God will bring judgment on all the neighboring nations Philistia Moab Ammon and Assyria", "Other nations would be spared", "Only Judah would be judged"],
+      "correctAnswer": "God will bring judgment on all the neighboring nations Philistia Moab Ammon and Assyria",
+      "verseReference": "Zephaniah 2"
+    },
+    {
+      "id": 347,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What does Zephaniah emphasize about seeking God?",
+      "options": ["Seeking God is useless", "Seek the Lord all you humble of the land and you may be protected", "God cannot be found", "No need to seek God"],
+      "correctAnswer": "Seek the Lord all you humble of the land and you may be protected",
+      "verseReference": "Zephaniah 2:3"
+    },
+    {
+      "id": 348,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What is Zephaniah's vision for the future after judgment?",
+      "options": ["Only destruction", "A faithful remnant will be left and will dwell in Zion", "Everyone will be destroyed", "No restoration"],
+      "correctAnswer": "A faithful remnant will be left and will dwell in Zion",
+      "verseReference": "Zephaniah 3:12"
+    },
+    {
+      "id": 349,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "How does Zephaniah describe God's love at the end?",
+      "options": ["God doesn't love", "The Lord your God is with you He is mighty to save He will take great delight in you", "God is distant", "God is harsh"],
+      "correctAnswer": "The Lord your God is with you He is mighty to save He will take great delight in you",
+      "verseReference": "Zephaniah 3:17"
+    },
+    {
+      "id": 350,
+      "category": "Zephaniah",
+      "difficulty": "easy",
+      "questionText": "What was the lineage of Zephaniah?",
+      "options": ["Unknown origin", "He was a descendant of King Hezekiah", "A foreign prophet", "No lineage given"],
+      "correctAnswer": "He was a descendant of King Hezekiah",
+      "verseReference": "Zephaniah 1:1"
+    },
+    {
+      "id": 351,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "What was Haggai's main message?",
+      "options": ["Despair", "Finish rebuilding the house of God which had been left incomplete", "Abandon the project", "Build personal homes first"],
+      "correctAnswer": "Finish rebuilding the house of God which had been left incomplete",
+      "verseReference": "Haggai 1:2"
+    },
+    {
+      "id": 352,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "Why had the building of the temple stopped?",
+      "options": ["The work was finished", "Opposition and discouragement from enemies had caused the people to abandon the project and focus on their own homes", "No reason", "Resources were gone"],
+      "correctAnswer": "Opposition and discouragement from enemies had caused the people to abandon the project and focus on their own homes",
+      "verseReference": "Haggai 1:2"
+    },
+    {
+      "id": 353,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "What did Haggai say would happen if they rebuilt the temple?",
+      "options": ["They would prosper", "They had experienced poverty and want because they neglected God's house but if they put God first He would bless them", "Nothing would change", "They would be punished"],
+      "correctAnswer": "They had experienced poverty and want because they neglected God's house but if they put God first He would bless them",
+      "verseReference": "Haggai 1:6-7"
+    },
+    {
+      "id": 354,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "How did the people respond to Haggai's message?",
+      "options": ["They ignored him", "They obeyed the Lord and began to work on the house of God", "They rejected him", "They mocked him"],
+      "correctAnswer": "They obeyed the Lord and began to work on the house of God",
+      "verseReference": "Haggai 1:12"
+    },
+    {
+      "id": 355,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "What did Haggai promise about the glory of the new temple?",
+      "options": ["It would be inferior", "The glory of the new house will be greater than the old and peace will be restored", "No glory would come", "It would be destroyed"],
+      "correctAnswer": "The glory of the new house will be greater than the old and peace will be restored",
+      "verseReference": "Haggai 2:9"
+    },
+    {
+      "id": 356,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "What did the people experience after starting to rebuild?",
+      "options": ["Poverty", "The presence of the Spirit of the Lord and encouragement to continue the work", "More opposition", "Failure"],
+      "correctAnswer": "The presence of the Spirit of the Lord and encouragement to continue the work",
+      "verseReference": "Haggai 1:14"
+    },
+    {
+      "id": 357,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "When did Haggai deliver his messages?",
+      "options": ["During the monarchy", "In the second year of King Darius during the time of the return from exile", "Long after the exile", "Before the exile"],
+      "correctAnswer": "In the second year of King Darius during the time of the return from exile",
+      "verseReference": "Haggai 1:1"
+    },
+    {
+      "id": 358,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "What does Haggai emphasize about priorities?",
+      "options": ["Personal wealth comes first", "Put God and His house first and all other things will be added", "Building homes is more important", "God's house is not important"],
+      "correctAnswer": "Put God and His house first and all other things will be added",
+      "verseReference": "Haggai 1:7-8"
+    },
+    {
+      "id": 359,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "How many chapters does Haggai have?",
+      "options": ["1", "2", "3", "4"],
+      "correctAnswer": "2",
+      "verseReference": "Haggai"
+    },
+    {
+      "id": 360,
+      "category": "Haggai",
+      "difficulty": "easy",
+      "questionText": "What is the core message of Haggai?",
+      "options": ["Despair and giving up", "Repentance obedience and the assurance that God will bless those who put Him first", "Ignore God's house", "Focus on personal gain"],
+      "correctAnswer": "Repentance obedience and the assurance that God will bless those who put Him first",
+      "verseReference": "Haggai"
+    },
+    {
+      "id": 361,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What visions did Zechariah receive?",
+      "options": ["None", "Eight visions in a single night about the restoration and future glory of Jerusalem", "One vision", "Twelve visions"],
+      "correctAnswer": "Eight visions in a single night about the restoration and future glory of Jerusalem",
+      "verseReference": "Zechariah 1:7"
+    },
+    {
+      "id": 362,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What did the first vision show?",
+      "options": ["A tree", "A man riding a red horse among myrtle trees which represented God's comfort to Jerusalem", "A mountain", "A city"],
+      "correctAnswer": "A man riding a red horse among myrtle trees which represented God's comfort to Jerusalem",
+      "verseReference": "Zechariah 1:8"
+    },
+    {
+      "id": 363,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What did Zechariah emphasize about the future?",
+      "options": ["Only darkness", "Jerusalem will be restored and the Lord will dwell in it again", "Destruction ahead", "No hope for Jerusalem"],
+      "correctAnswer": "Jerusalem will be restored and the Lord will dwell in it again",
+      "verseReference": "Zechariah 2:14"
+    },
+    {
+      "id": 364,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What did Zechariah prophesy about a king?",
+      "options": ["No king would come", "A king will come to you righteous and having salvation lowly and riding on a donkey", "A king would bring war", "Only judgment would come"],
+      "correctAnswer": "A king will come to you righteous and having salvation lowly and riding on a donkey",
+      "verseReference": "Zechariah 9:9"
+    },
+    {
+      "id": 365,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What did Zechariah say about the Messiah's piercing?",
+      "options": ["The Messiah would not be hurt", "They will look on the One whom they have pierced", "The Messiah would be hidden", "No one would harm the Messiah"],
+      "correctAnswer": "They will look on the One whom they have pierced",
+      "verseReference": "Zechariah 12:10"
+    },
+    {
+      "id": 366,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What did the vision of the lampstand represent?",
+      "options": ["Darkness", "The Spirit of God providing light and guidance to Jerusalem", "War", "Death"],
+      "correctAnswer": "The Spirit of God providing light and guidance to Jerusalem",
+      "verseReference": "Zechariah 4:1-6"
+    },
+    {
+      "id": 367,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What is the promise at the end of Zechariah's prophecy?",
+      "options": ["Only judgment", "The Lord will be the King over all the earth and His name the only name", "No future glory", "Eternal separation"],
+      "correctAnswer": "The Lord will be the King over all the earth and His name the only name",
+      "verseReference": "Zechariah 14:9"
+    },
+    {
+      "id": 368,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What message did Zechariah give about rebuilding the temple?",
+      "options": ["Don't rebuild", "Not by might nor by power but by my Spirit says the Lord as the work progresses", "It's impossible", "Wait forever"],
+      "correctAnswer": "Not by might nor by power but by my Spirit says the Lord as the work progresses",
+      "verseReference": "Zechariah 4:6"
+    },
+    {
+      "id": 369,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "What did Zechariah encourage regarding faith and obedience?",
+      "options": ["Ignore God's commands", "Return to the Lord and He will return to you", "Rebellion is acceptable", "Disobedience brings blessing"],
+      "correctAnswer": "Return to the Lord and He will return to you",
+      "verseReference": "Zechariah 1:3"
+    },
+    {
+      "id": 370,
+      "category": "Zechariah",
+      "difficulty": "easy",
+      "questionText": "How many chapters does Zechariah have?",
+      "options": ["8", "12", "14", "16"],
+      "correctAnswer": "14",
+      "verseReference": "Zechariah"
+    },
+    {
+      "id": 371,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What was Malachi's main concern?",
+      "options": ["Political power", "The spiritual decline of the people and their unfaithfulness to God", "Wealth accumulation", "Building monuments"],
+      "correctAnswer": "The spiritual decline of the people and their unfaithfulness to God",
+      "verseReference": "Malachi 1"
+    },
+    {
+      "id": 372,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What did Malachi condemn about worship?",
+      "options": ["Sincere worship", "They offered blemished and defective sacrifices instead of the perfect ones God deserved", "Too much worship", "Excessive devotion"],
+      "correctAnswer": "They offered blemished and defective sacrifices instead of the perfect ones God deserved",
+      "verseReference": "Malachi 1:7"
+    },
+    {
+      "id": 373,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What did Malachi say about God's love?",
+      "options": ["God doesn't love them", "Jacob have I loved but Esau I have hated showing that God has a plan", "All are loved equally without distinction", "Love is not important"],
+      "correctAnswer": "Jacob have I loved but Esau I have hated showing that God has a plan",
+      "verseReference": "Malachi 1:2-3"
+    },
+    {
+      "id": 374,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What did Malachi condemn about the priests?",
+      "options": ["They were too strict", "They had become corrupt and broken the covenant by not honoring God in their teaching and practice", "They were too lenient", "Nothing was wrong with them"],
+      "correctAnswer": "They had become corrupt and broken the covenant by not honoring God in their teaching and practice",
+      "verseReference": "Malachi 2:1"
+    },
+    {
+      "id": 375,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What issue about marriage did Malachi address?",
+      "options": ["Nothing about marriage", "The people were divorcing their Israelite wives to marry foreign women and breaking their covenants", "Marriage was strengthening the nation", "Too many marriages"],
+      "correctAnswer": "The people were divorcing their Israelite wives to marry foreign women and breaking their covenants",
+      "verseReference": "Malachi 2:11"
+    },
+    {
+      "id": 376,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What did Malachi say about tithes and offerings?",
+      "options": ["Give all you have", "Bring the whole tithe into the storehouse that there may be food in my house", "Don't give anything", "Give only when you want"],
+      "correctAnswer": "Bring the whole tithe into the storehouse that there may be food in my house",
+      "verseReference": "Malachi 3:10"
+    },
+    {
+      "id": 377,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What promise did Malachi make about faithfulness in giving?",
+      "options": ["Nothing will happen", "I will throw open the floodgates of heaven and pour out so much blessing you won't have room enough to store it", "Poverty will come", "Waste of resources"],
+      "correctAnswer": "I will throw open the floodgates of heaven and pour out so much blessing you won't have room enough to store it",
+      "verseReference": "Malachi 3:10"
+    },
+    {
+      "id": 378,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "Who did Malachi prophesy would come before the Messiah?",
+      "options": ["A king", "Elijah the prophet to prepare the way", "A priest", "A judge"],
+      "correctAnswer": "Elijah the prophet to prepare the way",
+      "verseReference": "Malachi 4:5"
+    },
+    {
+      "id": 379,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What did Malachi say about those who fear the Lord?",
+      "options": ["They will be punished", "Those who fear the Lord and value His name will be remembered and honored in the day He makes up His treasured possessions", "They will be ignored", "No special blessing"],
+      "correctAnswer": "Those who fear the Lord and value His name will be remembered and honored in the day He makes up His treasured possessions",
+      "verseReference": "Malachi 3:16"
+    },
+    {
+      "id": 380,
+      "category": "Malachi",
+      "difficulty": "easy",
+      "questionText": "What is the final promise in Malachi?",
+      "options": ["Only judgment", "Elijah will come to turn the hearts of the parents to the children and the children to the parents", "Total destruction", "No redemption"],
+      "correctAnswer": "Elijah will come to turn the hearts of the parents to the children and the children to the parents",
+      "verseReference": "Malachi 4:6"
+    },
+    {
+      "id": 381,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "What is the focus of Matthew's Gospel?",
+      "options": ["Entertainment", "Jesus as the Messiah and King of the Jews fulfilling Old Testament prophecies", "War stories", "Business practices"],
+      "correctAnswer": "Jesus as the Messiah and King of the Jews fulfilling Old Testament prophecies",
+      "verseReference": "Matthew 1:1"
+    },
+    {
+      "id": 382,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "How does Matthew trace Jesus' ancestry?",
+      "options": ["He doesn't mention ancestry", "Through the genealogy of David showing Jesus is the promised Messiah from the line of David", "Through Mary's family only", "Through twelve patriarchs"],
+      "correctAnswer": "Through the genealogy of David showing Jesus is the promised Messiah from the line of David",
+      "verseReference": "Matthew 1:1-17"
+    },
+    {
+      "id": 383,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "Who were the wise men that visited Jesus?",
+      "options": ["Priests from the temple", "Wise men from the east (magi) who came seeking the newborn King", "Prophets from Israel", "Teachers from Rome"],
+      "correctAnswer": "Wise men from the east (magi) who came seeking the newborn King",
+      "verseReference": "Matthew 2:1"
+    },
+    {
+      "id": 384,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "What gifts did the wise men bring?",
+      "options": ["Food and clothing", "Gold frankincense and myrrh", "Books and scrolls", "Animals"],
+      "correctAnswer": "Gold frankincense and myrrh",
+      "verseReference": "Matthew 2:11"
+    },
+    {
+      "id": 385,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "What is the Sermon on the Mount?",
+      "options": ["A warning about mountains", "Jesus' teaching of the beatitudes and fundamental principles of God's kingdom", "A historical event", "A prophecy"],
+      "correctAnswer": "Jesus' teaching of the beatitudes and fundamental principles of God's kingdom",
+      "verseReference": "Matthew 5-7"
+    },
+    {
+      "id": 386,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "Who are the blessed ones according to the beatitudes?",
+      "options": ["The wealthy and powerful", "The poor in spirit merciful peacemakers those who hunger for righteousness", "The arrogant", "Those without faith"],
+      "correctAnswer": "The poor in spirit merciful peacemakers those who hunger for righteousness",
+      "verseReference": "Matthew 5:3-12"
+    },
+    {
+      "id": 387,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "What did Jesus teach about love in the Sermon on the Mount?",
+      "options": ["Love only your friends", "Love your enemies and pray for those who persecute you", "Love is not important", "Love yourself only"],
+      "correctAnswer": "Love your enemies and pray for those who persecute you",
+      "verseReference": "Matthew 5:44"
+    },
+    {
+      "id": 388,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "What is the Golden Rule?",
+      "options": ["Rules about gold", "Do to others what you would have them do to you", "Ignore others", "Treat others badly"],
+      "correctAnswer": "Do to others what you would have them do to you",
+      "verseReference": "Matthew 7:12"
+    },
+    {
+      "id": 389,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "Who are the 12 apostles?",
+      "options": ["Unknown", "Jesus chose 12 apostles to be His closest followers including Peter James John and others", "100 followers", "No apostles"],
+      "correctAnswer": "Jesus chose 12 apostles to be His closest followers including Peter James John and others",
+      "verseReference": "Matthew 10:1-4"
+    },
+    {
+      "id": 390,
+      "category": "Matthew",
+      "difficulty": "easy",
+      "questionText": "What did Jesus teach about the kingdom of God?",
+      "options": ["It is physical and visible on earth", "It is within you and beyond human earthly understanding", "There is no kingdom", "The kingdom is only for the powerful"],
+      "correctAnswer": "It is within you and beyond human earthly understanding",
+      "verseReference": "Matthew 13"
+    },
+    {
+      "id": 391,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What is distinctive about Mark's Gospel?",
+      "options": ["It focuses on Jesus as King", "It is the shortest Gospel emphasizing Jesus' deeds and miracles with a sense of urgency", "It includes all parables", "It is the longest"],
+      "correctAnswer": "It is the shortest Gospel emphasizing Jesus' deeds and miracles with a sense of urgency",
+      "verseReference": "Mark 1"
+    },
+    {
+      "id": 392,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What was the beginning of Jesus' ministry according to Mark?",
+      "options": ["As a carpenter", "He was baptized by John the Baptist and the Holy Spirit came down like a dove", "He was a teacher immediately", "He was a priest"],
+      "correctAnswer": "He was baptized by John the Baptist and the Holy Spirit came down like a dove",
+      "verseReference": "Mark 1:9-10"
+    },
+    {
+      "id": 393,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What happened after Jesus was baptized?",
+      "options": ["He went to build a house", "The Spirit led Him into the wilderness to be tempted by Satan for 40 days", "He started teaching immediately", "He got married"],
+      "correctAnswer": "The Spirit led Him into the wilderness to be tempted by Satan for 40 days",
+      "verseReference": "Mark 1:12-13"
+    },
+    {
+      "id": 394,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What was Jesus' first message?",
+      "options": ["Fear everyone", "The time has come the kingdom of God has come near repent and believe the good news", "Love the rich", "Ignore the poor"],
+      "correctAnswer": "The time has come the kingdom of God has come near repent and believe the good news",
+      "verseReference": "Mark 1:15"
+    },
+    {
+      "id": 395,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What did Jesus do to demonstrate His authority?",
+      "options": ["Build a tower", "Performed miracles healed the sick cast out demons and calmed the storm", "Wrote laws", "Conquered armies"],
+      "correctAnswer": "Performed miracles healed the sick cast out demons and calmed the storm",
+      "verseReference": "Mark 1-3"
+    },
+    {
+      "id": 396,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What did Jesus say about His authority over the Sabbath?",
+      "options": ["The Sabbath owns Him", "The Sabbath is made for people not people for the Sabbath", "He hated the Sabbath", "The Sabbath is useless"],
+      "correctAnswer": "The Sabbath is made for people not people for the Sabbath",
+      "verseReference": "Mark 2:27"
+    },
+    {
+      "id": 397,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "How does Mark describe Jesus calming the storm?",
+      "options": ["He didn't calm it", "Jesus rebuked the wind and said Peace Be still and there was a great calm", "He ran away", "He was afraid"],
+      "correctAnswer": "Jesus rebuked the wind and said Peace Be still and there was a great calm",
+      "verseReference": "Mark 4:39"
+    },
+    {
+      "id": 398,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What did the disciples learn from Jesus calming the storm?",
+      "options": ["Nothing", "They realized Who is this that even the wind and waves obey Him", "Jesus was weak", "There is no God"],
+      "correctAnswer": "They realized Who is this that even the wind and waves obey Him",
+      "verseReference": "Mark 4:41"
+    },
+    {
+      "id": 399,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What was the focus of Mark's Gospel regarding Jesus' crucifixion?",
+      "options": ["It was a defeat", "It was Jesus' ultimate act of sacrifice for the sins of the world", "It was irrelevant", "It was a failure"],
+      "correctAnswer": "It was Jesus' ultimate act of sacrifice for the sins of the world",
+      "verseReference": "Mark 15"
+    },
+    {
+      "id": 400,
+      "category": "Mark",
+      "difficulty": "easy",
+      "questionText": "What happened on the third day after the crucifixion?",
+      "options": ["Nothing", "Jesus rose from the dead and appeared to His followers", "He remained dead", "The world ended"],
+      "correctAnswer": "Jesus rose from the dead and appeared to His followers",
+      "verseReference": "Mark 16:1-8"
+    },
+    {
+      "id": 401,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "What is unique about Luke's Gospel?",
+      "options": ["It's the oldest", "It's written with careful attention to detail emphasizing Jesus' compassion for the poor and lost", "It's the shortest", "It's the longest"],
+      "correctAnswer": "It's written with careful attention to detail emphasizing Jesus' compassion for the poor and lost",
+      "verseReference": "Luke 1"
+    },
+    {
+      "id": 402,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "How does Luke begin his Gospel?",
+      "options": ["With genealogy", "With an account of Zechariah and Elizabeth who would be the parents of John the Baptist", "With a dream", "With a war"],
+      "correctAnswer": "With an account of Zechariah and Elizabeth who would be the parents of John the Baptist",
+      "verseReference": "Luke 1:1-25"
+    },
+    {
+      "id": 403,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "Who were Jesus' earthly parents according to Luke?",
+      "options": ["Zechariah and Elizabeth", "Joseph and Mary (a virgin from Nazareth)", "Priests from the temple", "A king and queen"],
+      "correctAnswer": "Joseph and Mary (a virgin from Nazareth)",
+      "verseReference": "Luke 1:26-38"
+    },
+    {
+      "id": 404,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "Where was Jesus born according to Luke?",
+      "options": ["In Nazareth", "In Bethlehem in a manger because there was no room in the inn", "In Jerusalem", "In Egypt"],
+      "correctAnswer": "In Bethlehem in a manger because there was no room in the inn",
+      "verseReference": "Luke 2:1-7"
+    },
+    {
+      "id": 405,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "Who were the first visitors to Jesus at His birth?",
+      "options": ["Wise men", "Shepherds who were watching their flocks at night", "Kings", "Priests"],
+      "correctAnswer": "Shepherds who were watching their flocks at night",
+      "verseReference": "Luke 2:8-20"
+    },
+    {
+      "id": 406,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "What did the angels announce to the shepherds?",
+      "options": ["War is coming", "Do not be afraid a Savior has been born who is Christ the Lord", "Jesus is dead", "Run away"],
+      "correctAnswer": "Do not be afraid a Savior has been born who is Christ the Lord",
+      "verseReference": "Luke 2:10-11"
+    },
+    {
+      "id": 407,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "What did Simeon recognize when he saw Jesus?",
+      "options": ["Nothing special", "That Jesus was the promised Messiah and the salvation for all people", "A regular baby", "An ordinary child"],
+      "correctAnswer": "That Jesus was the promised Messiah and the salvation for all people",
+      "verseReference": "Luke 2:29-32"
+    },
+    {
+      "id": 408,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "What story unique to Luke shows Jesus' compassion?",
+      "options": ["A wealthy man story", "The Good Samaritan who showed love to a beaten man of a different ethnic group", "A king's story", "A merchant's tale"],
+      "correctAnswer": "The Good Samaritan who showed love to a beaten man of a different ethnic group",
+      "verseReference": "Luke 10:30-37"
+    },
+    {
+      "id": 409,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "What is the focus of the parable of the Prodigal Son in Luke?",
+      "options": ["Punishment only", "The father's love and forgiveness for the wayward son", "Justice without mercy", "Condemnation"],
+      "correctAnswer": "The father's love and forgiveness for the wayward son",
+      "verseReference": "Luke 15:11-32"
+    },
+    {
+      "id": 410,
+      "category": "Luke",
+      "difficulty": "easy",
+      "questionText": "What does Luke emphasize about Jesus and women?",
+      "options": ["Jesus ignored women", "Jesus treated women with respect and compassion appearing first to them after resurrection", "Women were cursed", "Jesus was hostile to women"],
+      "correctAnswer": "Jesus treated women with respect and compassion appearing first to them after resurrection",
+      "verseReference": "Luke 8:1-3"
+    },
+    {
+      "id": 411,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What is the focus of John's Gospel?",
+      "options": ["Entertainment", "Jesus as the Son of God with emphasis on faith and spiritual significance", "Historical facts only", "Business practices"],
+      "correctAnswer": "Jesus as the Son of God with emphasis on faith and spiritual significance",
+      "verseReference": "John 1:1"
+    },
+    {
+      "id": 412,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What does John's prologue declare about Jesus?",
+      "options": ["Jesus is a prophet", "In the beginning was the Word and the Word was with God and the Word was God (Jesus is eternal and divine)", "Jesus is human only", "Jesus is created"],
+      "correctAnswer": "In the beginning was the Word and the Word was with God and the Word was God (Jesus is eternal and divine)",
+      "verseReference": "John 1:1"
+    },
+    {
+      "id": 413,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What did John emphasize about Jesus' signs and miracles?",
+      "options": ["They were magic tricks", "They revealed Jesus' glory and power and called people to believe in Him", "They were unimportant", "They were harmful"],
+      "correctAnswer": "They revealed Jesus' glory and power and called people to believe in Him",
+      "verseReference": "John 2:11"
+    },
+    {
+      "id": 414,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What was Jesus' first miracle according to John?",
+      "options": ["Healing someone", "Turning water into wine at a wedding feast in Cana", "Walking on water", "Raising the dead"],
+      "correctAnswer": "Turning water into wine at a wedding feast in Cana",
+      "verseReference": "John 2:1-11"
+    },
+    {
+      "id": 415,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What did Jesus say about being born again?",
+      "options": ["It's impossible", "Jesus told Nicodemus that to see the kingdom of God one must be born again of water and the Spirit", "Being born once is enough", "Rebirth is unnecessary"],
+      "correctAnswer": "Jesus told Nicodemus that to see the kingdom of God one must be born again of water and the Spirit",
+      "verseReference": "John 3:3-5"
+    },
+    {
+      "id": 416,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What is John 3:16?",
+      "options": ["A law", "For God so loved the world that He gave His one and only Son that whoever believes in Him shall not perish but have eternal life", "A proverb", "A riddle"],
+      "correctAnswer": "For God so loved the world that He gave His one and only Son that whoever believes in Him shall not perish but have eternal life",
+      "verseReference": "John 3:16"
+    },
+    {
+      "id": 417,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What did Jesus teach about His death?",
+      "options": ["It wouldn't happen", "He would be lifted up on the cross and those who believe would be saved", "It would be a failure", "It would be a minor event"],
+      "correctAnswer": "He would be lifted up on the cross and those who believe would be saved",
+      "verseReference": "John 3:14-15"
+    },
+    {
+      "id": 418,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What is the Last Supper in John's account?",
+      "options": ["A regular meal", "Jesus' final meal with His apostles where He washed their feet and taught about His body and blood", "A celebration only", "A historical event with no significance"],
+      "correctAnswer": "Jesus' final meal with His apostles where He washed their feet and taught about His body and blood",
+      "verseReference": "John 13"
+    },
+    {
+      "id": 419,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What did Jesus teach about His relationship with believers?",
+      "options": ["He doesn't care about them", "I am the vine and you are the branches whoever remains in me will bear much fruit", "They are unimportant", "The relationship is temporary"],
+      "correctAnswer": "I am the vine and you are the branches whoever remains in me will bear much fruit",
+      "verseReference": "John 15:5"
+    },
+    {
+      "id": 420,
+      "category": "John",
+      "difficulty": "easy",
+      "questionText": "What did Jesus promise His disciples before His death?",
+      "options": ["Abandonment", "I will send you a Helper the Holy Spirit who will teach you and remind you of all I have said", "They would be destroyed", "No future hope"],
+      "correctAnswer": "I will send you a Helper the Holy Spirit who will teach you and remind you of all I have said",
+      "verseReference": "John 14:26"
+    },
+    {
+      "id": 421,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What is the book of Acts?",
+      "options": ["A history of Jesus only", "The Acts of the Apostles showing the early church's growth and spread of the gospel", "A collection of laws", "Stories of kings"],
+      "correctAnswer": "The Acts of the Apostles showing the early church's growth and spread of the gospel",
+      "verseReference": "Acts 1:1"
+    },
+    {
+      "id": 422,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What event happened at Pentecost?",
+      "options": ["A birthday celebration", "The Holy Spirit was poured out on the apostles and they spoke in other tongues", "A new law was given", "A king was crowned"],
+      "correctAnswer": "The Holy Spirit was poured out on the apostles and they spoke in other tongues",
+      "verseReference": "Acts 2:1-4"
+    },
+    {
+      "id": 423,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What did Peter do on the day of Pentecost?",
+      "options": ["Hid himself", "Preached boldly to thousands and about 3000 people believed and were baptized", "Left town", "Was silent"],
+      "correctAnswer": "Preached boldly to thousands and about 3000 people believed and were baptized",
+      "verseReference": "Acts 2:14-41"
+    },
+    {
+      "id": 424,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What did the early church do together according to Acts?",
+      "options": ["Scattered immediately", "They devoted themselves to the apostles' teaching fellowship breaking of bread and prayer", "They ignored each other", "They separated"],
+      "correctAnswer": "They devoted themselves to the apostles' teaching fellowship breaking of bread and prayer",
+      "verseReference": "Acts 2:42"
+    },
+    {
+      "id": 425,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "Who was Stephen?",
+      "options": ["A wealthy merchant", "A believer who was full of God's grace and power and performed great wonders and signs", "A politician", "A king"],
+      "correctAnswer": "A believer who was full of God's grace and power and performed great wonders and signs",
+      "verseReference": "Acts 6:8"
+    },
+    {
+      "id": 426,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What happened to Stephen?",
+      "options": ["He became rich", "He was arrested brought before the Council and was stoned to death for his faith", "He became king", "He got married"],
+      "correctAnswer": "He was arrested brought before the Council and was stoned to death for his faith",
+      "verseReference": "Acts 7:54-60"
+    },
+    {
+      "id": 427,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "Who was a zealous persecutor of Christians before his conversion?",
+      "options": ["Peter", "Paul (originally named Saul)", "James", "John"],
+      "correctAnswer": "Paul (originally named Saul)",
+      "verseReference": "Acts 8:1"
+    },
+    {
+      "id": 428,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "How did Paul convert to Christianity?",
+      "options": ["He slowly changed his mind", "He encountered the risen Jesus on the road to Damascus and was blinded then healed and became a believer", "He was convinced by arguments", "He never converted"],
+      "correctAnswer": "He encountered the risen Jesus on the road to Damascus and was blinded then healed and became a believer",
+      "verseReference": "Acts 9:1-19"
+    },
+    {
+      "id": 429,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What was Paul's mission after his conversion?",
+      "options": ["To hide", "To proclaim Jesus to the Gentiles and establish churches throughout the Roman Empire", "To fight wars", "To build temples"],
+      "correctAnswer": "To proclaim Jesus to the Gentiles and establish churches throughout the Roman Empire",
+      "verseReference": "Acts 13-20"
+    },
+    {
+      "id": 430,
+      "category": "Acts",
+      "difficulty": "easy",
+      "questionText": "What is the main message of Acts?",
+      "options": ["Fear God", "The Holy Spirit empowered the apostles to witness to Jesus and the gospel spread from Jerusalem to all nations", "God is distant", "No message"],
+      "correctAnswer": "The Holy Spirit empowered the apostles to witness to Jesus and the gospel spread from Jerusalem to all nations",
+      "verseReference": "Acts"
+    },
+    {
+      "id": 431,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What is the main theme of Romans?",
+      "options": ["Love only", "Salvation through faith in Jesus Christ and God's righteousness", "Judgment only", "History"],
+      "correctAnswer": "Salvation through faith in Jesus Christ and God's righteousness",
+      "verseReference": "Romans 1:16-17"
+    },
+    {
+      "id": 432,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about sin?",
+      "options": ["There is no sin", "All have sinned and fall short of the glory of God", "Sin is good", "God doesn't care about sin"],
+      "correctAnswer": "All have sinned and fall short of the glory of God",
+      "verseReference": "Romans 3:23"
+    },
+    {
+      "id": 433,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What is the consequence of sin?",
+      "options": ["Nothing", "The wages of sin is death but the gift of God is eternal life through Jesus Christ", "Happiness only", "No consequences"],
+      "correctAnswer": "The wages of sin is death but the gift of God is eternal life through Jesus Christ",
+      "verseReference": "Romans 6:23"
+    },
+    {
+      "id": 434,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "How can people be saved according to Paul?",
+      "options": ["By works only", "By faith in Jesus Christ as Savior and Lord", "There is no salvation", "By self-effort"],
+      "correctAnswer": "By faith in Jesus Christ as Savior and Lord",
+      "verseReference": "Romans 10:9"
+    },
+    {
+      "id": 435,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about God's grace?",
+      "options": ["God is harsh", "It is by grace you have been saved not by works so no one can boast", "Grace doesn't exist", "Grace is earned"],
+      "correctAnswer": "It is by grace you have been saved not by works so no one can boast",
+      "verseReference": "Romans 3:24"
+    },
+    {
+      "id": 436,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about the transformation of believers?",
+      "options": ["No transformation happens", "Do not conform to the pattern of this world but be transformed by the renewal of your mind", "Stay the same always", "Transformation is impossible"],
+      "correctAnswer": "Do not conform to the pattern of this world but be transformed by the renewal of your mind",
+      "verseReference": "Romans 12:2"
+    },
+    {
+      "id": 437,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about loving your neighbor?",
+      "options": ["Hate them", "Love your neighbor as yourself", "Ignore them", "Fight with them"],
+      "correctAnswer": "Love your neighbor as yourself",
+      "verseReference": "Romans 13:9"
+    },
+    {
+      "id": 438,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What is Paul's view on the relationship between law and grace?",
+      "options": ["Law is everything", "The law revealed sin but grace through Jesus provides salvation", "There is no law", "Grace cancels the law completely"],
+      "correctAnswer": "The law revealed sin but grace through Jesus provides salvation",
+      "verseReference": "Romans 3-5"
+    },
+    {
+      "id": 439,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What does Paul say happens to believers after they believe?",
+      "options": ["Nothing changes", "They are justified (declared righteous) and made at peace with God", "They remain sinful without change", "They are destroyed"],
+      "correctAnswer": "They are justified (declared righteous) and made at peace with God",
+      "verseReference": "Romans 5:1"
+    },
+    {
+      "id": 440,
+      "category": "Romans",
+      "difficulty": "easy",
+      "questionText": "What is Paul's teaching about hope?",
+      "options": ["There is no hope", "Hope comes from knowing God and His purpose for our lives", "Hope is foolish", "Hope is impossible"],
+      "correctAnswer": "Hope comes from knowing God and His purpose for our lives",
+      "verseReference": "Romans 15:4"
+    },
+    {
+      "id": 441,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What were the main issues in the Corinthian church?",
+      "options": ["No issues", "Divisions pride sexual immorality and disputes among believers", "They were perfect", "They needed no correction"],
+      "correctAnswer": "Divisions pride sexual immorality and disputes among believers",
+      "verseReference": "1 Corinthians 1-6"
+    },
+    {
+      "id": 442,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul emphasize about unity?",
+      "options": ["Division is good", "The body of Christ has many members but all are one body each with different gifts for the common good", "Individuality is the goal", "Unity is not important"],
+      "correctAnswer": "The body of Christ has many members but all are one body each with different gifts for the common good",
+      "verseReference": "1 Corinthians 12:12-27"
+    },
+    {
+      "id": 443,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is the most excellent way according to Paul?",
+      "options": ["Wealth", "Love is the most excellent way greater than all spiritual gifts", "Power", "Fame"],
+      "correctAnswer": "Love is the most excellent way greater than all spiritual gifts",
+      "verseReference": "1 Corinthians 13:1-13"
+    },
+    {
+      "id": 444,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say love is?",
+      "options": ["Conditional", "Love is patient love is kind it does not envy or boast it is not proud not rude not self-seeking", "Temporary", "Unimportant"],
+      "correctAnswer": "Love is patient love is kind it does not envy or boast it is not proud not rude not self-seeking",
+      "verseReference": "1 Corinthians 13:4-7"
+    },
+    {
+      "id": 445,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about the resurrection?",
+      "options": ["It won't happen", "Christ has been raised from the dead and all believers will be raised with Him", "Death is the end", "No hope for resurrection"],
+      "correctAnswer": "Christ has been raised from the dead and all believers will be raised with Him",
+      "verseReference": "1 Corinthians 15:20-23"
+    },
+    {
+      "id": 446,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about spiritual gifts?",
+      "options": ["Only a few have gifts", "All believers have received spiritual gifts from the Holy Spirit for serving each other", "Gifts don't matter", "Some are unimportant"],
+      "correctAnswer": "All believers have received spiritual gifts from the Holy Spirit for serving each other",
+      "verseReference": "1 Corinthians 12:4-11"
+    },
+    {
+      "id": 447,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about lawsuits among believers?",
+      "options": ["They are good", "Believers should seek to resolve disputes among themselves rather than suing each other in court", "Court is the answer", "Conflict is necessary"],
+      "correctAnswer": "Believers should seek to resolve disputes among themselves rather than suing each other in court",
+      "verseReference": "1 Corinthians 6:1-8"
+    },
+    {
+      "id": 448,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is the Lord's Supper?",
+      "options": ["A meal for celebration", "The memorial of Jesus' death where believers eat bread and drink wine in remembrance of Him", "A regular meal", "A historical event only"],
+      "correctAnswer": "The memorial of Jesus' death where believers eat bread and drink wine in remembrance of Him",
+      "verseReference": "1 Corinthians 11:23-25"
+    },
+    {
+      "id": 449,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's vision of the future for believers?",
+      "options": ["Annihilation", "Eternal life with God in a transformed glorified body living in the new heavens and earth", "Eternal punishment", "Nonexistence"],
+      "correctAnswer": "Eternal life with God in a transformed glorified body living in the new heavens and earth",
+      "verseReference": "1 Corinthians 15:42-58"
+    },
+    {
+      "id": 450,
+      "category": "1 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What final exhortation does Paul give?",
+      "options": ["Give up", "Be steadfast unmovable always abounding in the Lord's work for your labor in Him is not in vain", "Work for yourself only", "Ignore God"],
+      "correctAnswer": "Be steadfast unmovable always abounding in the Lord's work for your labor in Him is not in vain",
+      "verseReference": "1 Corinthians 15:58"
+    },
+    {
+      "id": 451,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is the theme of 2 Corinthians?",
+      "options": ["Condemnation", "Comfort reconciliation and Paul's apostolic authority", "Judgment only", "Destruction"],
+      "correctAnswer": "Comfort reconciliation and Paul's apostolic authority",
+      "verseReference": "2 Corinthians 1"
+    },
+    {
+      "id": 452,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul experience that prepared him to comfort others?",
+      "options": ["Nothing difficult", "He received comfort from God in all his troubles so he could comfort others in theirs", "No suffering", "No purpose for suffering"],
+      "correctAnswer": "He received comfort from God in all his troubles so he could comfort others in theirs",
+      "verseReference": "2 Corinthians 1:3-4"
+    },
+    {
+      "id": 453,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about weakness?",
+      "options": ["Weakness is shameful", "When I am weak then I am strong because God's power is made perfect in weakness", "God ignores weakness", "Weakness is permanent"],
+      "correctAnswer": "When I am weak then I am strong because God's power is made perfect in weakness",
+      "verseReference": "2 Corinthians 12:9-10"
+    },
+    {
+      "id": 454,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about the new covenant?",
+      "options": ["The old one is still valid", "The new covenant is superior because it is written on hearts not tablets and gives life through the Spirit", "There is no new covenant", "The covenant failed"],
+      "correctAnswer": "The new covenant is superior because it is written on hearts not tablets and gives life through the Spirit",
+      "verseReference": "2 Corinthians 3:3-6"
+    },
+    {
+      "id": 455,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about giving?",
+      "options": ["Don't give", "God loves a cheerful giver and will bless those who give generously", "Giving is bad", "Take everything"],
+      "correctAnswer": "God loves a cheerful giver and will bless those who give generously",
+      "verseReference": "2 Corinthians 9:7"
+    },
+    {
+      "id": 456,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's teaching on reconciliation?",
+      "options": ["Don't reconcile", "Be reconciled to God through Christ who made peace between God and humanity", "Conflict is good", "Reconciliation is impossible"],
+      "correctAnswer": "Be reconciled to God through Christ who made peace between God and humanity",
+      "verseReference": "2 Corinthians 5:18-20"
+    },
+    {
+      "id": 457,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul emphasize about transforming our minds?",
+      "options": ["Don't think", "We are being transformed from glory to glory as the Spirit changes our minds to think like Christ", "Transformation is impossible", "Stay unchanged"],
+      "correctAnswer": "We are being transformed from glory to glory as the Spirit changes our minds to think like Christ",
+      "verseReference": "2 Corinthians 3:18"
+    },
+    {
+      "id": 458,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's encouragement about hope?",
+      "options": ["Hope is false", "Our momentary troubles are achieving an eternal glory that far outweighs them", "Hope brings despair", "No future hope"],
+      "correctAnswer": "Our momentary troubles are achieving an eternal glory that far outweighs them",
+      "verseReference": "2 Corinthians 4:17"
+    },
+    {
+      "id": 459,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What did Paul share about his thorn in the flesh?",
+      "options": ["He was unaffected", "He prayed three times for it to be removed but God said My grace is sufficient for you", "It went away on its own", "It meant he was abandoned"],
+      "correctAnswer": "He prayed three times for it to be removed but God said My grace is sufficient for you",
+      "verseReference": "2 Corinthians 12:7-9"
+    },
+    {
+      "id": 460,
+      "category": "2 Corinthians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's closing exhortation?",
+      "options": ["Despair", "Examine yourselves be joyful aim for perfection encourage one another be of one mind and live in peace", "Give up", "Ignore others"],
+      "correctAnswer": "Examine yourselves be joyful aim for perfection encourage one another be of one mind and live in peace",
+      "verseReference": "2 Corinthians 13:11"
+    },
+    {
+      "id": 461,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What is the main issue addressed in Galatians?",
+      "options": ["Wealth management", "The role of the law and whether salvation comes through faith alone or requires circumcision and obedience to Jewish law", "Building houses", "Military tactics"],
+      "correctAnswer": "The role of the law and whether salvation comes through faith alone or requires circumcision and obedience to Jewish law",
+      "verseReference": "Galatians 1"
+    },
+    {
+      "id": 462,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about being justified?",
+      "options": ["By works of the law", "A person is justified by faith in Christ not by the works of the law", "By human effort", "By inheritance"],
+      "correctAnswer": "A person is justified by faith in Christ not by the works of the law",
+      "verseReference": "Galatians 2:16"
+    },
+    {
+      "id": 463,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What is the fruit of the Spirit according to Paul?",
+      "options": ["Indifference", "Love joy peace patience kindness goodness faithfulness gentleness and self-control", "Hatred", "Envy"],
+      "correctAnswer": "Love joy peace patience kindness goodness faithfulness gentleness and self-control",
+      "verseReference": "Galatians 5:22-23"
+    },
+    {
+      "id": 464,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What does Paul emphasize about Christian freedom?",
+      "options": ["Freedom is not real", "You have been called to freedom but use your freedom to serve one another in love", "Freedom means no responsibility", "Freedom is slavery"],
+      "correctAnswer": "You have been called to freedom but use your freedom to serve one another in love",
+      "verseReference": "Galatians 5:13"
+    },
+    {
+      "id": 465,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about the law's purpose?",
+      "options": ["The law is evil", "The law was our guardian to lead us to Christ but now that faith has come we are no longer under a guardian", "The law is everything", "The law has no value"],
+      "correctAnswer": "The law was our guardian to lead us to Christ but now that faith has come we are no longer under a guardian",
+      "verseReference": "Galatians 3:24-25"
+    },
+    {
+      "id": 466,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's stance on circumcision?",
+      "options": ["Required for all", "Circumcision or uncircumcision means nothing what counts is a new creation", "Circumcision is forever necessary", "All should be circumcised"],
+      "correctAnswer": "Circumcision or uncircumcision means nothing what counts is a new creation",
+      "verseReference": "Galatians 6:15"
+    },
+    {
+      "id": 467,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about carrying burdens?",
+      "options": ["Carry all alone", "Carry each other's burdens and in this way you will fulfill the law of Christ", "Let others suffer alone", "Burdens are meaningless"],
+      "correctAnswer": "Carry each other's burdens and in this way you will fulfill the law of Christ",
+      "verseReference": "Galatians 6:2"
+    },
+    {
+      "id": 468,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's defense of his apostolicity?",
+      "options": ["He doesn't defend it", "He was called by Jesus Himself and was not ordained by human authority", "He was not an apostle", "His calling doesn't matter"],
+      "correctAnswer": "He was called by Jesus Himself and was not ordained by human authority",
+      "verseReference": "Galatians 1:1-2"
+    },
+    {
+      "id": 469,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "How many chapters does Galatians have?",
+      "options": ["2", "6", "12", "20"],
+      "correctAnswer": "6",
+      "verseReference": "Galatians"
+    },
+    {
+      "id": 470,
+      "category": "Galatians",
+      "difficulty": "easy",
+      "questionText": "What is Paul's final blessing?",
+      "options": ["Curse", "Grace to all who love Jesus Christ with undying love", "No blessing", "Bad wishes"],
+      "correctAnswer": "Grace to all who love Jesus Christ with undying love",
+      "verseReference": "Galatians 6:18"
+    },
+    {
+      "id": 471,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What is the main theme of Ephesians?",
+      "options": ["Law and rules", "Unity of believers in Christ and the church as the body of Christ", "Division", "Judgment"],
+      "correctAnswer": "Unity of believers in Christ and the church as the body of Christ",
+      "verseReference": "Ephesians 1"
+    },
+    {
+      "id": 472,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about the church?",
+      "options": ["The church is a building only", "The church is the body of Christ and believers are members of one body with Christ as head", "The church doesn't matter", "The church is evil"],
+      "correctAnswer": "The church is the body of Christ and believers are members of one body with Christ as head",
+      "verseReference": "Ephesians 1:22-23"
+    },
+    {
+      "id": 473,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What did Paul say about peace between Jews and Gentiles?",
+      "options": ["They should remain separate", "Christ has broken down the barrier and made both groups into one body through His peace", "Separation is eternal", "No peace is possible"],
+      "correctAnswer": "Christ has broken down the barrier and made both groups into one body through His peace",
+      "verseReference": "Ephesians 2:14-15"
+    },
+    {
+      "id": 474,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What is the full armor of God?",
+      "options": ["Weapons of war", "Belt of truth breastplate of righteousness shoes of gospel helmet of salvation shield of faith and sword of the Spirit", "Material armor only", "No armor needed"],
+      "correctAnswer": "Belt of truth breastplate of righteousness shoes of gospel helmet of salvation shield of faith and sword of the Spirit",
+      "verseReference": "Ephesians 6:14-17"
+    },
+    {
+      "id": 475,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about spiritual gifts in the church?",
+      "options": ["Only one person has gifts", "Christ gave different gifts to different members so the body works together for building itself up in love", "Gifts are unequal in value", "Gifts don't matter"],
+      "correctAnswer": "Christ gave different gifts to different members so the body works together for building itself up in love",
+      "verseReference": "Ephesians 4:7-16"
+    },
+    {
+      "id": 476,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What is the mystery revealed in Ephesians?",
+      "options": ["Something hidden forever", "The Gentiles are heirs with Israel and members of the same body in Christ", "No mystery", "A secret shame"],
+      "correctAnswer": "The Gentiles are heirs with Israel and members of the same body in Christ",
+      "verseReference": "Ephesians 3:1-12"
+    },
+    {
+      "id": 477,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What did Paul teach about marriage?",
+      "options": ["Marriage is inferior to singleness", "Husbands love your wives as Christ loved the church and wives respect your husbands", "Marriage doesn't matter", "Husbands rule without question"],
+      "correctAnswer": "Husbands love your wives as Christ loved the church and wives respect your husbands",
+      "verseReference": "Ephesians 5:25-33"
+    },
+    {
+      "id": 478,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What was the purpose of the church's existence?",
+      "options": ["Social club only", "To glorify God and demonstrate His wisdom to all creation through unity in Christ", "Accumulate wealth", "Political power"],
+      "correctAnswer": "To glorify God and demonstrate His wisdom to all creation through unity in Christ",
+      "verseReference": "Ephesians 3:21"
+    },
+    {
+      "id": 479,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What did Paul emphasize about spiritual combat?",
+      "options": ["There is no battle", "Our struggle is not against flesh and blood but against spiritual forces requiring prayer and persistence", "Physical weapons are needed", "Ignore the battle"],
+      "correctAnswer": "Our struggle is not against flesh and blood but against spiritual forces requiring prayer and persistence",
+      "verseReference": "Ephesians 6:12-18"
+    },
+    {
+      "id": 480,
+      "category": "Ephesians",
+      "difficulty": "easy",
+      "questionText": "What is the goal of the church according to Paul?",
+      "options": ["Just gather", "To bring all things under Christ as head and to grow to maturity in Him", "No real goal", "Perpetual conflict"],
+      "correctAnswer": "To bring all things under Christ as head and to grow to maturity in Him",
+      "verseReference": "Ephesians 4:15"
+    }
+  ]
+}

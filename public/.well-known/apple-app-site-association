@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [ "XMBVV283C4.com.agios.bible" ],
+        "components": [
+          {
+            "/": "/*",
+            "comment": "Matches any URL"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [ "XMBVV283C4.com.agios.bible" ]
+  }
+}

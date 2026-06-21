@@ -17,11 +17,6 @@ import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dat
 import { StorageService, KEYS } from '../../lib/storage';
 import { useLanguage } from '../context/LanguageContext';
 
-const convertToArabicNumber = (num) => {
-  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num.toString().split('').map(d => arabicNums[+d] || d).join('');
-};
-
 const calculateLevel = (points) => {
   const level = Math.floor(Math.sqrt(points / 50)) + 1;
   const currentLevelXP = Math.pow(level - 1, 2) * 50;
@@ -188,7 +183,7 @@ const categorizeActivities = (history) => {
 };
 
 export default function Points() {
-  const { strings, dir, language } = useLanguage();
+  const { strings, dir, language, formatNumber } = useLanguage();
   const router = useRouter();
   const [pointsData, setPointsData] = useState(null);
   const [badgesData, setBadgesData] = useState(null);
@@ -299,7 +294,7 @@ export default function Points() {
         setLoading(false);
       }
     });
-  }, []);
+  }, [strings]);
 
   const activitiesSummary = useMemo(() => pointsData ? categorizeActivities(pointsData.history) : null, [pointsData]);
   const userUnlockedBadges = useMemo(() => pointsData?.unlockedFromFirestore || [], [pointsData]);
@@ -384,20 +379,20 @@ export default function Points() {
             <div className={styles.levelContainer}>
               <div className={styles.levelBadge}>
                   <FaStar className={styles.levelStar} />
-                  <span>{strings.points.level.replace('{level}', convertToArabicNumber(pointsData?.levelInfo.level || 1))}</span>
+                  <span>{strings.points.level.replace('{level}', formatNumber(pointsData?.levelInfo.level || 1))}</span>
               </div>
               <div className={styles.levelBarOuter}>
                   <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
               </div>
-              <p className={styles.nextLevelText}>{strings.points.next_level.replace('{points}', convertToArabicNumber(pointsData?.levelInfo.nextXP || 0))}</p>
+              <p className={styles.nextLevelText}>{strings.points.next_level.replace('{points}', formatNumber(pointsData?.levelInfo.nextXP || 0))}</p>
             </div>
             <div className={styles.pointsTotal}>
-              <span className={styles.pointsNumber}>{convertToArabicNumber(pointsData?.totalPoints || 0)}</span>
+              <span className={styles.pointsNumber}>{formatNumber(pointsData?.totalPoints || 0)}</span>
               <span className={styles.pointsLabel}>{strings.points.total_points_label}</span>
             </div>
             <div className={styles.streakBadge}>
               <FaFire className={styles.fireIcon} />
-              <span>{strings.points.streak_label.replace('{streak}', convertToArabicNumber(pointsData?.streak || 0))}</span>
+              <span>{strings.points.streak_label.replace('{streak}', formatNumber(pointsData?.streak || 0))}</span>
             </div>
             <div className={styles.dailyGoalsSection}>
               <h3 className={styles.subTitle}>{strings.points.daily_goals_title}</h3>
@@ -407,7 +402,7 @@ export default function Points() {
                           <div className={styles.goalIcon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
                           <div className={styles.goalInfo}>
                               <span>{goal.label}</span>
-                              <small>+{convertToArabicNumber(goal.points)} نقطة</small>
+                              <small>+{formatNumber(goal.points)} نقطة</small>
                           </div>
                       </div>
                   ))}
@@ -429,7 +424,7 @@ export default function Points() {
                       <Badge badge={badge} familyName={family.family_name} isUnlocked={userUnlockedBadges.includes(badge.id)} />
                       {badge.progress && (
                           <div className={styles.badgeProgressMini}>
-                              <div className={styles.progressText}>{convertToArabicNumber(badge.progress.current)}/{convertToArabicNumber(badge.progress.target)}</div>
+                              <div className={styles.progressText}>{formatNumber(badge.progress.current)}/{formatNumber(badge.progress.target)}</div>
                               <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current/badge.progress.target)*100}%` }} /></div>
                           </div>
                       )}
@@ -449,9 +444,9 @@ export default function Points() {
               <li key={i} className={styles.activityItem}>
                 <div className={styles.activityInfo}>
                   <p>{item.description}</p>
-                  <span>{new Date(item.timestamp).toLocaleDateString('ar-EG')}</span>
+                  <span>{new Date(item.timestamp).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</span>
                 </div>
-                <span className={styles.activityPoints}>+{convertToArabicNumber(item.points)}</span>
+                <span className={styles.activityPoints}>+{formatNumber(item.points)}</span>
               </li>
             )) : <p>{strings.points.no_history}</p>}
           </ul>

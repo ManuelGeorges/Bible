@@ -36,6 +36,13 @@ export const metadata = {
   authors: [{ name: 'Manuel Georges' }],
   robots: 'index, follow',
   keywords: ['Agios Bible, Agios , Bible, الكتاب المقدس , Bible study, دراسة الكتاب المقدس, آية اليوم, Verse of the day, خرائط الكتاب المقدس, Bible maps, خطط دراسة الكتاب المقدس, Bible study plans, مسابقات الكتاب المقدس, Bible quizzes, البحث في الكتاب المقدس, Bible search, كتب مسيحية, Christian books'],
+
+  // Smart App Banner for iOS (Safari)
+  itunes: {
+    appId: '6773141320',
+    appArgument: 'https://agios-bible.vercel.app/',
+  },
+
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -66,6 +73,8 @@ export const metadata = {
     google: 'JTfGW-LIKZCB-BMpO_0Ziky-cRpExV_HedDEHumxLqY',
   },
   other: {
+    // Android App Linking for Chrome
+    'google-play-app': 'app-id=com.agios.bible',
     'Content-Security-Policy': "default-src 'self' capacitor-electron://* 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://*.firebaseio.com https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://apis.google.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com;",
   },
 };
@@ -75,6 +84,8 @@ export default function RootLayout({ children }) {
     <html suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light dark" />
+        {/* Additional Fallback for Android Smart App Banner */}
+        <link rel="alternate" href="android-app://com.agios.bible/https/agios-bible.vercel.app/" />
       </head>
       <body>
         <LanguageProvider>

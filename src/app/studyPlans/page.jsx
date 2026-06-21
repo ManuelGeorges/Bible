@@ -30,7 +30,7 @@ const normalizeArabic = (text) => {
 export default function StudyPlans() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const { strings, dir } = useLanguage();
+  const { strings, dir, language } = useLanguage();
   const [activeFilter, setActiveFilter] = useState(strings.studyPlans.filters.all);
   const [searchQuery, setSearchQuery] = useState('');
   const [completionData, setCompletionData] = useState({});
@@ -42,15 +42,21 @@ export default function StudyPlans() {
   const filterRef = useRef(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
 
+  // فلترة الخطط الثابتة حسب اللغة (تظهر في العربية فقط حالياً)
+  const availableStaticPlans = useMemo(() => {
+    return language === 'ar' ? staticPlans : [];
+  }, [language]);
+
   const filtersList = useMemo(() => {
     const baseFilters = [
       strings.studyPlans.filters.all,
       strings.studyPlans.filters.custom,
       strings.studyPlans.filters.shared
     ];
-    const types = [...new Set(staticPlans.map(plan => plan.type))];
+    // جلب الأنواع من الخطط المتاحة فقط
+    const types = [...new Set(availableStaticPlans.map(plan => plan.type))];
     return [...baseFilters, ...types];
-  }, []);
+  }, [strings, availableStaticPlans]);
 
   const unlockBadge = async (badgeId, currentBadges) => {
     if (user) {
@@ -106,14 +112,22 @@ export default function StudyPlans() {
   };
 
   useEffect(() => {
-    const auth = getAuth();
-    let unsubFirestore = () => {};
-
-    const sharedQuery = query(collection(db, 'sharedPlans'), orderBy('createdAt', 'desc'), limit(20));
+    const sharedQuery = query(collection(db, 'sharedPlans'), orderBy('createdAt', 'desc'), limit(50));
     const unsubShared = onSnapshot(sharedQuery, (snapshot) => {
-      const shared = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, isShared: true }));
+      const shared = snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id, isShared: true }))
+        .filter(plan => {
+          // فلترة المجتمع: تظهر خطط نفس لغة المستخدم فقط
+          return plan.language === language || (!plan.language && language === 'ar');
+        });
       setSharedPlans(shared);
     });
+    return () => unsubShared();
+  }, [language]);
+
+  useEffect(() => {
+    const auth = getAuth();
+    let unsubFirestore = () => {};
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (loggedInUser) => {
       setUser(loggedInUser);
@@ -143,7 +157,6 @@ export default function StudyPlans() {
     return () => {
       unsubscribeAuth();
       unsubFirestore();
-      unsubShared();
     };
   }, []);
 
@@ -241,9 +254,9 @@ export default function StudyPlans() {
       const personalIds = new Set(personalPlans.map(p => String(p.id)));
       const filteredShared = sharedPlans.filter(p => !personalIds.has(String(p.id)));
 
-      basePlans = [...personalPlans, ...filteredShared, ...staticPlans];
+      basePlans = [...personalPlans, ...filteredShared, ...availableStaticPlans];
     } else {
-      basePlans = staticPlans.filter(p => p.type === activeFilter);
+      basePlans = availableStaticPlans.filter(p => p.type === activeFilter);
     }
 
     if (!searchQuery.trim()) return basePlans;
@@ -255,7 +268,7 @@ export default function StudyPlans() {
       const planContent = normalizeArabic(`${plan.title} ${plan.description} ${plan.type}`);
       return queryWords.every(word => planContent.includes(word));
     });
-  }, [customPlans, sharedPlans, completionData, activeFilter, searchQuery]);
+  }, [customPlans, sharedPlans, completionData, activeFilter, searchQuery, strings, availableStaticPlans]);
 
   if (loading) return <div className={styles.container}><div className={styles.loading}>{strings.common.loading}</div></div>;
 

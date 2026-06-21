@@ -90,11 +90,6 @@ const highlightColors = [
   { color: "#795548", label: "بني" }, { color: "#607d8b", label: "رمادي" }
 ];
 
-function convertToArabicNumber(num) {
-  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return num?.toString().split('').map(d => arabicNums[+d] || d).join('') || '';
-}
-
 function normalizeArabicText(text) {
   if (!text || typeof text !== 'string') return '';
   return text
@@ -142,7 +137,7 @@ function CustomSelect({ label, options, value, onChange, placeholder }) {
 }
 
 function SearchContent() {
-  const { language, strings, bookNames: bookNamesData } = useLanguage();
+  const { language, strings, bookNames: bookNamesData, formatNumber } = useLanguage();
   const [user, setUser] = useState(null);
   const { triggerBadgeUnlock } = useBadge();
   const searchParams = useSearchParams();
@@ -305,7 +300,7 @@ function SearchContent() {
     } else if (searchType === 'derivatives' && selectedDerivatives.length === 0) {
       setSearchResults([]);
     }
-  }, [searchQuery, selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType]);
+  }, [searchQuery, selectedDerivatives, allVerses, selectedTestament, selectedBookIndex, selectedChapter, searchType, language]);
 
   const displaySemanticResults = useMemo(() => {
     if (searchType !== 'semantic' || semanticResults.length === 0) return [];
@@ -407,7 +402,7 @@ function SearchContent() {
       await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
       updateUserPoints(addedCount * 5, strings.search.reason_highlight_multi);
       setSelectedVerses([]);
-      toast.success(strings.search.toast_fav_added.replace('{count}', convertToArabicNumber(addedCount)));
+      toast.success(strings.search.toast_fav_added.replace('{count}', formatNumber(addedCount)));
     } catch (e) {
       toast.error("An error occurred");
     }
@@ -446,38 +441,10 @@ function SearchContent() {
     }
   };
 
-  const searchWithGeminiDerivatives = async (term) => {
-    if (geminiCache[term]) {
-      setSearchInfo(geminiCache[term]);
-      setSelectedDerivatives(geminiCache[term].derivatives);
-      return geminiCache[term];
-    }
-
-    const normalizedTerm = normalizeArabicText(term);
-    const cacheKey = `${CACHE_KEYS.SEMANTIC}deriv:${normalizedTerm}`;
-    const legacyKey = `${CACHE_KEYS.SEMANTIC}deriv:${term}`;
-    const { cached, legacy } = await readLegacyCache(cacheKey, legacyKey);
-    if (cached) {
-      setSearchInfo(cached);
-      setSelectedDerivatives(cached.derivatives);
-      geminiCache[term] = cached;
-      if (legacy) {
-        const migrationKey = `${CACHE_KEYS.SEMANTIC}deriv:ar:${term}`;
-        kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
-      }
-      return cached;
-    }
-
-    if (!checkRateLimit()) return null;
-
-    const searchId = ++currentSearchIdRef.current;
-    let currentInfo = { root: '...', derivatives: [], isStatic: false, explanation: '' };
-    setShowDerivatives(true);
-
-    const attemptStream = async (attemptIndex) => {
-      const genAIInstance = getGenAI(attemptIndex);
-      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-      const prompt = `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}".
+  const attemptStream = async (attemptIndex, term, searchId, currentInfo) => {
+    const genAIInstance = getGenAI(attemptIndex);
+    const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+    const prompt = `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}".
 المطلوب رد JSON فقط بهذا التنسيق حصراً:
 {
   "root": "الجذر اللغوي"،
@@ -492,70 +459,38 @@ function SearchContent() {
 3. للكلمات المشتقة: استخرج كافة الصور الصرفية الصحيحة (ماضي، مضارع، أمر، فاعل، مفعول، صيغ مبالغة) مع الضمائر.
 4. الرد JSON فقط ولا تخرج عن التنسيق.`;
 
-      const result = await model.generateContentStream(prompt);
-      let fullText = '';
+    const result = await model.generateContentStream(prompt);
+    let fullText = '';
 
-      for await (const chunk of streamWithTimeout(result.stream, 15000)) {
-        if (currentSearchIdRef.current !== searchId) return currentInfo;
+    for await (const chunk of streamWithTimeout(result.stream, 15000)) {
+      if (currentSearchIdRef.current !== searchId) return currentInfo;
 
-        const chunkText = chunk.text();
-        fullText += chunkText;
+      const chunkText = chunk.text();
+      fullText += chunkText;
 
-        const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
-        if (rootMatch) currentInfo.root = rootMatch[1];
+      const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
+      if (rootMatch) currentInfo.root = rootMatch[1];
 
-        const staticMatch = fullText.match(/"isStatic"\s*:\s*(true|false)/);
-        if (staticMatch) currentInfo.isStatic = staticMatch[1] === 'true';
+      const staticMatch = fullText.match(/"isStatic"\s*:\s*(true|false)/);
+      if (staticMatch) currentInfo.isStatic = staticMatch[1] === 'true';
 
-        const explMatch = fullText.match(/"explanation"\s*:\s*"([^"]+)"/);
-        if (explMatch) currentInfo.explanation = explMatch[1];
+      const explMatch = fullText.match(/"explanation"\s*:\s*"([^"]+)"/);
+      if (explMatch) currentInfo.explanation = explMatch[1];
 
-        const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
-        if (derivativesMatch) {
-          const wordsString = derivativesMatch[1];
-          const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => normalizeArabicText(m[1]));
-          if (words.length > 0) {
-            const allWords = _.uniq([normalizeArabicText(term), ...words]);
-            currentInfo.derivatives = allWords;
-            setSearchInfo({ ...currentInfo });
-            setSelectedDerivatives(allWords);
-          }
+      const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
+      if (derivativesMatch) {
+        const wordsString = derivativesMatch[1];
+        const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => normalizeArabicText(m[1]));
+        if (words.length > 0) {
+          const allWords = _.uniq([normalizeArabicText(term), ...words]);
+          currentInfo.derivatives = allWords;
+          setSearchInfo({ ...currentInfo });
+          setSelectedDerivatives(allWords);
         }
       }
-
-      return currentInfo;
-    };
-
-    try {
-      setAiStatus(strings.search.status_analyzing);
-      const result = await withRetry(
-        attemptStream,
-        (attempt, max, reason) => setAiStatus(`Attempt (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. Trying next key...`),
-        5,
-        2000
-      );
-
-      geminiCache[term] = result;
-      if (result && result.derivatives.length > 0) {
-        kv.set(cacheKey, result, { ex: 604800 }).catch(console.error);
-      }
-
-      setAiStatus('');
-
-      const nlpCount = parseInt(localStorage.getItem('nlp_search_count') || '0') + 1;
-      localStorage.setItem('nlp_search_count', nlpCount.toString());
-      if (nlpCount >= 3) await unlockBadge('logic_breaker');
-
-      return result;
-    } catch (e) {
-      setAiStatus('');
-      console.error("Gemini Derivatives Error:", e);
-      toast.error("Analysis failed.");
-      const fallback = { derivatives: [normalizeArabicText(term)], root: 'Unknown', isStatic: false, explanation: '' };
-      setSearchInfo(fallback);
-      setSelectedDerivatives(fallback.derivatives);
-      return fallback;
     }
+
+    return currentInfo;
   };
 
   const handleSemanticSearch = async (term) => {
@@ -596,20 +531,6 @@ function SearchContent() {
       en: (term, allowedBooks, filterContext) => `You are a theological search engine for the "Agios" Bible app.
 Extract 5-7 references related to: "${term}"
 Context: ${filterContext}
-
-Rules:
-1. Return JSON only in this exact format:
-{
-  "results": [{"book": "book name", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
-}
-2. Strictly use only these book names: [${allowedBooks}]
-3. For topics: find direct verses and stories that illustrate them.
-4. High accuracy in chapter and verse numbers.`,
-      en: (term, allowedBooks, filterContext) => `You are a theological search engine for the "Agios" Bible app.
-Extract 5-7 references related to: "${term}"
-Context: ${filterContext}
-
-Important: Respond in English and keep all explanation/reason text in English.
 
 Rules:
 1. Return JSON only in this exact format:
@@ -715,7 +636,7 @@ Regeln:
       setAiStatus(strings.search.status_searching);
       const result = await withRetry(
         attemptSemantic,
-        (attempt, max, reason) => setAiStatus(`Attempt (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. Trying next key...`),
+        (attempt, max, reason) => setAiStatus(`Attempt (${formatNumber(attempt)}/${formatNumber(max)}): ${reason}.. Trying next key...`),
         5,
         2000
       );
@@ -800,7 +721,7 @@ Regeln:
 4. Nur JSON zurückgeben, kein zusätzlicher Text.`
     };
 
-    const attemptStream = async (attemptIndex) => {
+    const attemptStreamInternal = async (attemptIndex) => {
       const genAIInstance = getGenAI(attemptIndex);
       const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = languagePrompts[language] || languagePrompts.en;
@@ -842,8 +763,8 @@ Regeln:
     try {
       setAiStatus(strings.search.status_analyzing);
       const result = await withRetry(
-        attemptStream,
-        (attempt, max, reason) => setAiStatus(`Attempt (${convertToArabicNumber(attempt)}/${convertToArabicNumber(max)}): ${reason}.. Trying next key...`),
+        language === 'ar' ? (idx) => attemptStream(idx, term, searchId, currentInfo) : attemptStreamInternal,
+        (attempt, max, reason) => setAiStatus(`Attempt (${formatNumber(attempt)}/${formatNumber(max)}): ${reason}.. Trying next key...`),
         5,
         2000
       );
@@ -980,8 +901,8 @@ Regeln:
   };
 
   const handleCopy = (v) => {
-    const chapterLabel = convertToArabicNumber(v.chapter + 1);
-    const verseLabel = convertToArabicNumber(v.verse + 1);
+    const chapterLabel = formatNumber(v.chapter + 1);
+    const verseLabel = formatNumber(v.verse + 1);
     const rlm = "\u200F";
     const lrm = "\u200E";
     const fullText = `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
@@ -991,8 +912,8 @@ Regeln:
   };
 
   const handleShare = async (v) => {
-    const chapterLabel = convertToArabicNumber(v.chapter + 1);
-    const verseLabel = convertToArabicNumber(v.verse + 1);
+    const chapterLabel = formatNumber(v.chapter + 1);
+    const verseLabel = formatNumber(v.verse + 1);
     const rlm = "\u200F";
     const lrm = "\u200E";
     const fullText = `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
@@ -1032,9 +953,9 @@ Regeln:
     if (sameChapter) {
       const isConsecutive = (last.verse - first.verse) === (sorted.length - 1);
       const verseRange = isConsecutive
-        ? `${convertToArabicNumber(first.verse + 1)} - ${convertToArabicNumber(last.verse + 1)}`
-        : sorted.map(sv => convertToArabicNumber(sv.verse + 1)).join('، ');
-      reference = `${first.book} ${convertToArabicNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
+        ? `${formatNumber(first.verse + 1)} - ${formatNumber(last.verse + 1)}`
+        : sorted.map(sv => formatNumber(sv.verse + 1)).join('، ');
+      reference = `${first.book} ${formatNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
     } else if (sameBook) {
       reference = `${first.book} (Multiple references)`;
     } else {
@@ -1064,9 +985,9 @@ Regeln:
     if (sameChapter) {
       const isConsecutive = (last.verse - first.verse) === (sorted.length - 1);
       const verseRange = isConsecutive
-        ? `${convertToArabicNumber(first.verse + 1)} - ${convertToArabicNumber(last.verse + 1)}`
-        : sorted.map(sv => convertToArabicNumber(sv.verse + 1)).join('، ');
-      reference = `${first.book} ${convertToArabicNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
+        ? `${formatNumber(first.verse + 1)} - ${formatNumber(last.verse + 1)}`
+        : sorted.map(sv => formatNumber(sv.verse + 1)).join('، ');
+      reference = `${first.book} ${formatNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
     } else if (sameBook) {
       reference = `${first.book} (Multiple references)`;
     } else {
@@ -1113,18 +1034,18 @@ Regeln:
         const last = res.versesContent[res.versesContent.length - 1];
 
         const verseRange = res.versesContent.length === 1
-          ? convertToArabicNumber(first.number)
-          : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+          ? formatNumber(first.number)
+          : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-        groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+        groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
         return groupText;
       }).join('\n\n');
 
     } else {
       if (searchResults.length === 0) return;
       fullText = searchResults.map(v => {
-        const chapterLabel = convertToArabicNumber(v.chapter + 1);
-        const verseLabel = convertToArabicNumber(v.verse + 1);
+        const chapterLabel = formatNumber(v.chapter + 1);
+        const verseLabel = formatNumber(v.verse + 1);
         return `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
       }).join('\n');
     }
@@ -1152,18 +1073,18 @@ Regeln:
         const last = res.versesContent[res.versesContent.length - 1];
 
         const verseRange = res.versesContent.length === 1
-          ? convertToArabicNumber(first.number)
-          : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+          ? formatNumber(first.number)
+          : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-        groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+        groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
         return groupText;
       }).join('\n\n');
 
     } else {
       if (searchResults.length === 0) return;
       fullText = searchResults.map(v => {
-        const chapterLabel = convertToArabicNumber(v.chapter + 1);
-        const verseLabel = convertToArabicNumber(v.verse + 1);
+        const chapterLabel = formatNumber(v.chapter + 1);
+        const verseLabel = formatNumber(v.verse + 1);
         return `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
       }).join('\n');
     }
@@ -1200,10 +1121,10 @@ Regeln:
     const last = res.versesContent[res.versesContent.length - 1];
 
     const verseRange = res.versesContent.length === 1
-      ? convertToArabicNumber(first.number)
-      : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+      ? formatNumber(first.number)
+      : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-    groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+    groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
 
     navigator.clipboard.writeText(groupText);
     toast.success(strings.search.toast_copy_success);
@@ -1223,10 +1144,10 @@ Regeln:
     const last = res.versesContent[res.versesContent.length - 1];
 
     const verseRange = res.versesContent.length === 1
-      ? convertToArabicNumber(first.number)
-      : `${convertToArabicNumber(first.number)} - ${convertToArabicNumber(last.number)}`;
+      ? formatNumber(first.number)
+      : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-    groupText += `${versesText} ${rlm}(${res.book} ${convertToArabicNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+    groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -1280,7 +1201,7 @@ Regeln:
         }}
       >
         <div className={styles.verseText}>
-          <span className={styles.verseNumber}>{convertToArabicNumber(v.verse + 1)}</span>
+          <span className={styles.verseNumber}>{formatNumber(v.verse + 1)}</span>
           {searchType !== 'semantic'
             ? renderHighlightedText(v.text, searchQuery, savedVerse?.color)
             : <span style={{ backgroundColor: savedVerse?.color ? `${savedVerse.color}66` : 'transparent', borderRadius: '4px', padding: '0 4px' }}>{v.text}</span>
@@ -1299,8 +1220,8 @@ Regeln:
             {(() => {
               const rlm = "\u200F";
               const lrm = "\u200E";
-              const chapterLabel = convertToArabicNumber(v.chapter + 1);
-              const verseLabel = convertToArabicNumber(v.verse + 1);
+              const chapterLabel = formatNumber(v.chapter + 1);
+              const verseLabel = formatNumber(v.verse + 1);
               return `${rlm}${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel}`;
             })()}
           </Link>
@@ -1324,8 +1245,8 @@ Regeln:
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const chapterLabel = convertToArabicNumber(v.chapter + 1);
-                const verseLabel = convertToArabicNumber(v.verse + 1);
+                const chapterLabel = formatNumber(v.chapter + 1);
+                const verseLabel = formatNumber(v.verse + 1);
                 const refText = `${v.book} ${chapterLabel}:${verseLabel}`;
                 router.push(`/share-preview?verse=${encodeURIComponent(v.text)}&ref=${encodeURIComponent(refText)}`);
               }}
@@ -1387,7 +1308,7 @@ Regeln:
                 <span>{strings.search.type_semantic}</span>
               </label>
             </div>
-            {timeLeft > 0 && <div className={styles.originalCooldownBadge}><span className={styles.originalTimerText}>{strings.search.cooldown_text.replace('{time}', convertToArabicNumber(timeLeft))}</span></div>}
+            {timeLeft > 0 && <div className={styles.originalCooldownBadge}><span className={styles.originalTimerText}>{strings.search.cooldown_text.replace('{time}', formatNumber(timeLeft))}</span></div>}
 
             {searchType === 'semantic' && (
               <div className={styles.semanticOptions}>
@@ -1419,7 +1340,7 @@ Regeln:
           <div className={styles.filterGrid}>
             <CustomSelect label={strings.search.label_testament} options={[{ value: '', label: strings.search.testament_all }, { value: 'OT', label: strings.search.testament_ot }, { value: 'NT', label: strings.search.testament_nt }]} value={selectedTestament} onChange={e => { setSelectedTestament(e.target.value); setSelectedBookIndex(''); setSelectedChapter(''); }} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_testament)} />
             <CustomSelect label={strings.search.label_book} options={[{ value: '', label: strings.search.book_all }, ...filteredBooks.map(b => ({ value: bookNamesData.indexOf(b).toString(), label: b.name }))]} value={selectedBookIndex} onChange={e => { setSelectedBookIndex(e.target.value); setSelectedChapter(''); }} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_book)} />
-            {selectedBookIndex !== '' && <CustomSelect label={strings.search.label_chapter} options={[{ value: '', label: strings.search.chapter_all }, ...Array.from({ length: chaptersCount }, (_, i) => ({ value: i.toString(), label: convertToArabicNumber(i + 1) }))]} value={selectedChapter} onChange={e => setSelectedChapter(e.target.value)} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_chapter)} />}
+            {selectedBookIndex !== '' && <CustomSelect label={strings.search.label_chapter} options={[{ value: '', label: strings.search.chapter_all }, ...Array.from({ length: chaptersCount }, (_, i) => ({ value: i.toString(), label: formatNumber(i + 1) }))]} value={selectedChapter} onChange={e => setSelectedChapter(e.target.value)} placeholder={strings.search.select_prompt.replace('{label}', strings.search.label_chapter)} />}
           </div>
         </form>
 
@@ -1476,8 +1397,8 @@ Regeln:
                   <div className={styles.headerInfo}>
                     <p className={styles.resultsCount}>
                       {searchType === 'semantic'
-                        ? strings.search.results_count_semantic.replace('{count}', convertToArabicNumber(displaySemanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0)))
-                        : strings.search.results_count_default.replace('{count}', convertToArabicNumber(searchResults.length))}
+                        ? strings.search.results_count_semantic.replace('{count}', formatNumber(displaySemanticResults.reduce((acc, curr) => acc + curr.versesContent.length, 0)))
+                        : strings.search.results_count_default.replace('{count}', formatNumber(searchResults.length))}
                     </p>
                     {(searchType === 'semantic' ? displaySemanticResults.length > 0 : searchResults.length > 0) && (
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -1496,11 +1417,11 @@ Regeln:
                     <div className={styles.selectionActions}>
                       <button onClick={copySelected} className={styles.multiCopyBtn}>
                         <Copy size={16} />
-                        <span>{strings.search.selection_copy.replace('{count}', convertToArabicNumber(selectedVerses.length))}</span>
+                        <span>{strings.search.selection_copy.replace('{count}', formatNumber(selectedVerses.length))}</span>
                       </button>
                       <button onClick={shareSelected} className={styles.multiShareBtn}>
                         <Share2 size={16} />
-                        <span>{strings.search.selection_share.replace('{count}', convertToArabicNumber(selectedVerses.length))}</span>
+                        <span>{strings.search.selection_share.replace('{count}', formatNumber(selectedVerses.length))}</span>
                       </button>
                       <button onClick={() => addSelectedToFavorites("#ffeb3b")} className={styles.multiFavBtn}>
                         <Heart size={16} />

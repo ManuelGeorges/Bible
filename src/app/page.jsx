@@ -61,11 +61,6 @@ const HIGHLIGHT_COLORS = [
   '#F8BBD0', '#E1BEE7', '#CFD8DC'
 ];
 
-const convertToArabicNumber = (num) => {
-    const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return num.toString().split('').map(d => arabicNums[+d] || d).join('');
-};
-
 const formatReference = (ref) => {
     if (!ref) return "";
     const rlm = "\u200F";
@@ -86,7 +81,7 @@ const formatReference = (ref) => {
 };
 
 const LandingPage = () => {
-    const { language, strings, allBookNames } = useLanguage();
+    const { language, strings, allBookNames, formatNumber } = useLanguage();
     const router = useRouter();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -208,23 +203,28 @@ const LandingPage = () => {
                 const bibleRes = await fetch(`/data/bibles/${bibleFile}`);
                 const bibleData = await bibleRes.json();
 
+                // إصلاح: البحث عن السفر باستخدام الـ abbrev لضمان التوافق بين اللغات
+                const bibleBook = bibleData.find(b =>
+                    b.abbrev.toLowerCase() === todayRef.book.toLowerCase()
+                );
+
                 const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.book) ||
                                 allBookNames['en']?.find(b => b.book_id === todayRef.book);
 
-                const bookIndex = allBookNames['ar'].findIndex(b => b.book_id === todayRef.book);
+                if (bibleBook && bibleBook.chapters[todayRef.chapter - 1]) {
+                    const verseText = bibleBook.chapters[todayRef.chapter - 1][todayRef.verse - 1];
 
-                if (bookIndex !== -1 && bibleData[bookIndex]) {
-                    const verseText = bibleData[bookIndex].chapters[todayRef.chapter - 1][todayRef.verse - 1];
-
-                    setDailyVerse({
-                        verse: verseText,
-                        reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
-                        month,
-                        day,
-                        bookId: todayRef.book,
-                        chapter: todayRef.chapter,
-                        verseNum: todayRef.verse
-                    });
+                    if (verseText) {
+                        setDailyVerse({
+                            verse: verseText,
+                            reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
+                            month,
+                            day,
+                            bookId: todayRef.book,
+                            chapter: todayRef.chapter,
+                            verseNum: todayRef.verse
+                        });
+                    }
                 }
             }
 
@@ -257,7 +257,7 @@ const LandingPage = () => {
                 }
             });
         checkTimeBadges();
-    }, [fetchDailyContent, checkTimeBadges]);
+    }, [fetchDailyContent, checkTimeBadges, language]);
 
     useEffect(() => {
         const handleDeepLink = (e) => {
@@ -350,7 +350,8 @@ const LandingPage = () => {
                         const serverComp = data.completedPlans || {};
                         const customPlans = data.customPlans || {};
 
-                        const activeStatic = staticPlans
+                        // تعديل: فلترة الخطط الجارية حسب لغة المستخدم
+                        const activeStatic = (language === 'ar' ? staticPlans : [])
                             .map(plan => {
                                 const stats = calculatePlanStats(plan, false, null, serverComp);
                                 return { ...plan, stats };
@@ -358,15 +359,16 @@ const LandingPage = () => {
                             .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
                         const activeCustom = Object.values(customPlans)
+                            .filter(p => p.language === language || (!p.language && language === 'ar'))
                             .map(plan => {
                                 const stats = calculatePlanStats(plan, true, plan, null);
                                 return { ...plan, isCustom: true, stats };
                             })
                             .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                        // New: Shared plans progress
                         const activeShared = Object.values(serverComp)
                             .filter(p => p.type === 'shared' || p.isShared)
+                            .filter(p => p.language === language || (!p.language && language === 'ar'))
                             .map(plan => {
                                 const stats = calculatePlanStats(plan, true, plan, null);
                                 return { ...plan, stats };
@@ -424,7 +426,6 @@ const LandingPage = () => {
                 const localHistory = await StorageService.get('points_history') || [];
                 const localAnswered = await StorageService.get('answered_questions') || {};
 
-                // Fix: Fetch using both new and old keys to ensure visibility for Guest users
                 const localStaticCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
                 const localCustomPlans = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
 
@@ -439,7 +440,7 @@ const LandingPage = () => {
                 setLastRead(localLastRead);
                 setHasAnswered(!!localAnswered[today]?.answered);
 
-                const activeStatic = staticPlans
+                const activeStatic = (language === 'ar' ? staticPlans : [])
                     .map(plan => {
                         const stats = calculatePlanStats(plan, false, null, localStaticCompletion);
                         return { ...plan, stats };
@@ -447,15 +448,16 @@ const LandingPage = () => {
                     .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
                 const activeCustom = Object.values(localCustomPlans)
+                    .filter(p => p.language === language || (!p.language && language === 'ar'))
                     .map(plan => {
                         const stats = calculatePlanStats(plan, true, plan, null);
                         return { ...plan, isCustom: true, stats };
                     })
                     .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
 
-                // New: Shared plans progress for guests
                 const activeShared = Object.values(localStaticCompletion)
                     .filter(p => p.type === 'shared' || p.isShared)
+                    .filter(p => p.language === language || (!p.language && language === 'ar'))
                     .map(plan => {
                         const stats = calculatePlanStats(plan, true, plan, null);
                         return { ...plan, stats };
@@ -511,7 +513,7 @@ const LandingPage = () => {
             unsubAuth?.();
             if (unsubSnap) unsubSnap();
         };
-    }, [calculatePlanStats, checkStreakBadges, language]);
+    }, [calculatePlanStats, checkStreakBadges, language, strings]);
 
     const handleShareSuccess = async () => {
         if (user) {
@@ -833,11 +835,11 @@ const LandingPage = () => {
                 <div className={styles.statsRow}>
                     <Link href={"/points"} className={styles.statPill}>
                         <Award size={16} />
-                        <span>{userStats.points} XP</span>
+                        <span>{formatNumber(userStats.points)} XP</span>
                     </Link>
                     <div className={styles.statPill}>
                         <Flame size={16} color="#ff4500" />
-                        <span>{userStats.streak} {strings.common.day}</span>
+                        <span>{formatNumber(userStats.streak)} {strings.common.day}</span>
                     </div>
                 </div>
             </header>
@@ -911,8 +913,8 @@ const LandingPage = () => {
                     <div className={styles.goalsProgressWrapper}>
                         <div className={styles.goalsProgressText}>
                             {strings.home.goals_progress
-                              .replace('{done}', convertToArabicNumber(completedGoalsCount))
-                              .replace('{total}', convertToArabicNumber(dailyGoals.length))}
+                              .replace('{done}', formatNumber(completedGoalsCount))
+                              .replace('{total}', formatNumber(dailyGoals.length))}
                         </div>
                         <div className={styles.miniProgressBar}><div className={styles.miniProgressFill} style={{ width: `${(completedGoalsCount / Math.max(1, dailyGoals.length)) * 100}%` }} /></div>
                     </div>
@@ -982,7 +984,7 @@ const LandingPage = () => {
                                             />
                                             <div className={styles.badgeProgressMini}>
                                                 <div className={styles.progressText}>
-                                                    {convertToArabicNumber(badge.currentVal)} / {convertToArabicNumber(badge.targetVal)}
+                                                    {formatNumber(badge.currentVal)} / {formatNumber(badge.targetVal)}
                                                 </div>
                                                 <div className={styles.progressLine}>
                                                     <div
@@ -1011,7 +1013,7 @@ const LandingPage = () => {
                         <ChevronLeft size={18} />
                         <div className={styles.lastReadText}>
                             <small>{strings.common.continue_reading}</small>
-                            <strong>{lastRead.bookName} - {strings.common.chapter} {lastRead.chapterIndex + 1}</strong>
+                            <strong>{lastRead.bookName} - {strings.common.chapter} {formatNumber(lastRead.chapterIndex + 1)}</strong>
                         </div>
                     </div>
                     <div className={styles.lastReadIcon}><BookOpenText size={20} /></div>
@@ -1021,7 +1023,7 @@ const LandingPage = () => {
             <section className={styles.dailyHighlight} id="daily-verse">
                 <div className={styles.verseGlass}>
                     <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>{strings.home.daily_verse}</span></div>
-                    {isLoading ? <div className={styles.skeletonText} /> : (
+                    {isLoading || !dailyVerse ? <div className={styles.skeletonText} /> : (
                         <>
                             <p className={styles.verseText} style={{
                                 backgroundColor: favouriteVerses[dailyVerseKey]?.color ? `${favouriteVerses[dailyVerseKey].color}66` : 'transparent',
@@ -1154,13 +1156,13 @@ const LandingPage = () => {
                         {startedPlans.map((plan) => (
                             <button key={plan.id} onClick={() => router.push(`/studyPlans/details?id=${plan.id}${plan.isCustom || plan.isShared || plan.type === 'shared' ? '&type=' + (plan.isCustom ? 'custom' : 'shared') : ''}`)} className={styles.planProgressCardVertical}>
                                 <div className={styles.planInfo}>
-                                    <div className={styles.planNameRow}><span className={styles.planTitle}>{plan.title}</span><span className={styles.planPercent}>{plan.stats?.percent}%</span></div>
+                                    <div className={styles.planNameRow}><span className={styles.planTitle}>{plan.title}</span><span className={styles.planPercent}>{formatNumber(plan.stats?.percent)}%</span></div>
                                     <div className={styles.progressBar}><div className={styles.progressFill} style={{ width: `${plan.stats?.percent}%` }} /></div>
                                     <div className={styles.planMeta}>
                                         <span>
                                             {strings.home.plan_progress
-                                              .replace('{done}', plan.stats?.daysDone)
-                                              .replace('{total}', plan.stats?.totalDays)}
+                                              .replace('{done}', formatNumber(plan.stats?.daysDone))
+                                              .replace('{total}', formatNumber(plan.stats?.totalDays))}
                                         </span>
                                         <div className={styles.planActionText}>{strings.common.continue_reading} <ArrowRight size={14} /></div>
                                     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import ar from '../data/ar.json';
 import en from '../data/en.json';
 import de from '../data/de.json';
@@ -66,6 +66,14 @@ export function LanguageProvider({ children }) {
         }
     };
 
+    // إضافة وظيفة تنسيق الأرقام بناءً على اللغة
+    const formatNumber = useCallback((num) => {
+        if (num === null || num === undefined) return "";
+        if (language !== 'ar') return num.toString();
+        const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        return num.toString().split('').map(d => arabicNums[+d] || d).join('');
+    }, [language]);
+
     const value = {
         language,
         strings,
@@ -75,7 +83,8 @@ export function LanguageProvider({ children }) {
         changeLanguage,
         isFirstTime,
         setIsFirstTime,
-        isHydrated
+        isHydrated,
+        formatNumber
     };
 
     return (
