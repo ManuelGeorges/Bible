@@ -220,7 +220,7 @@
   "audio": {
     "artist_default": "Holy Bible",
     "album": "Agios Media",
-    "track_title": "Adel Noshy - {book} {chapter}"
+    "track_title": "World English Bible version - {book} {chapter}"
   },
   "bible": {
     "title": "Holy Bible",
@@ -623,7 +623,93 @@
     "labels": {
       "features": "Features & Improvements",
       "fixes": "Fixes & Solutions"
-    }
+    },
+    "history": [
+      {
+        "version": "2.0.0",
+        "date": "Latest Update",
+        "title": "Major Update & Multi-language Support",
+        "features": [
+          "Completely restructured the app to support multiple languages",
+          "Added support for 3 new languages (English, French, German) with core features",
+          "Improved Arabic text display and formatting in the Holy Bible",
+          "Design improvements and better responsiveness for small screens",
+          "Enhanced user experience and homepage development"
+        ],
+        "fixes": [
+          "General performance improvements and system stability"
+        ]
+      },
+      {
+        "version": "1.8.4",
+        "date": "Previous Update",
+        "title": "Tashkeel Accuracy, Search Improvements, and Badges",
+        "features": [
+          "Replaced Tashkeel with a 100% accurate version",
+          "Improved study plans search to be more flexible",
+          "Enhanced the design of the Badges page"
+        ],
+        "fixes": [
+          "Fixed an issue where sequels weren't displayed on the chapters page"
+        ]
+      },
+      {
+        "version": "1.8.3",
+        "date": "Previous Update",
+        "title": "Font Customization and Study Plans Improvements",
+        "features": [
+          "Added ability to change the font family of biblical text",
+          "Added ability to change text weight (thickness)",
+          "Improved AI responsiveness in study plans"
+        ],
+        "fixes": [
+          "Fixed duplicate back button issue on the study plans page"
+        ]
+      },
+      {
+        "version": "1.8.2",
+        "date": "Previous Update",
+        "title": "Performance Improvements and System Stability",
+        "features": [
+          "Improved system responsiveness for logged-in users",
+          "Enhanced the Bible book selection button",
+          "Improved the derivative search system"
+        ],
+        "fixes": [
+          "Fixed map issues under high load",
+          "Fixed Facebook link not working on the contact page",
+          "Fixed verse control bar buttons not appearing in light mode",
+          "Fixed incorrect navigation bar button selection"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "May 13, 2026",
+        "title": "Enhanced Maps Release",
+        "features": [
+          "Expanded the maps library with new maps",
+          "Added smart search for places and historical landmarks",
+          "Added feature to view a landmark and navigate to its biblical mentions",
+          "Added 'Try AI' section on the homepage for easier user experience"
+        ],
+        "fixes": [
+          "Fixed slowness in Bible book and chapter selection lists",
+          "Radical improvements in competitions page design",
+          "Fixed blurriness in dropdown menus"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "May 12, 2026",
+        "title": "First Official Release",
+        "features": [
+          "The first official version carrying all core features"
+        ],
+        "fixes": [
+          "None"
+        ]
+      }
+    ]
   },
   "offline": {
     "title": "No Internet Connection",

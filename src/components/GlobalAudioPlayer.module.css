@@ -15,7 +15,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  direction: rtl;
   color: var(--color-text-primary);
 }
 
@@ -208,6 +207,7 @@
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
+  cursor: pointer;
 }
 
 .playPauseCircle {
@@ -221,6 +221,7 @@
   color: white;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   border: none;
+  cursor: pointer;
 }
 
 .speedSelector {
@@ -243,6 +244,7 @@
   font-weight: bold;
   color: var(--color-text-primary);
   opacity: 0.6;
+  cursor: pointer;
 }
 
 .speedChipActive {

@@ -2,20 +2,22 @@
 
 import styles from './versions.module.css';
 import { useLanguage } from '../context/LanguageContext';
-import updates from '../data/updates.json';
 
 export default function VersionsPage() {
-  const { strings } = useLanguage();
+  const { strings, dir } = useLanguage();
+
+  // الحصول على سجل التحديثات من ملف اللغة
+  const history = strings.versions.history || [];
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <h1 className={styles.title}>{strings.versions.title}</h1>
       <p className={styles.introParagraph}>
         {strings.versions.intro}
       </p>
 
       <div className={styles.updatesGrid}>
-        {updates.map((update, index) => (
+        {history.map((update, index) => (
           <div key={index} className={styles.updateCard} style={{ borderTop: '4px solid #D4AF37' }}>
             <div className={styles.updateHeader}>
               <span className={styles.versionNumber} style={{ color: '#D4AF37', fontWeight: 'bold' }}>
@@ -25,7 +27,7 @@ export default function VersionsPage() {
             </div>
             <h2 className={styles.updateTitle}>{update.title}</h2>
 
-            {update.features.length > 0 && (
+            {update.features && update.features.length > 0 && (
               <>
                 <h3 className={styles.listTitle}>{strings.versions.labels.features}</h3>
                 <ul className={styles.featureList}>
@@ -36,7 +38,7 @@ export default function VersionsPage() {
               </>
             )}
 
-            {update.fixes.length > 0 && (
+            {update.fixes && update.fixes.length > 0 && (
               <>
                 <h3 className={styles.listTitle}>{strings.versions.labels.fixes}</h3>
                 <ul className={styles.fixesList}>

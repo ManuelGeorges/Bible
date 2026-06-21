@@ -581,7 +581,7 @@
       "ai_title": "Künstliche Intelligenz (KI)",
       "ai_text": "Die Anwendung nutzt KI-Technologien, um die Benutzererfahrung zu verbessern.",
       "third_party_title": "Zugriff durch Dritte",
-      "third_party_text": "Wir nutzen vertrauenswürdige Drittanbieter-Dienste.",
+      "third_party_text": "Wir nutzen vertrauenswürdigere Drittanbieter-Dienste.",
       "children_title": "Privatsphäre von Kindern",
       "children_text": "Die Anwendung richtet sich nicht an Personen unter 13 Jahren.",
       "contact_title": "Kontakt",
@@ -623,18 +623,104 @@
     "labels": {
       "features": "Funktionen & Verbesserungen",
       "fixes": "Fehlerbehebungen & Lösungen"
-    }
+    },
+    "history": [
+      {
+        "version": "2.0.0",
+        "date": "Letztes Update",
+        "title": "Großes Update & Mehrsprachigkeits-Unterstützung",
+        "features": [
+          "Vollständige Umstrukturierung der App zur Unterstützung mehrerer Sprachen",
+          "Unterstützung für 3 neue Sprachen (Englisch, Französisch, Deutsch) mit den wichtigsten Funktionen",
+          "Verbesserte Anzeige und Formatierung des arabischen Textes in der Heiligen Schrift",
+          "Design-Verbesserungen und bessere Reaktionsfähigkeit für kleine Bildschirme",
+          "Verbesserte Benutzererfahrung und Weiterentwicklung der Homepage"
+        ],
+        "fixes": [
+          "Allgemeine Leistungsverbesserungen und Systemstabilität"
+        ]
+      },
+      {
+        "version": "1.8.4",
+        "date": "Vorheriges Update",
+        "title": "Taschkil-Präzision, Suchverbesserungen und Abzeichen",
+        "features": [
+          "Taschkil durch eine zu 100% präzise Version ersetzt",
+          "Suche in Leseplänen flexibler gestaltet",
+          "Design der Abzeichen-Seite verbessert"
+        ],
+        "fixes": [
+          "Problem behoben, bei dem Fortsetzungen auf der Kapitelseite nicht angezeigt wurden"
+        ]
+      },
+      {
+        "version": "1.8.3",
+        "date": "Vorheriges Update",
+        "title": "Schriftanpassung und Leseplan-Verbesserungen",
+        "features": [
+          "Möglichkeit hinzugefügt, die Schriftart des biblischen Textes zu ändern",
+          "Möglichkeit hinzugefügt, die Schriftstärke zu ändern",
+          "KI-Reaktionsfähigkeit in Leseplänen verbessert"
+        ],
+        "fixes": [
+          "Problem mit doppeltem Zurück-Button auf der Leseplan-Seite behoben"
+        ]
+      },
+      {
+        "version": "1.8.2",
+        "date": "Vorheriges Update",
+        "title": "Leistungsverbesserungen und Systemstabilität",
+        "features": [
+          "Reaktionsfähigkeit des Systems für angemeldete Benutzer verbessert",
+          "Schaltfläche zur Buchauswahl in der Bibel verbessert",
+          "System für die Derivatsuche verbessert"
+        ],
+        "fixes": [
+          "Kartenprobleme bei hoher Last behoben",
+          "Facebook-Link auf der Kontaktseite repariert",
+          "Fehler behoben, bei dem Tasten der Vers-Steuerung im hellen Modus nicht erschienen",
+          "Falsche Auswahl der Navigationsleisten-Schaltflächen korrigiert"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "13. Mai 2026",
+        "title": "Veröffentlichung verbesserter Karten",
+        "features": [
+          "Kartenbibliothek um neue Karten erweitert",
+          "Intelligente Suche nach Orten und historischen Wahrzeichen hinzugefügt",
+          "Funktion zum Anzeigen eines Wahrzeichens und Navigieren zu dessen biblischen Erwähnungen hinzugefügt",
+          "Bereich 'KI testen' auf der Startseite für eine bessere Benutzererfahrung hinzugefügt"
+        ],
+        "fixes": [
+          "Langsamkeit in den Auswahl-Listen für Bücher und Kapitel behoben",
+          "Radikale Verbesserungen im Design der Wettbewerbsseite",
+          "Unschärfe in Dropdown-Menüs behoben"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "12. Mai 2026",
+        "title": "Erste offizielle Veröffentlichung",
+        "features": [
+          "Die erste offizielle Version mit allen Kernfunktionen"
+        ],
+        "fixes": [
+          "Keine"
+        ]
+      }
+    ]
   },
   "offline": {
     "title": "Keine Internetverbindung",
-    "desc": "Es scheint, dass du momentan nicht mit dem Netzwerk verbunden bist."
+    "desc": "Es scheint, dass du momentan nicht mit dem Netzwerk verbunden bist. Du kannst bereits geladene Inhalte lesen."
   },
   "analysis": {
     "title_prefix": "Studie",
     "ai_badge": "KI-gestützt",
     "status_analyzing": "Der intelligente Agios-Assistent analysiert jetzt den Text...",
     "wait_title": "Bitte warte ein wenig",
-    "wait_desc": "Um den Server zu schützen, warte bitte vor einer neuen Analyse.",
+    "wait_desc": "Um den Server zu schützen, warte bitte vor einer neuen Analyse. Die Analyse startet automatisch nach dem Countdown.",
     "streaming_text": "Der intelligente Agios-Assistent schreibt gerade für dich...",
     "disclaimer": "Diese Analyse wurde von einer KI erstellt. Bitte beziehe dich immer auf die Priester und die genehmigten Auslegungsbücher der koptischen Kirche.",
     "toast_copy": "Analyse erfolgreich kopiert",
@@ -684,12 +770,12 @@
       "share_achievement": "Erfolg teilen",
       "view_all": "Alle Abzeichen anzeigen",
       "share_title": "Neues Abzeichen!",
-      "share_text": "🎉 Ich habe ein neues Abzeichen in der Agios-App erhalten: {badge}!",
+      "share_text": "🎉 Ich habe ein neues Abzeichen in der Agios-App erhalten: {badge}!\n\"{req}\"\nLade die App herunter und schließe dich uns an.",
       "share_dialog": "Abzeichen teilen über..."
     }
   },
   "metadata": {
     "title": "Offizielle Website | Agios Bibel",
-    "description": "Eine integrierte Bibel-Website mit erweiterten Funktionen."
+    "description": "Eine integrierte Bibel-Website mit erweiterten Funktionen wie Suche, interaktiven Karten, Leseplänen und Wettbewerben."
   }
-}
+} 

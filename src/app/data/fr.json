@@ -212,7 +212,7 @@
       "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
       "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
       "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
-      "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
+      "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'اراب، World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
       "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
     },
     "footer": "© 2026 Agios System - Tous droits réservés"
@@ -220,7 +220,7 @@
   "audio": {
     "artist_default": "Sainte Bible",
     "album": "Agios Media",
-    "track_title": "Adel Noshy - {book} {chapter}"
+    "track_title": "Louis Segond version - {book} {chapter}"
   },
   "bible": {
     "title": "Sainte Bible",
@@ -301,7 +301,7 @@
     "type_literal": "Recherche littérale",
     "type_derivatives": "Recherche de racines (IA)",
     "type_semantic": "Recherche sémantique (IA)",
-    "cooldown_text": "Disponible dans {time}s",
+    "rules_cooldown_text": "Disponible dans {time}s",
     "display_settings": "Paramètres d'affichage :",
     "option_title": "Titre",
     "option_reason": "Explication",
@@ -442,7 +442,7 @@
     "redo": "Recommencer",
     "final_results": "Résultats finaux",
     "back_to_books": "Retour aux livres",
-    "question_progress": "Question {current} sur {total}",
+    "question_progress": "Question {current} on {total}",
     "streak_count": "{count} consécutifs",
     "correct_feedback": "Bonne réponse",
     "incorrect_feedback": "La bonne réponse était : {answer}",
@@ -623,7 +623,93 @@
     "labels": {
       "features": "Fonctions & Améliorations",
       "fixes": "Corrections"
-    }
+    },
+    "history": [
+      {
+        "version": "2.0.0",
+        "date": "Dernière mise à jour",
+        "title": "Mise à jour majeure et support multilingue",
+        "features": [
+          "Restructuration complète de l'application pour le support multilingue",
+          "Ajout du support pour 3 nouvelles langues (Anglais, Français, Allemand) avec les fonctionnalités principales",
+          "Amélioration de l'affichage et du formatage du texte arabe dans la Sainte Bible",
+          "Améliorations du design et de la réactivité pour les petits écrans",
+          "Amélioration de l'expérience utilisateur et développement de la page d'accueil"
+        ],
+        "fixes": [
+          "Améliorations générales des performances et de la stabilité du système"
+        ]
+      },
+      {
+        "version": "1.8.4",
+        "date": "Mise à jour précédente",
+        "title": "Précision du Tashkeel, améliorations de la recherche et badges",
+        "features": [
+          "Remplacement du Tashkeel par une version précise à 100%",
+          "Amélioration de la recherche des plans d'étude pour plus de flexibilité",
+          "Amélioration du design de la page des badges"
+        ],
+        "fixes": [
+          "Correction d'un problème d'affichage des suites sur la page des chapitres"
+        ]
+      },
+      {
+        "version": "1.8.3",
+        "date": "Mise à jour précédente",
+        "title": "Personnalisation de la police et améliorations des plans d'étude",
+        "features": [
+          "Ajout de la possibilité de changer la police du texte biblique",
+          "Ajout de la possibilité de changer l'épaisseur du texte",
+          "Amélioration de la réactivité de l'IA dans les plans d'étude"
+        ],
+        "fixes": [
+          "Correction du problème de double bouton retour sur la page des plans d'étude"
+        ]
+      },
+      {
+        "version": "1.8.2",
+        "date": "Mise à jour précédente",
+        "title": "Améliorations des performances et stabilité du système",
+        "features": [
+          "Amélioration de la réactivité du système pour les utilisateurs connectés",
+          "Amélioration du bouton de sélection des livres de la Bible",
+          "Amélioration du système de recherche par racines"
+        ],
+        "fixes": [
+          "Correction des problèmes de carte sous charge élevée",
+          "Correction du lien Facebook ne fonctionnant pas sur la page de contact",
+          "Correction des boutons de la barre de contrôle des versets n'apparaissant pas en mode clair",
+          "Correction de la sélection incorrecte des boutons de la barre de navigation"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "13 mai 2026",
+        "title": "Sortie des cartes améliorées",
+        "features": [
+          "Expansion de la bibliothèque de cartes avec de nouvelles cartes",
+          "Ajout de la recherche intelligente pour les lieux et monuments historiques",
+          "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses mentions bibliques",
+          "Ajout de la section 'Essayer l'IA' sur la page d'accueil pour une meilleure expérience utilisateur"
+        ],
+        "fixes": [
+          "Correction de la lenteur dans les listes de sélection des livres et chapitres",
+          "Améliorations radicales du design de la page des concours",
+          "Correction du flou dans les menus déroulants"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "12 mai 2026",
+        "title": "Première version officielle",
+        "features": [
+          "La première version officielle portant toutes les fonctionnalités de base"
+        ],
+        "fixes": [
+          "Aucun"
+        ]
+      }
+    ]
   },
   "offline": {
     "title": "Pas de connexion internet",

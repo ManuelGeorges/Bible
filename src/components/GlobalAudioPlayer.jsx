@@ -32,6 +32,9 @@ export default function GlobalAudioPlayer() {
 
     const progressPercent = (currentTime / duration) * 100 || 0;
 
+    // Flip icons for RTL to match direction of progress
+    const iconStyle = dir === 'rtl' ? { transform: 'scaleX(-1)' } : {};
+
     return (
         <AnimatePresence>
             <motion.div
@@ -121,7 +124,7 @@ export default function GlobalAudioPlayer() {
                         type="range" min="0" max={duration || 0} step="0.1"
                         value={currentTime} onChange={(e) => seek(parseFloat(e.target.value))}
                         className={styles.progressBar}
-                        style={{ background: `linear-gradient(to left, var(--color-accent) ${progressPercent}%, var(--color-border) ${progressPercent}%)` }}
+                        style={{ background: `linear-gradient(to ${dir === 'rtl' ? 'left' : 'right'}, var(--color-accent) ${progressPercent}%, var(--color-border) ${progressPercent}%)` }}
                     />
                     <div className={styles.timeDisplay}>
                         <span className={styles.elapsedTime}>{formatTime(currentTime)}</span>
@@ -131,23 +134,23 @@ export default function GlobalAudioPlayer() {
 
                 <div className={styles.audioMainControls}>
                     <button className={styles.panelBtn} onClick={() => goToChapter(-1)}>
-                        <SkipBack size={24} style={{ transform: 'scaleX(-1)' }} />
+                        <SkipBack size={24} style={iconStyle} />
                     </button>
 
                     <button className={styles.panelBtn} onClick={() => skip(-10)}>
-                        <RotateCcw size={24} style={{ transform: 'scaleX(-1)' }} />
+                        <RotateCcw size={24} style={iconStyle} />
                     </button>
 
                     <button className={styles.playPauseCircle} onClick={togglePlay}>
-                        {isPlaying ? <Pause size={30} fill="white"/> : <Play size={30} fill="white" style={{ marginRight: '4px' }}/>}
+                        {isPlaying ? <Pause size={30} fill="white"/> : <Play size={30} fill="white" style={{ [dir === 'rtl' ? 'marginRight' : 'marginLeft']: '3px' }}/>}
                     </button>
 
                     <button className={styles.panelBtn} onClick={() => skip(10)}>
-                        <RotateCw size={24} style={{ transform: 'scaleX(-1)' }} />
+                        <RotateCw size={24} style={iconStyle} />
                     </button>
 
                     <button className={styles.panelBtn} onClick={() => goToChapter(1)}>
-                        <SkipForward size={24} style={{ transform: 'scaleX(-1)' }} />
+                        <SkipForward size={24} style={iconStyle} />
                     </button>
                 </div>
 
