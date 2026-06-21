@@ -19,11 +19,11 @@ import styles from './Settings.module.css'
 import { useLanguage } from '../context/LanguageContext';
 
 const fontOptions = [
-  { id: 'Cairo', name: 'القاهرة (الأساسي)', value: "'Cairo', sans-serif" },
-  { id: 'Amiri', name: 'الأميري (كلاسيكي)', value: "'Amiri', serif" },
-  { id: 'Almarai', name: 'المراعي (عصري)', value: "'Almarai', sans-serif" },
-  { id: 'Tajawal', name: 'تجول (بسيط)', value: "'Tajawal', sans-serif" },
-  { id: 'ReemKufi', name: 'ريم كوفي (تراثي)', value: "'Reem Kufi', sans-serif" }
+  { id: 'Cairo', name: 'Cairo (Default)', value: "'Cairo', sans-serif" },
+  { id: 'Amiri', name: 'Amiri (Classical)', value: "'Amiri', serif" },
+  { id: 'Almarai', name: 'Almarai (Modern)', value: "'Almarai', sans-serif" },
+  { id: 'Tajawal', name: 'Tajawal (Simple)', value: "'Tajawal', sans-serif" },
+  { id: 'ReemKufi', name: 'Reem Kufi (Traditional)', value: "'Reem Kufi', sans-serif" }
 ]
 
 const languages = [
@@ -368,25 +368,27 @@ const Settings = () => {
           </label>
         </div>
 
-        <div className={styles.settingItem}>
-          <div className={styles.settingInfo}>
-            <div className={styles.textContainer}>
-              <span className={styles.settingLabel}>
-                <Type size={20} className={styles.iconPrimary} />
-                {strings.settings.bible.show_tashkeel}
-              </span>
-              <p className={styles.subText}>{strings.settings.bible.show_tashkeel_desc}</p>
+        {currentLang === 'ar' && (
+          <div className={styles.settingItem}>
+            <div className={styles.settingInfo}>
+              <div className={styles.textContainer}>
+                <span className={styles.settingLabel}>
+                  <Type size={20} className={styles.iconPrimary} />
+                  {strings.settings.bible.show_tashkeel}
+                </span>
+                <p className={styles.subText}>{strings.settings.bible.show_tashkeel_desc}</p>
+              </div>
             </div>
+            <label className={styles.switch}>
+              <input
+                type="checkbox"
+                checked={useTashkeel}
+                onChange={toggleTashkeel}
+              />
+              <span className={styles.sliderRound}></span>
+            </label>
           </div>
-          <label className={styles.switch}>
-            <input
-              type="checkbox"
-              checked={useTashkeel}
-              onChange={toggleTashkeel}
-            />
-            <span className={styles.sliderRound}></span>
-          </label>
-        </div>
+        )}
 
         <div className={styles.fontControlGroup}>
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>

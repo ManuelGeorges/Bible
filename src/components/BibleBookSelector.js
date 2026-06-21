@@ -8,7 +8,7 @@ import {
     Compass, Sun, Moon, Sparkles, Wand2,
     Eye, Anchor, Sword, Cross, MessageCircle,
     X, BookOpen, Feather, Mountain, Landmark, Ghost,
-    Hammer, Lamp, History, Wind, Search
+    Hammer, Lamp, History, Wind, Search, ChevronRight, ChevronLeft
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '../app/context/LanguageContext';
@@ -83,7 +83,7 @@ const BookCard = memo(({ book, onBookClick }) => {
 
 BookCard.displayName = 'BookCard';
 
-const BookRow = ({ title, books, onBookClick }) => {
+const BookRow = ({ title, books, onBookClick, dir }) => {
     const scrollRef = useRef(null);
     if (books.length === 0) return null;
 
@@ -104,7 +104,7 @@ const BookRow = ({ title, books, onBookClick }) => {
 };
 
 export default function BibleBookSelector() {
-    const { strings, bookNames } = useLanguage();
+    const { strings, bookNames, dir } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearch = useDeferredValue(searchTerm);
     const router = useRouter();
@@ -117,7 +117,10 @@ export default function BibleBookSelector() {
                 nt: bookNames.filter(b => b.testament === 'NT')
             };
         }
-        const filtered = bookNames.filter(book => normalizeArabic(book.name).includes(normalizedSearch));
+        const filtered = bookNames.filter(book => {
+            const name = book.name || "";
+            return normalizeArabic(name).includes(normalizedSearch);
+        });
         return {
             ot: filtered.filter(b => b.testament === 'OT'),
             nt: filtered.filter(b => b.testament === 'NT')
@@ -129,7 +132,7 @@ export default function BibleBookSelector() {
     };
 
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
             <div className={styles.mainHeader}>
                 <h2 className={styles.title}><BookOpen size={22} className={styles.titleIcon} />{strings.components.book_selector.title}</h2>
                 <div className={styles.searchWrapper}>
@@ -147,8 +150,8 @@ export default function BibleBookSelector() {
                 </div>
             </div>
 
-            <BookRow title={strings.components.book_selector.testament_ot} books={filteredBooks.ot} onBookClick={handleBookClick} />
-            <BookRow title={strings.components.book_selector.testament_nt} books={filteredBooks.nt} onBookClick={handleBookClick} />
+            <BookRow title={strings.components.book_selector.testament_ot} books={filteredBooks.ot} onBookClick={handleBookClick} dir={dir} />
+            <BookRow title={strings.components.book_selector.testament_nt} books={filteredBooks.nt} onBookClick={handleBookClick} dir={dir} />
 
             {filteredBooks.ot.length === 0 && filteredBooks.nt.length === 0 && bookNames.length > 0 && (
                 <div className={styles.noResults}>

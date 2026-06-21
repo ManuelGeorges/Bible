@@ -22,11 +22,11 @@ const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
 }));
 
 const FONTS = [
-  { name: 'القاهرة', family: "'Cairo', sans-serif" },
-  { name: 'الأميري', family: "'Amiri', serif" },
-  { name: 'تجول', family: "'Tajawal', sans-serif" },
-  { name: 'المسيري', family: "'El Messiri', sans-serif" },
-  { name: 'لطيف', family: "'Lateef', cursive" }
+  { name: 'Cairo', family: "'Cairo', sans-serif" },
+  { name: 'Amiri', family: "'Amiri', serif" },
+  { name: 'Tajawal', family: "'Tajawal', sans-serif" },
+  { name: 'El Messiri', family: "'El Messiri', sans-serif" },
+  { name: 'Lateef', family: "'Lateef', cursive" }
 ];
 
 const CACHE_KEY = 'agios_share_vFinal_prod_vfinal_v4';

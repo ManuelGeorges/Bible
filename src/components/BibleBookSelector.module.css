@@ -1,12 +1,13 @@
 .container {
     padding: 20px 0;
-    direction: rtl;
     background: transparent;
     overflow: hidden;
-    /* Native optimization: skip rendering off-screen parts */
     content-visibility: auto;
     contain-intrinsic-size: 1000px;
 }
+
+.rtl { direction: rtl; }
+.ltr { direction: ltr; }
 
 .mainHeader {
     margin-bottom: 16px;
@@ -40,7 +41,6 @@
     border-radius: 16px;
     padding: 0 16px;
     height: 48px;
-    /* Ultra smooth transition */
     transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                 box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -52,9 +52,11 @@
 
 .searchIcon {
     color: var(--color-text-secondary);
-    margin-left: 12px;
     opacity: 0.7;
 }
+
+.rtl .searchIcon { margin-left: 12px; }
+.ltr .searchIcon { margin-right: 12px; }
 
 .searchInput {
     flex: 1;
@@ -69,7 +71,6 @@
 
 .section {
     margin-bottom: 24px;
-    /* Native optimization */
     contain: layout;
 }
 
@@ -90,33 +91,6 @@
     width: 100%;
 }
 
-.navBtn {
-    display: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-@media (min-width: 1024px) {
-    .navBtn {
-        display: flex;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--color-card-bg);
-        border: 1px solid var(--color-border);
-        color: var(--color-text-primary);
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .prevBtn { right: 10px; }
-    .nextBtn { left: 10px; }
-}
-
 .scrollRow {
     display: flex;
     overflow-x: auto;
@@ -124,12 +98,8 @@
     padding: 10px 20px 20px 20px;
     scrollbar-width: none;
     -ms-overflow-style: none;
-
-    /* 1. Momentum scrolling for iOS */
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x proximity;
-
-    /* 2. Hardware Acceleration */
     transform: translateZ(0);
     will-change: transform;
 }
@@ -139,77 +109,66 @@
 }
 
 .bookCard {
-    flex: 0 0 105px;
-    aspect-ratio: 0.85;
+    flex: 0 0 110px;
+    min-height: 120px;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     border: none;
     outline: none;
     position: relative;
     overflow: hidden;
-
-    /* 3. Performance Optimized Transitions */
     transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1),
                 box-shadow 0.15s ease,
                 filter 0.15s ease;
-
-    /* Avoid flickering and use GPU */
     backface-visibility: hidden;
     transform: translateZ(0);
-
-    /* Clean UI */
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-
     background: linear-gradient(145deg, var(--book-main), var(--book-dark));
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.25);
     padding: 12px;
     scroll-snap-align: start;
 }
 
-/* Native-like interaction */
-.bookCard:hover {
-    transform: translateY(-4px) translateZ(0);
-}
-
 .bookCard:active {
     transform: scale(0.92) translateZ(0) !important;
     filter: brightness(0.85);
-    transition: transform 0.05s linear; /* Instant response */
+    transition: transform 0.05s linear;
 }
 
 .iconContainer {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     border-radius: 14px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.15);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
-    transition: transform 0.2s ease;
-    /* Use GPU */
-    transform: translateZ(0);
-}
-
-.bookCard:hover .iconContainer {
-    transform: scale(1.1) translateZ(0);
+    flex-shrink: 0;
 }
 
 .bookName {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 800;
     text-align: center;
     color: white;
-    line-height: 1.2;
+    line-height: 1.1;
     z-index: 2;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    word-break: break-word;
+    hyphens: auto;
+    width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .bookCard::after {
@@ -240,6 +199,15 @@
 
 @media (max-width: 480px) {
     .bookCard {
-        flex: 0 0 95px;
+        flex: 0 0 100px;
+        min-height: 110px;
+        padding: 10px 8px;
+    }
+    .bookName {
+        font-size: 0.8rem;
+    }
+    .iconContainer {
+        width: 38px;
+        height: 38px;
     }
 }

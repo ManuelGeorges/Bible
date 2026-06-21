@@ -81,7 +81,7 @@ const formatReference = (ref) => {
 };
 
 const LandingPage = () => {
-    const { language, strings, allBookNames, formatNumber } = useLanguage();
+    const { language, strings, allBookNames, formatNumber, dir } = useLanguage();
     const router = useRouter();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -809,7 +809,7 @@ const LandingPage = () => {
     const dailyVerseKey = `daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-${language}`;
 
     return (
-        <main className={`${styles.hubContainer} ${styles.rtl}`}>
+        <main className={`${styles.hubContainer} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
             <header className={styles.header}>
                 <div className={styles.topBar}>
                     <div className={styles.welcomeInfo}>

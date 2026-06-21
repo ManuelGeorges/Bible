@@ -4,11 +4,11 @@ import { useLanguage } from '../context/LanguageContext';
 import styles from './Privacy.module.css';
 
 export default function PrivacyPolicy() {
-  const { strings } = useLanguage();
+  const { strings, dir } = useLanguage();
   const s = strings.privacy;
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <div className={styles.card}>
         <header className={styles.header}>
           <h1 className={styles.title}>{s.title}</h1>

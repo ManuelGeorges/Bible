@@ -762,7 +762,7 @@ export default function BibleContent() {
   const versesList = chaptersList[selectedChapterIndex] || [];
 
   return (
-    <div dir={pageDir} className={styles.container}>
+    <div dir={pageDir} className={`${styles.container} ${pageDir === 'rtl' ? styles.rtl : styles.ltr}`}>
       {selectedVerses.length > 0 && (
         <div className={styles.selectionBar}>
           <div className={styles.selectionActions}>
@@ -855,7 +855,8 @@ export default function BibleContent() {
           custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
           transition={{ x: { type: "spring", stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
           className={styles.verseContainer}
-          style={{ textAlign: 'justify', lineHeight: '2', padding: '15px' }}
+          style={{ lineHeight: '2', padding: '15px' }}
+          dir={pageDir}
         >
           <div className={styles.chapterHeader}>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {formatNumber(selectedChapterIndex + 1)}</h2>
@@ -890,9 +891,7 @@ export default function BibleContent() {
                     backgroundColor: isReading ? '#ffd54f' : (annotation?.color ? `${annotation.color}66` : 'transparent'),
                     display: versePerLine ? 'block' : 'inline',
                     marginBottom: versePerLine ? '15px' : '0',
-                    padding: '2px 4px', borderRadius: '4px', position: 'relative',
-                    transition: 'background-color 0.2s ease',
-                    textAlign: 'start'
+                    padding: '2px 4px', borderRadius: '4px', position: 'relative'
                   }}
                 >
                   <span className={styles.styledVerseNumber}>{formatNumber(i + 1)}</span>

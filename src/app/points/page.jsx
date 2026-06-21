@@ -358,18 +358,18 @@ export default function Points() {
   );
 
   return (
-    <div className={styles.container} dir={dir}>
+    <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <h1 className={styles.header}>{strings.points.title}</h1>
 
       <nav className={styles.topNav}>
         <button className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`} onClick={() => setActiveTab('points')}>
-          <FaChartLine /> {strings.points.tab_points}
+          <FaChartLine /> <span>{strings.points.tab_points}</span>
         </button>
         <button className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`} onClick={() => setActiveTab('badges')}>
-          <FaTrophy /> {strings.points.tab_badges}
+          <FaTrophy /> <span>{strings.points.tab_badges}</span>
         </button>
         <button className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`} onClick={() => setActiveTab('history')}>
-          <FaHistory /> {strings.points.tab_history}
+          <FaHistory /> <span>{strings.points.tab_history}</span>
         </button>
       </nav>
 
@@ -402,7 +402,7 @@ export default function Points() {
                           <div className={styles.goalIcon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
                           <div className={styles.goalInfo}>
                               <span>{goal.label}</span>
-                              <small>+{formatNumber(goal.points)} نقطة</small>
+                              <small>+{formatNumber(goal.points)} {strings.points.points_unit || 'Points'}</small>
                           </div>
                       </div>
                   ))}

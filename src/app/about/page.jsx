@@ -5,9 +5,9 @@ import styles from './about.module.css';
 import Image from 'next/image';
 
 export default function AboutPage() {
-  const { strings } = useLanguage();
+  const { strings, dir } = useLanguage();
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <header className={styles.header}>
         <h1 className={styles.title}>{strings.about.title}</h1>
         <p className={styles.tagline}>{strings.about.tagline}</p>
