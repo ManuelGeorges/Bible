@@ -17,6 +17,10 @@
   direction: rtl;
 }
 
+.ltr {
+  direction: ltr;
+}
+
 .hubCard {
   color: var(--color-text-primary);
 }
@@ -31,7 +35,17 @@
 .topBar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.welcomeInfo {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .siteTitle {
@@ -54,6 +68,9 @@
   font-size: 16px;
   color: var(--color-text-secondary);
   font-weight: 500;
+  line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .topActions {
@@ -195,7 +212,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  text-align: right;
+  text-align: inherit;
+  min-width: 0;
 }
 
 .newsHeaderLine {
@@ -209,6 +227,7 @@
   font-weight: 800;
   margin: 0;
   line-height: 1.2;
+  word-break: break-word;
 }
 
 [data-theme='dark'] .newsHeaderLine h3 {
@@ -220,6 +239,7 @@
   color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
+  word-break: break-word;
 }
 
 [data-theme='dark'] .newsContent p {
@@ -302,7 +322,7 @@
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: 24px;
-  padding: 20px;
+  padding: clamp(16px, 4vw, 20px);
 }
 
 .goalsHeader {
@@ -310,6 +330,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .goalsTitle {
@@ -357,19 +379,32 @@
 
 .goalsMiniList {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
 }
 
 .miniGoalItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 11px;
   font-weight: 700;
   background: var(--color-border);
-  padding: 8px 12px;
-  border-radius: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  min-height: 56px;
+  height: auto;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.miniGoalItem span {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  line-height: 1.2;
 }
 
 .goalDone {
@@ -422,7 +457,7 @@
   font-size: 13px;
   font-weight: 800;
   color: var(--color-text-secondary);
-  padding-right: 4px;
+  padding-inline-end: 4px;
 }
 
 .badgeHorizontalGrid {
@@ -495,6 +530,7 @@
   gap: 10px;
   text-decoration: none;
   transition: all 0.3s var(--transition-bounce);
+  min-width: 0;
 }
 
 .hubIcon {
@@ -504,12 +540,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .hubName {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-align: center;
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  line-height: 1.2;
 }
 
 .dailyHighlight { width: 100%; }
@@ -532,11 +574,14 @@
 }
 
 .verseText {
-  font-size: 20px;
+  font-size: clamp(1.1rem, 5vw, 1.4rem);
   font-weight: 600;
   line-height: 1.6;
   margin-bottom: 12px;
   transition: all 0.3s ease;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  text-align: inherit;
 }
 
 .verseRef {
@@ -544,6 +589,7 @@
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 20px;
+  text-align: inherit;
 }
 
 .verseActions {
@@ -682,6 +728,7 @@
   width: 100%;
   cursor: pointer;
   border: none;
+  text-align: inherit;
 }
 
 [data-theme='dark'] .lastReadBar {
@@ -690,11 +737,11 @@
 }
 
 .lastReadContent { display: flex; align-items: center; gap: 12px; }
-.lastReadText { display: flex; flex-direction: column; text-align: right; }
+.lastReadText { display: flex; flex-direction: column; text-align: inherit; }
 .lastReadText small { font-size: 11px; opacity: 0.8; font-weight: 700; }
 
 .questionSection { margin-top: 24px; }
-.questionTitle { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.questionTitle { font-size: 16px; font-weight: 700; margin-bottom: 16px; word-break: break-word; }
 .optionsList { display: flex; flex-direction: column; gap: 10px; }
 
 .optBtn {
@@ -702,9 +749,10 @@
   border-radius: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-card-bg);
-  text-align: right;
+  text-align: inherit;
   font-weight: 600;
   color: var(--color-text-primary);
+  word-break: break-word;
 }
 
 .correct { background: #10b981; color: white; }
@@ -734,6 +782,7 @@
   transition: all 0.3s var(--transition-bounce);
   position: relative;
   overflow: hidden;
+  word-break: break-word;
 }
 
 .aiFeatureIcon {
@@ -781,7 +830,7 @@
   border: 1px solid var(--color-border);
   border-radius: 20px;
   padding: 16px;
-  text-align: right;
+  text-align: inherit;
   cursor: pointer;
 }
 
@@ -789,7 +838,7 @@
 .planTitle { font-weight: 800; font-size: 15px; color: var(--color-text-primary); }
 .planPercent { font-size: 12px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 8px; }
 
-.progressBar { width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 12; }
+.progressBar { width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
 .progressFill { height: 100%; background: var(--btn-bg); }
 .planMeta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; }
 .planActionText { display: flex; align-items: center; gap: 4px; color: var(--color-accent); }
@@ -805,4 +854,12 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-@media (max-width: 480px) { .verseActions { grid-template-columns: 1fr; } }
+@media (max-width: 480px) {
+  .topBar { gap: 12px; }
+  .iconCircle { width: 38px; height: 38px; }
+  .quickGrid { gap: 8px; }
+  .hubCard { padding: 10px 4px; }
+  .hubName { font-size: 10px; }
+  .goalsMiniList { grid-template-columns: 1fr; }
+  .verseActions { grid-template-columns: 1fr; }
+}

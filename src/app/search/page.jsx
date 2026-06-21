@@ -137,7 +137,7 @@ function CustomSelect({ label, options, value, onChange, placeholder }) {
 }
 
 function SearchContent() {
-  const { language, strings, bookNames: bookNamesData, formatNumber } = useLanguage();
+  const { language, strings, bookNames: bookNamesData, formatNumber, dir } = useLanguage();
   const [user, setUser] = useState(null);
   const { triggerBadgeUnlock } = useBadge();
   const searchParams = useSearchParams();
@@ -203,9 +203,9 @@ function SearchContent() {
         if (language === 'ar') {
           biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_kjv.json';
+          biblePath = '/data/bibles/en_niv.json';
         } else if (language === 'fr') {
-          biblePath = '/data/bibles/fr_apee.json';
+          biblePath = '/data/bibles/fr_segond.json';
         } else if (language === 'de') {
           biblePath = '/data/bibles/de_schlachter.json';
         } else {
@@ -1194,7 +1194,7 @@ Regeln:
     return (
       <div
         className={`${styles.verseCard} ${isSelected ? styles.selectedCard : ''}`}
-        style={{ borderRight: savedVerse?.color ? `5px solid ${savedVerse.color}` : 'none' }}
+        style={{ borderInlineStart: savedVerse?.color ? `5px solid ${savedVerse.color}` : 'none' }}
         onClick={(e) => {
           if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.closest('button')) return;
           setSelectedVerses(prev => isSelected ? prev.filter(sv => `${sv.book_index}-${sv.chapter}-${sv.verse}` !== vId) : [...prev, v]);
@@ -1279,7 +1279,7 @@ Regeln:
   };
 
   return (
-    <div className={styles.container} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <div className={styles.card}>
         <h1 className={styles.heading}>{strings.search.title}</h1>
         <form onSubmit={(e) => { e.preventDefault(); performSearch(); }} className={styles.controls}>

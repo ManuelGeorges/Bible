@@ -393,9 +393,9 @@ export default function BibleContent() {
         if (language === 'ar') {
           biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_kjv.json';
+          biblePath = '/data/bibles/en_niv.json';
         } else if (language === 'fr') {
-          biblePath = '/data/bibles/fr_apee.json';
+          biblePath = '/data/bibles/fr_segond.json';
         } else if (language === 'de') {
           biblePath = '/data/bibles/de_schlachter.json';
         } else {
