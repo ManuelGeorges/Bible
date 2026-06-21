@@ -5,16 +5,17 @@ import styles from './more.module.css';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
-  const { strings } = useLanguage();
+  const { strings, language } = useLanguage();
+
   const menuItems = [
     { name: strings.more.items.favourites, icon: <Heart size={20} />, href: '/favourites' },
-    { name: strings.more.items.competitions, icon: <Trophy size={20} />, href: '/competitions' },
+    // إظهار المسابقات فقط إذا كانت اللغة عربية
+    language === 'ar' ? { name: strings.more.items.competitions, icon: <Trophy size={20} />, href: '/competitions' } : null,
     { name: strings.more.items.studyPlans, icon: <BookOpen size={20} />, href: '/studyPlans' },
     { name: strings.more.items.profile, icon: <User size={20} />, href: '/profile' },
     { name: strings.more.items.settings, icon: <Settings size={20} />, href: '/settings' },
     { name: strings.more.items.points, icon: <Coins size={20} />, href: '/points' },
-
-  ];
+  ].filter(Boolean); // فلاترة القيم الفارغة
 
   return (
     <>

@@ -143,7 +143,18 @@ export function AudioProvider({ children }) {
 
         setIsAudioLoading(true);
         const key = '5e4b1535-5f2b-4f13-9032-9db0297664a6';
-        const audioFilesetId = book.type === 'new' ? 'ARZVDVN1DA' : 'ARZVDVO1DA';
+
+        // FCBH Fileset Mappings for supported translations
+        const fcbhMappings = {
+            'ar': { new: 'ARZVDVN1DA', old: 'ARZVDVO1DA' }, // Smith & Van Dyke
+            'en': { new: 'ENGWEBN1DA', old: 'ENGWEBO1DA' }, // World English Bible
+            'fr': { new: 'FRNLSGN1DA', old: 'FRNLSGO1DA' }, // Louis Segond
+            'de': { new: 'DEUL12N1DA', old: 'DEUL12O1DA' }  // Luther 1912
+        };
+
+        const langConfig = fcbhMappings[language] || fcbhMappings['ar'];
+        const audioFilesetId = book.type === 'new' ? langConfig.new : langConfig.old;
+
         const urlReq = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
 
         try {
@@ -153,9 +164,19 @@ export function AudioProvider({ children }) {
             const url = audioData.data?.[0]?.path;
             if (!url) throw new Error("URL not found");
 
-            const timingCandidates = book.type === 'new'
-                ? ['ARZVDVN1DA', 'ARZSMVN1DA', 'ARZALMN1DA']
-                : ['ARZVDVO1DA', 'ARZSMVO1DA', 'ARZALMO1DA', 'ARZSMO1DA'];
+            // Define timing candidates dynamically
+            let timingCandidates = [audioFilesetId];
+
+            // Add fallback timing filesets for Arabic if needed (Legacy support)
+            if (language === 'ar') {
+                const arExtra = book.type === 'new'
+                    ? ['ARZSMVN1DA', 'ARZALMN1DA']
+                    : ['ARZSMVO1DA', 'ARZALMO1DA', 'ARZSMO1DA'];
+                timingCandidates = [...timingCandidates, ...arExtra];
+            } else if (language === 'en') {
+                // Example for English fallback if needed
+                timingCandidates.push('ENGWEBP1DA');
+            }
 
             let times = [];
             for (const tId of timingCandidates) {
@@ -217,12 +238,20 @@ export function AudioProvider({ children }) {
     useEffect(() => {
         const loadInitialData = async () => {
             try {
-                const bibleRes = await fetch('/data/bibles/ar_svd_no_tashkeel.json').then(r => r.json());
+                // Determine which bible file to load for chapter mapping based on language
+                const bibleFileMap = {
+                    'ar': 'ar_svd_no_tashkeel.json',
+                    'en': 'en_web.json',
+                    'fr': 'fr_segond.json',
+                    'de': 'de_luther.json'
+                };
+                const fileName = bibleFileMap[language] || 'ar_svd_no_tashkeel.json';
+                const bibleRes = await fetch(`/data/bibles/${fileName}`).then(r => r.json());
                 setBibleData(bibleRes);
             } catch (e) { console.error(e); }
         };
         loadInitialData();
-    }, []);
+    }, [language]);
 
     useEffect(() => {
         if (audioRef.current) {

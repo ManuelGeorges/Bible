@@ -1,22 +1,27 @@
 .container {
   min-height: 100vh;
   background: var(--color-bg);
-  padding: 20px;
-  padding-bottom: 50px;
+  padding: 16px;
+  padding-bottom: 80px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   padding: 10px 0;
-  position: relative;
-  min-height: 60px;
+  width: 100%;
 }
 
 .title {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 800;
   margin: 0;
   background: linear-gradient(135deg, var(--color-accent) 0%, #0047ab 100%);
@@ -25,102 +30,99 @@
   text-align: center;
 }
 
-.backBtn {
-  position: absolute;
-  inset-inline-end: 0; /* تم التغيير من right */
-  background: var(--color-border);
-  border: none;
-  color: var(--color-text-primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.backBtn:active {
-  transform: scale(0.9);
-}
-
 .tabs {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   background: var(--color-border);
-  padding: 5px;
-  border-radius: 16px;
+  padding: 4px;
+  border-radius: 14px;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tab {
   flex: 1;
-  padding: 12px;
+  padding: 10px 4px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--color-text-secondary);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+  text-align: center;
+  min-width: 0;
+  white-space: normal; /* يسمح بنزول الكلمات الطويلة سطر جديد بدل ما تمد الشاشة */
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .activeTab {
   background: var(--color-card-bg);
   color: var(--color-accent);
-  box-shadow: 0 4px 12px var(--color-shadow-medium);
+  box-shadow: 0 4px 10px var(--color-shadow-medium);
 }
 
 .searchWrapper {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .searchIcon {
   position: absolute;
-  inset-inline-end: 16px; /* تم التغيير من right */
+  inset-inline-end: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-secondary);
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .searchInput {
   width: 100%;
-  padding: 14px;
-  padding-inline-start: 16px;
-  padding-inline-end: 45px;
-  border-radius: 18px;
+  padding: 12px;
+  padding-inline-start: 14px;
+  padding-inline-end: 40px;
+  border-radius: 16px;
   border: 2px solid var(--color-border);
   background: var(--color-card-bg);
   color: var(--color-text-primary);
   outline: none;
   font-size: 1rem;
-}
-
-.searchInput:focus {
-  border-color: var(--color-accent);
+  box-sizing: border-box;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bookItem {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 15px 10px;
+  border-radius: 18px;
+  padding: 12px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
+  min-width: 0;
+  aspect-ratio: 1 / 1.1;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .bookItem:active {
@@ -129,24 +131,65 @@
 }
 
 .iconWrapper {
-  width: 45px;
-  height: 45px;
+  width: 36px;
+  height: 36px;
   background: rgba(33, 150, 243, 0.1);
   color: var(--color-accent);
-  border-radius: 14px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .bookName {
-  font-size: 0.95rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--color-text-primary);
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.1;
+  width: 100%;
+  padding: 0 2px;
 }
 
 @media (max-width: 480px) {
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    /* minmax(0, 1fr) بتجبر الأعمدة تفضل جوه عرض الشاشة */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .bookItem {
+    border-radius: 14px;
+    padding: 8px 2px;
+  }
+
+  .bookName {
+    font-size: 0.68rem; /* تصغير طفيف جداً للموبايل */
+  }
+
+  .iconWrapper {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 330px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tab {
+    font-size: 0.65rem;
   }
 }

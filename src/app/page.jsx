@@ -734,9 +734,9 @@ const LandingPage = () => {
         { name: strings.home.quick_links.maps, icon: <Map size={24} />, path: '/maps', color: '#10b981' },
         { name: strings.home.quick_links.search, icon: <Search size={24} />, path: '/search', color: '#f59e0b' },
         { name: strings.home.quick_links.plans, icon: <BookMarked size={24} />, path: '/studyPlans', color: '#ec4899' },
-        { name: strings.home.quick_links.competitions, icon: <Trophy size={24} />, path: '/competitions', color: '#8b5cf6' },
+        language === 'ar' ? { name: strings.home.quick_links.competitions, icon: <Trophy size={24} />, path: '/competitions', color: '#8b5cf6' } : null,
         { name: strings.home.quick_links.favorites, icon: <Heart size={24} />, path: '/favourites', color: '#ef4444' },
-    ];
+    ].filter(Boolean);
 
     const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);
 
@@ -902,6 +902,17 @@ const LandingPage = () => {
                 </div>
             )}
 
+            <section className={styles.quickGrid}>
+                {quickLinks.map((link, i) => (
+                    <Link href={link.path} key={i} className={styles.hubCard}>
+                        <div className={styles.hubIcon} style={{ color: link.color, backgroundColor: `${link.color}15` }}>{link.icon}</div>
+                        <div className={styles.hubName}>{link.name}</div>
+                    </Link>
+                ))}
+            </section>
+
+            <BibleBookSelector />
+
             {(isLoading) ? (
                 <div className={styles.skeletonSection} style={{ height: '100px', margin: '16px' }} />
             ) : (
@@ -933,17 +944,6 @@ const LandingPage = () => {
                     </div>
                 </section>
             )}
-
-            <section className={styles.quickGrid}>
-                {quickLinks.map((link, i) => (
-                    <Link href={link.path} key={i} className={styles.hubCard}>
-                        <div className={styles.hubIcon} style={{ color: link.color, backgroundColor: `${link.color}15` }}>{link.icon}</div>
-                        <span className={styles.hubName}>{link.name}</span>
-                    </Link>
-                ))}
-            </section>
-
-            <BibleBookSelector />
 
             {(highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
                 <section className={styles.badgesHighlightSection}>
