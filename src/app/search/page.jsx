@@ -203,11 +203,11 @@ function SearchContent() {
         if (language === 'ar') {
           biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_niv.json';
+          biblePath = '/data/bibles/en_web.json';
         } else if (language === 'fr') {
           biblePath = '/data/bibles/fr_segond.json';
         } else if (language === 'de') {
-          biblePath = '/data/bibles/de_schlachter.json';
+          biblePath = '/data/bibles/de_luther.json';
         } else {
           biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
         }

@@ -194,9 +194,9 @@ const LandingPage = () => {
             if (todayRef) {
                 const bibleMapping = {
                     'ar': 'ar_svd_tashkeel_site.json',
-                    'en': 'en_niv.json',
+                    'en': 'en_web.json',
                     'fr': 'fr_segond.json',
-                    'de': 'de_schlachter.json',
+                    'de': 'de_luther.json',
                 };
 
                 const bibleFile = bibleMapping[language] || 'ar_svd_tashkeel_site.json';
