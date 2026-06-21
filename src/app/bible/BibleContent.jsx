@@ -190,7 +190,11 @@ export default function BibleContent() {
 
   useEffect(() => {
     const syncAudio = async () => {
-        if (isLoading || bookNamesData.length === 0 || language !== 'ar') return;
+        if (isLoading || bookNamesData.length === 0) return;
+
+        // Only sync for supported languages
+        const supportedAudioLangs = ['ar', 'en', 'fr'];
+        if (!supportedAudioLangs.includes(language)) return;
 
         const book = bookNamesData[selectedBookIndex];
         const chapter = selectedChapterIndex + 1;
@@ -221,8 +225,10 @@ export default function BibleContent() {
 
   const handleAudioButtonClick = async () => {
     if (contextAudioLoading) return;
-    if (language !== 'ar') {
-      toast.error(strings.bible.toasts.audio_not_available_lang);
+
+    const supportedAudioLangs = ['ar', 'en', 'fr'];
+    if (!supportedAudioLangs.includes(language)) {
+      toast.error(strings.bible.toasts.audio_not_available_lang || "Audio not available for this language");
       return;
     }
 
@@ -343,7 +349,8 @@ export default function BibleContent() {
     const verseLabel = formatNumber(index + 1);
     const bookName = getBookName(selectedBookIndex);
     const rlm = language === 'ar' ? "\u200F" : "";
-    const fullText = `${text} ${rlm}(${bookName} ${verseLabel}:${chapterLabel})`;
+    const lrm = language === 'ar' ? "\u200E" : "";
+    const fullText = `${text} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -450,7 +457,8 @@ export default function BibleContent() {
     const chapterLabel = formatNumber(selectedChapterIndex + 1);
     const verseLabel = formatNumber(index + 1);
     const rlm = language === 'ar' ? "\u200F" : "";
-    const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${verseLabel}:${chapterLabel})`;
+    const lrm = language === 'ar' ? "\u200E" : "";
+    const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
     navigator.clipboard.writeText(fullText);
     setCopiedMessage(strings.bible.toasts.copied);
     setActiveMenu(null);
@@ -780,7 +788,7 @@ export default function BibleContent() {
                   const bookName = getBookName(selectedBookIndex);
                   const chapterLabel = formatNumber(selectedChapterIndex + 1);
                   const verseLabel = formatNumber(selectedVerses[0].index + 1);
-                  const refText = `${bookName} ${verseLabel}:${chapterLabel}`;
+                  const refText = `${bookName} ${chapterLabel}:${verseLabel}`;
                   router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
                 }}
                 className={styles.actionBtn}
@@ -926,17 +934,19 @@ export default function BibleContent() {
             <Settings size={28} color="var(--color-text-primary)" />
           </button>
 
-          <button
-            onClick={handleAudioButtonClick}
-            disabled={contextAudioLoading}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            {contextAudioLoading ? (
-              <Loader2 size={28} className={styles.spinning} />
-            ) : (
-              <Volume2 size={28} color={isPlaying ? "#FFC107" : "var(--color-text-primary)"} />
-            )}
-          </button>
+          {language !== 'de' && (
+            <button
+              onClick={handleAudioButtonClick}
+              disabled={contextAudioLoading}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              {contextAudioLoading ? (
+                <Loader2 size={28} className={styles.spinning} />
+              ) : (
+                <Volume2 size={28} color={isPlaying ? "#FFC107" : "var(--color-text-primary)"} />
+              )}
+            </button>
+          )}
         </div>
 
         <button disabled={selectedChapterIndex === chaptersList.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> » </button>

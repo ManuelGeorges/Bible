@@ -144,12 +144,12 @@ export function AudioProvider({ children }) {
         setIsAudioLoading(true);
         const key = '5e4b1535-5f2b-4f13-9032-9db0297664a6';
 
-        // FCBH Fileset Mappings for supported translations
+        // FCBH Fileset Mappings with confirmed patterns from user links
         const fcbhMappings = {
-            'ar': { new: 'ARZVDVN1DA', old: 'ARZVDVO1DA' }, // Smith & Van Dyke
-            'en': { new: 'ENGWEBN1DA', old: 'ENGWEBO1DA' }, // World English Bible
-            'fr': { new: 'FRNLSGN1DA', old: 'FRNLSGO1DA' }, // Louis Segond
-            'de': { new: 'DEUL12N1DA', old: 'DEUL12O1DA' }  // Luther 1912
+            'ar': { new: 'ARZVDVN1DA', old: 'ARZVDVO1DA' },
+            'en': { new: 'EN1WEBN2DA', old: 'EN1WEBO2DA' },
+            'fr': { new: 'FRNTLSN2DA', old: 'FRNTLSO2DA' }, // Updated pattern: FRNTLS
+            'de': { new: 'DEUL12N2DA', old: 'DEUL12O2DA' }
         };
 
         const langConfig = fcbhMappings[language] || fcbhMappings['ar'];
@@ -167,15 +167,12 @@ export function AudioProvider({ children }) {
             // Define timing candidates dynamically
             let timingCandidates = [audioFilesetId];
 
-            // Add fallback timing filesets for Arabic if needed (Legacy support)
             if (language === 'ar') {
-                const arExtra = book.type === 'new'
-                    ? ['ARZSMVN1DA', 'ARZALMN1DA']
-                    : ['ARZSMVO1DA', 'ARZALMO1DA', 'ARZSMO1DA'];
-                timingCandidates = [...timingCandidates, ...arExtra];
+                timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA', 'ARZSMVN1DA', 'ARZSMVO1DA');
             } else if (language === 'en') {
-                // Example for English fallback if needed
-                timingCandidates.push('ENGWEBP1DA');
+                timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA', 'ENGWEBN2DA', 'ENGWEBO2DA');
+            } else if (language === 'fr') {
+                timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA', 'FRNLSGN2DA', 'FRNLSGO2DA');
             }
 
             let times = [];

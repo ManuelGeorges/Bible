@@ -56,6 +56,12 @@ export default function AboutPage() {
           {strings.about.thanks.fcbh}
         </p>
 
+        {strings.about.thanks.translations && (
+          <p className={styles.paragraph} style={{ fontWeight: '500', color: 'var(--color-primary)' }}>
+            {strings.about.thanks.translations}
+          </p>
+        )}
+
         <p className={styles.paragraph}> 
           {strings.about.thanks.church}
         </p>
