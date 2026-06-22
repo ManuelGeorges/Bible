@@ -35,14 +35,13 @@ const languages = [
 
 const Settings = () => {
   const { theme, setTheme } = useTheme()
-  const { language: currentLang, changeLanguage, strings, dir } = useLanguage();
+  const { language: currentLang, changeLanguage, strings, dir, useTashkeel, toggleTashkeel } = useLanguage();
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [fontSize, setFontSize] = useState(18)
   const [fontFamily, setFontFamily] = useState('Cairo')
   const [fontWeight, setFontWeight] = useState(400)
   const [versePerLine, setVersePerLine] = useState(false)
-  const [useTashkeel, setUseTashkeel] = useState(false)
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
   const [user, setUser] = useState(null)
@@ -103,9 +102,6 @@ const Settings = () => {
 
       const savedLayout = localStorage.getItem('versePerLine') === 'true'
       setVersePerLine(savedLayout)
-
-      const savedTashkeel = localStorage.getItem('useTashkeel') === 'true'
-      setUseTashkeel(savedTashkeel)
 
       if (native) {
         const perms = await LocalNotifications.checkPermissions()
@@ -205,13 +201,6 @@ const Settings = () => {
     const nextState = !versePerLine
     setVersePerLine(nextState)
     localStorage.setItem('versePerLine', nextState.toString())
-    window.dispatchEvent(new Event('storage'))
-  }
-
-  const toggleTashkeel = () => {
-    const nextState = !useTashkeel
-    setUseTashkeel(nextState)
-    localStorage.setItem('useTashkeel', nextState.toString())
     window.dispatchEvent(new Event('storage'))
   }
 

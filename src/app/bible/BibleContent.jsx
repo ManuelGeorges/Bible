@@ -55,7 +55,7 @@ export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const { language, strings, dir: pageDir, bookNames: bookNamesData, formatNumber } = useLanguage();
+  const { language, useTashkeel, strings, dir: pageDir, bookNames: bookNamesData, formatNumber } = useLanguage();
 
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
@@ -76,7 +76,6 @@ export default function BibleContent() {
   const [copiedMessage, setCopiedMessage] = useState('');
   const [activeMenu, setActiveMenu] = useState(null);
   const [versePerLine, setVersePerLine] = useState(false);
-  const [useTashkeel, setUseTashkeel] = useState(false);
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState('');
@@ -278,7 +277,6 @@ export default function BibleContent() {
       const savedFontId = localStorage.getItem('bibleFontFamily') || 'Cairo';
       const savedFontWeight = localStorage.getItem('bibleFontWeight') || '400';
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
-      const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
 
       const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -294,7 +292,6 @@ export default function BibleContent() {
       document.documentElement.style.setProperty('--bible-font-weight', savedFontWeight);
 
       setVersePerLine(savedLayout);
-      setUseTashkeel(savedTashkeel);
     };
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);

@@ -253,7 +253,8 @@
       "plan_day_complete": "مبروك! أتممت قراءات اليوم في الخطة ",
       "plan_all_complete": "رائع! لقد أنهيت الخطة الدراية بالكامل ",
       "chapter_undo": "تم إلغاء تحديد الإصحاح",
-      "audio_not_found": "الأوديو غير متوفر لهذا الإصحاح"
+      "audio_not_found": "الأوديو غير متوفر لهذا الإصحاح",
+      "audio_not_available_lang": "الأوديو غير متوفر لهذه اللغة حالياً"
     },
     "tooltips": {
       "copy": "نسخ",
@@ -297,6 +298,9 @@
       "6": "الكنيسة المبكرة ورحلات الرسل"
     },
     "points_reason": "اكتشاف معلم: {name}",
+    "toasts": {
+      "points_earned": "+{amount} نقطة: {reason}"
+    },
     "error_offline": "خرائط الـ 3D تتطلب اتصالاً بالإنترنت"
   },
   "search": {
@@ -347,7 +351,7 @@
     "toast_fav_exists": "الآيات المختارة موجودة بالفعل في المفضلة",
     "toast_fav_added": "تم إضافة {count} آيات للمفضلة",
     "toast_analyze_chapter_limit": "التحليل متاح للآيات من نفس الإصحاح فقط",
-    "toast_copy_success": "تم نسخ الآية ✨",
+    "toast_copy_success": "تم نسخ الآية ",
     "toast_semantic_error": "عذراً، الخادم مضغوط حالياً. يرجى المحاولة مرة أخرى بعد دقيقة.",
     "error_derivatives_limit": "نظام البحث بالمشتقات يتطلب كلمة واحدة فقط لضمان الدقة.",
     "error_arabic_only": "يرجى إدخال كلمة عربية صحيحة فقط.",

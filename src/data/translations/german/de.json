@@ -118,7 +118,12 @@
       "deleted_from_favs": "Aus deinen Favoriten entfernt",
       "added_to_favs_points": "Großartig! Zu Favoriten hinzugefügt +5 Punkte",
       "highlight_updated": "Markierungsfarbe aktualisiert",
-      "added_points": "Großartig! +5 Punkte hinzugefügt"
+      "added_points": "Großartig! +5 Punkte hinzugefügt",
+      "welcome_new": "Willkommen bei Agios! ",
+      "streak_bonus": "Beständigkeitsbonus! +{points} Punkte",
+      "badge_unlocked": " Herzlichen Glückwunsch! Du hast freigeschaltet: {badgeName}",
+      "good_morning": "Guten Morgen {userName}! +10 Punkte ",
+      "welcome_back": "Willkommen zurück! Heutiger Streak: {streak}"
     }
   },
   "settings": {
@@ -248,7 +253,8 @@
       "plan_day_complete": "Glückwunsch! Heutige Lesungen im Plan abgeschlossen",
       "plan_all_complete": "Großartig! Du hast den gesamten Leseplan abgeschlossen",
       "chapter_undo": "Kapitelauswahl aufgehoben",
-      "audio_not_found": "Audio für dieses Kapitel nicht verfügbar"
+      "audio_not_found": "Audio für dieses Kapitel nicht verfügbar",
+      "audio_not_available_lang": "Audio für diese Sprache aktuell nicht verfügbar"
     },
     "tooltips": {
       "copy": "Kopieren",
@@ -461,7 +467,7 @@
   "studyPlans": {
     "title": "Lesepläne",
     "ai_button": "Jetzt intelligenten Plan entwerfen",
-    "search_placeholder": "Nach einem Plan suchen (z.B. Evangelium, Psalmen...)",
+    "search_placeholder": "Nach einem Plan suchen (z.B. Evangelium, Pfalmen...)",
     "filters": {
       "all": "Alle",
       "custom": "Benutzerdefiniert",
@@ -784,12 +790,4 @@
     "title": "Offizielle Website | Agios Bibel",
     "description": "Eine integrierte Bibel-Website mit erweiterten Funktionen wie Suche, interaktiven Karten, Leseplänen und Wettbewerben."
   }
-} 
-   "share_dialog": "Abzeichen teilen über..."
-    }
-  },
-  "metadata": {
-    "title": "Offizielle Website | Agios Bibel",
-    "description": "Eine integrierte Bibel-Website mit erweiterten Funktionen wie Suche, interaktiven Karten, Leseplänen und Wettbewerben."
-  }
-} 
+}

@@ -118,7 +118,12 @@
       "deleted_from_favs": "Supprimé de vos favoris",
       "added_to_favs_points": "Génial ! Ajouté aux favoris +5 points",
       "highlight_updated": "Couleur de surlignage mise à jour",
-      "added_points": "Génial ! +5 points ajoutés"
+      "added_points": "Génial ! +5 points ajoutés",
+      "welcome_new": "Bienvenue sur Agios ! ",
+      "streak_bonus": "Bonus de régularité ! +{points} points ",
+      "badge_unlocked": " Félicitations ! Vous avez débloqué : {badgeName}",
+      "good_morning": "Bonjour {userName} ! +10 points ",
+      "welcome_back": "Bon retour parmi nous ! Série du jour : {streak} "
     }
   },
   "settings": {
@@ -213,7 +218,7 @@
       "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
       "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
       "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
-      "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'اراب، World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
+      "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
       "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
     },
     "footer": "© 2026 Agios System - Tous droits réservés"
@@ -248,7 +253,8 @@
       "plan_day_complete": "Félicitations ! Vous avez terminé les lectures d'aujourd'hui",
       "plan_all_complete": "Génial ! Vous avez terminé tout le plan d'étude",
       "chapter_undo": "Chapitre désélectionné",
-      "audio_not_found": "Audio non disponible pour ce chapitre"
+      "audio_not_found": "Audio non disponible pour ce chapitre",
+      "audio_not_available_lang": "Audio non disponible pour cette langue actuellement"
     },
     "tooltips": {
       "copy": "Copier",
@@ -546,7 +552,7 @@
     "features_title": "Pourquoi se connecter ?",
     "features": [
       { "title": "Entièrement gratuit", "desc": "Aucun abonnement ou frais." },
-      { "title": "Données sécurisées", "desc": "Toutes vos informations sont cryptées." },
+      { "title": "Données sécurisées", "desc": "Toute vos informations sont cryptées." },
       { "title": "Plusieurs appareils", "desc": "Utilisez le même compte partout." },
       { "title": "Favoris et Notes", "desc": "Ne perdez jamais vos versets et réflexions." },
       { "title": "Plans d'étude", "desc": "Conservez votre progression." },
@@ -776,16 +782,7 @@
       "share_achievement": "Partager l'exploit",
       "view_all": "Voir tous les badges",
       "share_title": "Nouveau Badge !",
-      "share_text": "🎉 J'ai obtenu un nouveau badge sur Agios : {badge}!",
-      "share_dialog": "Partager le badge via..."
-    }
-  },
-  "metadata": {
-    "title": "Site Officiel | Agios Bible",
-    "description": "Un site biblique intégré avec recherche avancée et cartes interactives."
-  }
-}
-nu un nouveau badge sur Agios : {badge}!",
+      "share_text": "🎉 J'ai obtenu un nouveau badge sur Agios : {badge}!\n\"{req}\"\nDownload l'application pour nous rejoindre.",
       "share_dialog": "Partager le badge via..."
     }
   },

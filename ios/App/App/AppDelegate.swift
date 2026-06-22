@@ -18,7 +18,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             if granted {
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
-                    // تحديث التنبيهات فور منح الإذن أو عند التشغيل
                     AgiosNotificationHelper.shared.refreshAllNotifications()
                 }
             }
@@ -56,7 +55,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // تحديث الإشعارات عند عودة التطبيق للواجهة لضمان دقة "آية اليوم"
         AgiosNotificationHelper.shared.refreshAllNotifications()
 
         if let bridge = (self.window?.rootViewController as? CAPBridgeViewController)?.bridge {
@@ -188,7 +186,8 @@ class AgiosNotificationHelper {
             "streak_msg": "أنت في سلسلة تفاعل مدتها %@ يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥",
             "streak_start": "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.",
             "plans_msg_multi": "لديك %@ خطط جارية. تبقّى %@ يوم في %@",
-            "plans_msg_single": "تبقّى لك %@ يوم لإكمال %@"
+            "plans_msg_single": "تبقّى لك %@ يوم لإكمال %@",
+            "new_content": "لديك محتوى روحي جديد في أجيوس ✨"
         ],
         "en": [
             "verse_title": "Verse of the Day",
@@ -199,7 +198,8 @@ class AgiosNotificationHelper {
             "streak_msg": "You're on a %@ day streak! Don't forget to read today's verse 🔥",
             "streak_start": "Start your streak today! Read and share the verse to build a new spiritual habit.",
             "plans_msg_multi": "You have %@ ongoing plans. %@ days left in %@",
-            "plans_msg_single": "You have %@ days left to complete %@"
+            "plans_msg_single": "You have %@ days left to complete %@",
+            "new_content": "You have new spiritual content in Agios ✨"
         ],
         "de": [
             "verse_title": "Vers des Tages",
@@ -210,7 +210,8 @@ class AgiosNotificationHelper {
             "streak_msg": "Du hast eine Serie von %@ Tagen! Vergiss nicht, den heutigen Vers zu lesen 🔥",
             "streak_start": "Beginne heute deine Serie! Lies den Vers, um eine neue Gewohnheit aufzubauen.",
             "plans_msg_multi": "Du hast %@ laufende Pläne. Noch %@ Tage in %@",
-            "plans_msg_single": "Du hast noch %@ Tage, um %@ abzuschließen"
+            "plans_msg_single": "Du hast noch %@ Tage, um %@ abzuschließen",
+            "new_content": "Du hast neue geistliche Inhalte in Agios ✨"
         ],
         "fr": [
             "verse_title": "Verset du jour",
@@ -221,7 +222,8 @@ class AgiosNotificationHelper {
             "streak_msg": "Vous avez une série de %@ jours ! N'oubliez pas de lire le verset du jour 🔥",
             "streak_start": "Commencez votre série aujourd'hui ! Lisez le verset pour bâtir une nouvelle habitude.",
             "plans_msg_multi": "Vous avez %@ plans en cours. %@ jours restants pour %@",
-            "plans_msg_single": "Il vous reste %@ jours pour terminer %@"
+            "plans_msg_single": "Il vous reste %@ jours pour terminer %@",
+            "new_content": "Vous avez du nouveau contenu spirituel dans Agios ✨"
         ]
     ]
 
@@ -231,28 +233,36 @@ class AgiosNotificationHelper {
             "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
             "يمكنك تظليل الآيات التي تعجبك باللون الذي يريحك وكتابة ملحوظات عليها",
             "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
-            "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط"
+            "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط",
+            "يمكنك تغيير حجم خط القراءة من صفحة الإعدادات لراحة عينيك.",
+            "هل تعلم أن بإمكانك قراءة الكتاب المقدس بدون إنترنت؟"
         ],
         "en": [
             "Have you tried the Bible search feature?",
             "Create a custom reading plan with Agios AI assistant.",
             "Highlight verses and add personal notes.",
             "Explore biblical places with interactive maps.",
-            "Check your stats and badges in the points page."
+            "Check your stats and badges in the points page.",
+            "Change font size in settings for comfortable reading.",
+            "Did you know you can read the Bible offline?"
         ],
         "de": [
             "Haben Sie die Bibelsuchfunktion ausprobiert?",
             "Erstellen Sie einen Leseplan mit dem Agios KI-Assistenten.",
             "Markieren Sie Verse und fügen Sie Notizen hinzu.",
             "Entdecken Sie biblische Orte mit interaktiven Karten.",
-            "Überprüfen Sie Ihre Statistiken auf der Punkteseite."
+            "Überprüfen Sie Ihre Statistiken auf der Punkteseite.",
+            "Passen Sie die Schriftgröße in den Einstellungen an.",
+            "Wussten Sie, dass Sie die Bibel offline lesen können?"
         ],
         "fr": [
             "Avez-vous essayé la fonction de recherche biblique ?",
             "Créez un plan de lecture avec l'assistant IA Agios.",
             "Surlignez les versets et ajoutez des notes.",
             "Explorez les lieux bibliques avec des cartes interactives.",
-            "Consultez vos statistiques sur la page des points."
+            "Consultez vos statistiques sur la page des points.",
+            "Changez la taille de la police pour un confort de lecture.",
+            "Saviez-vous que vous pouvez lire la Bible hors ligne ?"
         ]
     ]
 
@@ -304,7 +314,6 @@ class AgiosNotificationHelper {
         let verseNum = refData["verse"] as? Int ?? 1
         let lang = getLang()
 
-        // 1. Get Bible Text
         let bibleFile = getBibleFilePath(lang: lang)
         let bibleData = loadJsonArray(filename: bibleFile)
         var verseText = ""
@@ -323,7 +332,6 @@ class AgiosNotificationHelper {
             }
         }
 
-        // 2. Get Book Name
         var bookName = bookId
         if let allNames = loadJsonObject(filename: "bookNames.json"),
            let langBooks = allNames[lang] as? [[String: Any]] {

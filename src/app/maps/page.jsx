@@ -61,7 +61,7 @@ const MAX_BOUNDS = [
 ];
 
 export default function MapsPage() {
-  const { strings, dir, language } = useLanguage();
+  const { strings, dir, language, formatNumber } = useLanguage();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
@@ -125,7 +125,7 @@ export default function MapsPage() {
             timestamp: getCairoIsoString()
           })
         });
-        toast.success(`+${amount} نقطة: ${reason}`);
+        toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
       } catch (e) {
         console.error(e);
       }
@@ -139,7 +139,7 @@ export default function MapsPage() {
             timestamp: getCairoIsoString()
         });
         await StorageService.save('points_history', history);
-        toast.success(`+${amount} نقطة: ${reason}`);
+        toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
     }
   };
 

@@ -39,7 +39,6 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     private String getLocalizedString(String key, String lang) {
         Map<String, Map<String, String>> translations = new HashMap<>();
         
-        // Arabic
         Map<String, String> ar = new HashMap<>();
         ar.put("verse_title", "آية اليوم");
         ar.put("question_title", "سؤال اليوم");
@@ -52,9 +51,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         ar.put("streak_start", "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.");
         ar.put("plans_msg_multi", "لديك %s خطط جارية. تبقّى %s يوم في %s");
         ar.put("plans_msg_single", "تبقّى لك %s يوم لإكمال %s");
+        ar.put("new_content", "لديك محتوى روحي جديد في أجيوس ✨");
         translations.put("ar", ar);
 
-        // English
         Map<String, String> en = new HashMap<>();
         en.put("verse_title", "Verse of the Day");
         en.put("question_title", "Daily Question");
@@ -67,9 +66,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         en.put("streak_start", "Start your streak today! Read and share the verse to build a new spiritual habit.");
         en.put("plans_msg_multi", "You have %s ongoing plans. %s days left in %s");
         en.put("plans_msg_single", "You have %s days left to complete %s");
+        en.put("new_content", "You have new spiritual content in Agios ✨");
         translations.put("en", en);
 
-        // German
         Map<String, String> de = new HashMap<>();
         de.put("verse_title", "Vers des Tages");
         de.put("question_title", "Tagesfrage");
@@ -82,9 +81,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         de.put("streak_start", "Beginne heute deine Serie! Lies den Vers, um eine neue Gewohnheit aufzubauen.");
         de.put("plans_msg_multi", "Du hast %s laufende Pläne. Noch %s Tage in %s");
         de.put("plans_msg_single", "Du hast noch %s Tage, um %s abzuschließen");
+        de.put("new_content", "Du hast neue geistliche Inhalte in Agios ✨");
         translations.put("de", de);
 
-        // French
         Map<String, String> fr = new HashMap<>();
         fr.put("verse_title", "Verset du jour");
         fr.put("question_title", "Question du jour");
@@ -97,6 +96,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         fr.put("streak_start", "Commencez votre série aujourd'hui ! Lisez le verset pour bâtir une nouvelle habitude.");
         fr.put("plans_msg_multi", "Vous avez %s plans en cours. %s jours restants pour %s");
         fr.put("plans_msg_single", "Il vous reste %s jours pour terminer %s");
+        fr.put("new_content", "Vous avez du nouveau contenu spirituel dans Agios ✨");
         translations.put("fr", fr);
 
         Map<String, String> langMap = translations.get(lang);
@@ -185,7 +185,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 handleTipNotification(context, lang);
                 break;
             default:
-                showNotification(context, "Agios", lang.equals("ar") ? "لديك محتوى روحي جديد" : "New spiritual content", 107, "/");
+                showNotification(context, "Agios", getLocalizedString("new_content", lang), 107, "/");
                 break;
         }
 
@@ -256,9 +256,9 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             String cStr = lang.equals("ar") ? toArabicNumbers(chapter) : String.valueOf(chapter);
             String vStr = lang.equals("ar") ? toArabicNumbers(verseNum) : String.valueOf(verseNum);
             String title = String.format("%s %s:%s", bookName, cStr, vStr);
-            
+
             if (verseText.isEmpty()) verseText = getLocalizedString("verse_title", lang);
-            
+
             showNotification(context, title, verseText, 101, "/#daily-verse");
         } catch (Exception e) {
             Log.e(TAG, "Verse Notify Error", e);

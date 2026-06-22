@@ -16,6 +16,7 @@ const translations = { ar, en, de, fr };
 
 export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
+    const [useTashkeel, setUseTashkeel] = useState(false);
     const [isFirstTime, setIsFirstTime] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
 
@@ -27,6 +28,10 @@ export function LanguageProvider({ children }) {
         } else {
             setIsFirstTime(true);
         }
+
+        const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
+        setUseTashkeel(savedTashkeel);
+
         setIsHydrated(true);
     }, []);
 
@@ -54,6 +59,16 @@ export function LanguageProvider({ children }) {
         }
     };
 
+    const toggleTashkeel = useCallback(() => {
+        setUseTashkeel(prev => {
+            const newState = !prev;
+            localStorage.setItem('useTashkeel', newState.toString());
+            // This event is still useful for components not using the context directly
+            window.dispatchEvent(new Event('storage'));
+            return newState;
+        });
+    }, []);
+
     const formatNumber = useCallback((num) => {
         if (num === null || num === undefined) return "";
         if (language !== 'ar') return num.toString();
@@ -63,11 +78,13 @@ export function LanguageProvider({ children }) {
 
     const value = {
         language,
+        useTashkeel,
         strings,
         bookNames,
         allBookNames,
         dir,
         changeLanguage,
+        toggleTashkeel,
         isFirstTime,
         setIsFirstTime,
         isHydrated,

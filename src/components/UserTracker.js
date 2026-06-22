@@ -8,20 +8,22 @@ import { toast } from 'react-hot-toast';
 import { getCairoDate } from '../lib/dateUtils';
 import { Capacitor } from '@capacitor/core';
 import { StorageService } from '../lib/storage';
+import { useLanguage } from '../app/context/LanguageContext';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 
 export default function UserTracker() {
+  const { strings, formatNumber, language } = useLanguage();
+
   useEffect(() => {
     const trackActivity = async (user) => {
       try {
         const today = getCairoDate();
 
         if (user) {
-          // --- منطق المستخدم المسجل ---
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
-          const userName = user.displayName || 'مستخدم أجيوس';
+          const userName = user.displayName || strings.common.default_first_name;
 
           if (!userSnap.exists()) {
             await setDoc(userRef, {
@@ -39,7 +41,7 @@ export default function UserTracker() {
               completedPlans: {}
             });
             await StorageService.updateStreak(1);
-            toast(`أهلاً بك في أجيوس! 📖`, { icon: '✨' });
+            toast(strings.home.toasts.welcome_new, { icon: '✨' });
           } else {
             const userData = userSnap.data();
             const lastLogin = userData.lastLoginDate;
@@ -56,11 +58,11 @@ export default function UserTracker() {
               let bonusPoints = streakBonuses[newStreak] || 0;
 
               const streakMilestones = {
-                3: { id: 'streak_3', name: 'المواظب المبتدئ (3 أيام)' },
-                7: { id: 'streak_7', name: 'المجتهد (أسبوع)' },
-                15: { id: 'streak_15', name: 'المثابر (15 يوم)' },
-                30: { id: 'streak_30', name: 'الوفي (شهر)' },
-                90: { id: 'streak_90', name: 'الأسطورة (3 شهور)' }
+                3: { id: 'streak_3', name: language === 'ar' ? 'المواظب المبتدئ (3 أيام)' : 'Beginner Diligent (3 days)' },
+                7: { id: 'streak_7', name: language === 'ar' ? 'المجتهد (أسبوع)' : 'Hardworking (Week)' },
+                15: { id: 'streak_15', name: language === 'ar' ? 'المثابر (15 يوم)' : 'Perserverant (15 days)' },
+                30: { id: 'streak_30', name: language === 'ar' ? 'الوفي (شهر)' : 'Loyal (Month)' },
+                90: { id: 'streak_90', name: language === 'ar' ? 'الأسطورة (3 شهور)' : 'Legend (3 months)' }
               };
 
               let updates = {
@@ -70,20 +72,21 @@ export default function UserTracker() {
                 dailyInteractionPoints: 0
               };
 
-              if (bonusPoints > 0) toast.success(`بونص الاستمرارية! +${bonusPoints} نقطة 🔥`);
+              if (bonusPoints > 0) {
+                toast.success(strings.home.toasts.streak_bonus.replace('{points}', formatNumber(bonusPoints)));
+              }
 
               if (streakMilestones[newStreak] && !userData.badges?.includes(streakMilestones[newStreak].id)) {
                 updates.badges = arrayUnion(streakMilestones[newStreak].id);
-                toast.success(`🎉 مبروك! حصلت على بادج: ${streakMilestones[newStreak].name}`, { icon: '🔥' });
+                toast.success(strings.home.toasts.badge_unlocked.replace('{badgeName}', streakMilestones[newStreak].name), { icon: '🔥' });
               }
 
               await updateDoc(userRef, updates);
               await StorageService.updateStreak(newStreak);
-              toast(`صباح الخير يا ${userName}! +10 نقاط ☀️`, { icon: '💰' });
+              toast(strings.home.toasts.good_morning.replace('{userName}', userName), { icon: '💰' });
             }
           }
         } else {
-          // --- منطق الزائر (Locally) ---
           const localStats = await StorageService.getLocalStats();
           const lastActive = await StorageService.get('agios_last_active');
 
@@ -99,11 +102,10 @@ export default function UserTracker() {
             await StorageService.save('agios_last_active', today);
             await StorageService.addPoints(10);
 
-            toast(`أهلاً بك مجدداً! ستريك اليوم: ${newStreak} 🔥`, { icon: '✨' });
+            toast(strings.home.toasts.welcome_back.replace('{streak}', formatNumber(newStreak)), { icon: '✨' });
           }
         }
 
-        // تحديث الستريك في الواجهة الأصلية (Native)
         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
           const currentStreak = user ? (await getDoc(doc(db, 'users', user.uid))).data().streak : (await StorageService.get('agios_streak'));
           window.AgiosScannerNative.updateUserStats(currentStreak);
@@ -125,12 +127,9 @@ export default function UserTracker() {
 
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, trackActivity);
-
-    // تشغيل التتبع لمرة واحدة عند التحميل للزوار في حال لم يتغير Auth
     if (!auth.currentUser) trackActivity(null);
-
     return () => unsubscribe();
-  }, []);
+  }, [strings, formatNumber, language]);
 
   return null; 
 }

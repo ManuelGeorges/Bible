@@ -118,7 +118,12 @@
       "deleted_from_favs": "Removed from your favorites",
       "added_to_favs_points": "Great! Added to favorites +5 points",
       "highlight_updated": "Highlight color updated",
-      "added_points": "Great! Added +5 points"
+      "added_points": "Great! Added +5 points",
+      "welcome_new": "Welcome to Agios! 📖",
+      "streak_bonus": "Consistency Bonus! +{points} points 🔥",
+      "badge_unlocked": "🎉 Congratulations! You unlocked: {badgeName}",
+      "good_morning": "Good morning {userName}! +10 points ☀️",
+      "welcome_back": "Welcome back! Today's streak: {streak} 🔥"
     }
   },
   "settings": {
@@ -248,7 +253,8 @@
       "plan_day_complete": "Congratulations! Completed today's readings in the plan",
       "plan_all_complete": "Great! You have finished the entire study plan",
       "chapter_undo": "Chapter deselected",
-      "audio_not_found": "Audio not available for this chapter"
+      "audio_not_found": "Audio not available for this chapter",
+      "audio_not_available_lang": "Audio not available for this language currently"
     },
     "tooltips": {
       "copy": "Copy",
@@ -778,14 +784,6 @@
       "share_title": "New Badge!",
       "share_text": "I got a new badge in Agios app: {badge}!\n\"{req}\"\nDownload the app and join us in our spiritual journey.",
       "share_dialog": "Share Badge via..."
-    }
-  },
-  "metadata": {
-    "title": "Official Website | Agios Bible",
-    "description": "An integrated Bible website that includes unique features such as advanced search, interactive maps, study plans, and competitions"
-  }
-}
-ge via..."
     }
   },
   "metadata": {

@@ -369,7 +369,7 @@ function SearchContent() {
       setActiveActionId(null);
       toast.success(isDelete ? strings.search.toast_delete_success : strings.search.toast_save_success);
     } catch (e) {
-      toast.error("An error occurred");
+      toast.error(strings.common.error_occurred);
     }
   };
 
@@ -405,7 +405,7 @@ function SearchContent() {
       setSelectedVerses([]);
       toast.success(strings.search.toast_fav_added.replace('{count}', formatNumber(addedCount)));
     } catch (e) {
-      toast.error("An error occurred");
+      toast.error(strings.common.error_occurred);
     }
   };
 
@@ -784,7 +784,7 @@ Regeln:
     } catch (e) {
       setAiStatus('');
       console.error("Gemini Derivatives Error:", e);
-      toast.error("Analysis failed.");
+      toast.error(strings.analysis.error_generic);
       const fallback = { derivatives: [term], root: 'Unknown', isStatic: false, explanation: '' };
       setSearchInfo(fallback);
       setSelectedDerivatives(fallback.derivatives);
