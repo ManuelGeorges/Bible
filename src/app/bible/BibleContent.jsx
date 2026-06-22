@@ -398,15 +398,15 @@ export default function BibleContent() {
         setIsLoading(true);
         let biblePath = '';
         if (language === 'ar') {
-          biblePath = useTashkeel ? '/data/bibles/ar_svd_tashkeel_site.json' : '/data/bibles/ar_svd_no_tashkeel.json';
+          biblePath = useTashkeel ? '/data/translations/arabic/ar_svd_tashkeel_site.json' : '/data/translations/arabic/ar_svd_no_tashkeel.json';
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_web.json';
+          biblePath = '/data/translations/English/en_web.json';
         } else if (language === 'fr') {
-          biblePath = '/data/bibles/fr_segond.json';
+          biblePath = '/data/translations/French/fr_segond.json';
         } else if (language === 'de') {
-          biblePath = '/data/bibles/de_luther.json';
+          biblePath = '/data/translations/german/de_luther.json';
         } else {
-          biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
+          biblePath = '/data/translations/arabic/ar_svd_no_tashkeel.json';
         }
 
         const bibleRes = await fetch(biblePath).then(r => r.json());

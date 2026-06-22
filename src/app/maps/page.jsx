@@ -178,6 +178,16 @@ export default function MapsPage() {
     return () => unsubscribe();
   }, []);
 
+  const getLanguageFolder = (lang) => {
+    switch (lang) {
+        case 'ar': return 'arabic';
+        case 'en': return 'English';
+        case 'fr': return 'French';
+        case 'de': return 'german';
+        default: return 'arabic';
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     const initPage = async () => {
@@ -192,7 +202,8 @@ export default function MapsPage() {
       }
 
       try {
-        const placesPath = `/data/places/places${language && language !== 'ar' ? '_' + language : ''}.json`;
+        const folder = getLanguageFolder(language);
+        const placesPath = `/data/translations/${folder}/places${language && language !== 'ar' ? '_' + language : ''}.json`;
         const response = await fetch(placesPath);
         const data = await response.json();
         setAllPlaces(data);

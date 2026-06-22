@@ -115,6 +115,16 @@ const LandingPage = () => {
         }
     };
 
+    const getLanguageFolder = (lang) => {
+        switch (lang) {
+            case 'ar': return 'arabic';
+            case 'en': return 'English';
+            case 'fr': return 'French';
+            case 'de': return 'german';
+            default: return 'arabic';
+        }
+    };
+
     const unlockBadge = async (badgeId) => {
         if (user) {
           try {
@@ -183,7 +193,7 @@ const LandingPage = () => {
         try {
             const [verseRefsRes, questRes] = await Promise.all([
                 fetch('/data/dailyVerses.json'),
-                fetch(`/data/dailyQuestions${language !== 'ar' ? '_' + language : ''}.json`)
+                fetch(`/data/translations/${getLanguageFolder(language)}/dailyQuestions_${language}.json`)
             ]);
 
             if (!verseRefsRes.ok) throw new Error("Daily verses file not found");
@@ -200,10 +210,9 @@ const LandingPage = () => {
                 };
 
                 const bibleFile = bibleMapping[language] || 'ar_svd_tashkeel_site.json';
-                const bibleRes = await fetch(`/data/bibles/${bibleFile}`);
+                const bibleRes = await fetch(`/data/translations/${getLanguageFolder(language)}/${bibleFile}`);
                 const bibleData = await bibleRes.json();
 
-                // إصلاح: البحث عن السفر باستخدام الـ abbrev لضمان التوافق بين اللغات
                 const bibleBook = bibleData.find(b =>
                     b.abbrev.toLowerCase() === todayRef.book.toLowerCase()
                 );
@@ -242,10 +251,10 @@ const LandingPage = () => {
         setMounted(true);
         fetchDailyContent();
         const badgeFileMap = {
-            ar: '/data/badges.json',
-            en: '/data/badges_en.json',
-            fr: '/data/badges_fr.json',
-            de: '/data/badges_de.json'
+            ar: '/data/translations/arabic/badges_ar.json',
+            en: '/data/translations/English/badges_en.json',
+            fr: '/data/translations/French/badges_fr.json',
+            de: '/data/translations/german/badges_de.json'
         };
         const badgePath = badgeFileMap[language] || badgeFileMap.ar;
         fetch(badgePath)
@@ -253,7 +262,7 @@ const LandingPage = () => {
             .then(data => setBadgesData(data))
             .catch(() => {
                 if (language !== 'ar') {
-                    fetch('/data/badges.json').then(res => res.json()).then(data => setBadgesData(data)).catch(() => {});
+                    fetch('/data/translations/arabic/badges_ar.json').then(res => res.json()).then(data => setBadgesData(data)).catch(() => {});
                 }
             });
         checkTimeBadges();
@@ -350,7 +359,6 @@ const LandingPage = () => {
                         const serverComp = data.completedPlans || {};
                         const customPlans = data.customPlans || {};
 
-                        // تعديل: فلترة الخطط الجارية حسب لغة المستخدم
                         const activeStatic = (language === 'ar' ? staticPlans : [])
                             .map(plan => {
                                 const stats = calculatePlanStats(plan, false, null, serverComp);

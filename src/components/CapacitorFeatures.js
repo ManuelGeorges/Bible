@@ -14,12 +14,14 @@ import { AppReview } from '@capawesome/capacitor-app-review';
 import { fetchAndActivate, getNumber } from 'firebase/remote-config';
 import { getFirebaseRemoteConfig } from '../lib/firebase';
 import { syncNotifications } from '../lib/notificationService';
+import { useLanguage } from '../app/context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Sparkles } from 'lucide-react';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { language } = useLanguage();
   const hasSetup = useRef(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
@@ -44,6 +46,14 @@ export default function CapacitorFeatures() {
       setTheme('system');
     }
   }, [setTheme]);
+
+  // تحديث الإشعارات عند تغيير اللغة
+  useEffect(() => {
+    const platform = Capacitor.getPlatform();
+    if (platform === 'web' || platform === 'electron') return;
+
+    syncNotifications().catch(() => {});
+  }, [language]);
 
   useEffect(() => {
     const platform = Capacitor.getPlatform();
@@ -153,7 +163,7 @@ export default function CapacitorFeatures() {
 
         await setupListeners();
         await handleAppUpdate();
-        await syncNotifications().catch(() => {});
+        // تم نقل syncNotifications إلى useEffect منفصل مع تبعية اللغة
       } catch (e) {
         console.error("Init Error:", e);
       }

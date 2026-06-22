@@ -18,10 +18,10 @@ export const BadgeProvider = ({ children }) => {
 
   useEffect(() => {
     const badgeFileMap = {
-      ar: '/data/badges.json',
-      en: '/data/badges_en.json',
-      fr: '/data/badges_fr.json',
-      de: '/data/badges_de.json'
+      ar: '/data/translations/arabic/badges_ar.json',
+      en: '/data/translations/English/badges_en.json',
+      fr: '/data/translations/French/badges_fr.json',
+      de: '/data/translations/german/badges_de.json'
     };
     const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
     setBadgesData(null);
@@ -37,9 +37,10 @@ export const BadgeProvider = ({ children }) => {
         }
       } catch (err) {
         console.error(`Failed to load badges data for ${language}:`, err);
+        // Fallback to Arabic if preferred language fails
         if (language !== 'ar') {
           try {
-            const fallbackResponse = await fetch('/data/badges.json');
+            const fallbackResponse = await fetch('/data/translations/arabic/badges_ar.json');
             if (!fallbackResponse.ok) throw new Error('Failed fallback fetch');
             const fallbackData = await fallbackResponse.json();
             setBadgesData(fallbackData);

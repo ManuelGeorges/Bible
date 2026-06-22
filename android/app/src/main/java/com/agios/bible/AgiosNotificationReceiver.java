@@ -17,6 +17,8 @@ import org.json.JSONObject;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONArray;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
@@ -27,14 +29,118 @@ import com.google.android.gms.tasks.Task;
 public class AgiosNotificationReceiver extends BroadcastReceiver {
     private static final String TAG = "AgiosDebug";
 
-    private final String[] agiosTips = {
-            "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
-            "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
-            "يمكنك تظليل الآيات التي تعجبك باللون الذي يريحك وكتابة ملحوظات عليها",
-            "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
-            "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط",
-            "يمكنك تغيير حجم خط القراءة من صفحة الإعدادات لراحة عينيك.",
-            "هل تعلم أن بإمكانك قراءة الكتاب المقدس بدون إنترنت؟"
+    private String getLang(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+        String lang = prefs.getString("_cap_language", "ar");
+        if (lang == null || lang.isEmpty()) lang = "ar";
+        return lang;
+    }
+
+    private String getLocalizedString(String key, String lang) {
+        Map<String, Map<String, String>> translations = new HashMap<>();
+        
+        // Arabic
+        Map<String, String> ar = new HashMap<>();
+        ar.put("verse_title", "آية اليوم");
+        ar.put("question_title", "سؤال اليوم");
+        ar.put("streak_title", "حافظ على حماسك");
+        ar.put("plans_title", "متابعة القراءة 📖");
+        ar.put("tip_title", "معلومة سريعة");
+        ar.put("update_title", "تحديث جديد متاح");
+        ar.put("update_body", "تتوفر نسخة جديدة من أجيوس بمزايا رائعة، حملها الآن من المتجر!");
+        ar.put("streak_msg", "أنت في سلسلة تفاعل مدتها %s يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥");
+        ar.put("streak_start", "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.");
+        ar.put("plans_msg_multi", "لديك %s خطط جارية. تبقّى %s يوم في %s");
+        ar.put("plans_msg_single", "تبقّى لك %s يوم لإكمال %s");
+        translations.put("ar", ar);
+
+        // English
+        Map<String, String> en = new HashMap<>();
+        en.put("verse_title", "Verse of the Day");
+        en.put("question_title", "Daily Question");
+        en.put("streak_title", "Keep your streak!");
+        en.put("plans_title", "Continue Reading 📖");
+        en.put("tip_title", "Quick Tip");
+        en.put("update_title", "New Update Available");
+        en.put("update_body", "A new version of Agios is available with great features, download it now!");
+        en.put("streak_msg", "You're on a %s day streak! Don't forget to read today's verse 🔥");
+        en.put("streak_start", "Start your streak today! Read and share the verse to build a new spiritual habit.");
+        en.put("plans_msg_multi", "You have %s ongoing plans. %s days left in %s");
+        en.put("plans_msg_single", "You have %s days left to complete %s");
+        translations.put("en", en);
+
+        // German
+        Map<String, String> de = new HashMap<>();
+        de.put("verse_title", "Vers des Tages");
+        de.put("question_title", "Tagesfrage");
+        de.put("streak_title", "Bleib dran!");
+        de.put("plans_title", "Weiterlesen 📖");
+        de.put("tip_title", "Kurzer Tipp");
+        de.put("update_title", "Neues Update verfügbar");
+        de.put("update_body", "Eine neue Version von Agios ist verfügbar, lade sie jetzt herunter!");
+        de.put("streak_msg", "Du hast eine Serie von %s Tagen! Vergiss nicht, den heutigen Vers zu lesen 🔥");
+        de.put("streak_start", "Beginne heute deine Serie! Lies den Vers, um eine neue Gewohnheit aufzubauen.");
+        de.put("plans_msg_multi", "Du hast %s laufende Pläne. Noch %s Tage in %s");
+        de.put("plans_msg_single", "Du hast noch %s Tage, um %s abzuschließen");
+        translations.put("de", de);
+
+        // French
+        Map<String, String> fr = new HashMap<>();
+        fr.put("verse_title", "Verset du jour");
+        fr.put("question_title", "Question du jour");
+        fr.put("streak_title", "Gardez le rythme !");
+        fr.put("plans_title", "Continuer la lecture 📖");
+        fr.put("tip_title", "Astuce rapide");
+        fr.put("update_title", "Mise à jour disponible");
+        fr.put("update_body", "Une nouvelle version d'Agios est disponible, téléchargez-la maintenant !");
+        fr.put("streak_msg", "Vous avez une série de %s jours ! N'oubliez pas de lire le verset du jour 🔥");
+        fr.put("streak_start", "Commencez votre série aujourd'hui ! Lisez le verset pour bâtir une nouvelle habitude.");
+        fr.put("plans_msg_multi", "Vous avez %s plans en cours. %s jours restants pour %s");
+        fr.put("plans_msg_single", "Il vous reste %s jours pour terminer %s");
+        translations.put("fr", fr);
+
+        Map<String, String> langMap = translations.get(lang);
+        if (langMap == null) langMap = translations.get("ar");
+        return langMap.get(key);
+    }
+
+    private final String[][] localizedTips = {
+            { // Arabic
+                "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
+                "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
+                "يمكنك تظليل الآيات التي تعجبك باللون الذي يريحك وكتابة ملحوظات عليها",
+                "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
+                "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط",
+                "يمكنك تغيير حجم خط القراءة من صفحة الإعدادات لراحة عينيك.",
+                "هل تعلم أن بإمكانك قراءة الكتاب المقدس بدون إنترنت؟"
+            },
+            { // English
+                "Have you tried the Bible search feature?",
+                "Create a custom reading plan with Agios AI assistant.",
+                "Highlight verses and add personal notes.",
+                "Explore biblical places with interactive maps.",
+                "Check your stats and badges in the points page.",
+                "Change font size in settings for comfortable reading.",
+                "Did you know you can read the Bible offline?"
+            },
+            { // German
+                "Haben Sie die Bibelsuchfunktion ausprobiert?",
+                "Erstellen Sie einen Leseplan mit dem Agios KI-Assistenten.",
+                "Markieren Sie Verse und fügen Sie Notizen hinzu.",
+                "Entdecken Sie biblische Orte mit interaktiven Karten.",
+                "Überprüfen Sie Ihre Statistiken auf der Punkteseite.",
+                "Passen Sie die Schriftgröße in den Einstellungen an.",
+                "Wussten Sie, dass Sie die Bibel offline lesen können?"
+            },
+            { // French
+                "Avez-vous essayé la fonction de recherche biblique ?",
+                "Créez un plan de lecture avec l'assistant IA Agios.",
+                "Surlignez les versets et ajoutez des notes.",
+                "Explorez les lieux bibliques avec des cartes interactives.",
+                "Consultez vos statistiques sur la page des points.",
+                "Changez la taille de la police pour un confort de lecture.",
+                "Saviez-vous que vous pouvez lire la Bible hors ligne ?"
+            }
     };
 
     @Override
@@ -54,48 +160,46 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         if (type == null) return;
 
         String norm = normalizeType(type);
+        String lang = getLang(context);
 
         if (norm.equals("updateAlerts")) {
-            checkForUpdateAndNotify(context);
+            checkForUpdateAndNotify(context, lang);
             scheduleAlarm(context, type, getDefaultHour(type), 0);
             return;
         }
 
         switch (norm) {
             case "verse":
-                handleVerseNotification(context);
+                handleVerseNotification(context, lang);
                 break;
             case "question":
-                handleQuestionNotification(context);
+                handleQuestionNotification(context, lang);
                 break;
             case "streak":
-                handleStreakNotification(context);
+                handleStreakNotification(context, lang);
                 break;
             case "studyPlans":
-                handleStudyPlansNotification(context);
+                handleStudyPlansNotification(context, lang);
                 break;
             case "appSuggestions":
-                handleTipNotification(context);
+                handleTipNotification(context, lang);
                 break;
             default:
-                showNotification(context, "أجيوس", "لديك محتوى روحي جديد في انتظارك", 107, "/");
+                showNotification(context, "Agios", lang.equals("ar") ? "لديك محتوى روحي جديد" : "New spiritual content", 107, "/");
                 break;
         }
 
         scheduleAlarm(context, type, getDefaultHour(type), 0);
     }
 
-    private void checkForUpdateAndNotify(Context context) {
+    private void checkForUpdateAndNotify(Context context, String lang) {
         try {
             AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(context);
             Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
             appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
                 if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                    Log.d(TAG, "Update detected on Play Store!");
-                    showNotification(context, "تحديث جديد متاح",
-                            "تتوفر نسخة جديدة من أجيوس بمزايا رائعة، حملها الآن من المتجر!", 106, "/");
-                } else {
-                    Log.d(TAG, "No update available on Play Store.");
+                    showNotification(context, getLocalizedString("update_title", lang),
+                            getLocalizedString("update_body", lang), 106, "/");
                 }
             });
         } catch (Exception e) {
@@ -103,66 +207,64 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    private void handleVerseNotification(Context context) {
+    private void handleVerseNotification(Context context, String lang) {
         try {
-            JSONObject data = getTodayData(context, "dailyVerses.json");
+            JSONObject data = getTodayData(context, "dailyVerses.json", lang);
             if (data != null) {
-                String title = data.optString("reference", "آية اليوم");
-                String text = data.optString("verse", data.optString("text", "اكتشف آية اليوم"));
+                String title = data.optString("reference", getLocalizedString("verse_title", lang));
+                String text = data.optString("verse", data.optString("text", "Bible Verse"));
                 showNotification(context, title, text, 101, "/#daily-verse");
             } else {
-                showNotification(context, "آية اليوم", "اكتشف آية اليوم وشاركها مع أصدقائك.", 101, "/#daily-verse");
+                showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
             }
         } catch (Exception e) {
             Log.e(TAG, "Verse Notify Error", e);
         }
     }
 
-    private void handleQuestionNotification(Context context) {
+    private void handleQuestionNotification(Context context, String lang) {
         try {
-            JSONObject data = getTodayData(context, "dailyQuestions.json");
+            String filename = "dailyQuestions_" + lang + ".json";
+            // Check folder structure
+            String folder = "";
+            if (lang.equals("ar")) folder = "arabic/";
+            else if (lang.equals("en")) folder = "English/";
+            else if (lang.equals("de")) folder = "german/";
+            else if (lang.equals("fr")) folder = "French/";
+
+            JSONObject data = getTodayData(context, "translations/" + folder + filename, lang);
             if (data != null) {
-                String question = data.optString("question", "حان وقت سؤال اليوم!");
-                showNotification(context, "سؤال اليوم", question, 102, "/#daily-question");
-            } else {
-                showNotification(context, "تحدي اليوم", "حان وقت سؤال اليوم، اختبر معلوماتك!", 102, "/#daily-question");
+                String question = data.optString("question", "");
+                showNotification(context, getLocalizedString("question_title", lang), question, 102, "/#daily-question");
             }
         } catch (Exception e) {
             Log.e(TAG, "Question Notify Error", e);
         }
     }
 
-    private void handleStreakNotification(Context context) {
+    private void handleStreakNotification(Context context, String lang) {
         try {
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-            
-            // قراءة آمنة لـ Streak (قد يكون Integer أو String)
             int streak = 0;
-            String streakStr = getPrefsString(prefs, "agios_streak");
-            if (streakStr.isEmpty()) streakStr = getPrefsString(prefs, "userStreak");
-            
+            String streakStr = getPrefsString(prefs, "userStreak");
             if (!streakStr.isEmpty()) {
-                try {
-                    streak = Integer.parseInt(streakStr);
-                } catch (Exception e) {
-                    // إذا فشل التحويل، نحاول قراءته كـ int مباشرة (للمستخدمين القدامى)
-                    streak = prefs.getInt("_cap_userStreak", prefs.getInt("userStreak", 0));
-                }
+                try { streak = Integer.parseInt(streakStr); } catch (Exception e) {}
             }
 
             String msg;
             if (streak > 0) {
-                msg = "أنت في سلسلة تفاعل مدتها " + toArabicNumbers(streak) + " يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥";
+                String val = lang.equals("ar") ? toArabicNumbers(streak) : String.valueOf(streak);
+                msg = String.format(getLocalizedString("streak_msg", lang), val);
             } else {
-                msg = "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.";
+                msg = getLocalizedString("streak_start", lang);
             }
-            showNotification(context, "حافظ على حماسك", msg, 103, "/");
+            showNotification(context, getLocalizedString("streak_title", lang), msg, 103, "/");
         } catch (Exception e) {
             Log.e(TAG, "Streak Notify Error", e);
         }
     }
 
-    private void handleStudyPlansNotification(Context context) {
+    private void handleStudyPlansNotification(Context context, String lang) {
         try {
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
             String summaryJson = getPrefsString(prefs, "studyPlansSummary");
@@ -172,34 +274,41 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 String title = json.optString("mainPlanTitle", "");
                 int remaining = json.optInt("remainingDays", 0);
 
-                String msg = count > 1
-                        ? "لديك " + toArabicNumbers(count) + " خطط جارية. تبقّى " + toArabicNumbers(remaining) + " يوم في " + title
-                        : "تبقّى لك " + toArabicNumbers(remaining) + " يوم لإكمال " + title;
+                String cStr = lang.equals("ar") ? toArabicNumbers(count) : String.valueOf(count);
+                String rStr = lang.equals("ar") ? toArabicNumbers(remaining) : String.valueOf(remaining);
 
-                showNotification(context, "متابعة القراءة 📖", msg, 104, "/studyPlans");
-            } else {
-                showNotification(context, "خطة القراءة 📖", "لديك جزء متبقي في خطة اليوم.", 104, "/studyPlans");
+                String msg = count > 1
+                        ? String.format(getLocalizedString("plans_msg_multi", lang), cStr, rStr, title)
+                        : String.format(getLocalizedString("plans_msg_single", lang), rStr, title);
+
+                showNotification(context, getLocalizedString("plans_title", lang), msg, 104, "/studyPlans");
             }
         } catch (Exception e) {
             Log.e(TAG, "StudyPlans Notify Error", e);
         }
     }
 
-    private void handleTipNotification(Context context) {
-        int index = (int) (Math.random() * agiosTips.length);
-        showNotification(context, "معلومة سريعة", agiosTips[index], 105, "/");
+    private void handleTipNotification(Context context, String lang) {
+        int langIdx = 0;
+        if (lang.equals("en")) langIdx = 1;
+        else if (lang.equals("de")) langIdx = 2;
+        else if (lang.equals("fr")) langIdx = 3;
+
+        String[] tips = localizedTips[langIdx];
+        int index = (int) (Math.random() * tips.length);
+        showNotification(context, getLocalizedString("tip_title", lang), tips[index], 105, "/");
     }
 
-    private JSONObject getTodayData(Context context, String filename) {
+    private JSONObject getTodayData(Context context, String path, String lang) {
         try {
             InputStream is;
             try {
-                is = context.getAssets().open("public/data/" + filename);
+                is = context.getAssets().open("public/data/" + path);
             } catch (Exception e) {
                 try {
-                    is = context.getAssets().open("data/" + filename);
+                    is = context.getAssets().open("data/" + path);
                 } catch (Exception e2) {
-                    is = context.getAssets().open(filename);
+                    is = context.getAssets().open(path);
                 }
             }
 
@@ -220,7 +329,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error loading today's data from " + filename, e);
+            Log.e(TAG, "Error loading data: " + path);
         }
         return null;
     }
@@ -264,7 +373,6 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     }
 
     public void refreshAllAlarms(Context context) {
-        Log.d(TAG, "Refreshing all system alarms...");
         scheduleAlarm(context, "dailyVerse", 6, 0);
         scheduleAlarm(context, "dailyQuestion", 18, 0);
         scheduleAlarm(context, "studyPlans", 10, 0);
@@ -276,7 +384,6 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     public void scheduleAlarm(Context context, String type, int defH, int defM) {
         if (type == null) return;
         SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-
         String master = getPrefsString(prefs, "masterNotifications");
         if ("false".equals(master)) {
             cancelAlarm(context, type);
@@ -293,15 +400,7 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
                 JSONObject json = new JSONObject(jsonStr);
                 savedTime = json.optString(norm + "Time", json.optString(type + "Time", ""));
                 if (json.has(norm)) enabled = json.optBoolean(norm, true);
-                else if (json.has(type)) enabled = json.optBoolean(type, true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (savedTime.isEmpty()) {
-            savedTime = getPrefsString(prefs, norm + "Time");
-            if (savedTime.isEmpty()) savedTime = getPrefsString(prefs, type + "Time");
+            } catch (Exception e) {}
         }
 
         if (!enabled) {
@@ -310,35 +409,24 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         }
 
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
-        boolean customFound = false;
-
         if (!savedTime.isEmpty() && savedTime.contains(":")) {
             try {
                 String[] p = savedTime.split(":");
                 cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(p[0]));
                 cal.set(Calendar.MINUTE, Integer.parseInt(p[1]));
-                customFound = true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (!customFound) {
+            } catch (Exception e) {}
+        } else {
             cal.set(Calendar.HOUR_OF_DAY, defH);
             cal.set(Calendar.MINUTE, defM);
         }
 
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-
-        if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
-            cal.add(Calendar.DATE, 1);
-        }
+        if (cal.getTimeInMillis() <= System.currentTimeMillis()) cal.add(Calendar.DATE, 1);
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AgiosNotificationReceiver.class);
         intent.putExtra("notification_type", type);
-
         PendingIntent pi = PendingIntent.getBroadcast(context, norm.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
@@ -347,25 +435,12 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         } else {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
         }
-
-        Log.d(TAG, "Scheduled " + type + " at " + cal.getTime().toString() + (customFound ? " (Custom)" : " (Default)"));
     }
 
     private String getPrefsString(SharedPreferences prefs, String key) {
-        try {
-            String val = prefs.getString("_cap_" + key, null);
-            if (val == null) val = prefs.getString(key, "");
-            return val;
-        } catch (ClassCastException e) {
-            // معالجة حالة البيانات التالفة (Integer بدلاً من String)
-            try {
-                int val = prefs.getInt("_cap_" + key, -1);
-                if (val == -1) val = prefs.getInt(key, -1);
-                return val == -1 ? "" : String.valueOf(val);
-            } catch (Exception e2) {
-                return "";
-            }
-        }
+        String val = prefs.getString("_cap_" + key, null);
+        if (val == null) val = prefs.getString(key, "");
+        return val;
     }
 
     private void cancelAlarm(Context context, String type) {
@@ -382,32 +457,20 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
     private void showNotification(Context context, String title, String text, int id, String deepLink) {
         String cid = "agios_notifications";
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(cid, "Agios Daily", NotificationManager.IMPORTANCE_HIGH);
             nm.createNotificationChannel(channel);
         }
-
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        if (deepLink != null && !deepLink.isEmpty()) {
-            intent.putExtra("deepLink", deepLink);
-        }
-
-        PendingIntent pi = PendingIntent.getActivity(context, id, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
+        if (deepLink != null) intent.putExtra("deepLink", deepLink);
+        PendingIntent pi = PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         int iconRes = context.getResources().getIdentifier("ic_stat_ic_notification", "drawable", context.getPackageName());
         if (iconRes == 0) iconRes = android.R.drawable.ic_dialog_info;
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(context, cid)
-                .setSmallIcon(iconRes)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(pi);
-
+                .setSmallIcon(iconRes).setContentTitle(title).setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true).setContentIntent(pi);
         nm.notify(id, b.build());
     }
 }

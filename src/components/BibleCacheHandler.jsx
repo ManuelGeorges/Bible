@@ -71,10 +71,10 @@ export default function BibleCacheHandler() {
       await new Promise(res => setTimeout(res, 3000));
       
       const staticEssentials = [
-        '/data/bibles/ar_svd_no_tashkeel.json',
+        '/data/translations/arabic/ar_svd_no_tashkeel.json',
         '/data/bookNames.json',
         '/data/dailyVerses.json',
-        '/data/dailyQuestions.json',
+        '/data/translations/arabic/dailyQuestions_ar.json',
         '/favicon.ico',
         '/manifest.json'
       ];

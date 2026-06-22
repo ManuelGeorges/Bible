@@ -195,21 +195,32 @@ function SearchContent() {
     return () => unsubscribe();
   }, []);
 
+  const getLanguageFolder = (lang) => {
+    switch (lang) {
+        case 'ar': return 'arabic';
+        case 'en': return 'English';
+        case 'fr': return 'French';
+        case 'de': return 'german';
+        default: return 'arabic';
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (bookNamesData.length === 0) return;
       try {
         let biblePath = '';
+        const folder = getLanguageFolder(language);
         if (language === 'ar') {
-          biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
+          biblePath = `/data/translations/${folder}/ar_svd_no_tashkeel.json`;
         } else if (language === 'en') {
-          biblePath = '/data/bibles/en_web.json';
+          biblePath = `/data/translations/${folder}/en_web.json`;
         } else if (language === 'fr') {
-          biblePath = '/data/bibles/fr_segond.json';
+          biblePath = `/data/translations/${folder}/fr_segond.json`;
         } else if (language === 'de') {
-          biblePath = '/data/bibles/de_luther.json';
+          biblePath = `/data/translations/${folder}/de_luther.json`;
         } else {
-          biblePath = '/data/bibles/ar_svd_no_tashkeel.json';
+          biblePath = `/data/translations/arabic/ar_svd_no_tashkeel.json`;
         }
 
         const bibleRes = await fetch(biblePath);

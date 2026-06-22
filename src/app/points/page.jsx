@@ -223,10 +223,10 @@ export default function Points() {
 
   useEffect(() => {
     const badgeFileMap = {
-      ar: '/data/badges.json',
-      en: '/data/badges_en.json',
-      fr: '/data/badges_fr.json',
-      de: '/data/badges_de.json'
+      ar: '/data/translations/arabic/badges_ar.json',
+      en: '/data/translations/English/badges_en.json',
+      fr: '/data/translations/French/badges_fr.json',
+      de: '/data/translations/german/badges_de.json'
     };
     const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
     setBadgesData(null);
@@ -239,7 +239,7 @@ export default function Points() {
       } catch (err) {
         if (language !== 'ar') {
           try {
-            const fallback = await fetch('/data/badges.json');
+            const fallback = await fetch('/data/translations/arabic/badges_ar.json');
             if (fallback.ok) {
               const fallbackData = await fallback.json();
               setBadgesData(fallbackData);

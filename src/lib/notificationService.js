@@ -25,6 +25,10 @@ export const syncNotifications = async () => {
 
     await Preferences.set({ key: 'masterNotifications', value: String(savedMaster) });
 
+    // مزامنة اللغة لدعم الإشعارات المتعددة اللغات
+    const currentLang = localStorage.getItem('app_lang') || 'ar';
+    await Preferences.set({ key: 'language', value: currentLang });
+
     if (!savedMaster) {
       const pending = await LocalNotifications.getPending();
       if (pending.notifications.length > 0) {

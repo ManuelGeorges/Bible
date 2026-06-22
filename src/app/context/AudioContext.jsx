@@ -237,13 +237,13 @@ export function AudioProvider({ children }) {
             try {
                 // Determine which bible file to load for chapter mapping based on language
                 const bibleFileMap = {
-                    'ar': 'ar_svd_no_tashkeel.json',
-                    'en': 'en_web.json',
-                    'fr': 'fr_segond.json',
-                    'de': 'de_luther.json'
+                    'ar': 'arabic/ar_svd_no_tashkeel.json',
+                    'en': 'English/en_web.json',
+                    'fr': 'French/fr_segond.json',
+                    'de': 'german/de_luther.json'
                 };
-                const fileName = bibleFileMap[language] || 'ar_svd_no_tashkeel.json';
-                const bibleRes = await fetch(`/data/bibles/${fileName}`).then(r => r.json());
+                const fileName = bibleFileMap[language] || 'arabic/ar_svd_no_tashkeel.json';
+                const bibleRes = await fetch(`/data/translations/${fileName}`).then(r => r.json());
                 setBibleData(bibleRes);
             } catch (e) { console.error(e); }
         };

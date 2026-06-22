@@ -173,13 +173,92 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 class AgiosNotificationHelper {
     static let shared = AgiosNotificationHelper()
 
-    private let tips = [
-        "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
-        "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
-        "يمكنك تظليل الآيات باللون الذي يريحك وكتابة ملحوظات عليها",
-        "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
-        "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط"
+    private let localizedStrings: [String: [String: String]] = [
+        "ar": [
+            "verse_title": "آية اليوم",
+            "question_title": "سؤال اليوم",
+            "streak_title": "حافظ على حماسك",
+            "plans_title": "متابعة القراءة 📖",
+            "tip_title": "معلومة سريعة",
+            "streak_msg": "أنت في سلسلة تفاعل مدتها %@ يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥",
+            "streak_start": "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.",
+            "plans_msg_multi": "لديك %@ خطط جارية. تبقّى %@ يوم في %@",
+            "plans_msg_single": "تبقّى لك %@ يوم لإكمال %@"
+        ],
+        "en": [
+            "verse_title": "Verse of the Day",
+            "question_title": "Daily Question",
+            "streak_title": "Keep your streak!",
+            "plans_title": "Continue Reading 📖",
+            "tip_title": "Quick Tip",
+            "streak_msg": "You're on a %@ day streak! Don't forget to read today's verse 🔥",
+            "streak_start": "Start your streak today! Read and share the verse to build a new spiritual habit.",
+            "plans_msg_multi": "You have %@ ongoing plans. %@ days left in %@",
+            "plans_msg_single": "You have %@ days left to complete %@"
+        ],
+        "de": [
+            "verse_title": "Vers des Tages",
+            "question_title": "Tagesfrage",
+            "streak_title": "Bleib dran!",
+            "plans_title": "Weiterlesen 📖",
+            "tip_title": "Kurzer Tipp",
+            "streak_msg": "Du hast eine Serie von %@ Tagen! Vergiss nicht, den heutigen Vers zu lesen 🔥",
+            "streak_start": "Beginne heute deine Serie! Lies den Vers, um eine neue Gewohnheit aufzubauen.",
+            "plans_msg_multi": "Du hast %@ laufende Pläne. Noch %@ Tage in %@",
+            "plans_msg_single": "Du hast noch %@ Tage, um %@ abzuschließen"
+        ],
+        "fr": [
+            "verse_title": "Verset du jour",
+            "question_title": "Question du jour",
+            "streak_title": "Gardez le rythme !",
+            "plans_title": "Continuer la lecture 📖",
+            "tip_title": "Astuce rapide",
+            "streak_msg": "Vous avez une série de %@ jours ! N'oubliez pas de lire le verset du jour 🔥",
+            "streak_start": "Commencez votre série aujourd'hui ! Lisez le verset pour bâtir une nouvelle habitude.",
+            "plans_msg_multi": "Vous avez %@ plans en cours. %@ jours restants pour %@",
+            "plans_msg_single": "Il vous reste %@ jours pour terminer %@"
+        ]
     ]
+
+    private let localizedTips: [String: [String]] = [
+        "ar": [
+            "هل جربت ميزة البحث بالمشتقات في الكتاب المقدس؟",
+            "يمكنك إنشاء خطة قراءة مخصصة تناسبك باستخدام مساعد أجيوس الذكي",
+            "يمكنك تظليل الآيات التي تعجبك باللون الذي يريحك وكتابة ملحوظات عليها",
+            "استكشف الأماكن الكتابية الآن عبر الخرائط التفاعلية",
+            "لا تنسَ مراجعة إحصائياتك وأوسمتك في صفحة النقاط"
+        ],
+        "en": [
+            "Have you tried the Bible search feature?",
+            "Create a custom reading plan with Agios AI assistant.",
+            "Highlight verses and add personal notes.",
+            "Explore biblical places with interactive maps.",
+            "Check your stats and badges in the points page."
+        ],
+        "de": [
+            "Haben Sie die Bibelsuchfunktion ausprobiert?",
+            "Erstellen Sie einen Leseplan mit dem Agios KI-Assistenten.",
+            "Markieren Sie Verse und fügen Sie Notizen hinzu.",
+            "Entdecken Sie biblische Orte mit interaktiven Karten.",
+            "Überprüfen Sie Ihre Statistiken auf der Punkteseite."
+        ],
+        "fr": [
+            "Avez-vous essayé la fonction de recherche biblique ?",
+            "Créez un plan de lecture avec l'assistant IA Agios.",
+            "Surlignez les versets et ajoutez des notes.",
+            "Explorez les lieux bibliques avec des cartes interactives.",
+            "Consultez vos statistiques sur la page des points."
+        ]
+    ]
+
+    private func getLang() -> String {
+        return UserDefaults.standard.string(forKey: "_cap_language") ?? "ar"
+    }
+
+    private func t(_ key: String) -> String {
+        let lang = getLang()
+        return localizedStrings[lang]?[key] ?? localizedStrings["ar"]?[key] ?? ""
+    }
 
     func updateSettings(json: String, masterEnabled: Bool) {
         UserDefaults.standard.set(json, forKey: "_cap_notificationSettings")
@@ -214,8 +293,8 @@ class AgiosNotificationHelper {
     private func scheduleVerse(offset: Int, settings: [String: Any]) {
         guard isEnabled("verse", settings: settings) else { return }
         guard let data = getTodayData(filename: "dailyVerses.json", daysOffset: offset) else { return }
-        let title = data["reference"] as? String ?? "آية اليوم"
-        let body = data["verse"] as? String ?? data["text"] as? String ?? "اكتشف آية اليوم"
+        let title = data["reference"] as? String ?? t("verse_title")
+        let body = data["verse"] as? String ?? data["text"] as? String ?? "Bible Verse"
         schedule(
             identifier: "agios_verse_\(offset)",
             title: title,
@@ -229,11 +308,15 @@ class AgiosNotificationHelper {
 
     private func scheduleQuestion(offset: Int, settings: [String: Any]) {
         guard isEnabled("question", settings: settings) else { return }
-        guard let data = getTodayData(filename: "dailyQuestions.json", daysOffset: offset) else { return }
-        let body = data["question"] as? String ?? "حان وقت سؤال اليوم!"
+        let lang = getLang()
+        let folder = lang == "ar" ? "arabic/" : (lang == "en" ? "English/" : (lang == "de" ? "german/" : "French/"))
+        let filename = "translations/\(folder)dailyQuestions_\(lang).json"
+
+        guard let data = getTodayData(filename: filename, daysOffset: offset) else { return }
+        let body = data["question"] as? String ?? t("question_title")
         schedule(
             identifier: "agios_question_\(offset)",
-            title: "سؤال اليوم",
+            title: t("question_title"),
             body: body,
             hour: resolvedHour("question", default: 18, settings: settings),
             minute: resolvedMinute("question", settings: settings),
@@ -245,12 +328,16 @@ class AgiosNotificationHelper {
     private func scheduleStreak(offset: Int, settings: [String: Any]) {
         guard isEnabled("streak", settings: settings) else { return }
         let streak = getPrefInt(key: "userStreak")
+        let lang = getLang()
+        let streakVal = lang == "ar" ? toArabicNumbers(streak) : String(streak)
+
         let body = streak > 0
-            ? "أنت في سلسلة تفاعل مدتها \(toArabicNumbers(streak)) يوم! لا تنسَ قراءة آية اليوم لتحافظ عليها 🔥"
-            : "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة."
+            ? String(format: t("streak_msg"), streakVal)
+            : t("streak_start")
+
         schedule(
             identifier: "agios_streak_\(offset)",
-            title: "حافظ على حماسك",
+            title: t("streak_title"),
             body: body,
             hour: resolvedHour("streak", default: 21, settings: settings),
             minute: resolvedMinute("streak", settings: settings),
@@ -269,13 +356,17 @@ class AgiosNotificationHelper {
         let title = json["mainPlanTitle"] as? String ?? ""
         let remaining = json["remainingDays"] as? Int ?? 0
 
+        let lang = getLang()
+        let countStr = lang == "ar" ? toArabicNumbers(count) : String(count)
+        let remainingStr = lang == "ar" ? toArabicNumbers(remaining) : String(remaining)
+
         let body = count > 1
-            ? "لديك \(toArabicNumbers(count)) خطط جارية. تبقّى \(toArabicNumbers(remaining)) يوم في \(title)"
-            : "تبقّى لك \(toArabicNumbers(remaining)) يوم لإكمال \(title)"
+            ? String(format: t("plans_msg_multi"), countStr, remainingStr, title)
+            : String(format: t("plans_msg_single"), remainingStr, title)
 
         schedule(
             identifier: "agios_studyPlans_\(offset)",
-            title: "متابعة القراءة 📖",
+            title: t("plans_title"),
             body: body,
             hour: resolvedHour("studyPlans", default: 10, settings: settings),
             minute: resolvedMinute("studyPlans", settings: settings),
@@ -286,10 +377,13 @@ class AgiosNotificationHelper {
 
     private func scheduleTip(settings: [String: Any]) {
         guard isEnabled("appSuggestions", settings: settings) else { return }
-        let body = tips.randomElement() ?? "اكتشف ميزات أجيوس."
+        let lang = getLang()
+        let tips = localizedTips[lang] ?? localizedTips["ar"]!
+        let body = tips.randomElement() ?? ""
+
         schedule(
             identifier: "agios_appSuggestions_0",
-            title: "معلومة سريعة",
+            title: t("tip_title"),
             body: body,
             hour: resolvedHour("appSuggestions", default: 12, settings: settings),
             minute: resolvedMinute("appSuggestions", settings: settings),
