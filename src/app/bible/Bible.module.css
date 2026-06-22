@@ -356,7 +356,6 @@
 
 .versesParagraph {
   display: block ;
-  unicode-bidi: plaintext;
 }
 
 .rtl .versesParagraph {

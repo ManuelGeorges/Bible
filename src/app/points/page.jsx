@@ -430,34 +430,3 @@ export default function Points() {
     </div>
   );
 }
-tyles.progressText}>{formatNumber(badge.progress.current)}/{formatNumber(badge.progress.target)}</div>
-                              <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current/badge.progress.target)*100}%` }} /></div>
-                          </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {activeTab === 'history' && (
-        <section className={styles.sectionWrapper}>
-          <ul className={styles.activityList}>
-            {pointsData?.history.length > 0 ? pointsData.history.map((item, i) => (
-              <li key={i} className={styles.activityItem}>
-                <div className={styles.activityInfo}>
-                  <p>{item.description}</p>
-                  <span>{new Date(item.timestamp).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</span>
-                </div>
-                <span className={styles.activityPoints}>+{formatNumber(item.points)}</span>
-              </li>
-            )) : <p>{strings.points.no_history}</p>}
-          </ul>
-        </section>
-      )}
-    </div>
-  );
-}
