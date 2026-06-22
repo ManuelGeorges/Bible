@@ -947,7 +947,7 @@ const LandingPage = () => {
                             <Trophy size={20} color="#f59e0b" />
                             <h2 className={styles.sectionTitleMini}>{strings.home.badges_section}</h2>
                         </div>
-                        <Link href="/points" className={strings.home.badges_all} <ArrowUpRight size={14} /></Link>
+                        <Link href="/points" className={strings.home.badges_all}><ArrowUpRight size={14} /></Link>
                     </div>
 
                     <div className={styles.badgesDashboard}>

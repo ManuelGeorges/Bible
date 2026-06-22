@@ -193,14 +193,7 @@ export default function Points() {
   const [rarityFilter, setRarityFilter] = useState('all');
   const [familyFilter, setFamilyFilter] = useState('all');
   const [unlockedOnly, setUnlockedOnly] = useState(false);
-  const [showHistory, setShowHistory] = useState(true);
-  const [showHistory, setShowHistory] = useState(true);
   const [user, setUser] = useState(null);
-
-  const [isRarityOpen, setIsRarityOpen] = useState(false);
-  const [isFamilyOpen, setIsFamilyOpen] = useState(false);
-  const rarityRef = useRef(null);
-  const familyRef = useRef(null);
 
   const [isRarityOpen, setIsRarityOpen] = useState(false);
   const [isFamilyOpen, setIsFamilyOpen] = useState(false);
@@ -229,10 +222,10 @@ export default function Points() {
 
   useEffect(() => {
     const badgeFileMap = {
-      ar: '/data/translations/arabic/badges_ar.json',
-      en: '/data/translations/English/badges_en.json',
-      fr: '/data/translations/French/badges_fr.json',
-      de: '/data/translations/german/badges_de.json'
+      ar: '/src/data/translations/arabic/badges_ar.json',
+      en: '/src/data/translations/English/badges_en.json',
+      fr: '/src/data/translations/French/badges_fr.json',
+      de: '/src/data/translations/german/badges_de.json'
     };
     const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
     setBadgesData(null);
@@ -285,7 +278,7 @@ export default function Points() {
         const localStats = await StorageService.getLocalStats();
         const localHistory = await StorageService.get('points_history') || [];
         const localAnswered = await StorageService.get('answered_questions') || {};
-        const localCompleted = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
+        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
 
         const localDataMapped = {
           ...localStats,
@@ -405,7 +398,7 @@ export default function Points() {
               <div className={styles.goalsGrid}>
                   {pointsData?.dailyGoals.map(goal => (
                       <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`} onClick={() => handleGoalClick(goal.id)}>
-                          <div className={styles.goalIcon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
+                          <div className={goal.icon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
                           <div className={styles.goalInfo}>
                               <span>{goal.label}</span>
                               <small>+{formatNumber(goal.points)} {strings.points.points_unit || 'Points'}</small>
