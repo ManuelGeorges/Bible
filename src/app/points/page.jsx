@@ -221,37 +221,13 @@ export default function Points() {
   };
 
   useEffect(() => {
-    const badgeFileMap = {
-      ar: '/src/data/translations/arabic/badges_ar.json',
-      en: '/src/data/translations/English/badges_en.json',
-      fr: '/src/data/translations/French/badges_fr.json',
-      de: '/src/data/translations/german/badges_de.json'
+    const badgeFiles = {
+      ar: badgesAr,
+      en: badgesEn,
+      fr: badgesFr,
+      de: badgesDe
     };
-    const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
-    setBadgesData(null);
-    const load = async () => {
-      try {
-        const res = await fetch(fetchPath);
-        if (!res.ok) throw new Error('Badges file not found');
-        const data = await res.json();
-        setBadgesData(data);
-      } catch (err) {
-        if (language !== 'ar') {
-          try {
-            const fallback = await fetch('/data/translations/arabic/badges_ar.json');
-            if (fallback.ok) {
-              const fallbackData = await fallback.json();
-              setBadgesData(fallbackData);
-            }
-          } catch (e) {
-            console.error('Failed to load fallback badges:', e);
-          }
-        } else {
-          console.error('Failed to load badges:', err);
-        }
-      }
-    };
-    load();
+    setBadgesData(badgeFiles[language] || badgeFiles.ar);
   }, [language]);
 
   useEffect(() => {
@@ -424,6 +400,37 @@ export default function Points() {
                       {badge.progress && (
                           <div className={styles.badgeProgressMini}>
                               <div className={styles.progressText}>{formatNumber(badge.progress.current)}/{formatNumber(badge.progress.target)}</div>
+                              <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current/badge.progress.target)*100}%` }} /></div>
+                          </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'history' && (
+        <section className={styles.sectionWrapper}>
+          <ul className={styles.activityList}>
+            {pointsData?.history.length > 0 ? pointsData.history.map((item, i) => (
+              <li key={i} className={styles.activityItem}>
+                <div className={styles.activityInfo}>
+                  <p>{item.description}</p>
+                  <span>{new Date(item.timestamp).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</span>
+                </div>
+                <span className={styles.activityPoints}>+{formatNumber(item.points)}</span>
+              </li>
+            )) : <p>{strings.points.no_history}</p>}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
+}
+tyles.progressText}>{formatNumber(badge.progress.current)}/{formatNumber(badge.progress.target)}</div>
                               <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current/badge.progress.target)*100}%` }} /></div>
                           </div>
                       )}
