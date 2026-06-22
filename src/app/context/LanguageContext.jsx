@@ -1,10 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import ar from '../data/ar.json';
-import en from '../data/en.json';
-import de from '../data/de.json';
-import fr from '../data/fr.json';
+import ar from '../data/translations/arabic/ar.json';
+import en from '../data/translations/english/en.json';
+import de from '../data/translations/german/de.json';
+import fr from '../data/translations/french/fr.json';
 
 const LanguageContext = createContext();
 

@@ -292,9 +292,49 @@ class AgiosNotificationHelper {
 
     private func scheduleVerse(offset: Int, settings: [String: Any]) {
         guard isEnabled("verse", settings: settings) else { return }
-        guard let data = getTodayData(filename: "dailyVerses.json", daysOffset: offset) else { return }
-        let title = data["reference"] as? String ?? t("verse_title")
-        let body = data["verse"] as? String ?? data["text"] as? String ?? "Bible Verse"
+        guard let refData = getTodayData(filename: "dailyVerses.json", daysOffset: offset) else { return }
+
+        let bookId = refData["book"] as? String ?? ""
+        let chapter = refData["chapter"] as? Int ?? 1
+        let verseNum = refData["verse"] as? Int ?? 1
+        let lang = getLang()
+
+        // 1. Get Bible Text
+        let bibleFile = getBibleFilePath(lang: lang)
+        let bibleData = loadJsonArray(filename: bibleFile)
+        var verseText = ""
+
+        if let books = bibleData {
+            for book in books {
+                if (book["abbrev"] as? String)?.lowercased() == bookId.lowercased() {
+                    if let chapters = book["chapters"] as? [[Any]], chapter <= chapters.count {
+                        let verses = chapters[chapter - 1]
+                        if verseNum <= verses.count {
+                            verseText = verses[verseNum - 1] as? String ?? ""
+                        }
+                    }
+                    break
+                }
+            }
+        }
+
+        // 2. Get Book Name
+        var bookName = bookId
+        if let allNames = loadJsonObject(filename: "bookNames.json"),
+           let langBooks = allNames[lang] as? [[String: Any]] {
+            for b in langBooks {
+                if (b["book_id"] as? String)?.lowercased() == bookId.lowercased() {
+                    bookName = b["name"] as? String ?? bookId
+                    break
+                }
+            }
+        }
+
+        let cStr = lang == "ar" ? toArabicNumbers(chapter) : "\(chapter)"
+        let vStr = lang == "ar" ? toArabicNumbers(verseNum) : "\(verseNum)"
+        let title = "\(bookName) \(cStr):\(vStr)"
+        let body = verseText.isEmpty ? t("verse_title") : verseText
+
         schedule(
             identifier: "agios_verse_\(offset)",
             title: title,
@@ -428,24 +468,54 @@ class AgiosNotificationHelper {
         return parts.count >= 2 ? (Int(parts[1]) ?? 0) : 0
     }
 
+    private func getBibleFilePath(lang: String) -> String {
+        let folder = lang == "en" ? "English/" : (lang == "fr" ? "French/" : (lang == "de" ? "german/" : "arabic/"))
+        switch lang {
+        case "en": return "translations/\(folder)en_web.json"
+        case "fr": return "translations/\(folder)fr_segond.json"
+        case "de": return "translations/\(folder)de_luther.json"
+        default: return "translations/\(folder)ar_svd_tashkeel_site.json"
+        }
+    }
+
     private func getTodayData(filename: String, daysOffset: Int) -> [String: Any]? {
+        guard let array = loadJsonArray(filename: filename) else { return nil }
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Africa/Cairo") ?? .current
+        let targetDate = calendar.date(byAdding: .day, value: daysOffset, to: Date()) ?? Date()
+        let comp = calendar.dateComponents([.month, .day], from: targetDate)
+
+        return array.first(where: { ($0["month"] as? Int == comp.month) && ($0["day"] as? Int == comp.day) })
+    }
+
+    private func loadJsonArray(filename: String) -> [[String: Any]]? {
         let possiblePaths = [
             Bundle.main.bundlePath + "/public/data/\(filename)",
             Bundle.main.bundlePath + "/data/\(filename)",
-            Bundle.main.path(forResource: filename, ofType: nil) ?? ""
+            Bundle.main.path(forResource: filename.replacingOccurrences(of: ".json", with: ""), ofType: "json") ?? ""
         ]
 
         for path in possiblePaths where !path.isEmpty {
-            guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-                  let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { continue }
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+               let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                return array
+            }
+        }
+        return nil
+    }
 
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = TimeZone(identifier: "Africa/Cairo") ?? .current
-            let targetDate = calendar.date(byAdding: .day, value: daysOffset, to: Date()) ?? Date()
-            let comp = calendar.dateComponents([.month, .day], from: targetDate)
+    private func loadJsonObject(filename: String) -> [String: Any]? {
+        let possiblePaths = [
+            Bundle.main.bundlePath + "/public/data/\(filename)",
+            Bundle.main.bundlePath + "/data/\(filename)",
+            Bundle.main.path(forResource: filename.replacingOccurrences(of: ".json", with: ""), ofType: "json") ?? ""
+        ]
 
-            if let match = array.first(where: { ($0["month"] as? Int == comp.month) && ($0["day"] as? Int == comp.day) }) {
-                return match
+        for path in possiblePaths where !path.isEmpty {
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                return dict
             }
         }
         return nil

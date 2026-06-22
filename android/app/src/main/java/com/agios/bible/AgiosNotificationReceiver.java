@@ -209,28 +209,67 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
 
     private void handleVerseNotification(Context context, String lang) {
         try {
-            JSONObject data = getTodayData(context, "dailyVerses.json", lang);
-            if (data != null) {
-                String title = data.optString("reference", getLocalizedString("verse_title", lang));
-                String text = data.optString("verse", data.optString("text", "Bible Verse"));
-                showNotification(context, title, text, 101, "/#daily-verse");
-            } else {
+            JSONObject refData = getTodayData(context, "dailyVerses.json", lang);
+            if (refData == null) {
                 showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
+                return;
             }
+
+            String bookId = refData.getString("book");
+            int chapter = refData.getInt("chapter");
+            int verseNum = refData.getInt("verse");
+
+            // Load Bible Text
+            String biblePath = getBibleFilePath(lang);
+            JSONArray bibleArray = loadJsonArray(context, biblePath);
+            String verseText = "";
+            if (bibleArray != null) {
+                for (int i = 0; i < bibleArray.length(); i++) {
+                    JSONObject bookObj = bibleArray.getJSONObject(i);
+                    if (bookObj.getString("abbrev").equalsIgnoreCase(bookId)) {
+                        JSONArray chapters = bookObj.getJSONArray("chapters");
+                        if (chapter <= chapters.length()) {
+                            JSONArray verses = chapters.getJSONArray(chapter - 1);
+                            if (verseNum <= verses.length()) {
+                                verseText = verses.getString(verseNum - 1);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Load Book Name
+            String bookName = bookId;
+            JSONObject allBookNames = loadJsonObject(context, "bookNames.json");
+            if (allBookNames != null && allBookNames.has(lang)) {
+                JSONArray langBooks = allBookNames.getJSONArray(lang);
+                for (int i = 0; i < langBooks.length(); i++) {
+                    JSONObject b = langBooks.getJSONObject(i);
+                    if (b.getString("book_id").equalsIgnoreCase(bookId)) {
+                        bookName = b.getString("name");
+                        break;
+                    }
+                }
+            }
+
+            String cStr = lang.equals("ar") ? toArabicNumbers(chapter) : String.valueOf(chapter);
+            String vStr = lang.equals("ar") ? toArabicNumbers(verseNum) : String.valueOf(verseNum);
+            String title = String.format("%s %s:%s", bookName, cStr, vStr);
+            
+            if (verseText.isEmpty()) verseText = getLocalizedString("verse_title", lang);
+            
+            showNotification(context, title, verseText, 101, "/#daily-verse");
         } catch (Exception e) {
             Log.e(TAG, "Verse Notify Error", e);
+            showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
         }
     }
 
     private void handleQuestionNotification(Context context, String lang) {
         try {
             String filename = "dailyQuestions_" + lang + ".json";
-            // Check folder structure
-            String folder = "";
-            if (lang.equals("ar")) folder = "arabic/";
-            else if (lang.equals("en")) folder = "English/";
-            else if (lang.equals("de")) folder = "german/";
-            else if (lang.equals("fr")) folder = "French/";
+            String folder = getLanguageFolder(lang);
 
             JSONObject data = getTodayData(context, "translations/" + folder + filename, lang);
             if (data != null) {
@@ -299,9 +338,69 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         showNotification(context, getLocalizedString("tip_title", lang), tips[index], 105, "/");
     }
 
+    private String getLanguageFolder(String lang) {
+        switch (lang) {
+            case "en": return "English/";
+            case "fr": return "French/";
+            case "de": return "german/";
+            default: return "arabic/";
+        }
+    }
+
+    private String getBibleFilePath(String lang) {
+        String folder = getLanguageFolder(lang);
+        switch (lang) {
+            case "en": return "translations/" + folder + "en_web.json";
+            case "fr": return "translations/" + folder + "fr_segond.json";
+            case "de": return "translations/" + folder + "de_luther.json";
+            default: return "translations/" + folder + "ar_svd_tashkeel_site.json";
+        }
+    }
+
     private JSONObject getTodayData(Context context, String path, String lang) {
         try {
-            InputStream is;
+            JSONArray array = loadJsonArray(context, path);
+            if (array == null) return null;
+
+            Calendar now = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
+            int month = now.get(Calendar.MONTH) + 1;
+            int day = now.get(Calendar.DAY_OF_MONTH);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                if (obj.optInt("month") == month && obj.optInt("day") == day) {
+                    return obj;
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error matching today data: " + path);
+        }
+        return null;
+    }
+
+    private JSONArray loadJsonArray(Context context, String path) {
+        try {
+            String content = loadAssetString(context, path);
+            if (content != null) return new JSONArray(content);
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading JSON array: " + path);
+        }
+        return null;
+    }
+
+    private JSONObject loadJsonObject(Context context, String path) {
+        try {
+            String content = loadAssetString(context, path);
+            if (content != null) return new JSONObject(content);
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading JSON object: " + path);
+        }
+        return null;
+    }
+
+    private String loadAssetString(Context context, String path) {
+        InputStream is = null;
+        try {
             try {
                 is = context.getAssets().open("public/data/" + path);
             } catch (Exception e) {
@@ -316,22 +415,11 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
-
-            JSONArray array = new JSONArray(new String(buffer, StandardCharsets.UTF_8));
-            Calendar now = Calendar.getInstance(TimeZone.getTimeZone("Africa/Cairo"));
-            int month = now.get(Calendar.MONTH) + 1;
-            int day = now.get(Calendar.DAY_OF_MONTH);
-
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
-                if (obj.optInt("month") == month && obj.optInt("day") == day) {
-                    return obj;
-                }
-            }
+            return new String(buffer, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            Log.e(TAG, "Error loading data: " + path);
+            if (is != null) { try { is.close(); } catch (Exception ignored) {} }
+            return null;
         }
-        return null;
     }
 
     private String toArabicNumbers(int number) {
