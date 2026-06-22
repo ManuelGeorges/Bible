@@ -28,7 +28,8 @@
     "download": "Herunterladen",
     "back": "Zurück",
     "retry": "Wiederholen",
-    "error_occurred": "Entschuldigung, ein Fehler ist aufgetreten"
+    "error_occurred": "Entschuldigung, ein Fehler ist aufgetreten",
+    "internet_required": "Diese Funktion erfordert eine Internetverbindung"
   },
   "login": {
     "title": "Anmelden",
@@ -291,6 +292,9 @@
       "6": "Frühe Kirche & Missionsreisen"
     },
     "points_reason": "Wahrzeichen entdeckt: {name}",
+    "toasts": {
+      "points_earned": "+{amount} Punkte: {reason}"
+    },
     "error_offline": "3D-Karten erfordern eine Internetverbindung"
   },
   "search": {
@@ -774,6 +778,14 @@
       "share_title": "Neues Abzeichen!",
       "share_text": "🎉 Ich habe ein neues Abzeichen in der Agios-App erhalten: {badge}!\n\"{req}\"\nLade die App herunter und schließe dich uns an.",
       "share_dialog": "Abzeichen teilen über..."
+    }
+  },
+  "metadata": {
+    "title": "Offizielle Website | Agios Bibel",
+    "description": "Eine integrierte Bibel-Website mit erweiterten Funktionen wie Suche, interaktiven Karten, Leseplänen und Wettbewerben."
+  }
+} 
+   "share_dialog": "Abzeichen teilen über..."
     }
   },
   "metadata": {

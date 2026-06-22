@@ -28,7 +28,8 @@
     "download": "تحميل",
     "back": "رجوع",
     "retry": "إعادة المحاولة",
-    "error_occurred": "عذراً، حدث خطأ"
+    "error_occurred": "عذراً، حدث خطأ",
+    "internet_required": "هذه الخاصية تتطلب اتصالاً بالإنترنت"
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -117,7 +118,12 @@
       "deleted_from_favs": "تم الحذف من تفضيلاتك",
       "added_to_favs_points": "رائع! تمت الإضافة لتفضيلاتك +5 نقاط",
       "highlight_updated": "تم تحديث لون التظليل",
-      "added_points": "رائع! تمت الإضافة +5 نقاط"
+      "added_points": "رائع! تمت الإضافة +5 نقاط",
+      "welcome_new": "أهلاً بك في أجيوس! 📖",
+      "streak_bonus": "بونص الاستمرارية! +{points} نقطة 🔥",
+      "badge_unlocked": "🎉 مبروك! حصلت على بادج: {badgeName}",
+      "good_morning": "صباح الخير يا {userName}! +10 نقاط ☀️",
+      "welcome_back": "أهلاً بك مجدداً! ستريك اليوم: {streak} 🔥"
     }
   },
   "settings": {

@@ -28,7 +28,8 @@
     "download": "Download",
     "back": "Back",
     "retry": "Retry",
-    "error_occurred": "Sorry, an error occurred"
+    "error_occurred": "Sorry, an error occurred",
+    "internet_required": "This feature requires an internet connection"
   },
   "login": {
     "title": "Login",
@@ -291,6 +292,9 @@
       "6": "Early Church & Apostles' Journeys"
     },
     "points_reason": "Discovered landmark: {name}",
+    "toasts": {
+      "points_earned": "+{amount} points: {reason}"
+    },
     "error_offline": "3D maps require internet connection"
   },
   "search": {
@@ -774,6 +778,14 @@
       "share_title": "New Badge!",
       "share_text": "I got a new badge in Agios app: {badge}!\n\"{req}\"\nDownload the app and join us in our spiritual journey.",
       "share_dialog": "Share Badge via..."
+    }
+  },
+  "metadata": {
+    "title": "Official Website | Agios Bible",
+    "description": "An integrated Bible website that includes unique features such as advanced search, interactive maps, study plans, and competitions"
+  }
+}
+ge via..."
     }
   },
   "metadata": {

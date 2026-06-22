@@ -28,7 +28,8 @@
     "download": "Télécharger",
     "back": "Retour",
     "retry": "Réessayer",
-    "error_occurred": "Désolé, une erreur est survenue"
+    "error_occurred": "Désolé, une erreur est survenue",
+    "internet_required": "Cette fonctionnalité nécessite une connexion internet"
   },
   "login": {
     "title": "Connexion",
@@ -291,6 +292,9 @@
       "6": "Église primitive & Voyages des Apôtres"
     },
     "points_reason": "Lieu découvert : {name}",
+    "toasts": {
+      "points_earned": "+{amount} points : {reason}"
+    },
     "error_offline": "Les cartes 3D nécessitent une connexion internet"
   },
   "search": {
@@ -773,6 +777,15 @@
       "view_all": "Voir tous les badges",
       "share_title": "Nouveau Badge !",
       "share_text": "🎉 J'ai obtenu un nouveau badge sur Agios : {badge}!",
+      "share_dialog": "Partager le badge via..."
+    }
+  },
+  "metadata": {
+    "title": "Site Officiel | Agios Bible",
+    "description": "Un site biblique intégré avec recherche avancée et cartes interactives."
+  }
+}
+nu un nouveau badge sur Agios : {badge}!",
       "share_dialog": "Partager le badge via..."
     }
   },
