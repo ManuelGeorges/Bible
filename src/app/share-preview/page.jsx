@@ -172,6 +172,7 @@ function PreviewContent() {
             ref={templateRef}
             className={styles.previewCard}
             style={{ backgroundImage: `url(${selectedTemplate.url})` }}
+            dir={dir}
           >
             <div className={styles.cardOverlay}></div>
             

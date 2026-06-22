@@ -428,7 +428,9 @@
       "favouriteVerse": "تظليل آية أعجبتك"
     },
     "points_reasons": {
-      "daily_login": "تسجيل دخول يومي"
+      "daily_login": "تسجيل دخول يومي",
+      "share_daily_verse": "مشاركة آية اليوم من الصفحة الرئيسية",
+      "highlight_daily_verse": "تظليل آية اليوم من الصفحة الرئيسية"
     }
   },
   "competitions": {

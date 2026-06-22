@@ -428,7 +428,9 @@
       "favouriteVerse": "Highlight a verse you liked"
     },
     "points_reasons": {
-      "daily_login": "Daily login"
+      "daily_login": "Daily login",
+      "share_daily_verse": "Share daily verse from home page",
+      "highlight_daily_verse": "Highlight daily verse from home page"
     }
   },
   "competitions": {

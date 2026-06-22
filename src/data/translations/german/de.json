@@ -428,7 +428,9 @@
       "favouriteVerse": "Einen Vers markieren"
     },
     "points_reasons": {
-      "daily_login": "Tägliche Anmeldung"
+      "daily_login": "Tägliche Anmeldung",
+      "share_daily_verse": "Täglichen Vers von der Startseite teilen",
+      "highlight_daily_verse": "Täglichen Vers von der Startseite markieren"
     }
   },
   "competitions": {

@@ -428,7 +428,9 @@
       "favouriteVerse": "Surligner un verset"
     },
     "points_reasons": {
-      "daily_login": "Connexion quotidienne"
+      "daily_login": "Connexion quotidienne",
+      "share_daily_verse": "Partager le verset du jour depuis la page d'accueil",
+      "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil"
     }
   },
   "competitions": {

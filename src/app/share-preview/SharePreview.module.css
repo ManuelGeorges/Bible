@@ -5,7 +5,6 @@
   /* مسافة كافية لمنع تداخل المحتوى مع الأزرار العائمة والـ Navbar */
   padding-bottom: calc(180px + env(safe-area-inset-bottom));
   color: var(--color-text-primary);
-  direction: rtl;
   display: flex;
   flex-direction: column;
 }
