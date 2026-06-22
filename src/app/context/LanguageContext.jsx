@@ -1,10 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import ar from '../data/translations/arabic/ar.json';
-import en from '../data/translations/english/en.json';
-import de from '../data/translations/german/de.json';
-import fr from '../data/translations/french/fr.json';
+// استيراد ملفات الترجمة من المجلد الجديد في src/data
+import ar from '../../data/translations/arabic/ar.json';
+import en from '../../data/translations/English/en.json';
+import de from '../../data/translations/german/de.json';
+import fr from '../../data/translations/French/fr.json';
+
+// استيراد أسماء الكتب مباشرة
+import allBookNames from '../../data/bookNames.json';
 
 const LanguageContext = createContext();
 
@@ -14,21 +18,6 @@ export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
     const [isFirstTime, setIsFirstTime] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
-    const [allBookNames, setAllBookNames] = useState(null);
-
-    // تحميل أسماء الكتب من ملف JSON الخارجي
-    useEffect(() => {
-        const fetchBookNames = async () => {
-            try {
-                const response = await fetch('/data/bookNames.json');
-                const data = await response.json();
-                setAllBookNames(data);
-            } catch (error) {
-                console.error("Failed to load book names:", error);
-            }
-        };
-        fetchBookNames();
-    }, []);
 
     useEffect(() => {
         const savedLang = localStorage.getItem('app_lang');
@@ -43,11 +32,10 @@ export function LanguageProvider({ children }) {
 
     const strings = useMemo(() => translations[language] || translations.ar, [language]);
 
-    // توفير أسماء الكتب بناءً على اللغة المختارة
     const bookNames = useMemo(() => {
         if (!allBookNames) return [];
         return allBookNames[language] || allBookNames.ar || [];
-    }, [language, allBookNames]);
+    }, [language]);
 
     const dir = useMemo(() => (language === 'ar' ? 'rtl' : 'ltr'), [language]);
 
@@ -66,7 +54,6 @@ export function LanguageProvider({ children }) {
         }
     };
 
-    // إضافة وظيفة تنسيق الأرقام بناءً على اللغة
     const formatNumber = useCallback((num) => {
         if (num === null || num === undefined) return "";
         if (language !== 'ar') return num.toString();
@@ -78,7 +65,7 @@ export function LanguageProvider({ children }) {
         language,
         strings,
         bookNames,
-        allBookNames, // ربما تحتاجه في بعض الحالات للوصول لكل اللغات
+        allBookNames,
         dir,
         changeLanguage,
         isFirstTime,

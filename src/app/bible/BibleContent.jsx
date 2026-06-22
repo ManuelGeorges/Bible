@@ -396,21 +396,22 @@ export default function BibleContent() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        let biblePath = '';
+        let bibleDataImport;
         if (language === 'ar') {
-          biblePath = useTashkeel ? '/data/translations/arabic/ar_svd_tashkeel_site.json' : '/data/translations/arabic/ar_svd_no_tashkeel.json';
+          bibleDataImport = useTashkeel
+            ? await import('../../data/translations/arabic/ar_svd_tashkeel_site.json')
+            : await import('../../data/translations/arabic/ar_svd_no_tashkeel.json');
         } else if (language === 'en') {
-          biblePath = '/data/translations/English/en_web.json';
+          bibleDataImport = await import('../../data/translations/English/en_web.json');
         } else if (language === 'fr') {
-          biblePath = '/data/translations/French/fr_segond.json';
+          bibleDataImport = await import('../../data/translations/French/fr_segond.json');
         } else if (language === 'de') {
-          biblePath = '/data/translations/german/de_luther.json';
+          bibleDataImport = await import('../../data/translations/german/de_luther.json');
         } else {
-          biblePath = '/data/translations/arabic/ar_svd_no_tashkeel.json';
+          bibleDataImport = await import('../../data/translations/arabic/ar_svd_no_tashkeel.json');
         }
 
-        const bibleRes = await fetch(biblePath).then(r => r.json());
-        setBibleData(bibleRes);
+        setBibleData(bibleDataImport.default || bibleDataImport);
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');

@@ -37,9 +37,22 @@ import { useLanguage } from './context/LanguageContext';
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
 
+// استيراد بيانات الأوسمة محلياً من src/data
+import badgesAr from '../data/translations/arabic/badges_ar.json';
+import badgesEn from '../data/translations/English/badges_en.json';
+import badgesFr from '../data/translations/French/badges_fr.json';
+import badgesDe from '../data/translations/german/badges_de.json';
+
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const staticPlans = studyPlansData.plans;
+
+const badgeFiles = {
+    ar: badgesAr,
+    en: badgesEn,
+    fr: badgesFr,
+    de: badgesDe
+};
 
 const LUCIDE_ICONS = {
     'Trophy': Trophy, 'Award': Award, 'Medal': Award, 'Gift': Gift, 'Star': Star, 'Heart': Heart,
@@ -115,16 +128,6 @@ const LandingPage = () => {
         }
     };
 
-    const getLanguageFolder = (lang) => {
-        switch (lang) {
-            case 'ar': return 'arabic';
-            case 'en': return 'English';
-            case 'fr': return 'French';
-            case 'de': return 'german';
-            default: return 'arabic';
-        }
-    };
-
     const unlockBadge = async (badgeId) => {
         if (user) {
           try {
@@ -191,29 +194,33 @@ const LandingPage = () => {
         const { month, day } = getCairoDateInfo();
 
         try {
-            const [verseRefsRes, questRes] = await Promise.all([
-                fetch('/data/dailyVerses.json'),
-                fetch(`/data/translations/${getLanguageFolder(language)}/dailyQuestions_${language}.json`)
-            ]);
-
+            const verseRefsRes = await fetch('/data/dailyVerses.json');
             if (!verseRefsRes.ok) throw new Error("Daily verses file not found");
-
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
+            // استيراد الأسئلة والكتاب المقدس ديناميكياً
+            let questData;
+            try {
+                if (language === 'ar') questData = (await import('../data/translations/arabic/dailyQuestions_ar.json')).default;
+                else if (language === 'en') questData = (await import('../data/translations/English/dailyQuestions_en.json')).default;
+                else if (language === 'fr') questData = (await import('../data/translations/French/dailyQuestions_fr.json')).default;
+                else if (language === 'de') questData = (await import('../data/translations/german/dailyQuestions_de.json')).default;
+
+                if (questData) {
+                    const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
+                    setDailyQuestion(todayQuest);
+                }
+            } catch (e) { console.error("Questions load error:", e); }
+
             if (todayRef) {
-                const bibleMapping = {
-                    'ar': 'ar_svd_tashkeel_site.json',
-                    'en': 'en_web.json',
-                    'fr': 'fr_segond.json',
-                    'de': 'de_luther.json',
-                };
+                let bibleData;
+                if (language === 'ar') bibleData = (await import('../data/translations/arabic/ar_svd_tashkeel_site.json')).default;
+                else if (language === 'en') bibleData = (await import('../data/translations/English/en_web.json')).default;
+                else if (language === 'fr') bibleData = (await import('../data/translations/French/fr_segond.json')).default;
+                else if (language === 'de') bibleData = (await import('../data/translations/german/de_luther.json')).default;
 
-                const bibleFile = bibleMapping[language] || 'ar_svd_tashkeel_site.json';
-                const bibleRes = await fetch(`/data/translations/${getLanguageFolder(language)}/${bibleFile}`);
-                const bibleData = await bibleRes.json();
-
-                const bibleBook = bibleData.find(b =>
+                const bibleBook = bibleData?.find(b =>
                     b.abbrev.toLowerCase() === todayRef.book.toLowerCase()
                 );
 
@@ -236,12 +243,6 @@ const LandingPage = () => {
                     }
                 }
             }
-
-            if (questRes.ok) {
-                const questData = await questRes.json();
-                const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
-                setDailyQuestion(todayQuest);
-            }
         } catch (e) {
             console.error("Home Fetch Error:", e);
         }
@@ -250,21 +251,7 @@ const LandingPage = () => {
     useEffect(() => {
         setMounted(true);
         fetchDailyContent();
-        const badgeFileMap = {
-            ar: '/data/translations/arabic/badges_ar.json',
-            en: '/data/translations/English/badges_en.json',
-            fr: '/data/translations/French/badges_fr.json',
-            de: '/data/translations/german/badges_de.json'
-        };
-        const badgePath = badgeFileMap[language] || badgeFileMap.ar;
-        fetch(badgePath)
-            .then(res => res.json())
-            .then(data => setBadgesData(data))
-            .catch(() => {
-                if (language !== 'ar') {
-                    fetch('/data/translations/arabic/badges_ar.json').then(res => res.json()).then(data => setBadgesData(data)).catch(() => {});
-                }
-            });
+        setBadgesData(badgeFiles[language] || badgeFiles.ar);
         checkTimeBadges();
     }, [fetchDailyContent, checkTimeBadges, language]);
 
@@ -960,7 +947,7 @@ const LandingPage = () => {
                             <Trophy size={20} color="#f59e0b" />
                             <h2 className={styles.sectionTitleMini}>{strings.home.badges_section}</h2>
                         </div>
-                        <Link href="/points" className={styles.viewMoreLink}>{strings.home.badges_all} <ArrowUpRight size={14} /></Link>
+                        <Link href="/points" className={strings.home.badges_all} <ArrowUpRight size={14} /></Link>
                     </div>
 
                     <div className={styles.badgesDashboard}>

@@ -194,7 +194,13 @@ export default function Points() {
   const [familyFilter, setFamilyFilter] = useState('all');
   const [unlockedOnly, setUnlockedOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(true);
   const [user, setUser] = useState(null);
+
+  const [isRarityOpen, setIsRarityOpen] = useState(false);
+  const [isFamilyOpen, setIsFamilyOpen] = useState(false);
+  const rarityRef = useRef(null);
+  const familyRef = useRef(null);
 
   const [isRarityOpen, setIsRarityOpen] = useState(false);
   const [isFamilyOpen, setIsFamilyOpen] = useState(false);

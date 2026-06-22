@@ -6,7 +6,20 @@ import { AnimatePresence } from 'framer-motion';
 import { StorageService, KEYS } from '../../lib/storage';
 import { useLanguage } from './LanguageContext';
 
+// استيراد بيانات الأوسمة مباشرة من المسار الجديد في src/data
+import badgesAr from '../../data/translations/arabic/badges_ar.json';
+import badgesEn from '../../data/translations/English/badges_en.json';
+import badgesFr from '../../data/translations/French/badges_fr.json';
+import badgesDe from '../../data/translations/german/badges_de.json';
+
 const BadgeContext = createContext();
+
+const badgeFiles = {
+  ar: badgesAr,
+  en: badgesEn,
+  fr: badgesFr,
+  de: badgesDe
+};
 
 export const BadgeProvider = ({ children }) => {
   const [badgeQueue, setBadgeQueue] = useState([]);
@@ -17,46 +30,16 @@ export const BadgeProvider = ({ children }) => {
   const { language } = useLanguage();
 
   useEffect(() => {
-    const badgeFileMap = {
-      ar: '/data/translations/arabic/badges_ar.json',
-      en: '/data/translations/English/badges_en.json',
-      fr: '/data/translations/French/badges_fr.json',
-      de: '/data/translations/german/badges_de.json'
-    };
-    const fetchPath = badgeFileMap[language] || badgeFileMap.ar;
-    setBadgesData(null);
-    const loadBadgeData = async () => {
-      try {
-        const response = await fetch(fetchPath);
-        if (!response.ok) throw new Error(`Failed to fetch ${fetchPath}`);
-        const data = await response.json();
-        setBadgesData(data);
-        if (pendingIdsRef.current.length > 0) {
-          pendingIdsRef.current.forEach(id => processBadgeId(id, data));
-          pendingIdsRef.current = [];
-        }
-      } catch (err) {
-        console.error(`Failed to load badges data for ${language}:`, err);
-        // Fallback to Arabic if preferred language fails
-        if (language !== 'ar') {
-          try {
-            const fallbackResponse = await fetch('/data/translations/arabic/badges_ar.json');
-            if (!fallbackResponse.ok) throw new Error('Failed fallback fetch');
-            const fallbackData = await fallbackResponse.json();
-            setBadgesData(fallbackData);
-            if (pendingIdsRef.current.length > 0) {
-              pendingIdsRef.current.forEach(id => processBadgeId(id, fallbackData));
-              pendingIdsRef.current = [];
-            }
-          } catch (fallbackErr) {
-            console.error('Failed to load fallback badges data:', fallbackErr);
-          }
-        }
-      }
-    };
-    loadBadgeData();
+    // تعيين البيانات بناءً على اللغة المختارة
+    const data = badgeFiles[language] || badgeFiles.ar;
+    setBadgesData(data);
 
-    // تحميل الأوسمة التي عُرضت سابقاً لمنع تكرارها
+    if (pendingIdsRef.current.length > 0) {
+      pendingIdsRef.current.forEach(id => processBadgeId(id, data));
+      pendingIdsRef.current = [];
+    }
+
+    // تحميل الأوسمة التي عُرضت سابقاً
     const loadShownBadges = async () => {
       try {
         const stored = await StorageService.get(KEYS.SHOWN_BADGES);
@@ -71,7 +54,7 @@ export const BadgeProvider = ({ children }) => {
   }, [language]);
 
   const processBadgeId = (badgeId, data) => {
-    if (shownBadgesRef.current.has(badgeId)) return;
+    if (!data || shownBadgesRef.current.has(badgeId)) return;
 
     for (const family of data.badge_families) {
       const badge = family.badges.find(b => b.id === badgeId);
@@ -94,7 +77,6 @@ export const BadgeProvider = ({ children }) => {
     processBadgeId(badgeId, badgesData);
   }, [badgesData]);
 
-  // التحكم في عرض الطابور (واحد تلو الآخر)
   useEffect(() => {
     if (!currentBadge && badgeQueue.length > 0) {
       setCurrentBadge(badgeQueue[0]);

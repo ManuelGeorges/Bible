@@ -70,11 +70,11 @@ export default function BibleCacheHandler() {
     const startTotalScraping = async () => {
       await new Promise(res => setTimeout(res, 3000));
       
+      // تم تحديث القائمة لإزالة ملفات الترجمة التي نُقلت إلى src/data
+      // لأنها الآن تُحمل ديناميكياً عبر Webpack وليس عبر fetch مباشر من public
       const staticEssentials = [
-        '/data/translations/arabic/ar_svd_no_tashkeel.json',
         '/data/bookNames.json',
         '/data/dailyVerses.json',
-        '/data/translations/arabic/dailyQuestions_ar.json',
         '/favicon.ico',
         '/manifest.json'
       ];

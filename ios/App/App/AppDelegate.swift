@@ -18,6 +18,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             if granted {
                 DispatchQueue.main.async {
                     UIApplication.shared.registerForRemoteNotifications()
+                    // تحديث التنبيهات فور منح الإذن أو عند التشغيل
+                    AgiosNotificationHelper.shared.refreshAllNotifications()
                 }
             }
         }
@@ -54,6 +56,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
+        // تحديث الإشعارات عند عودة التطبيق للواجهة لضمان دقة "آية اليوم"
+        AgiosNotificationHelper.shared.refreshAllNotifications()
+
         if let bridge = (self.window?.rootViewController as? CAPBridgeViewController)?.bridge {
             bridge.eval(js: "window.dispatchEvent(new Event('visibilitychange'));")
         }
@@ -491,12 +496,12 @@ class AgiosNotificationHelper {
 
     private func loadJsonArray(filename: String) -> [[String: Any]]? {
         let possiblePaths = [
-            Bundle.main.bundlePath + "/public/data/\(filename)",
-            Bundle.main.bundlePath + "/data/\(filename)",
-            Bundle.main.path(forResource: filename.replacingOccurrences(of: ".json", with: ""), ofType: "json") ?? ""
-        ]
+            Bundle.main.path(forResource: "public/data/" + filename, ofType: nil),
+            Bundle.main.path(forResource: "data/" + filename, ofType: nil),
+            Bundle.main.path(forResource: filename.replacingOccurrences(of: ".json", with: ""), ofType: "json")
+        ].compactMap { $0 }
 
-        for path in possiblePaths where !path.isEmpty {
+        for path in possiblePaths {
             if let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
                let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
                 return array
@@ -507,12 +512,12 @@ class AgiosNotificationHelper {
 
     private func loadJsonObject(filename: String) -> [String: Any]? {
         let possiblePaths = [
-            Bundle.main.bundlePath + "/public/data/\(filename)",
-            Bundle.main.bundlePath + "/data/\(filename)",
-            Bundle.main.path(forResource: filename.replacingOccurrences(of: ".json", with: ""), ofType: "json") ?? ""
-        ]
+            Bundle.main.path(forResource: "public/data/" + filename, ofType: nil),
+            Bundle.main.path(forResource: "data/" + filename, ofType: nil),
+            Bundle.main.path(forResource: filename.replacingOccurrences(of: ".json", with: ""), ofType: "json")
+        ].compactMap { $0 }
 
-        for path in possiblePaths where !path.isEmpty {
+        for path in possiblePaths {
             if let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
                let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 return dict

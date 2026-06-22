@@ -195,36 +195,23 @@ function SearchContent() {
     return () => unsubscribe();
   }, []);
 
-  const getLanguageFolder = (lang) => {
-    switch (lang) {
-        case 'ar': return 'arabic';
-        case 'en': return 'English';
-        case 'fr': return 'French';
-        case 'de': return 'german';
-        default: return 'arabic';
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       if (bookNamesData.length === 0) return;
       try {
-        let biblePath = '';
-        const folder = getLanguageFolder(language);
+        let bJson;
         if (language === 'ar') {
-          biblePath = `/data/translations/${folder}/ar_svd_no_tashkeel.json`;
+          bJson = (await import('../../data/translations/arabic/ar_svd_no_tashkeel.json')).default;
         } else if (language === 'en') {
-          biblePath = `/data/translations/${folder}/en_web.json`;
+          bJson = (await import('../../data/translations/English/en_web.json')).default;
         } else if (language === 'fr') {
-          biblePath = `/data/translations/${folder}/fr_segond.json`;
+          bJson = (await import('../../data/translations/French/fr_segond.json')).default;
         } else if (language === 'de') {
-          biblePath = `/data/translations/${folder}/de_luther.json`;
+          bJson = (await import('../../data/translations/german/de_luther.json')).default;
         } else {
-          biblePath = `/data/translations/arabic/ar_svd_no_tashkeel.json`;
+          bJson = (await import('../../data/translations/arabic/ar_svd_no_tashkeel.json')).default;
         }
 
-        const bibleRes = await fetch(biblePath);
-        const bJson = await bibleRes.json();
         setBibleData(bJson);
 
         const flattened = bJson.flatMap((book, bIdx) => {
@@ -242,7 +229,10 @@ function SearchContent() {
         });
         setAllVerses(flattened);
         setIsLoading(false);
-      } catch (e) { setIsLoading(false); }
+      } catch (e) {
+        console.error("Search Fetch Error:", e);
+        setIsLoading(false);
+      }
     };
     fetchData();
   }, [bookNamesData, language]);
