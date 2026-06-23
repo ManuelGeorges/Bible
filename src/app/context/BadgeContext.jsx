@@ -6,11 +6,11 @@ import { AnimatePresence } from 'framer-motion';
 import { StorageService, KEYS } from '../../lib/storage';
 import { useLanguage } from './LanguageContext';
 
-// استيراد بيانات الأوسمة مباشرة من المسار الجديد في src/data
-import badgesAr from '../../data/translations/arabic/badges_ar.json';
-import badgesEn from '../../data/translations/English/badges_en.json';
-import badgesFr from '../../data/translations/French/badges_fr.json';
-import badgesDe from '../../data/translations/german/badges_de.json';
+// استيراد بيانات الأوسمة مباشرة من المسار الجديد في src/app/data
+import badgesAr from '../data/translations/arabic/badges_ar.json';
+import badgesEn from '../data/translations/English/badges_en.json';
+import badgesFr from '../data/translations/French/badges_fr.json';
+import badgesDe from '../data/translations/german/badges_de.json';
 
 const BadgeContext = createContext();
 

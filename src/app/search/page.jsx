@@ -200,16 +200,17 @@ function SearchContent() {
       if (bookNamesData.length === 0) return;
       try {
         let bJson;
+        // تصحيح المسارات ليشير إلى ../data بدلاً من ../../data
         if (language === 'ar') {
-          bJson = (await import('../../data/translations/arabic/ar_svd_no_tashkeel.json')).default;
+          bJson = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
         } else if (language === 'en') {
-          bJson = (await import('../../data/translations/English/en_web.json')).default;
+          bJson = (await import('../../../public/data/translations/English/en_web.json')).default;
         } else if (language === 'fr') {
-          bJson = (await import('../../data/translations/French/fr_segond.json')).default;
+          bJson = (await import('../../../public/data/translations/French/fr_segond.json')).default;
         } else if (language === 'de') {
-          bJson = (await import('../../data/translations/german/de_luther.json')).default;
+          bJson = (await import('../../../public/data/translations/german/de_luther.json')).default;
         } else {
-          bJson = (await import('../../data/translations/arabic/ar_svd_no_tashkeel.json')).default;
+          bJson = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
         }
 
         setBibleData(bJson);
@@ -365,7 +366,7 @@ function SearchContent() {
     }
 
     try {
-      await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
+      await updateDoc(doc(db, 'users', u.uid), { 'favorites.verses': newFavorites });
       setActiveActionId(null);
       toast.success(isDelete ? strings.search.toast_delete_success : strings.search.toast_save_success);
     } catch (e) {

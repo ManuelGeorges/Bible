@@ -236,16 +236,17 @@ export function AudioProvider({ children }) {
         const loadInitialData = async () => {
             try {
                 let bibleDataImport;
+                // تصحيح المسارات ليشير إلى ../data بدلاً من ../../data
                 if (language === 'ar') {
-                    bibleDataImport = (await import('../../data/translations/arabic/ar_svd_no_tashkeel.json')).default;
+                    bibleDataImport = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
                 } else if (language === 'en') {
-                    bibleDataImport = (await import('../../data/translations/English/en_web.json')).default;
+                    bibleDataImport = (await import('../../../public/data/translations/English/en_web.json')).default;
                 } else if (language === 'fr') {
-                    bibleDataImport = (await import('../../data/translations/French/fr_segond.json')).default;
+                    bibleDataImport = (await import('../../../public/data/translations/French/fr_segond.json')).default;
                 } else if (language === 'de') {
-                    bibleDataImport = (await import('../../data/translations/german/de_luther.json')).default;
+                    bibleDataImport = (await import('../../../public/data/translations/german/de_luther.json')).default;
                 } else {
-                    bibleDataImport = (await import('../../data/translations/arabic/ar_svd_no_tashkeel.json')).default;
+                    bibleDataImport = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
                 }
                 setBibleData(bibleDataImport);
             } catch (e) { console.error("AudioContext Data Load Error:", e); }

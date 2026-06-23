@@ -37,11 +37,11 @@ import { useLanguage } from './context/LanguageContext';
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
 
-// استيراد بيانات الأوسمة محلياً من src/data
-import badgesAr from '../data/translations/arabic/badges_ar.json';
-import badgesEn from '../data/translations/English/badges_en.json';
-import badgesFr from '../data/translations/French/badges_fr.json';
-import badgesDe from '../data/translations/german/badges_de.json';
+// تصحيح المسار ليشير إلى src/app/data
+import badgesAr from './data/translations/arabic/badges_ar.json';
+import badgesEn from './data/translations/English/badges_en.json';
+import badgesFr from './data/translations/French/badges_fr.json';
+import badgesDe from './data/translations/german/badges_de.json';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
@@ -199,13 +199,13 @@ const LandingPage = () => {
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
-            // استيراد الأسئلة والكتاب المقدس ديناميكياً
+            // استيراد الأسئلة والكتاب المقدس ديناميكياً من المسار الجديد src/app/data
             let questData;
             try {
-                if (language === 'ar') questData = (await import('../data/translations/arabic/dailyQuestions_ar.json')).default;
-                else if (language === 'en') questData = (await import('../data/translations/English/dailyQuestions_en.json')).default;
-                else if (language === 'fr') questData = (await import('../data/translations/French/dailyQuestions_fr.json')).default;
-                else if (language === 'de') questData = (await import('../data/translations/german/dailyQuestions_de.json')).default;
+                if (language === 'ar') questData = (await import('../../public/data/translations/arabic/dailyQuestions_ar.json')).default;
+                else if (language === 'en') questData = (await import('../../public/data/translations/English/dailyQuestions_en.json')).default;
+                else if (language === 'fr') questData = (await import('../../public/data/translations/French/dailyQuestions_fr.json')).default;
+                else if (language === 'de') questData = (await import('../../public/data/translations/german/dailyQuestions_de.json')).default;
 
                 if (questData) {
                     const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
@@ -215,10 +215,10 @@ const LandingPage = () => {
 
             if (todayRef) {
                 let bibleData;
-                if (language === 'ar') bibleData = (await import('../data/translations/arabic/ar_svd_tashkeel_site.json')).default;
-                else if (language === 'en') bibleData = (await import('../data/translations/English/en_web.json')).default;
-                else if (language === 'fr') bibleData = (await import('../data/translations/French/fr_segond.json')).default;
-                else if (language === 'de') bibleData = (await import('../data/translations/german/de_luther.json')).default;
+                if (language === 'ar') bibleData = (await import('../../public/data/translations/arabic/ar_svd_tashkeel_site.json')).default;
+                else if (language === 'en') bibleData = (await import('../../public/data/translations/English/en_web.json')).default;
+                else if (language === 'fr') bibleData = (await import('../../public/data/translations/French/fr_segond.json')).default;
+                else if (language === 'de') bibleData = (await import('../../public/data/translations/german/de_luther.json')).default;
 
                 const bibleBook = bibleData?.find(b =>
                     b.abbrev.toLowerCase() === todayRef.book.toLowerCase()

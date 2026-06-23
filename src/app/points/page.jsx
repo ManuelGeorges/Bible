@@ -17,11 +17,11 @@ import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dat
 import { StorageService, KEYS } from '../../lib/storage';
 import { useLanguage } from '../context/LanguageContext';
 
-// Import badge translations statically
-import badgesAr from '../../data/translations/arabic/badges_ar.json';
-import badgesEn from '../../data/translations/English/badges_en.json';
-import badgesFr from '../../data/translations/French/badges_fr.json';
-import badgesDe from '../../data/translations/german/badges_de.json';
+// Import badge translations statically from the new path in src/app/data
+import badgesAr from '../data/translations/arabic/badges_ar.json';
+import badgesEn from '../data/translations/English/badges_en.json';
+import badgesFr from '../data/translations/French/badges_fr.json';
+import badgesDe from '../data/translations/german/badges_de.json';
 
 const calculateLevel = (points) => {
   const level = Math.floor(Math.sqrt(points / 50)) + 1;

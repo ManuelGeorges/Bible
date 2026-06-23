@@ -394,18 +394,19 @@ export default function BibleContent() {
       try {
         setIsLoading(true);
         let bibleDataImport;
+        // تصحيح المسارات لتشير إلى ../data بدلاً من ../../data
         if (language === 'ar') {
           bibleDataImport = useTashkeel
-            ? await import('../../data/translations/arabic/ar_svd_tashkeel_site.json')
-            : await import('../../data/translations/arabic/ar_svd_no_tashkeel.json');
+            ? await import('../../../public/data/translations/arabic/ar_svd_tashkeel_site.json')
+            : await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json');
         } else if (language === 'en') {
-          bibleDataImport = await import('../../data/translations/English/en_web.json');
+          bibleDataImport = await import('../../../public/data/translations/English/en_web.json');
         } else if (language === 'fr') {
-          bibleDataImport = await import('../../data/translations/French/fr_segond.json');
+          bibleDataImport = await import('../../../public/data/translations/French/fr_segond.json');
         } else if (language === 'de') {
-          bibleDataImport = await import('../../data/translations/german/de_luther.json');
+          bibleDataImport = await import('../../../public/data/translations/german/de_luther.json');
         } else {
-          bibleDataImport = await import('../../data/translations/arabic/ar_svd_no_tashkeel.json');
+          bibleDataImport = await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json');
         }
 
         setBibleData(bibleDataImport.default || bibleDataImport);

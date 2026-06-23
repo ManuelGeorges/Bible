@@ -2,14 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Preferences } from '@capacitor/preferences';
-// استيراد ملفات الترجمة من المجلد الجديد في src/data
-import ar from '../../data/translations/arabic/ar.json';
-import en from '../../data/translations/English/en.json';
-import de from '../../data/translations/german/de.json';
-import fr from '../../data/translations/French/fr.json';
+// استيراد ملفات الترجمة من المجلد الجديد في src/app/data
+import ar from '../data/translations/arabic/ar.json';
+import en from '../data/translations/English/en.json';
+import de from '../data/translations/german/de.json';
+import fr from '../data/translations/French/fr.json';
 
 // استيراد أسماء الكتب مباشرة
-import allBookNames from '../../data/bookNames.json';
+import allBookNames from '../data/bookNames.json';
 
 const LanguageContext = createContext();
 
