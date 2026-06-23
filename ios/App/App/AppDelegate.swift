@@ -1,4 +1,3 @@
-swift
 import UIKit
 import Capacitor
 import Firebase
@@ -338,7 +337,8 @@ class AgiosNotificationHelper {
 
     private func resolvedHour(_ key: String, default defH: Int, settings: [String: Any]) -> Int {
         guard let timeStr = settings[key + "Time"] as? String, timeStr.contains(":") else { return defH }
-        return Int(timeStr.components(separatedBy: ":")[0]) ?? defH
+        let parts = timeStr.components(separatedBy: ":")
+        return Int(parts[0]) ?? defH
     }
 
     private func resolvedMinute(_ key: String, settings: [String: Any]) -> Int {
