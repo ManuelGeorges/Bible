@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { Preferences } from '@capacitor/preferences';
 // استيراد ملفات الترجمة من المجلد الجديد في src/data
 import ar from '../../data/translations/arabic/ar.json';
 import en from '../../data/translations/English/en.json';
@@ -44,14 +45,28 @@ export function LanguageProvider({ children }) {
 
     const dir = useMemo(() => (language === 'ar' ? 'rtl' : 'ltr'), [language]);
 
+    // مزامنة اللغة مع نظام الأندرويد فور التحميل أو التغيير
     useEffect(() => {
         if (isHydrated) {
             document.documentElement.lang = language;
             document.documentElement.dir = dir;
+
+            const syncLang = async () => {
+                try {
+                    // Capacitor يحفظ القيم في SharedPreferences بمفتاح يبدأ بـ _cap_
+                    await Preferences.set({ key: 'language', value: language });
+                    if (window.AgiosScannerNative?.refreshAlarms) {
+                        window.AgiosScannerNative.refreshAlarms();
+                    }
+                } catch (e) {
+                    console.error("Language Sync Error:", e);
+                }
+            };
+            syncLang();
         }
     }, [language, dir, isHydrated]);
 
-    const changeLanguage = (newLang) => {
+    const changeLanguage = async (newLang) => {
         if (translations[newLang]) {
             setLanguage(newLang);
             localStorage.setItem('app_lang', newLang);
@@ -63,7 +78,6 @@ export function LanguageProvider({ children }) {
         setUseTashkeel(prev => {
             const newState = !prev;
             localStorage.setItem('useTashkeel', newState.toString());
-            // This event is still useful for components not using the context directly
             window.dispatchEvent(new Event('storage'));
             return newState;
         });

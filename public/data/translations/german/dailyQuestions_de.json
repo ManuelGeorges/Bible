@@ -1,0 +1,2938 @@
+[
+  {
+    "month": 1,
+    "day": 1,
+    "question": "Wie viele Evangelien gibt es im Neuen Testament?",
+    "options": ["2", "4", "6", "12"],
+    "answerIndex": 1,
+    "hint": "Die Evangelien nach Matthäus, Markus, Lukas und Johannes."
+  },
+  {
+    "month": 1,
+    "day": 2,
+    "question": "Wer war der erste Mensch, den Gott erschuf?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 1,
+    "day": 3,
+    "question": "Welcher Prophet wurde von einem großen Fisch verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 1,
+    "day": 4,
+    "question": "In welcher Stadt wurde Jesus Christus geboren?",
+    "options": ["Nazareth", "Bethlehem", "Jerusalem", "Galiläa"],
+    "answerIndex": 1,
+    "hint": "Die Stadt, die von den Propheten vorhergesagt wurde."
+  },
+  {
+    "month": 1,
+    "day": 5,
+    "question": "Was ist das erste der Zehn Gebote?",
+    "options": ["Du sollst nicht töten", "Ehre deinen Vater und deine Mutter", "Du sollst keine anderen Götter neben mir haben", "Du sollst nicht stehlen"],
+    "answerIndex": 2,
+    "hint": "Ein Gebot über die Anbetung Gottes allein."
+  },
+  {
+    "month": 1,
+    "day": 6,
+    "question": "Welcher Jünger Christi war Steuereinnehmer?",
+    "options": ["Petrus", "Matthäus", "Johannes", "Judas"],
+    "answerIndex": 1,
+    "hint": "Der Verfasser eines der vier Evangelien."
+  },
+  {
+    "month": 1,
+    "day": 7,
+    "question": "Welches Meer teilte Mose?",
+    "options": ["Das Tote Meer", "Das Rote Meer", "Der See Genezareth", "Das Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah beim Auszug der Israeliten aus Ägypten."
+  },
+  {
+    "month": 1,
+    "day": 8,
+    "question": "Wer war der stärkste Mann in der Bibel, bekannt für sein langes Haar?",
+    "options": ["Saul", "David", "Simson", "Salomo"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte mit Delila ist berühmt."
+  },
+  {
+    "month": 1,
+    "day": 9,
+    "question": "Wie viele Tage und Nächte blieb Christus im Grab, bevor er auferstand?",
+    "options": ["Einen Tag", "Zwei Tage", "Drei Tage", "Vier Tage"],
+    "answerIndex": 2,
+    "hint": "Die Auferstehung geschah nach drei Tagen."
+  },
+  {
+    "month": 1,
+    "day": 10,
+    "question": "Wer war der erste König von Israel?",
+    "options": ["David", "Saul", "Salomo", "Samuel"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Samuel zum König gesalbt."
+  },
+  {
+    "month": 1,
+    "day": 11,
+    "question": "Wie hieß der Baum, von dem Adam und Eva im Garten Eden aßen?",
+    "options": ["Der Baum des Lebens", "Der Feigenbaum", "Der Baum der Erkenntnis des Guten und Bösen", "Der Olivenbaum"],
+    "answerIndex": 2,
+    "hint": "Die verbotene Frucht."
+  },
+  {
+    "month": 1,
+    "day": 12,
+    "question": "Wer baute die Arche vor der Sintflut?",
+    "options": ["Abraham", "Josef", "Mose", "Noah"],
+    "answerIndex": 3,
+    "hint": "Er rettete seine Familie und zwei von jedem Tier."
+  },
+  {
+    "month": 1,
+    "day": 13,
+    "question": "Welcher Prophet wurde in die Löwengrube geworfen?",
+    "options": ["Jeremia", "Ezechiel", "Daniel", "Jona"],
+    "answerIndex": 2,
+    "hint": "Er betete dreimal täglich."
+  },
+  {
+    "month": 1,
+    "day": 14,
+    "question": "Was war das erste Wunder, das Jesus vollbrachte?",
+    "options": ["Die Auferweckung des Lazarus", "Die Speisung der Menge", "Die Verwandlung von Wasser in Wein", "Die Heilung des Blinden"],
+    "answerIndex": 2,
+    "hint": "Es geschah bei der Hochzeit zu Kana in Galiläa."
+  },
+  {
+    "month": 1,
+    "day": 15,
+    "question": "Welcher Hirte wurde König von Israel?",
+    "options": ["Saul", "Josef", "Salomo", "David"],
+    "answerIndex": 3,
+    "hint": "Derjenige, der Goliat besiegte."
+  },
+  {
+    "month": 1,
+    "day": 16,
+    "question": "Wie viele Bücher hat das Alte Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "Die Bibel besteht aus 46 Büchern im Alten Testament und 27 im Neuen Testament."
+  },
+  {
+    "month": 1,
+    "day": 17,
+    "question": "Wer verkaufte sein Erstgeburtsrecht für eine Mahlzeit Linsensuppe?",
+    "options": ["Jakob", "Josef", "Esau", "Isaak"],
+    "answerIndex": 2,
+    "hint": "Jakobs Zwillingsbruder."
+  },
+  {
+    "month": 1,
+    "day": 18,
+    "question": "Welcher Prophet fuhr auf einem feurigen Wagen in den Himmel?",
+    "options": ["Elischa", "Elija", "Amos", "Jeremia"],
+    "answerIndex": 1,
+    "hint": "Sein Schüler war Elischa."
+  },
+  {
+    "month": 1,
+    "day": 19,
+    "question": "Wie hieß die unfruchtbare Frau, die den Propheten Samuel gebar?",
+    "options": ["Sara", "Rebekka", "Hanna", "Maria"],
+    "answerIndex": 2,
+    "hint": "Sie betete im Tempel und weihte ihren Sohn Gott."
+  },
+  {
+    "month": 1,
+    "day": 20,
+    "question": "Was waren Gottes erste Worte in der Bibel?",
+    "options": ["Es werde Licht", "Es werde Adam", "Es werde ein Firmament", "Die Wasser sollen sich sammeln"],
+    "answerIndex": 0,
+    "hint": "Am ersten Tag der Schöpfung."
+  },
+  {
+    "month": 1,
+    "day": 21,
+    "question": "Wie heißt der Berg, auf dem Mose die Zehn Gebote empfing?",
+    "options": ["Ölberg", "Berg Sinai", "Berg Karmel", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Der Berg der Gebote."
+  },
+  {
+    "month": 1,
+    "day": 22,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Mein Gott, mein Gott, warum hast du mich verlassen?", "Vater, vergib ihnen", "Es ist vollbracht", "Mich dürstet"],
+    "answerIndex": 2,
+    "hint": "Bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 1,
+    "day": 23,
+    "question": "Welcher König baute den Tempel in Jerusalem?",
+    "options": ["David", "Salomo", "Saul", "Herodes"],
+    "answerIndex": 1,
+    "hint": "Der Sohn König Davids."
+  },
+  {
+    "month": 1,
+    "day": 24,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 1,
+    "day": 25,
+    "question": "Wie viele Apostel (Jünger) wählte Jesus?",
+    "options": ["7", "10", "12", "15"],
+    "answerIndex": 2,
+    "hint": "Die Gruppe seiner engsten Apostel."
+  },
+  {
+    "month": 1,
+    "day": 26,
+    "question": "Wie heißt die Stadt, deren Mauern durch Schreien und Trompeten fielen?",
+    "options": ["Jericho", "Jerusalem", "Sodom", "Gibeon"],
+    "answerIndex": 0,
+    "hint": "Josua führte die Israeliten zur Eroberung."
+  },
+  {
+    "month": 1,
+    "day": 27,
+    "question": "Welcher Prophet wurde in eine Zisterne ohne Wasser geworfen?",
+    "options": ["Elija", "Jona", "Josef", "Jeremia"],
+    "answerIndex": 3,
+    "hint": "Bekannt als 'der weinende Prophet'."
+  },
+  {
+    "month": 1,
+    "day": 28,
+    "question": "Was bedeutet das Wort 'Amen'?",
+    "options": ["Hallo", "So sei es", "Danke", "Auf Wiedersehen"],
+    "answerIndex": 1,
+    "hint": "Ein Wort, das am Ende des Gebets verwendet wird."
+  },
+  {
+    "month": 1,
+    "day": 29,
+    "question": "Welcher Jünger zweifelte an der Auferstehung Christi, bis er die Wunden sah?",
+    "options": ["Petrus", "Thomas", "Matthäus", "Judas"],
+    "answerIndex": 1,
+    "hint": "Bekannt als 'der ungläubige Thomas'."
+  },
+  {
+    "month": 1,
+    "day": 30,
+    "question": "An welchem Tag der Schöpfung erschuf Gott den Menschen?",
+    "options": ["Am vierten", "Am fünften", "Am sechsten", "Am siebten"],
+    "answerIndex": 2,
+    "hint": "Vor dem Ruhetag."
+  },
+  {
+    "month": 1,
+    "day": 31,
+    "question": "Welcher Herrscher befahl das Massaker an den Kindern von Bethlehem?",
+    "options": ["Herodes", "Pontius Pilatus", "Kaiphas", "Cäsar"],
+    "answerIndex": 0,
+    "hint": "Er fürchtete, dass Christus ihn als König ersetzen würde."
+  },
+  {
+    "month": 2,
+    "day": 1,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 2,
+    "day": 2,
+    "question": "Wer war der erste Märtyrer des Christentums?",
+    "options": ["Petrus", "Paulus", "Stephanus", "Johannes der Täufer"],
+    "answerIndex": 2,
+    "hint": "Er wurde gesteinigt."
+  },
+  {
+    "month": 2,
+    "day": 3,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Griechisch", "Aramäisch", "Hebräisch", "Latein"],
+    "answerIndex": 2,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 2,
+    "day": 4,
+    "question": "Was war der Beruf des Apostels Petrus, bevor er Christus folgte?",
+    "options": ["Zimmermann", "Fischer", "Soldat", "Bauer"],
+    "answerIndex": 1,
+    "hint": "Christus versprach ihm, ihn zum Menschenfischer zu machen."
+  },
+  {
+    "month": 2,
+    "day": 5,
+    "question": "Wie heißt der Berg, auf dem Elija die falschen Propheten tötete?",
+    "options": ["Berg Sinai", "Berg Karmel", "Ölberg", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Er forderte dort die Propheten des Baal heraus."
+  },
+  {
+    "month": 2,
+    "day": 6,
+    "question": "Wer wurde von seinem Aussatz durch das Baden im Jordan geheilt?",
+    "options": ["Abram", "Josua", "Naaman der Syrer", "Saulus von Tarsus"],
+    "answerIndex": 2,
+    "hint": "Ein Feldherr einer großen Armee."
+  },
+  {
+    "month": 2,
+    "day": 7,
+    "question": "Wie heißt das Dorf, in dem Jesus Lazarus von den Toten auferweckte?",
+    "options": ["Kana", "Bethanien", "Bethlehem", "Nazareth"],
+    "answerIndex": 1,
+    "hint": "Es ist das Dorf der Schwestern des Lazarus, Maria und Martha."
+  },
+  {
+    "month": 2,
+    "day": 8,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 2,
+    "day": 9,
+    "question": "Was tat Jesus, als er den Sturm stillte?",
+    "options": ["Er betete", "Er schlief", "Er aß", "Er sprach mit den Jüngern"],
+    "answerIndex": 1,
+    "hint": "Die Jünger beklagten sich, dass er schlief."
+  },
+  {
+    "month": 2,
+    "day": 10,
+    "question": "Welchem Propheten befahl ein Engel, eine Schriftrolle zu essen?",
+    "options": ["Ezechiel", "Jesaja", "Jeremia", "Hosea"],
+    "answerIndex": 0,
+    "hint": "Der alttestamentliche Prophet, der die Vision der Räder hatte."
+  },
+  {
+    "month": 2,
+    "day": 11,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 2,
+    "day": 12,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 2,
+    "day": 13,
+    "question": "Wen erschuf Gott aus der Rippe Adams?",
+    "options": ["Abel", "Eva", "Kain", "Set"],
+    "answerIndex": 1,
+    "hint": "Die erste Frau."
+  },
+  {
+    "month": 2,
+    "day": 14,
+    "question": "Was trug Jesus bei seiner Kreuzigung?",
+    "options": ["Die Dornenkrone", "Ein Schild", "Ein Zepter", "Das Kreuz"],
+    "answerIndex": 3,
+    "hint": "Er trug unser Leiden auf seinem Rücken."
+  },
+  {
+    "month": 2,
+    "day": 15,
+    "question": "In welcher Sprache wurde das Neue Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Latein", "Aramäisch"],
+    "answerIndex": 1,
+    "hint": "Die gemeinsame Sprache des Römischen Reiches zu jener Zeit."
+  },
+  {
+    "month": 2,
+    "day": 16,
+    "question": "Wer wurde in der Bibel als außerordentlich weise beschrieben?",
+    "options": ["Abraham", "Mose", "Salomo", "David"],
+    "answerIndex": 2,
+    "hint": "Sohn Davids und König von Israel."
+  },
+  {
+    "month": 2,
+    "day": 17,
+    "question": "Was geschah mit Sonne und Mond, als Josua, der Sohn Nuns, betete?",
+    "options": ["Sie wurden dunkel", "Sie standen still", "Ihre Farbe änderte sich", "Ihr Licht nahm zu"],
+    "answerIndex": 1,
+    "hint": "Um die Zeit der Schlacht zu verlängern."
+  },
+  {
+    "month": 2,
+    "day": 18,
+    "question": "Was ist der erste Vers der Bibel?",
+    "options": ["Im Anfang schuf Gott Himmel und Erde", "Es werde Licht", "Im Anfang war das Wort", "Gott sprach: Du bist nicht allein"],
+    "answerIndex": 0,
+    "hint": "Der Eröffnungsvers des Buches Genesis."
+  },
+  {
+    "month": 2,
+    "day": 19,
+    "question": "Wer sagte: 'Denn ich habe die Liebe Gottes gekostet'?",
+    "options": ["Petrus", "Paulus", "Johannes", "Timotheus"],
+    "answerIndex": 1,
+    "hint": "Er hieß Saulus, bevor er Paulus wurde."
+  },
+  {
+    "month": 2,
+    "day": 20,
+    "question": "Wie viele Fische verwendete Jesus, um die Menge zu speisen?",
+    "options": ["1", "2", "3", "5"],
+    "answerIndex": 1,
+    "hint": "Sie waren zusammen mit fünf Broten."
+  },
+  {
+    "month": 2,
+    "day": 21,
+    "question": "Welcher Prophet sagte das Kommen Christi voraus?",
+    "options": ["Jeremia", "Daniel", "Jesaja", "Amos"],
+    "answerIndex": 2,
+    "hint": "Bekannt als 'der Prophet der Erlösung'."
+  },
+  {
+    "month": 2,
+    "day": 22,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  },
+  {
+    "month": 2,
+    "day": 23,
+    "question": "Was war der Beruf des heiligen Lukas?",
+    "options": ["Fischer", "Arzt", "Lehrer", "Zimmermann"],
+    "answerIndex": 1,
+    "hint": "Einer der vier Evangelisten und Verfasser der Apostelgeschichte."
+  },
+  {
+    "month": 2,
+    "day": 24,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 2,
+    "day": 25,
+    "question": "Wie viele große Propheten gibt es im Alten Testament?",
+    "options": ["2", "4", "6", "8"],
+    "answerIndex": 1,
+    "hint": "Jesaja, Jeremia, Ezechiel, Daniel."
+  },
+  {
+    "month": 2,
+    "day": 26,
+    "question": "Wer versuchte, mit Jesus auf dem Wasser zu gehen?",
+    "options": ["Johannes", "Petrus", "Jakobus", "Thomas"],
+    "answerIndex": 1,
+    "hint": "Jesus sagte zu ihm: 'Du Kleingläubiger'."
+  },
+  {
+    "month": 2,
+    "day": 27,
+    "question": "Welches Buch des Neuen Testaments erwähnt den Namen Gottes nicht ausdrücklich?",
+    "options": ["Der Judasbrief", "Der Jakobusbrief", "Die Offenbarung", "Der Philipperbrief"],
+    "answerIndex": 0,
+    "hint": "Es spricht über die Kirche und die Gläubigen."
+  },
+  {
+    "month": 2,
+    "day": 28,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Es ist vollbracht", "Vater, vergib ihnen", "Mein Gott, mein Gott, warum hast du mich verlassen?", "Mich dürstet"],
+    "answerIndex": 0,
+    "hint": "Die letzten Worte, die er sprach, bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 2,
+    "day": 29,
+    "question": "An welchem Tag der Schöpfung erschuf Gott Sonne, Mond und Sterne?",
+    "options": ["Am ersten", "Am dritten", "Am vierten", "Am sechsten"],
+    "answerIndex": 2,
+    "hint": "Die Lichter am Himmel."
+  },
+  {
+    "month": 3,
+    "day": 1,
+    "question": "Welcher König befahl wegen eines Tanzes die Enthauptung Johannes des Täufers?",
+    "options": ["Herodes", "Nebukadnezar", "Ahab", "Salomo"],
+    "answerIndex": 0,
+    "hint": "König von Galiläa, der Johannes den Täufer enthaupten ließ."
+  },
+  {
+    "month": 3,
+    "day": 2,
+    "question": "Auf welchen Baum kletterte Zachäus, um Jesus zu sehen?",
+    "options": ["Einen Olivenbaum", "Einen Maulbeerfeigenbaum", "Einen Feigenbaum", "Einen Maulbeerbaum"],
+    "answerIndex": 1,
+    "hint": "Er war klein und lief Jesus voraus."
+  },
+  {
+    "month": 3,
+    "day": 3,
+    "question": "Wer wurde in den Feuerofen geworfen?",
+    "options": ["Daniel", "Jeremia", "Elija", "Hananja, Mischaël und Asarja"],
+    "answerIndex": 3,
+    "hint": "Kein Haar auf ihren Köpfen wurde versengt."
+  },
+  {
+    "month": 3,
+    "day": 4,
+    "question": "Wie viele Bücher hat das Neue Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 0,
+    "hint": "Das Neue Testament beginnt mit dem Evangelium nach Matthäus."
+  },
+  {
+    "month": 3,
+    "day": 5,
+    "question": "Wer schickte nach der Sintflut eine Taube aus?",
+    "options": ["Abraham", "Mose", "Noah", "Adam"],
+    "answerIndex": 2,
+    "hint": "Er schickte einen Vogel, um zu sehen, ob das Wasser zurückgegangen war."
+  },
+  {
+    "month": 3,
+    "day": 6,
+    "question": "Welcher König genehmigte den Bau des Tempels?",
+    "options": ["David", "Saul", "Salomo", "Herodes"],
+    "answerIndex": 2,
+    "hint": "Der Sohn Davids."
+  },
+  {
+    "month": 3,
+    "day": 7,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Aramäisch", "Latein"],
+    "answerIndex": 0,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 3,
+    "day": 8,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 3,
+    "day": 9,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 3,
+    "day": 10,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 3,
+    "day": 11,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 3,
+    "day": 12,
+    "question": "Wer war der erste Mensch, den Gott erschuf?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 3,
+    "day": 13,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 3,
+    "day": 14,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 3,
+    "day": 15,
+    "question": "Welcher Prophet wurde von einem großen Fisch verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 3,
+    "day": 16,
+    "question": "Welches Meer teilte Mose?",
+    "options": ["Das Tote Meer", "Das Rote Meer", "Der See Genezareth", "Das Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah beim Auszug der Israeliten aus Ägypten."
+  },
+  {
+    "month": 3,
+    "day": 17,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 3,
+    "day": 18,
+    "question": "Wie hieß der Baum, von dem Adam und Eva im Garten Eden aßen?",
+    "options": ["Der Baum des Lebens", "Der Feigenbaum", "Der Baum der Erkenntnis des Guten und Bösen", "Der Olivenbaum"],
+    "answerIndex": 2,
+    "hint": "Die verbotene Frucht."
+  },
+  {
+    "month": 3,
+    "day": 19,
+    "question": "Wer baute die Arche vor der Sintflut?",
+    "options": ["Abraham", "Josef", "Mose", "Noah"],
+    "answerIndex": 3,
+    "hint": "Er rettete seine Familie und zwei von jedem Tier."
+  },
+  {
+    "month": 3,
+    "day": 20,
+    "question": "Welcher Prophet wurde in die Löwengrube geworfen?",
+    "options": ["Jeremia", "Ezechiel", "Daniel", "Jona"],
+    "answerIndex": 2,
+    "hint": "Er betete dreimal täglich."
+  },
+  {
+    "month": 3,
+    "day": 21,
+    "question": "Was war das erste Wunder, das Jesus vollbrachte?",
+    "options": ["Die Auferweckung des Lazarus", "Die Speisung der Menge", "Die Verwandlung von Wasser in Wein", "Die Heilung des Blinden"],
+    "answerIndex": 2,
+    "hint": "Es geschah bei der Hochzeit zu Kana in Galiläa."
+  },
+  {
+    "month": 3,
+    "day": 22,
+    "question": "Welcher Hirte wurde König von Israel?",
+    "options": ["Saul", "Josef", "Salomo", "David"],
+    "answerIndex": 3,
+    "hint": "Derjenige, der Goliat besiegte."
+  },
+  {
+    "month": 3,
+    "day": 23,
+    "question": "Wie viele Bücher hat das Alte Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "Die Bibel besteht aus 46 Büchern im Alten Testament und 27 im Neuen Testament."
+  },
+  {
+    "month": 3,
+    "day": 24,
+    "question": "Wer verkaufte sein Erstgeburtsrecht für eine Mahlzeit Linsensuppe?",
+    "options": ["Jakob", "Josef", "Esau", "Isaak"],
+    "answerIndex": 2,
+    "hint": "Jakobs Zwillingsbruder."
+  },
+  {
+    "month": 3,
+    "day": 25,
+    "question": "Welcher Prophet fuhr auf einem feurigen Wagen in den Himmel?",
+    "options": ["Elischa", "Elija", "Amos", "Jeremia"],
+    "answerIndex": 1,
+    "hint": "Sein Schüler war Elischa."
+  },
+  {
+    "month": 3,
+    "day": 26,
+    "question": "Wie hieß die unfruchtbare Frau, die den Propheten Samuel gebar?",
+    "options": ["Sara", "Rebekka", "Hanna", "Maria"],
+    "answerIndex": 2,
+    "hint": "Sie betete im Tempel und weihte ihren Sohn Gott."
+  },
+  {
+    "month": 3,
+    "day": 27,
+    "question": "Was waren Gottes erste Worte in der Bibel?",
+    "options": ["Es werde Licht", "Es werde Adam", "Es werde ein Firmament", "Die Wasser sollen sich sammeln"],
+    "answerIndex": 0,
+    "hint": "Am ersten Tag der Schöpfung."
+  },
+  {
+    "month": 3,
+    "day": 28,
+    "question": "Wie heißt der Berg, auf dem Mose die Zehn Gebote empfing?",
+    "options": ["Ölberg", "Berg Sinai", "Berg Karmel", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Der Berg der Gebote."
+  },
+  {
+    "month": 3,
+    "day": 29,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Mein Gott, mein Gott, warum hast du mich verlassen?", "Vater, vergib ihnen", "Es ist vollbracht", "Mich dürstet"],
+    "answerIndex": 2,
+    "hint": "Bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 3,
+    "day": 30,
+    "question": "Welcher König baute den Tempel in Jerusalem?",
+    "options": ["David", "Salomo", "Saul", "Herodes"],
+    "answerIndex": 1,
+    "hint": "Der Sohn König Davids."
+  },
+  {
+    "month": 3,
+    "day": 31,
+    "question": "Wie viele Tage und Nächte blieb Christus im Grab, bevor er auferstand?",
+    "options": ["Einen Tag", "Zwei Tage", "Drei Tage", "Vier Tage"],
+    "answerIndex": 2,
+    "hint": "Die Auferstehung geschah nach drei Tagen."
+  },
+  {
+    "month": 4,
+    "day": 1,
+    "question": "Welcher Jünger zweifelte an der Auferstehung Christi, bis er die Wunden sah?",
+    "options": ["Petrus", "Thomas", "Matthäus", "Judas"],
+    "answerIndex": 1,
+    "hint": "Bekannt als 'der ungläubige Thomas'."
+  },
+  {
+    "month": 4,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott den Menschen?",
+    "options": ["Am vierten", "Am fünften", "Am sechsten", "Am siebten"],
+    "answerIndex": 2,
+    "hint": "Vor dem Ruhetag."
+  },
+  {
+    "month": 4,
+    "day": 3,
+    "question": "Welcher Herrscher befahl das Massaker an den Kindern von Bethlehem?",
+    "options": ["Herodes", "Pontius Pilatus", "Kaiphas", "Cäsar"],
+    "answerIndex": 0,
+    "hint": "Er fürchtete, dass Christus ihn als König ersetzen würde."
+  },
+  {
+    "month": 4,
+    "day": 4,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 4,
+    "day": 5,
+    "question": "Wer war der erste Märtyrer des Christentums?",
+    "options": ["Petrus", "Paulus", "Stephanus", "Johannes der Täufer"],
+    "answerIndex": 2,
+    "hint": "Er wurde gesteinigt."
+  },
+  {
+    "month": 4,
+    "day": 6,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Griechisch", "Aramäisch", "Hebräisch", "Latein"],
+    "answerIndex": 2,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 4,
+    "day": 7,
+    "question": "Was war der Beruf des Apostels Petrus, bevor er Christus folgte?",
+    "options": ["Zimmermann", "Fischer", "Soldat", "Bauer"],
+    "answerIndex": 1,
+    "hint": "Christus versprach ihm, ihn zum Menschenfischer zu machen."
+  },
+  {
+    "month": 4,
+    "day": 8,
+    "question": "Wie heißt der Berg, auf dem Elija die falschen Propheten tötete?",
+    "options": ["Berg Sinai", "Berg Karmel", "Ölberg", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Er forderte dort die Propheten des Baal heraus."
+  },
+  {
+    "month": 4,
+    "day": 9,
+    "question": "Wer wurde von seinem Aussatz durch das Baden im Jordan geheilt?",
+    "options": ["Abram", "Josua", "Naaman der Syrer", "Saulus von Tarsus"],
+    "answerIndex": 2,
+    "hint": "Ein Feldherr einer großen Armee."
+  },
+  {
+    "month": 4,
+    "day": 10,
+    "question": "Wie heißt das Dorf, in dem Jesus Lazarus von den Toten auferweckte?",
+    "options": ["Kana", "Bethanien", "Bethlehem", "Nazareth"],
+    "answerIndex": 1,
+    "hint": "Es ist das Dorf der Schwestern des Lazarus, Maria und Martha."
+  },
+  {
+    "month": 4,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 4,
+    "day": 12,
+    "question": "Was tat Jesus, als er den Sturm stillte?",
+    "options": ["Er betete", "Er schlief", "Er aß", "Er sprach mit den Jüngern"],
+    "answerIndex": 1,
+    "hint": "Die Jünger beklagten sich, dass er schlief."
+  },
+  {
+    "month": 4,
+    "day": 13,
+    "question": "Welchem Propheten befahl ein Engel, eine Schriftrolle zu essen?",
+    "options": ["Ezechiel", "Jesaja", "Jeremia", "Hosea"],
+    "answerIndex": 0,
+    "hint": "Der alttestamentliche Prophet, der die Vision der Räder hatte."
+  },
+  {
+    "month": 4,
+    "day": 14,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 4,
+    "day": 15,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 4,
+    "day": 16,
+    "question": "Wen erschuf Gott aus der Rippe Adams?",
+    "options": ["Abel", "Eva", "Kain", "Set"],
+    "answerIndex": 1,
+    "hint": "Die erste Frau."
+  },
+  {
+    "month": 4,
+    "day": 17,
+    "question": "Was trug Jesus bei seiner Kreuzigung?",
+    "options": ["Die Dornenkrone", "Ein Schild", "Ein Zepter", "Das Kreuz"],
+    "answerIndex": 3,
+    "hint": "Er trug unser Leiden auf seinem Rücken."
+  },
+  {
+    "month": 4,
+    "day": 18,
+    "question": "In welcher Sprache wurde das Neue Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Latein", "Aramäisch"],
+    "answerIndex": 1,
+    "hint": "Die gemeinsame Sprache des Römischen Reiches zu jener Zeit."
+  },
+  {
+    "month": 4,
+    "day": 19,
+    "question": "Wer wurde in der Bibel als außerordentlich weise beschrieben?",
+    "options": ["Abraham", "Mose", "Salomo", "David"],
+    "answerIndex": 2,
+    "hint": "Sohn Davids und König von Israel."
+  },
+  {
+    "month": 4,
+    "day": 20,
+    "question": "Was geschah mit Sonne und Mond, als Josua, der Sohn Nuns, betete?",
+    "options": ["Sie wurden dunkel", "Sie standen still", "Ihre Farbe änderte sich", "Ihr Licht nahm zu"],
+    "answerIndex": 1,
+    "hint": "Um die Zeit der Schlacht zu verlängern."
+  },
+  {
+    "month": 4,
+    "day": 21,
+    "question": "Was ist der erste Vers der Bibel?",
+    "options": ["Im Anfang schuf Gott Himmel und Erde", "Es werde Licht", "Im Anfang war das Wort", "Gott sprach: Du bist nicht allein"],
+    "answerIndex": 0,
+    "hint": "Der Eröffnungsvers des Buches Genesis."
+  },
+  {
+    "month": 4,
+    "day": 22,
+    "question": "Wer sagte: 'Denn ich habe die Liebe Gottes gekostet'?",
+    "options": ["Petrus", "Paulus", "Johannes", "Timotheus"],
+    "answerIndex": 1,
+    "hint": "Er hieß Saulus, bevor er Paulus wurde."
+  },
+  {
+    "month": 4,
+    "day": 23,
+    "question": "Wie viele Fische verwendete Jesus, um die Menge zu speisen?",
+    "options": ["1", "2", "3", "5"],
+    "answerIndex": 1,
+    "hint": "Sie waren zusammen mit fünf Broten."
+  },
+  {
+    "month": 4,
+    "day": 24,
+    "question": "Welcher Prophet sagte das Kommen Christi voraus?",
+    "options": ["Jeremia", "Daniel", "Jesaja", "Amos"],
+    "answerIndex": 2,
+    "hint": "Bekannt als 'der Prophet der Erlösung'."
+  },
+  {
+    "month": 4,
+    "day": 25,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  },
+  {
+    "month": 4,
+    "day": 26,
+    "question": "Was war der Beruf des heiligen Lukas?",
+    "options": ["Fischer", "Arzt", "Lehrer", "Zimmermann"],
+    "answerIndex": 1,
+    "hint": "Einer der vier Evangelisten und Verfasser der Apostelgeschichte."
+  },
+  {
+    "month": 4,
+    "day": 27,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 4,
+    "day": 28,
+    "question": "Wie viele große Propheten gibt es im Alten Testament?",
+    "options": ["2", "4", "6", "8"],
+    "answerIndex": 1,
+    "hint": "Jesaja, Jeremia, Ezechiel, Daniel."
+  },
+  {
+    "month": 4,
+    "day": 29,
+    "question": "Wer versuchte, mit Jesus auf dem Wasser zu gehen?",
+    "options": ["Johannes", "Petrus", "Jakobus", "Thomas"],
+    "answerIndex": 1,
+    "hint": "Jesus sagte zu ihm: 'Du Kleingläubiger'."
+  },
+  {
+    "month": 4,
+    "day": 30,
+    "question": "Welches Buch des Neuen Testaments erwähnt den Namen Gottes nicht ausdrücklich?",
+    "options": ["Der Judasbrief", "Der Jakobusbrief", "Die Offenbarung", "Der Philipperbrief"],
+    "answerIndex": 0,
+    "hint": "Es spricht über die Kirche und die Gläubigen."
+  },
+  {
+    "month": 5,
+    "day": 1,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Es ist vollbracht", "Vater, vergib ihnen", "Mein Gott, mein Gott, warum hast du mich verlassen?", "Mich dürstet"],
+    "answerIndex": 0,
+    "hint": "Die letzten Worte, die er sprach, bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 5,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott Sonne, Mond und Sterne?",
+    "options": ["Am ersten", "Am dritten", "Am vierten", "Am sechsten"],
+    "answerIndex": 2,
+    "hint": "Die Lichter am Himmel."
+  },
+  {
+    "month": 5,
+    "day": 3,
+    "question": "Welcher König befahl wegen eines Tanzes die Enthauptung Johannes des Täufers?",
+    "options": ["Herodes", "Nebukadnezar", "Ahab", "Salomo"],
+    "answerIndex": 0,
+    "hint": "König von Galiläa, der Johannes den Täufer enthaupten ließ."
+  },
+  {
+    "month": 5,
+    "day": 4,
+    "question": "Auf welchen Baum kletterte Zachäus, um Jesus zu sehen?",
+    "options": ["Einen Olivenbaum", "Einen Maulbeerfeigenbaum", "Einen Feigenbaum", "Einen Maulbeerbaum"],
+    "answerIndex": 1,
+    "hint": "Er war klein und lief Jesus voraus."
+  },
+  {
+    "month": 5,
+    "day": 5,
+    "question": "Wer wurde in den Feuerofen geworfen?",
+    "options": ["Daniel", "Jeremia", "Elija", "Hananja, Mischaël und Asarja"],
+    "answerIndex": 3,
+    "hint": "Kein Haar auf ihren Köpfen wurde versengt."
+  },
+  {
+    "month": 5,
+    "day": 6,
+    "question": "Wie viele Bücher hat das Neue Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 0,
+    "hint": "Das Neue Testament beginnt mit dem Evangelium nach Matthäus."
+  },
+  {
+    "month": 5,
+    "day": 7,
+    "question": "Wer schickte nach der Sintflut eine Taube aus?",
+    "options": ["Abraham", "Mose", "Noah", "Adam"],
+    "answerIndex": 2,
+    "hint": "Er schickte einen Vogel, um zu sehen, ob das Wasser zurückgegangen war."
+  },
+  {
+    "month": 5,
+    "day": 8,
+    "question": "Welcher König genehmigte den Bau des Tempels?",
+    "options": ["David", "Saul", "Salomo", "Herodes"],
+    "answerIndex": 2,
+    "hint": "Der Sohn Davids."
+  },
+  {
+    "month": 5,
+    "day": 9,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Aramäisch", "Latein"],
+    "answerIndex": 0,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 5,
+    "day": 10,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 5,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 5,
+    "day": 12,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 5,
+    "day": 13,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 5,
+    "day": 14,
+    "question": "Wer war der erste Mensch, den Gott erschuf?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 5,
+    "day": 15,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 5,
+    "day": 16,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 5,
+    "day": 17,
+    "question": "Welcher Prophet wurde von einem großen Fisch verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 5,
+    "day": 18,
+    "question": "Welches Meer teilte Mose?",
+    "options": ["Das Tote Meer", "Das Rote Meer", "Der See Genezareth", "Das Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah beim Auszug der Israeliten aus Ägypten."
+  },
+  {
+    "month": 5,
+    "day": 19,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 5,
+    "day": 20,
+    "question": "Wie hieß der Baum, von dem Adam und Eva im Garten Eden aßen?",
+    "options": ["Der Baum des Lebens", "Der Feigenbaum", "Der Baum der Erkenntnis des Guten und Bösen", "Der Olivenbaum"],
+    "answerIndex": 2,
+    "hint": "Die verbotene Frucht."
+  },
+  {
+    "month": 5,
+    "day": 21,
+    "question": "Wer baute die Arche vor der Sintflut?",
+    "options": ["Abraham", "Josef", "Mose", "Noah"],
+    "answerIndex": 3,
+    "hint": "Er rettete seine Familie und zwei von jedem Tier."
+  },
+  {
+    "month": 5,
+    "day": 22,
+    "question": "Welcher Prophet wurde in die Löwengrube geworfen?",
+    "options": ["Jeremia", "Ezechiel", "Daniel", "Jona"],
+    "answerIndex": 2,
+    "hint": "Er betete dreimal täglich."
+  },
+  {
+    "month": 5,
+    "day": 23,
+    "question": "Was war das erste Wunder, das Jesus vollbrachte?",
+    "options": ["Die Auferweckung des Lazarus", "Die Speisung der Menge", "Die Verwandlung von Wasser in Wein", "Die Heilung des Blinden"],
+    "answerIndex": 2,
+    "hint": "Es geschah bei der Hochzeit zu Kana in Galiläa."
+  },
+  {
+    "month": 5,
+    "day": 24,
+    "question": "Welcher Hirte wurde König von Israel?",
+    "options": ["Saul", "Josef", "Salomo", "David"],
+    "answerIndex": 3,
+    "hint": "Derjenige, der Goliat besiegte."
+  },
+  {
+    "month": 5,
+    "day": 25,
+    "question": "Wie viele Bücher hat das Alte Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "Die Bibel besteht aus 46 Büchern im Alten Testament und 27 im Neuen Testament."
+  },
+  {
+    "month": 5,
+    "day": 26,
+    "question": "Wer verkaufte sein Erstgeburtsrecht für eine Mahlzeit Linsensuppe?",
+    "options": ["Jakob", "Josef", "Esau", "Isaak"],
+    "answerIndex": 2,
+    "hint": "Jakobs Zwillingsbruder."
+  },
+  {
+    "month": 5,
+    "day": 27,
+    "question": "Welcher Prophet fuhr auf einem feurigen Wagen in den Himmel?",
+    "options": ["Elischa", "Elija", "Amos", "Jeremia"],
+    "answerIndex": 1,
+    "hint": "Sein Schüler war Elischa."
+  },
+  {
+    "month": 5,
+    "day": 28,
+    "question": "Wie hieß die unfruchtbare Frau, die den Propheten Samuel gebar?",
+    "options": ["Sara", "Rebekka", "Hanna", "Maria"],
+    "answerIndex": 2,
+    "hint": "Sie betete im Tempel und weihte ihren Sohn Gott."
+  },
+  {
+    "month": 5,
+    "day": 29,
+    "question": "Was waren Gottes erste Worte in der Bibel?",
+    "options": ["Es werde Licht", "Es werde Adam", "Es werde ein Firmament", "Die Wasser sollen sich sammeln"],
+    "answerIndex": 0,
+    "hint": "Am ersten Tag der Schöpfung."
+  },
+  {
+    "month": 5,
+    "day": 30,
+    "question": "Wie heißt der Berg, auf dem Mose die Zehn Gebote empfing?",
+    "options": ["Ölberg", "Berg Sinai", "Berg Karmel", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Der Berg der Gebote."
+  },
+  {
+    "month": 5,
+    "day": 31,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Mein Gott, mein Gott, warum hast du mich verlassen?", "Vater, vergib ihnen", "Es ist vollbracht", "Mich dürstet"],
+    "answerIndex": 2,
+    "hint": "Bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 6,
+    "day": 1,
+    "question": "Welcher Jünger zweifelte an der Auferstehung Christi, bis er die Wunden sah?",
+    "options": ["Petrus", "Thomas", "Matthäus", "Judas"],
+    "answerIndex": 1,
+    "hint": "Bekannt als 'der ungläubige Thomas'."
+  },
+  {
+    "month": 6,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott den Menschen?",
+    "options": ["Am vierten", "Am fünften", "Am sechsten", "Am siebten"],
+    "answerIndex": 2,
+    "hint": "Vor dem Ruhetag."
+  },
+  {
+    "month": 6,
+    "day": 3,
+    "question": "Welcher Herrscher befahl das Massaker an den Kindern von Bethlehem?",
+    "options": ["Herodes", "Pontius Pilatus", "Kaiphas", "Cäsar"],
+    "answerIndex": 0,
+    "hint": "Er fürchtete, dass Christus ihn als König ersetzen würde."
+  },
+  {
+    "month": 6,
+    "day": 4,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 6,
+    "day": 5,
+    "question": "Wer war der erste Märtyrer des Christentums?",
+    "options": ["Petrus", "Paulus", "Stephanus", "Johannes der Täufer"],
+    "answerIndex": 2,
+    "hint": "Er wurde gesteinigt."
+  },
+  {
+    "month": 6,
+    "day": 6,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Griechisch", "Aramäisch", "Hebräisch", "Latein"],
+    "answerIndex": 2,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 6,
+    "day": 7,
+    "question": "Was war der Beruf des Apostels Petrus, bevor er Christus folgte?",
+    "options": ["Zimmermann", "Fischer", "Soldat", "Bauer"],
+    "answerIndex": 1,
+    "hint": "Christus versprach ihm, ihn zum Menschenfischer zu machen."
+  },
+  {
+    "month": 6,
+    "day": 8,
+    "question": "Wie heißt der Berg, auf dem Elija die falschen Propheten tötete?",
+    "options": ["Berg Sinai", "Berg Karmel", "Ölberg", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Er forderte dort die Propheten des Baal heraus."
+  },
+  {
+    "month": 6,
+    "day": 9,
+    "question": "Wer wurde von seinem Aussatz durch das Baden im Jordan geheilt?",
+    "options": ["Abram", "Josua", "Naaman der Syrer", "Saulus von Tarsus"],
+    "answerIndex": 2,
+    "hint": "Ein Feldherr einer großen Armee."
+  },
+  {
+    "month": 6,
+    "day": 10,
+    "question": "Wie heißt das Dorf, in dem Jesus Lazarus von den Toten auferweckte?",
+    "options": ["Kana", "Bethanien", "Bethlehem", "Nazareth"],
+    "answerIndex": 1,
+    "hint": "Es ist das Dorf der Schwestern des Lazarus, Maria und Martha."
+  },
+  {
+    "month": 6,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 6,
+    "day": 12,
+    "question": "Was tat Jesus, als er den Sturm stillte?",
+    "options": ["Er betete", "Er schlief", "Er aß", "Er sprach mit den Jüngern"],
+    "answerIndex": 1,
+    "hint": "Die Jünger beklagten sich, dass er schlief."
+  },
+  {
+    "month": 6,
+    "day": 13,
+    "question": "Welchem Propheten befahl ein Engel, eine Schriftrolle zu essen?",
+    "options": ["Ezechiel", "Jesaja", "Jeremia", "Hosea"],
+    "answerIndex": 0,
+    "hint": "Der alttestamentliche Prophet, der die Vision der Räder hatte."
+  },
+  {
+    "month": 6,
+    "day": 14,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 6,
+    "day": 15,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 6,
+    "day": 16,
+    "question": "Wen erschuf Gott aus der Rippe Adams?",
+    "options": ["Abel", "Eva", "Kain", "Set"],
+    "answerIndex": 1,
+    "hint": "Die erste Frau."
+  },
+  {
+    "month": 6,
+    "day": 17,
+    "question": "Was trug Jesus bei seiner Kreuzigung?",
+    "options": ["Die Dornenkrone", "Ein Schild", "Ein Zepter", "Das Kreuz"],
+    "answerIndex": 3,
+    "hint": "Er trug unser Leiden auf seinem Rücken."
+  },
+  {
+    "month": 6,
+    "day": 18,
+    "question": "In welcher Sprache wurde das Neue Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Latein", "Aramäisch"],
+    "answerIndex": 1,
+    "hint": "Die gemeinsame Sprache des Römischen Reiches zu jener Zeit."
+  },
+  {
+    "month": 6,
+    "day": 19,
+    "question": "Wer wurde in der Bibel als außerordentlich weise beschrieben?",
+    "options": ["Abraham", "Mose", "Salomo", "David"],
+    "answerIndex": 2,
+    "hint": "Sohn Davids und König von Israel."
+  },
+  {
+    "month": 6,
+    "day": 20,
+    "question": "Was geschah mit Sonne und Mond, als Josua, der Sohn Nuns, betete?",
+    "options": ["Sie wurden dunkel", "Sie standen still", "Ihre Farbe änderte sich", "Ihr Licht nahm zu"],
+    "answerIndex": 1,
+    "hint": "Um die Zeit der Schlacht zu verlängern."
+  },
+  {
+    "month": 6,
+    "day": 21,
+    "question": "Was ist der erste Vers der Bibel?",
+    "options": ["Im Anfang schuf Gott Himmel und Erde", "Es werde Licht", "Im Anfang war das Wort", "Gott sprach: Du bist nicht allein"],
+    "answerIndex": 0,
+    "hint": "Der Eröffnungsvers des Buches Genesis."
+  },
+  {
+    "month": 6,
+    "day": 22,
+    "question": "Wer sagte: 'Denn ich habe die Liebe Gottes gekostet'?",
+    "options": ["Petrus", "Paulus", "Johannes", "Timotheus"],
+    "answerIndex": 1,
+    "hint": "Er hieß Saulus, bevor er Paulus wurde."
+  },
+  {
+    "month": 6,
+    "day": 23,
+    "question": "Wie viele Fische verwendete Jesus, um die Menge zu speisen?",
+    "options": ["1", "2", "3", "5"],
+    "answerIndex": 1,
+    "hint": "Sie waren zusammen mit fünf Broten."
+  },
+  {
+    "month": 6,
+    "day": 24,
+    "question": "Welcher Prophet sagte das Kommen Christi voraus?",
+    "options": ["Jeremia", "Daniel", "Jesaja", "Amos"],
+    "answerIndex": 2,
+    "hint": "Bekannt als 'der Prophet der Erlösung'."
+  },
+  {
+    "month": 6,
+    "day": 25,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  },
+  {
+    "month": 6,
+    "day": 26,
+    "question": "Was war der Beruf des heiligen Lukas?",
+    "options": ["Fischer", "Arzt", "Lehrer", "Zimmermann"],
+    "answerIndex": 1,
+    "hint": "Einer der vier Evangelisten und Verfasser der Apostelgeschichte."
+  },
+  {
+    "month": 6,
+    "day": 27,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 6,
+    "day": 28,
+    "question": "Wie viele große Propheten gibt es im Alten Testament?",
+    "options": ["2", "4", "6", "8"],
+    "answerIndex": 1,
+    "hint": "Jesaja, Jeremia, Ezechiel, Daniel."
+  },
+  {
+    "month": 6,
+    "day": 29,
+    "question": "Wer versuchte, mit Jesus auf dem Wasser zu gehen?",
+    "options": ["Johannes", "Petrus", "Jakobus", "Thomas"],
+    "answerIndex": 1,
+    "hint": "Jesus sagte zu ihm: 'Du Kleingläubiger'."
+  },
+  {
+    "month": 6,
+    "day": 30,
+    "question": "Welches Buch des Neuen Testaments erwähnt den Namen Gottes nicht ausdrücklich?",
+    "options": ["Der Judasbrief", "Der Jakobusbrief", "Die Offenbarung", "Der Philipperbrief"],
+    "answerIndex": 0,
+    "hint": "Es spricht über die Kirche und die Gläubigen."
+  },
+  {
+    "month": 7,
+    "day": 1,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Es ist vollbracht", "Vater, vergib ihnen", "Mein Gott, mein Gott, warum hast du mich verlassen?", "Mich dürstet"],
+    "answerIndex": 0,
+    "hint": "Die letzten Worte, die er sprach, bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 7,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott Sonne, Mond und Sterne?",
+    "options": ["Am ersten", "Am dritten", "Am vierten", "Am sechsten"],
+    "answerIndex": 2,
+    "hint": "Die Lichter am Himmel."
+  },
+  {
+    "month": 7,
+    "day": 3,
+    "question": "Welcher König befahl wegen eines Tanzes die Enthauptung Johannes des Täufers?",
+    "options": ["Herodes", "Nebukadnezar", "Ahab", "Salomo"],
+    "answerIndex": 0,
+    "hint": "König von Galiläa, der Johannes den Täufer enthaupten ließ."
+  },
+  {
+    "month": 7,
+    "day": 4,
+    "question": "Auf welchen Baum kletterte Zachäus, um Jesus zu sehen?",
+    "options": ["Einen Olivenbaum", "Einen Maulbeerfeigenbaum", "Einen Feigenbaum", "Einen Maulbeerbaum"],
+    "answerIndex": 1,
+    "hint": "Er war klein und lief Jesus voraus."
+  },
+  {
+    "month": 7,
+    "day": 5,
+    "question": "Wer wurde in den Feuerofen geworfen?",
+    "options": ["Daniel", "Jeremia", "Elija", "Hananja, Mischaël und Asarja"],
+    "answerIndex": 3,
+    "hint": "Kein Haar auf ihren Köpfen wurde versengt."
+  },
+  {
+    "month": 7,
+    "day": 6,
+    "question": "Wie viele Bücher hat das Neue Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 0,
+    "hint": "Das Neue Testament beginnt mit dem Evangelium nach Matthäus."
+  },
+  {
+    "month": 7,
+    "day": 7,
+    "question": "Wer schickte nach der Sintflut eine Taube aus?",
+    "options": ["Abraham", "Mose", "Noah", "Adam"],
+    "answerIndex": 2,
+    "hint": "Er schickte einen Vogel, um zu sehen, ob das Wasser zurückgegangen war."
+  },
+  {
+    "month": 7,
+    "day": 8,
+    "question": "Welcher König genehmigte den Bau des Tempels?",
+    "options": ["David", "Saul", "Salomo", "Herodes"],
+    "answerIndex": 2,
+    "hint": "Der Sohn Davids."
+  },
+  {
+    "month": 7,
+    "day": 9,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Aramäisch", "Latein"],
+    "answerIndex": 0,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 7,
+    "day": 10,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 7,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 7,
+    "day": 12,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 7,
+    "day": 13,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 7,
+    "day": 14,
+    "question": "Wer war der erste Mensch, den Gott erschuf?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 7,
+    "day": 15,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 7,
+    "day": 16,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 7,
+    "day": 17,
+    "question": "Welcher Prophet wurde von einem großen Fisch verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 7,
+    "day": 18,
+    "question": "Welches Meer teilte Mose?",
+    "options": ["Das Tote Meer", "Das Rote Meer", "Der See Genezareth", "Das Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah beim Auszug der Israeliten aus Ägypten."
+  },
+  {
+    "month": 7,
+    "day": 19,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 7,
+    "day": 20,
+    "question": "Wie hieß der Baum, von dem Adam und Eva im Garten Eden aßen?",
+    "options": ["Der Baum des Lebens", "Der Feigenbaum", "Der Baum der Erkenntnis des Guten und Bösen", "Der Olivenbaum"],
+    "answerIndex": 2,
+    "hint": "Die verbotene Frucht."
+  },
+  {
+    "month": 7,
+    "day": 21,
+    "question": "Wer baute die Arche vor der Sintflut?",
+    "options": ["Abraham", "Josef", "Mose", "Noah"],
+    "answerIndex": 3,
+    "hint": "Er rettete seine Familie und zwei von jedem Tier."
+  },
+  {
+    "month": 7,
+    "day": 22,
+    "question": "Welcher Prophet wurde in die Löwengrube geworfen?",
+    "options": ["Jeremia", "Ezechiel", "Daniel", "Jona"],
+    "answerIndex": 2,
+    "hint": "Er betete dreimal täglich."
+  },
+  {
+    "month": 7,
+    "day": 23,
+    "question": "Was war das erste Wunder, das Jesus vollbrachte?",
+    "options": ["Die Auferweckung des Lazarus", "Die Speisung der Menge", "Die Verwandlung von Wasser in Wein", "Die Heilung des Blinden"],
+    "answerIndex": 2,
+    "hint": "Es geschah bei der Hochzeit zu Kana in Galiläa."
+  },
+  {
+    "month": 7,
+    "day": 24,
+    "question": "Welcher Hirte wurde König von Israel?",
+    "options": ["Saul", "Josef", "Salomo", "David"],
+    "answerIndex": 3,
+    "hint": "Derjenige, der Goliat besiegte."
+  },
+  {
+    "month": 7,
+    "day": 25,
+    "question": "Wie viele Bücher hat das Alte Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "Die Bibel besteht aus 46 Büchern im Alten Testament und 27 im Neuen Testament."
+  },
+  {
+    "month": 7,
+    "day": 26,
+    "question": "Wer verkaufte sein Erstgeburtsrecht für eine Mahlzeit Linsensuppe?",
+    "options": ["Jakob", "Josef", "Esau", "Isaak"],
+    "answerIndex": 2,
+    "hint": "Jakobs Zwillingsbruder."
+  },
+  {
+    "month": 7,
+    "day": 27,
+    "question": "Welcher Prophet fuhr auf einem feurigen Wagen in den Himmel?",
+    "options": ["Elischa", "Elija", "Amos", "Jeremia"],
+    "answerIndex": 1,
+    "hint": "Sein Schüler war Elischa."
+  },
+  {
+    "month": 7,
+    "day": 28,
+    "question": "Wie hieß die unfruchtbare Frau, die den Propheten Samuel gebar?",
+    "options": ["Sara", "Rebekka", "Hanna", "Maria"],
+    "answerIndex": 2,
+    "hint": "Sie betete im Tempel und weihte ihren Sohn Gott."
+  },
+  {
+    "month": 7,
+    "day": 29,
+    "question": "Was waren Gottes erste Worte in der Bibel?",
+    "options": ["Es werde Licht", "Es werde Adam", "Es werde ein Firmament", "Die Wasser sollen sich sammeln"],
+    "answerIndex": 0,
+    "hint": "Am ersten Tag der Schöpfung."
+  },
+  {
+    "month": 7,
+    "day": 30,
+    "question": "Wie heißt der Berg, auf dem Mose die Zehn Gebote empfing?",
+    "options": ["Ölberg", "Berg Sinai", "Berg Karmel", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Der Berg der Gebote."
+  },
+  {
+    "month": 7,
+    "day": 31,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Mein Gott, mein Gott, warum hast du mich verlassen?", "Vater, vergib ihnen", "Es ist vollbracht", "Mich dürstet"],
+    "answerIndex": 2,
+    "hint": "Bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 8,
+    "day": 1,
+    "question": "Welcher Jünger zweifelte an der Auferstehung Christi, bis er die Wunden sah?",
+    "options": ["Petrus", "Thomas", "Matthäus", "Judas"],
+    "answerIndex": 1,
+    "hint": "Bekannt als 'der ungläubige Thomas'."
+  },
+  {
+    "month": 8,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott den Menschen?",
+    "options": ["Am vierten", "Am fünften", "Am sechsten", "Am siebten"],
+    "answerIndex": 2,
+    "hint": "Vor dem Ruhetag."
+  },
+  {
+    "month": 8,
+    "day": 3,
+    "question": "Welcher Herrscher befahl das Massaker an den Kindern von Bethlehem?",
+    "options": ["Herodes", "Pontius Pilatus", "Kaiphas", "Cäsar"],
+    "answerIndex": 0,
+    "hint": "Er fürchtete, dass Christus ihn als König ersetzen würde."
+  },
+  {
+    "month": 8,
+    "day": 4,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 8,
+    "day": 5,
+    "question": "Wer war der erste Märtyrer des Christentums?",
+    "options": ["Petrus", "Paulus", "Stephanus", "Johannes der Täufer"],
+    "answerIndex": 2,
+    "hint": "Er wurde gesteinigt."
+  },
+  {
+    "month": 8,
+    "day": 6,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Griechisch", "Aramäisch", "Hebräisch", "Latein"],
+    "answerIndex": 2,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 8,
+    "day": 7,
+    "question": "Was war der Beruf des Apostels Petrus, bevor er Christus folgte?",
+    "options": ["Zimmermann", "Fischer", "Soldat", "Bauer"],
+    "answerIndex": 1,
+    "hint": "Christus versprach ihm, ihn zum Menschenfischer zu machen."
+  },
+  {
+    "month": 8,
+    "day": 8,
+    "question": "Wie heißt der Berg, auf dem Elija die falschen Propheten tötete?",
+    "options": ["Berg Sinai", "Berg Karmel", "Ölberg", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Er forderte dort die Propheten des Baal heraus."
+  },
+  {
+    "month": 8,
+    "day": 9,
+    "question": "Wer wurde von seinem Aussatz durch das Baden im Jordan geheilt?",
+    "options": ["Abram", "Josua", "Naaman der Syrer", "Saulus von Tarsus"],
+    "answerIndex": 2,
+    "hint": "Ein Feldherr einer großen Armee."
+  },
+  {
+    "month": 8,
+    "day": 10,
+    "question": "Wie heißt das Dorf, in dem Jesus Lazarus von den Toten auferweckte?",
+    "options": ["Kana", "Bethanien", "Bethlehem", "Nazareth"],
+    "answerIndex": 1,
+    "hint": "Es ist das Dorf der Schwestern des Lazarus, Maria und Martha."
+  },
+  {
+    "month": 8,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 8,
+    "day": 12,
+    "question": "Was tat Jesus, als er den Sturm stillte?",
+    "options": ["Er betete", "Er schlief", "Er aß", "Er sprach mit den Jüngern"],
+    "answerIndex": 1,
+    "hint": "Die Jünger beklagten sich, dass er schlief."
+  },
+  {
+    "month": 8,
+    "day": 13,
+    "question": "Welchem Propheten befahl ein Engel, eine Schriftrolle zu essen?",
+    "options": ["Ezechiel", "Jesaja", "Jeremia", "Hosea"],
+    "answerIndex": 0,
+    "hint": "Der alttestamentliche Prophet, der die Vision der Räder hatte."
+  },
+  {
+    "month": 8,
+    "day": 14,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 8,
+    "day": 15,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 8,
+    "day": 16,
+    "question": "Wen erschuf Gott aus der Rippe Adams?",
+    "options": ["Abel", "Eva", "Kain", "Set"],
+    "answerIndex": 1,
+    "hint": "Die erste Frau."
+  },
+  {
+    "month": 8,
+    "day": 17,
+    "question": "Was trug Jesus bei seiner Kreuzigung?",
+    "options": ["Die Dornenkrone", "Ein Schild", "Ein Zepter", "Das Kreuz"],
+    "answerIndex": 3,
+    "hint": "Er trug unser Leiden auf seinem Rücken."
+  },
+  {
+    "month": 8,
+    "day": 18,
+    "question": "In welcher Sprache wurde das Neue Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Latein", "Aramäisch"],
+    "answerIndex": 1,
+    "hint": "Die gemeinsame Sprache des Römischen Reiches zu jener Zeit."
+  },
+  {
+    "month": 8,
+    "day": 19,
+    "question": "Wer wurde in der Bibel als außerordentlich weise beschrieben?",
+    "options": ["Abraham", "Mose", "Salomo", "David"],
+    "answerIndex": 2,
+    "hint": "Sohn Davids und König von Israel."
+  },
+  {
+    "month": 8,
+    "day": 20,
+    "question": "Was geschah mit Sonne und Mond, als Josua, der Sohn Nuns, betete?",
+    "options": ["Sie wurden dunkel", "Sie standen still", "Ihre Farbe änderte sich", "Ihr Licht nahm zu"],
+    "answerIndex": 1,
+    "hint": "Um die Zeit der Schlacht zu verlängern."
+  },
+  {
+    "month": 8,
+    "day": 21,
+    "question": "Was ist der erste Vers der Bibel?",
+    "options": ["Im Anfang schuf Gott Himmel und Erde", "Es werde Licht", "Im Anfang war das Wort", "Gott sprach: Du bist nicht allein"],
+    "answerIndex": 0,
+    "hint": "Der Eröffnungsvers des Buches Genesis."
+  },
+  {
+    "month": 8,
+    "day": 22,
+    "question": "Wer sagte: 'Denn ich habe die Liebe Gottes gekostet'?",
+    "options": ["Petrus", "Paulus", "Johannes", "Timotheus"],
+    "answerIndex": 1,
+    "hint": "Er hieß Saulus, bevor er Paulus wurde."
+  },
+  {
+    "month": 8,
+    "day": 23,
+    "question": "Wie viele Fische verwendete Jesus, um die Menge zu speisen?",
+    "options": ["1", "2", "3", "5"],
+    "answerIndex": 1,
+    "hint": "Sie waren zusammen mit fünf Broten."
+  },
+  {
+    "month": 8,
+    "day": 24,
+    "question": "Welcher Prophet sagte das Kommen Christi voraus?",
+    "options": ["Jeremia", "Daniel", "Jesaja", "Amos"],
+    "answerIndex": 2,
+    "hint": "Bekannt als 'der Prophet der Erlösung'."
+  },
+  {
+    "month": 8,
+    "day": 25,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  },
+  {
+    "month": 8,
+    "day": 26,
+    "question": "Was war der Beruf des heiligen Lukas?",
+    "options": ["Fischer", "Arzt", "Lehrer", "Zimmermann"],
+    "answerIndex": 1,
+    "hint": "Einer der vier Evangelisten und Verfasser der Apostelgeschichte."
+  },
+  {
+    "month": 8,
+    "day": 27,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 8,
+    "day": 28,
+    "question": "Wie viele große Propheten gibt es im Alten Testament?",
+    "options": ["2", "4", "6", "8"],
+    "answerIndex": 1,
+    "hint": "Jesaja, Jeremia, Ezechiel, Daniel."
+  },
+  {
+    "month": 8,
+    "day": 29,
+    "question": "Wer versuchte, mit Jesus auf dem Wasser zu gehen?",
+    "options": ["Johannes", "Petrus", "Jakobus", "Thomas"],
+    "answerIndex": 1,
+    "hint": "Jesus sagte zu ihm: 'Du Kleingläubiger'."
+  },
+  {
+    "month": 8,
+    "day": 30,
+    "question": "Welches Buch des Neuen Testaments erwähnt den Namen Gottes nicht ausdrücklich?",
+    "options": ["Der Judasbrief", "Der Jakobusbrief", "Die Offenbarung", "Der Philipperbrief"],
+    "answerIndex": 0,
+    "hint": "Es spricht über die Kirche und die Gläubigen."
+  },
+  {
+    "month": 8,
+    "day": 31,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Es ist vollbracht", "Vater, vergib ihnen", "Mein Gott, mein Gott, warum hast du mich verlassen?", "Mich dürstet"],
+    "answerIndex": 0,
+    "hint": "Die letzten Worte, die er sprach, bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 9,
+    "day": 1,
+    "question": "An welchem Tag der Schöpfung erschuf Gott Sonne, Mond und Sterne?",
+    "options": ["Am ersten", "Am dritten", "Am vierten", "Am sechsten"],
+    "answerIndex": 2,
+    "hint": "Die Lichter am Himmel."
+  },
+  {
+    "month": 9,
+    "day": 2,
+    "question": "Welcher König befahl wegen eines Tanzes die Enthauptung Johannes des Täufers?",
+    "options": ["Herodes", "Nebukadnezar", "Ahab", "Salomo"],
+    "answerIndex": 0,
+    "hint": "König von Galiläa, der Johannes den Täufer enthaupten ließ."
+  },
+  {
+    "month": 9,
+    "day": 3,
+    "question": "Auf welchen Baum kletterte Zachäus, um Jesus zu sehen?",
+    "options": ["Einen Olivenbaum", "Einen Maulbeerfeigenbaum", "Einen Feigenbaum", "Einen Maulbeerbaum"],
+    "answerIndex": 1,
+    "hint": "Er war klein und lief Jesus voraus."
+  },
+  {
+    "month": 9,
+    "day": 4,
+    "question": "Wer wurde in den Feuerofen geworfen?",
+    "options": ["Daniel", "Jeremia", "Elija", "Hananja, Mischaël und Asarja"],
+    "answerIndex": 3,
+    "hint": "Kein Haar auf ihren Köpfen wurde versengt."
+  },
+  {
+    "month": 9,
+    "day": 5,
+    "question": "Wie viele Bücher hat das Neue Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 0,
+    "hint": "Das Neue Testament beginnt mit dem Evangelium nach Matthäus."
+  },
+  {
+    "month": 9,
+    "day": 6,
+    "question": "Wer schickte nach der Sintflut eine Taube aus?",
+    "options": ["Abraham", "Mose", "Noah", "Adam"],
+    "answerIndex": 2,
+    "hint": "Er schickte einen Vogel, um zu sehen, ob das Wasser zurückgegangen war."
+  },
+  {
+    "month": 9,
+    "day": 7,
+    "question": "Welcher König genehmigte den Bau des Tempels?",
+    "options": ["David", "Saul", "Salomo", "Herodes"],
+    "answerIndex": 2,
+    "hint": "Der Sohn Davids."
+  },
+  {
+    "month": 9,
+    "day": 8,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Aramäisch", "Latein"],
+    "answerIndex": 0,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 9,
+    "day": 9,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 9,
+    "day": 10,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 9,
+    "day": 11,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 9,
+    "day": 12,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 9,
+    "day": 13,
+    "question": "Wer war der erste Mensch, den Gott erschuf?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 9,
+    "day": 14,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 9,
+    "day": 15,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 9,
+    "day": 16,
+    "question": "Welcher Prophet wurde von einem großen Fisch verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 9,
+    "day": 17,
+    "question": "Welches Meer teilte Mose?",
+    "options": ["Das Tote Meer", "Das Rote Meer", "Der See Genezareth", "Das Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah beim Auszug der Israeliten aus Ägypten."
+  },
+  {
+    "month": 9,
+    "day": 18,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 9,
+    "day": 19,
+    "question": "Wie hieß der Baum, von dem Adam und Eva im Garten Eden aßen?",
+    "options": ["Der Baum des Lebens", "Der Feigenbaum", "Der Baum der Erkenntnis des Guten und Bösen", "Der Olivenbaum"],
+    "answerIndex": 2,
+    "hint": "Die verbotene Frucht."
+  },
+  {
+    "month": 9,
+    "day": 20,
+    "question": "Wer baute die Arche vor der Sintflut?",
+    "options": ["Abraham", "Josef", "Mose", "Noah"],
+    "answerIndex": 3,
+    "hint": "Er rettete seine Familie und zwei von jedem Tier."
+  },
+  {
+    "month": 9,
+    "day": 21,
+    "question": "Welcher Prophet wurde in die Löwengrube geworfen?",
+    "options": ["Jeremia", "Ezechiel", "Daniel", "Jona"],
+    "answerIndex": 2,
+    "hint": "Er betete dreimal täglich."
+  },
+  {
+    "month": 9,
+    "day": 22,
+    "question": "Was war das erste Wunder, das Jesus vollbrachte?",
+    "options": ["Die Auferweckung des Lazarus", "Die Speisung der Menge", "Die Verwandlung von Wasser in Wein", "Die Heilung des Blinden"],
+    "answerIndex": 2,
+    "hint": "Es geschah bei der Hochzeit zu Kana in Galiläa."
+  },
+  {
+    "month": 9,
+    "day": 23,
+    "question": "Welcher Hirte wurde König von Israel?",
+    "options": ["Saul", "Josef", "Salomo", "David"],
+    "answerIndex": 3,
+    "hint": "Derjenige, der Goliat besiegte."
+  },
+  {
+    "month": 9,
+    "day": 24,
+    "question": "Wie viele Bücher hat das Alte Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "Die Bibel besteht aus 46 Büchern im Alten Testament und 27 im Neuen Testament."
+  },
+  {
+    "month": 9,
+    "day": 25,
+    "question": "Wer verkaufte sein Erstgeburtsrecht für eine Mahlzeit Linsensuppe?",
+    "options": ["Jakob", "Josef", "Esau", "Isaak"],
+    "answerIndex": 2,
+    "hint": "Jakobs Zwillingsbruder."
+  },
+  {
+    "month": 9,
+    "day": 26,
+    "question": "Welcher Prophet fuhr auf einem feurigen Wagen in den Himmel?",
+    "options": ["Elischa", "Elija", "Amos", "Jeremia"],
+    "answerIndex": 1,
+    "hint": "Sein Schüler war Elischa."
+  },
+  {
+    "month": 9,
+    "day": 27,
+    "question": "Wie hieß die unfruchtbare Frau, die den Propheten Samuel gebar?",
+    "options": ["Sara", "Rebekka", "Hanna", "Maria"],
+    "answerIndex": 2,
+    "hint": "Sie betete im Tempel und weihte ihren Sohn Gott."
+  },
+  {
+    "month": 9,
+    "day": 28,
+    "question": "Was waren Gottes erste Worte in der Bibel?",
+    "options": ["Es werde Licht", "Es werde Adam", "Es werde ein Firmament", "Die Wasser sollen sich sammeln"],
+    "answerIndex": 0,
+    "hint": "Am ersten Tag der Schöpfung."
+  },
+  {
+    "month": 9,
+    "day": 29,
+    "question": "Wie heißt der Berg, auf dem Mose die Zehn Gebote empfing?",
+    "options": ["Ölberg", "Berg Sinai", "Berg Karmel", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Der Berg der Gebote."
+  },
+  {
+    "month": 9,
+    "day": 30,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Mein Gott, mein Gott, warum hast du mich verlassen?", "Vater, vergib ihnen", "Es ist vollbracht", "Mich dürstet"],
+    "answerIndex": 2,
+    "hint": "Bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 10,
+    "day": 1,
+    "question": "Welcher Jünger zweifelte an der Auferstehung Christi, bis er die Wunden sah?",
+    "options": ["Petrus", "Thomas", "Matthäus", "Judas"],
+    "answerIndex": 1,
+    "hint": "Bekannt als 'der ungläubige Thomas'."
+  },
+  {
+    "month": 10,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott den Menschen?",
+    "options": ["Am vierten", "Am fünften", "Am sechsten", "Am siebten"],
+    "answerIndex": 2,
+    "hint": "Vor dem Ruhetag."
+  },
+  {
+    "month": 10,
+    "day": 3,
+    "question": "Welcher Herrscher befahl das Massaker an den Kindern von Bethlehem?",
+    "options": ["Herodes", "Pontius Pilatus", "Kaiphas", "Cäsar"],
+    "answerIndex": 0,
+    "hint": "Er fürchtete, dass Christus ihn als König ersetzen würde."
+  },
+  {
+    "month": 10,
+    "day": 4,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 10,
+    "day": 5,
+    "question": "Wer war der erste Märtyrer des Christentums?",
+    "options": ["Petrus", "Paulus", "Stephanus", "Johannes der Täufer"],
+    "answerIndex": 2,
+    "hint": "Er wurde gesteinigt."
+  },
+  {
+    "month": 10,
+    "day": 6,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Griechisch", "Aramäisch", "Hebräisch", "Latein"],
+    "answerIndex": 2,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 10,
+    "day": 7,
+    "question": "Was war der Beruf des Apostels Petrus, bevor er Christus folgte?",
+    "options": ["Zimmermann", "Fischer", "Soldat", "Bauer"],
+    "answerIndex": 1,
+    "hint": "Christus versprach ihm, ihn zum Menschenfischer zu machen."
+  },
+  {
+    "month": 10,
+    "day": 8,
+    "question": "Wie heißt der Berg, auf dem Elija die falschen Propheten tötete?",
+    "options": ["Berg Sinai", "Berg Karmel", "Ölberg", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Er forderte dort die Propheten des Baal heraus."
+  },
+  {
+    "month": 10,
+    "day": 9,
+    "question": "Wer wurde von seinem Aussatz durch das Baden im Jordan geheilt?",
+    "options": ["Abram", "Josua", "Naaman der Syrer", "Saulus von Tarsus"],
+    "answerIndex": 2,
+    "hint": "Ein Feldherr einer großen Armee."
+  },
+  {
+    "month": 10,
+    "day": 10,
+    "question": "Wie heißt das Dorf, in dem Jesus Lazarus von den Toten auferweckte?",
+    "options": ["Kana", "Bethanien", "Bethlehem", "Nazareth"],
+    "answerIndex": 1,
+    "hint": "Es ist das Dorf der Schwestern des Lazarus, Maria und Martha."
+  },
+  {
+    "month": 10,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 10,
+    "day": 12,
+    "question": "Was tat Jesus, als er den Sturm stillte?",
+    "options": ["Er betete", "Er schlief", "Er aß", "Er sprach mit den Jüngern"],
+    "answerIndex": 1,
+    "hint": "Die Jünger beklagten sich, dass er schlief."
+  },
+  {
+    "month": 10,
+    "day": 13,
+    "question": "Welchem Propheten befahl ein Engel, eine Schriftrolle zu essen?",
+    "options": ["Ezechiel", "Jesaja", "Jeremia", "Hosea"],
+    "answerIndex": 0,
+    "hint": "Der alttestamentliche Prophet, der die Vision der Räder hatte."
+  },
+  {
+    "month": 10,
+    "day": 14,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 10,
+    "day": 15,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 10,
+    "day": 16,
+    "question": "Wen erschuf Gott aus der Rippe Adams?",
+    "options": ["Abel", "Eva", "Kain", "Set"],
+    "answerIndex": 1,
+    "hint": "Die erste Frau."
+  },
+  {
+    "month": 10,
+    "day": 17,
+    "question": "Was trug Jesus bei seiner Kreuzigung?",
+    "options": ["Die Dornenkrone", "Ein Schild", "Ein Zepter", "Das Kreuz"],
+    "answerIndex": 3,
+    "hint": "Er trug unser Leiden auf seinem Rücken."
+  },
+  {
+    "month": 10,
+    "day": 18,
+    "question": "In welcher Sprache wurde das Neue Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Latein", "Aramäisch"],
+    "answerIndex": 1,
+    "hint": "Die gemeinsame Sprache des Römischen Reiches zu jener Zeit."
+  },
+  {
+    "month": 10,
+    "day": 19,
+    "question": "Wer wurde in der Bibel als außerordentlich weise beschrieben?",
+    "options": ["Abraham", "Mose", "Salomo", "David"],
+    "answerIndex": 2,
+    "hint": "Sohn Davids und König von Israel."
+  },
+  {
+    "month": 10,
+    "day": 20,
+    "question": "Was geschah mit Sonne und Mond, als Josua, der Sohn Nuns, betete?",
+    "options": ["Sie wurden dunkel", "Sie standen still", "Ihre Farbe änderte sich", "Ihr Licht nahm zu"],
+    "answerIndex": 1,
+    "hint": "Um die Zeit der Schlacht zu verlängern."
+  },
+  {
+    "month": 10,
+    "day": 21,
+    "question": "Was ist der erste Vers der Bibel?",
+    "options": ["Im Anfang schuf Gott Himmel und Erde", "Es werde Licht", "Im Anfang war das Wort", "Gott sprach: Du bist nicht allein"],
+    "answerIndex": 0,
+    "hint": "Der Eröffnungsvers des Buches Genesis."
+  },
+  {
+    "month": 10,
+    "day": 22,
+    "question": "Wer sagte: 'Denn ich habe die Liebe Gottes gekostet'?",
+    "options": ["Petrus", "Paulus", "Johannes", "Timotheus"],
+    "answerIndex": 1,
+    "hint": "Er hieß Saulus, bevor er Paulus wurde."
+  },
+  {
+    "month": 10,
+    "day": 23,
+    "question": "Wie viele Fische verwendete Jesus, um die Menge zu speisen?",
+    "options": ["1", "2", "3", "5"],
+    "answerIndex": 1,
+    "hint": "Sie waren zusammen mit fünf Broten."
+  },
+  {
+    "month": 10,
+    "day": 24,
+    "question": "Welcher Prophet sagte das Kommen Christi voraus?",
+    "options": ["Jeremia", "Daniel", "Jesaja", "Amos"],
+    "answerIndex": 2,
+    "hint": "Bekannt als 'der Prophet der Erlösung'."
+  },
+  {
+    "month": 10,
+    "day": 25,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  },
+  {
+    "month": 10,
+    "day": 26,
+    "question": "Was war der Beruf des heiligen Lukas?",
+    "options": ["Fischer", "Arzt", "Lehrer", "Zimmermann"],
+    "answerIndex": 1,
+    "hint": "Einer der vier Evangelisten und Verfasser der Apostelgeschichte."
+  },
+  {
+    "month": 10,
+    "day": 27,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 10,
+    "day": 28,
+    "question": "Wie viele große Propheten gibt es im Alten Testament?",
+    "options": ["2", "4", "6", "8"],
+    "answerIndex": 1,
+    "hint": "Jesaja, Jeremia, Ezechiel, Daniel."
+  },
+  {
+    "month": 10,
+    "day": 29,
+    "question": "Wer versuchte, mit Jesus auf dem Wasser zu gehen?",
+    "options": ["Johannes", "Petrus", "Jakobus", "Thomas"],
+    "answerIndex": 1,
+    "hint": "Jesus sagte zu ihm: 'Du Kleingläubiger'."
+  },
+  {
+    "month": 10,
+    "day": 30,
+    "question": "Welches Buch des Neuen Testaments erwähnt den Namen Gottes nicht ausdrücklich?",
+    "options": ["Der Judasbrief", "Der Jakobusbrief", "Die Offenbarung", "Der Philipperbrief"],
+    "answerIndex": 0,
+    "hint": "Es spricht über die Kirche und die Gläubigen."
+  },
+  {
+    "month": 10,
+    "day": 31,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Es ist vollbracht", "Vater, vergib ihnen", "Mein Gott, mein Gott, warum hast du mich verlassen?", "Mich dürstet"],
+    "answerIndex": 0,
+    "hint": "Die letzten Worte, die er sprach, bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 11,
+    "day": 1,
+    "question": "An welchem Tag der Schöpfung erschuf Gott Sonne, Mond und Sterne?",
+    "options": ["Am ersten", "Am dritten", "Am vierten", "Am sechsten"],
+    "answerIndex": 2,
+    "hint": "Die Lichter am Himmel."
+  },
+  {
+    "month": 11,
+    "day": 2,
+    "question": "Welcher König befahl wegen eines Tanzes die Enthauptung Johannes des Täufers?",
+    "options": ["Herodes", "Nebukadnezar", "Ahab", "Salomo"],
+    "answerIndex": 0,
+    "hint": "König von Galiläa, der Johannes den Täufer enthaupten ließ."
+  },
+  {
+    "month": 11,
+    "day": 3,
+    "question": "Auf welchen Baum kletterte Zachäus, um Jesus zu sehen?",
+    "options": ["Einen Olivenbaum", "Einen Maulbeerfeigenbaum", "Einen Feigenbaum", "Einen Maulbeerbaum"],
+    "answerIndex": 1,
+    "hint": "Er war klein und lief Jesus voraus."
+  },
+  {
+    "month": 11,
+    "day": 4,
+    "question": "Wer wurde in den Feuerofen geworfen?",
+    "options": ["Daniel", "Jeremia", "Elija", "Hananja, Mischaël und Asarja"],
+    "answerIndex": 3,
+    "hint": "Kein Haar auf ihren Köpfen wurde versengt."
+  },
+  {
+    "month": 11,
+    "day": 5,
+    "question": "Wie viele Bücher hat das Neue Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 0,
+    "hint": "Das Neue Testament beginnt mit dem Evangelium nach Matthäus."
+  },
+  {
+    "month": 11,
+    "day": 6,
+    "question": "Wer schickte nach der Sintflut eine Taube aus?",
+    "options": ["Abraham", "Mose", "Noah", "Adam"],
+    "answerIndex": 2,
+    "hint": "Er schickte einen Vogel, um zu sehen, ob das Wasser zurückgegangen war."
+  },
+  {
+    "month": 11,
+    "day": 7,
+    "question": "Welcher König genehmigte den Bau des Tempels?",
+    "options": ["David", "Saul", "Salomo", "Herodes"],
+    "answerIndex": 2,
+    "hint": "Der Sohn Davids."
+  },
+  {
+    "month": 11,
+    "day": 8,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Aramäisch", "Latein"],
+    "answerIndex": 0,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 11,
+    "day": 9,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 11,
+    "day": 10,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 11,
+    "day": 11,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 11,
+    "day": 12,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 11,
+    "day": 13,
+    "question": "Wer war der erste Mensch, den Gott erschuf?",
+    "options": ["Noah", "Adam", "Abraham", "Mose"],
+    "answerIndex": 1,
+    "hint": "Unser erster Vater im Buch Genesis."
+  },
+  {
+    "month": 11,
+    "day": 14,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 11,
+    "day": 15,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 11,
+    "day": 16,
+    "question": "Welcher Prophet wurde von einem großen Fisch verschluckt?",
+    "options": ["Elija", "Jesaja", "Jona", "Daniel"],
+    "answerIndex": 2,
+    "hint": "Seine Geschichte ist im Alten Testament bekannt."
+  },
+  {
+    "month": 11,
+    "day": 17,
+    "question": "Welches Meer teilte Mose?",
+    "options": ["Das Tote Meer", "Das Rote Meer", "Der See Genezareth", "Das Mittelmeer"],
+    "answerIndex": 1,
+    "hint": "Dieses Wunder geschah beim Auszug der Israeliten aus Ägypten."
+  },
+  {
+    "month": 11,
+    "day": 18,
+    "question": "Wer verleugnete Jesus dreimal, bevor der Hahn krähte?",
+    "options": ["Johannes", "Petrus", "Judas", "Matthäus"],
+    "answerIndex": 1,
+    "hint": "Der Anführer der Jünger."
+  },
+  {
+    "month": 11,
+    "day": 19,
+    "question": "Wie hieß der Baum, von dem Adam und Eva im Garten Eden aßen?",
+    "options": ["Der Baum des Lebens", "Der Feigenbaum", "Der Baum der Erkenntnis des Guten und Bösen", "Der Olivenbaum"],
+    "answerIndex": 2,
+    "hint": "Die verbotene Frucht."
+  },
+  {
+    "month": 11,
+    "day": 20,
+    "question": "Wer baute die Arche vor der Sintflut?",
+    "options": ["Abraham", "Josef", "Mose", "Noah"],
+    "answerIndex": 3,
+    "hint": "Er rettete seine Familie und zwei von jedem Tier."
+  },
+  {
+    "month": 11,
+    "day": 21,
+    "question": "Welcher Prophet wurde in die Löwengrube geworfen?",
+    "options": ["Jeremia", "Ezechiel", "Daniel", "Jona"],
+    "answerIndex": 2,
+    "hint": "Er betete dreimal täglich."
+  },
+  {
+    "month": 11,
+    "day": 22,
+    "question": "Was war das erste Wunder, das Jesus vollbrachte?",
+    "options": ["Die Auferweckung des Lazarus", "Die Speisung der Menge", "Die Verwandlung von Wasser in Wein", "Die Heilung des Blinden"],
+    "answerIndex": 2,
+    "hint": "Es geschah bei der Hochzeit zu Kana in Galiläa."
+  },
+  {
+    "month": 11,
+    "day": 23,
+    "question": "Welcher Hirte wurde König von Israel?",
+    "options": ["Saul", "Josef", "Salomo", "David"],
+    "answerIndex": 3,
+    "hint": "Derjenige, der Goliat besiegte."
+  },
+  {
+    "month": 11,
+    "day": 24,
+    "question": "Wie viele Bücher hat das Alte Testament?",
+    "options": ["27", "39", "46", "66"],
+    "answerIndex": 2,
+    "hint": "Die Bibel besteht aus 46 Büchern im Alten Testament und 27 im Neuen Testament."
+  },
+  {
+    "month": 11,
+    "day": 25,
+    "question": "Wer verkaufte sein Erstgeburtsrecht für eine Mahlzeit Linsensuppe?",
+    "options": ["Jakob", "Josef", "Esau", "Isaak"],
+    "answerIndex": 2,
+    "hint": "Jakobs Zwillingsbruder."
+  },
+  {
+    "month": 11,
+    "day": 26,
+    "question": "Welcher Prophet fuhr auf einem feurigen Wagen in den Himmel?",
+    "options": ["Elischa", "Elija", "Amos", "Jeremia"],
+    "answerIndex": 1,
+    "hint": "Sein Schüler war Elischa."
+  },
+  {
+    "month": 11,
+    "day": 27,
+    "question": "Wie hieß die unfruchtbare Frau, die den Propheten Samuel gebar?",
+    "options": ["Sara", "Rebekka", "Hanna", "Maria"],
+    "answerIndex": 2,
+    "hint": "Sie betete im Tempel und weihte ihren Sohn Gott."
+  },
+  {
+    "month": 11,
+    "day": 28,
+    "question": "Was waren Gottes erste Worte in der Bibel?",
+    "options": ["Es werde Licht", "Es werde Adam", "Es werde ein Firmament", "Die Wasser sollen sich sammeln"],
+    "answerIndex": 0,
+    "hint": "Am ersten Tag der Schöpfung."
+  },
+  {
+    "month": 11,
+    "day": 29,
+    "question": "Wie heißt der Berg, auf dem Mose die Zehn Gebote empfing?",
+    "options": ["Ölberg", "Berg Sinai", "Berg Karmel", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Der Berg der Gebote."
+  },
+  {
+    "month": 11,
+    "day": 30,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Mein Gott, mein Gott, warum hast du mich verlassen?", "Vater, vergib ihnen", "Es ist vollbracht", "Mich dürstet"],
+    "answerIndex": 2,
+    "hint": "Bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 12,
+    "day": 1,
+    "question": "Welcher Jünger zweifelte an der Auferstehung Christi, bis er die Wunden sah?",
+    "options": ["Petrus", "Thomas", "Matthäus", "Judas"],
+    "answerIndex": 1,
+    "hint": "Bekannt als 'der ungläubige Thomas'."
+  },
+  {
+    "month": 12,
+    "day": 2,
+    "question": "An welchem Tag der Schöpfung erschuf Gott den Menschen?",
+    "options": ["Am vierten", "Am fünften", "Am sechsten", "Am siebten"],
+    "answerIndex": 2,
+    "hint": "Vor dem Ruhetag."
+  },
+  {
+    "month": 12,
+    "day": 3,
+    "question": "Welcher Herrscher befahl das Massaker an den Kindern von Bethlehem?",
+    "options": ["Herodes", "Pontius Pilatus", "Kaiphas", "Cäsar"],
+    "answerIndex": 0,
+    "hint": "Er fürchtete, dass Christus ihn als König ersetzen würde."
+  },
+  {
+    "month": 12,
+    "day": 4,
+    "question": "Welches Liederbuch wurde vom weisen Salomo verfasst?",
+    "options": ["Die Psalmen", "Die Sprüche", "Das Hohelied", "Hiob"],
+    "answerIndex": 2,
+    "hint": "Ein poetisches Buch im Alten Testament."
+  },
+  {
+    "month": 12,
+    "day": 5,
+    "question": "Wer war der erste Märtyrer des Christentums?",
+    "options": ["Petrus", "Paulus", "Stephanus", "Johannes der Täufer"],
+    "answerIndex": 2,
+    "hint": "Er wurde gesteinigt."
+  },
+  {
+    "month": 12,
+    "day": 6,
+    "question": "In welcher Sprache wurde das Alte Testament ursprünglich geschrieben?",
+    "options": ["Griechisch", "Aramäisch", "Hebräisch", "Latein"],
+    "answerIndex": 2,
+    "hint": "Die alte Sprache der Juden."
+  },
+  {
+    "month": 12,
+    "day": 7,
+    "question": "Was war der Beruf des Apostels Petrus, bevor er Christus folgte?",
+    "options": ["Zimmermann", "Fischer", "Soldat", "Bauer"],
+    "answerIndex": 1,
+    "hint": "Christus versprach ihm, ihn zum Menschenfischer zu machen."
+  },
+  {
+    "month": 12,
+    "day": 8,
+    "question": "Wie heißt der Berg, auf dem Elija die falschen Propheten tötete?",
+    "options": ["Berg Sinai", "Berg Karmel", "Ölberg", "Berg Tabor"],
+    "answerIndex": 1,
+    "hint": "Er forderte dort die Propheten des Baal heraus."
+  },
+  {
+    "month": 12,
+    "day": 9,
+    "question": "Wer wurde von seinem Aussatz durch das Baden im Jordan geheilt?",
+    "options": ["Abram", "Josua", "Naaman der Syrer", "Saulus von Tarsus"],
+    "answerIndex": 2,
+    "hint": "Ein Feldherr einer großen Armee."
+  },
+  {
+    "month": 12,
+    "day": 10,
+    "question": "Wie heißt das Dorf, in dem Jesus Lazarus von den Toten auferweckte?",
+    "options": ["Kana", "Bethanien", "Bethlehem", "Nazareth"],
+    "answerIndex": 1,
+    "hint": "Es ist das Dorf der Schwestern des Lazarus, Maria und Martha."
+  },
+  {
+    "month": 12,
+    "day": 11,
+    "question": "Wer war die erste getötete Person?",
+    "options": ["Abel", "Kain", "Set", "Lamech"],
+    "answerIndex": 0,
+    "hint": "Er wurde von seinem Bruder Kain getötet."
+  },
+  {
+    "month": 12,
+    "day": 12,
+    "question": "Was tat Jesus, als er den Sturm stillte?",
+    "options": ["Er betete", "Er schlief", "Er aß", "Er sprach mit den Jüngern"],
+    "answerIndex": 1,
+    "hint": "Die Jünger beklagten sich, dass er schlief."
+  },
+  {
+    "month": 12,
+    "day": 13,
+    "question": "Welchem Propheten befahl ein Engel, eine Schriftrolle zu essen?",
+    "options": ["Ezechiel", "Jesaja", "Jeremia", "Hosea"],
+    "answerIndex": 0,
+    "hint": "Der alttestamentliche Prophet, der die Vision der Räder hatte."
+  },
+  {
+    "month": 12,
+    "day": 14,
+    "question": "Wie viele Tage und Nächte fastete Mose auf dem Berg Sinai?",
+    "options": ["20", "30", "40", "50"],
+    "answerIndex": 2,
+    "hint": "Dieselbe Anzahl von Tagen, die Jesus fastete."
+  },
+  {
+    "month": 12,
+    "day": 15,
+    "question": "Wie heißt der Berg, auf dem Jesus gekreuzigt wurde?",
+    "options": ["Ölberg", "Golgota", "Berg Karmel", "Berg Sinai"],
+    "answerIndex": 1,
+    "hint": "Der Ort des Schädels."
+  },
+  {
+    "month": 12,
+    "day": 16,
+    "question": "Wen erschuf Gott aus der Rippe Adams?",
+    "options": ["Abel", "Eva", "Kain", "Set"],
+    "answerIndex": 1,
+    "hint": "Die erste Frau."
+  },
+  {
+    "month": 12,
+    "day": 17,
+    "question": "Was trug Jesus bei seiner Kreuzigung?",
+    "options": ["Die Dornenkrone", "Ein Schild", "Ein Zepter", "Das Kreuz"],
+    "answerIndex": 3,
+    "hint": "Er trug unser Leiden auf seinem Rücken."
+  },
+  {
+    "month": 12,
+    "day": 18,
+    "question": "In welcher Sprache wurde das Neue Testament ursprünglich geschrieben?",
+    "options": ["Hebräisch", "Griechisch", "Latein", "Aramäisch"],
+    "answerIndex": 1,
+    "hint": "Die gemeinsame Sprache des Römischen Reiches zu jener Zeit."
+  },
+  {
+    "month": 12,
+    "day": 19,
+    "question": "Wer wurde in der Bibel als außerordentlich weise beschrieben?",
+    "options": ["Abraham", "Mose", "Salomo", "David"],
+    "answerIndex": 2,
+    "hint": "Sohn Davids und König von Israel."
+  },
+  {
+    "month": 12,
+    "day": 20,
+    "question": "Was geschah mit Sonne und Mond, als Josua, der Sohn Nuns, betete?",
+    "options": ["Sie wurden dunkel", "Sie standen still", "Ihre Farbe änderte sich", "Ihr Licht nahm zu"],
+    "answerIndex": 1,
+    "hint": "Um die Zeit der Schlacht zu verlängern."
+  },
+  {
+    "month": 12,
+    "day": 21,
+    "question": "Was ist der erste Vers der Bibel?",
+    "options": ["Im Anfang schuf Gott Himmel und Erde", "Es werde Licht", "Im Anfang war das Wort", "Gott sprach: Du bist nicht allein"],
+    "answerIndex": 0,
+    "hint": "Der Eröffnungsvers des Buches Genesis."
+  },
+  {
+    "month": 12,
+    "day": 22,
+    "question": "Wer sagte: 'Denn ich habe die Liebe Gottes gekostet'?",
+    "options": ["Petrus", "Paulus", "Johannes", "Timotheus"],
+    "answerIndex": 1,
+    "hint": "Er hieß Saulus, bevor er Paulus wurde."
+  },
+  {
+    "month": 12,
+    "day": 23,
+    "question": "Wie viele Fische verwendete Jesus, um die Menge zu speisen?",
+    "options": ["1", "2", "3", "5"],
+    "answerIndex": 1,
+    "hint": "Sie waren zusammen mit fünf Broten."
+  },
+  {
+    "month": 12,
+    "day": 24,
+    "question": "Welcher Prophet sagte das Kommen Christi voraus?",
+    "options": ["Jeremia", "Daniel", "Jesaja", "Amos"],
+    "answerIndex": 2,
+    "hint": "Bekannt als 'der Prophet der Erlösung'."
+  },
+  {
+    "month": 12,
+    "day": 25,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  },
+  {
+    "month": 12,
+    "day": 26,
+    "question": "Was war der Beruf des heiligen Lukas?",
+    "options": ["Fischer", "Arzt", "Lehrer", "Zimmermann"],
+    "answerIndex": 1,
+    "hint": "Einer der vier Evangelisten und Verfasser der Apostelgeschichte."
+  },
+  {
+    "month": 12,
+    "day": 27,
+    "question": "Wie heißt der Fluss, in dem Jesus getauft wurde?",
+    "options": ["Der Nil", "Der Jordan", "Der Euphrat", "Der Tigris"],
+    "answerIndex": 1,
+    "hint": "Er wurde von Johannes dem Täufer getauft."
+  },
+  {
+    "month": 12,
+    "day": 28,
+    "question": "Wie viele große Propheten gibt es im Alten Testament?",
+    "options": ["2", "4", "6", "8"],
+    "answerIndex": 1,
+    "hint": "Jesaja, Jeremia, Ezechiel, Daniel."
+  },
+  {
+    "month": 12,
+    "day": 29,
+    "question": "Wer versuchte, mit Jesus auf dem Wasser zu gehen?",
+    "options": ["Johannes", "Petrus", "Jakobus", "Thomas"],
+    "answerIndex": 1,
+    "hint": "Jesus sagte zu ihm: 'Du Kleingläubiger'."
+  },
+  {
+    "month": 12,
+    "day": 30,
+    "question": "Welches Buch des Neuen Testaments erwähnt den Namen Gottes nicht ausdrücklich?",
+    "options": ["Der Judasbrief", "Der Jakobusbrief", "Die Offenbarung", "Der Philipperbrief"],
+    "answerIndex": 0,
+    "hint": "Es spricht über die Kirche und die Gläubigen."
+  },
+  {
+    "month": 12,
+    "day": 31,
+    "question": "Was waren die letzten Worte Jesu am Kreuz?",
+    "options": ["Es ist vollbracht", "Vater, vergib ihnen", "Mein Gott, mein Gott, warum hast du mich verlassen?", "Mich dürstet"],
+    "answerIndex": 0,
+    "hint": "Die letzten Worte, die er sprach, bevor er seinen Geist aufgab."
+  },
+  {
+    "month": 2,
+    "day": 29,
+    "question": "Welcher König versuchte, das Kind Jesus zu töten?",
+    "options": ["Herodes", "Pilatus", "Salomo", "David"],
+    "answerIndex": 0,
+    "hint": "Er befahl die Tötung aller männlichen Kinder in Bethlehem."
+  }
+]

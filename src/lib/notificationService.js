@@ -13,42 +13,20 @@ export const syncNotifications = async () => {
       value: new Date().toString().substring(0, 10),
     });
 
+    // التأكد من الصلاحيات
     const perm = await LocalNotifications.checkPermissions();
     if (perm.display !== 'granted') {
       const requestResult = await LocalNotifications.requestPermissions();
       if (requestResult.display !== 'granted') return;
     }
 
-    const auth = getAuth();
-    const user = auth.currentUser;
-    const savedMaster = localStorage.getItem('masterNotifications') === 'true';
-
+    // مزامنة حالة التفعيل الرئيسية
+    const savedMaster = localStorage.getItem('masterNotifications') !== 'false'; // افتراضي true
     await Preferences.set({ key: 'masterNotifications', value: String(savedMaster) });
 
-    // مزامنة اللغة لدعم الإشعارات المتعددة اللغات
+    // مزامنة اللغة
     const currentLang = localStorage.getItem('app_lang') || 'ar';
     await Preferences.set({ key: 'language', value: currentLang });
-
-    if (!savedMaster) {
-      const pending = await LocalNotifications.getPending();
-      if (pending.notifications.length > 0) {
-        await LocalNotifications.cancel(pending);
-      }
-      if (window.AgiosScannerNative?.refreshAlarms) window.AgiosScannerNative.refreshAlarms();
-      return;
-    }
-
-    // إذا لم يكن هناك مستخدم، لا نمسح التنبيهات بل نكتفي بتحديث الأساسيات (آية اليوم)
-    if (!user) {
-        if (window.AgiosScannerNative?.refreshAlarms) window.AgiosScannerNative.refreshAlarms();
-        return;
-    }
-
-    // مزامنة الستريك
-    const currentStreak = localStorage.getItem('userStreak');
-    if (currentStreak) {
-      await Preferences.set({ key: 'userStreak', value: String(currentStreak) });
-    }
 
     // مزامنة الإعدادات التفصيلية
     const savedSettings = localStorage.getItem('notificationSettings');
@@ -56,7 +34,18 @@ export const syncNotifications = async () => {
       await Preferences.set({ key: 'notificationSettings', value: savedSettings });
     }
 
-    if (window.AgiosScannerNative?.refreshAlarms) {
+    // مزامنة الستريك (Streak)
+    const currentStreak = localStorage.getItem('userStreak') || '0';
+    await Preferences.set({ key: 'userStreak', value: String(currentStreak) });
+
+    // استدعاء التحديث في أندرويد مع تمرير اللغة
+    if (window.AgiosScannerNative?.updateSettings) {
+        window.AgiosScannerNative.updateSettings(
+            savedSettings || "{}",
+            savedMaster,
+            currentLang
+        );
+    } else if (window.AgiosScannerNative?.refreshAlarms) {
         window.AgiosScannerNative.refreshAlarms();
     }
 

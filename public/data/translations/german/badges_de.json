@@ -1,0 +1,124 @@
+{
+  "app_name": "Agios Bible",
+  "version": "1.0.0",
+  "badge_families": [
+    {
+      "family_name": "Ausdauer",
+      "badges": [
+        { "id": "streak_3", "name": "Beständiger Anfänger", "requirement": "Die App an 3 aufeinanderfolgenden Tagen öffnen und nutzen", "rarity": "Gewöhnlich" },
+        { "id": "streak_7", "name": "Fleißig", "requirement": "Die App eine ganze Woche lang täglich nutzen (7 aufeinanderfolgende Tage)", "rarity": "Gewöhnlich" },
+        { "id": "streak_15", "name": "Beharrlich", "requirement": "15 aufeinanderfolgende Tage lesen und interagieren, um eine geistliche Gewohnheit zu festigen", "rarity": "Ungewöhnlich" },
+        { "id": "streak_30", "name": "Treu", "requirement": "Einen vollen Monat (30 Tage) tägliche Verbindung mit Gottes Wort über die App abschließen", "rarity": "Ungewöhnlich" },
+        { "id": "streak_60", "name": "Held", "requirement": "Zwei aufeinanderfolgende Monate (60 Tage) erfolgreich täglich lesen", "rarity": "Selten" },
+        { "id": "streak_90", "name": "Legende", "requirement": "90 aufeinanderfolgende Tage täglich lesen, ohne einen einzigen Tag zu verpassen", "rarity": "Episch" },
+        { "id": "streak_180", "name": "Gigant", "requirement": "Die tägliche Serie ein halbes Jahr lang (180 Tage) aufrechterhalten", "rarity": "Mythisch" },
+        { "id": "streak_365", "name": "Zeitgenössischer Heiliger", "requirement": "Ein ganzes Jahr (365 Tage) tägliche Ausdauer abschließen.. eine große geistliche Leistung!", "rarity": "Mythisch" }
+      ]
+    },
+    {
+      "family_name": "Plan-Beständigkeit",
+      "badges": [
+        { "id": "plan_streak_1", "name": "Beginn der Verpflichtung", "requirement": "Einen Tag in einem Leseplan abschließen", "rarity": "Gewöhnlich" },
+        { "id": "plan_streak_3", "name": "Kleiner Beharrlicher", "requirement": "3 Tage in einem Leseplan abschließen", "rarity": "Gewöhnlich" },
+        { "id": "plan_streak_7", "name": "Erste Woche", "requirement": "7 Tage in Leseplänen abschließen", "rarity": "Gewöhnlich" },
+        { "id": "plan_streak_14", "name": "Emsig", "requirement": "14 Tage Lesepläne abschließen", "rarity": "Ungewöhnlich" },
+        { "id": "plan_streak_30", "name": "Plan-Treu", "requirement": "Einen vollen Monat (30 Tage) Lesepläne abschließen", "rarity": "Ungewöhnlich" },
+        { "id": "plan_streak_60", "name": "Plan-Held", "requirement": "Zwei Monate (60 Tage) Verpflichtung zu Leseplänen abschließen", "rarity": "Selten" },
+        { "id": "plan_streak_90", "name": "Geistlicher Experte", "requirement": "90 Tage kontinuierliche Plan-Verfolgung abschließen", "rarity": "Selten" },
+        { "id": "plan_streak_180", "name": "Dem Wort gewidmet", "requirement": "Ein halbes Jahr (180 Tage) Verpflichtung zu Leseplänen abschließen", "rarity": "Episch" },
+        { "id": "plan_streak_365", "name": "Hüter des Bundes", "requirement": "Ein ganzes Jahr (365 Tage) Lesepläne abschließen.. eine historische Leistung!", "rarity": "Mythisch" }
+      ]
+    },
+    {
+      "family_name": "Plan-Erfolge",
+      "badges": [
+        { "id": "plan_start_1", "name": "Erster Schritt", "requirement": "Deinen ersten Leseplan beginnen", "rarity": "Gewöhnlich" },
+        { "id": "plan_finish_1", "name": "Erster Erfolg", "requirement": "Deinen ersten Leseplan vollständig abschließen", "rarity": "Gewöhnlich" },
+        { "id": "plan_finish_3", "name": "Beharrlich", "requirement": "3 verschiedene Lesepläne abschließen", "rarity": "Gewöhnlich" },
+        { "id": "plan_finish_5", "name": "Bücherfreund", "requirement": "5 Lesepläne erfolgreich abschließen", "rarity": "Ungewöhnlich" },
+        { "id": "plan_finish_10", "name": "Tiefschürfer", "requirement": "10 verschiedene Lesepläne abschließen", "rarity": "Selten" },
+        { "id": "plan_finish_20", "name": "Meister der Pläne", "requirement": "20 Lesepläne abschließen.. breites Wissen über Gottes Wort", "rarity": "Episch" }
+      ]
+    },
+    {
+      "family_name": "Eifriger Leser",
+      "badges": [
+        { "id": "reader_10", "name": "Anfänger", "requirement": "10 verschiedene Kapitel aus der Bibel lesen", "rarity": "Gewöhnlich" },
+        { "id": "reader_50", "name": "Verfolger", "requirement": "50 Kapitel aus Altem und Neuem Testament lesen", "rarity": "Gewöhnlich" },
+        { "id": "reader_100", "name": "Vertiefter", "requirement": "100 Kapitel gelesen und den ersten Einstieg ins Wort geschafft", "rarity": "Ungewöhnlich" },
+        { "id": "reader_250", "name": "Reisender", "requirement": "Eine lange geistliche Reise durch das Lesen von 250 Kapiteln der Bibel", "rarity": "Ungewöhnlich" },
+        { "id": "reader_500", "name": "Wort-Begleiter", "requirement": "Ein fortgeschrittenes Niveau durch das vollständige Lesen von 500 Kapiteln erreichen", "rarity": "Selten" },
+        { "id": "reader_594", "name": "Halbzeit", "requirement": "Eine große Leistung durch das Lesen der Hälfte aller Bibelkapitel (594 Kapitel)", "rarity": "Selten" },
+        { "id": "testament_old", "name": "Alttestamentler", "requirement": "Alle Bücher des Alten Testaments (Genesis bis Maleachi) vollständig lesen", "rarity": "Selten" },
+        { "id": "testament_new", "name": "Neutestamentler", "requirement": "Alle Bücher des Neuen Testaments (Matthäus bis Offenbarung) vollständig lesen", "rarity": "Selten" },
+        { "id": "bible_finisher", "name": "Der Vollender", "requirement": "Die gesamte Bibel (1189 Kapitel) vollständig lesen.. gesegnet sei deine Mühe!", "rarity": "Episch" }
+      ]
+    },
+    {
+      "family_name": "Wissen",
+      "badges": [
+        { "id": "quiz_first", "name": "Erster Schritt", "requirement": "Dein erstes geistliches Quiz in der App erfolgreich bestehen", "rarity": "Gewöhnlich" },
+        { "id": "scholar_3", "name": "Nachwuchsforscher", "requirement": "3 verschiedene Quiz in verschiedenen Büchern abschließen", "rarity": "Gewöhnlich" },
+        { "id": "scholar_10", "name": "Widmet sich", "requirement": "Zeit nehmen, um 10 Quiz auf der Agios-Plattform erfolgreich abzuschließen", "rarity": "Ungewöhnlich" },
+        { "id": "scholar_30", "name": "Gelehrter", "requirement": "Das Studium durch 30 umfassende Quiz vertiefen", "rarity": "Selten" },
+        { "id": "scholar_50", "name": "Wissenschaftler", "requirement": "Hohes Wissensniveau durch 50 Quiz und exzellente Ergebnisse erreichen", "rarity": "Episch" },
+        { "id": "bible_master", "name": "Meister der Bücher", "requirement": "Quiz für alle 73 Bücher der Bibel erfolgreich abschließen", "rarity": "Mythisch" }
+      ]
+    },
+    {
+      "family_name": "Genauigkeit",
+      "badges": [
+        { "id": "perfect_1", "name": "Volle Punktzahl", "requirement": "100% in einem Quiz ohne Fehler erreichen", "rarity": "Gewöhnlich" },
+        { "id": "perfect_10", "name": "Scharfschütze", "requirement": "100% in 10 verschiedenen Quiz mit hoher Genauigkeit erreichen", "rarity": "Ungewöhnlich" },
+        { "id": "perfect_all", "name": "Das Lexikon", "requirement": "Volle Punktzahl in allen verfügbaren Quiz in der App erreichen", "rarity": "Episch" },
+        { "id": "rapid_10", "name": "Feuereifer", "requirement": "10 Fragen hintereinander richtig beantworten, ohne einen einzigen Fehler", "rarity": "Ungewöhnlich" }
+      ]
+    },
+    {
+      "family_name": "Geographische Erkundung",
+      "badges": [
+        { "id": "map_pioneer", "name": "Standort-Entdecker", "requirement": "5 verschiedene geographische Standorte auf der interaktiven Karte erkunden", "rarity": "Gewöhnlich" },
+        { "id": "era_traveler", "name": "Zeitreisender", "requirement": "Alle verfügbaren historischen Epochen in der Agios-Karte besuchen", "rarity": "Ungewöhnlich" },
+        { "id": "info_addict", "name": "Wissensdurstig", "requirement": "Die historische Beschreibung von 50 verschiedenen Orten auf der Karte lesen", "rarity": "Selten" },
+        { "id": "holy_land_pro", "name": "Heilig-Land-Führer", "requirement": "Alle verfügbaren Punkte im Heiligen Land vollständig erkunden", "rarity": "Episch" }
+      ]
+    },
+    {
+      "family_name": "Geistlicher Schatz",
+      "badges": [
+        { "id": "fav_1", "name": "Beginn des Schatzes", "requirement": "Deinen ersten Vers in der Favoritenliste speichern", "rarity": "Gewöhnlich" },
+        { "id": "fav_20", "name": "Sammler von Verheißungen", "requirement": "Einen geistlichen Vorrat durch Speichern von 20 Verheißungen anlegen", "rarity": "Ungewöhnlich" },
+        { "id": "fav_100", "name": "Leuchtturm", "requirement": "100 ausgewählte Verse in Favoriten sammeln", "rarity": "Selten" },
+        { "id": "share_1", "name": "Wohltäter", "requirement": "Deinen ersten Bibelvers über soziale Medien teilen", "rarity": "Gewöhnlich" },
+        { "id": "social_influencer", "name": "Geistlicher Influencer", "requirement": "Gottes Wort 50 Mal teilen, um andere zu segnen", "rarity": "Ungewöhnlich" },
+        { "id": "verse_sync", "name": "Täglich verbunden", "requirement": "30 Tage hintereinander mit der Tagesfrage interagieren", "rarity": "Selten" }
+      ]
+    },
+    {
+      "family_name": "Technische Treue",
+      "badges": [
+        { "id": "early_bird", "name": "Frühaufsteher", "requirement": "Deinen Tag vor 7 Uhr morgens mit der App beginnen", "rarity": "Ungewöhnlich" },
+        { "id": "night_owl", "name": "Nachtwache beim Wort", "requirement": "Spät in der Nacht an einem Wettbewerb oder Quiz teilnehmen", "rarity": "Ungewöhnlich" },
+        { "id": "agios_pioneer", "name": "Gründer", "requirement": "Abzeichen für die ersten 20 Benutzer von Agios", "rarity": "Mythisch" },
+        { "id": "agios_legend", "name": "Lebende Legende", "requirement": "Spezial-Abzeichen für die ersten 100 Benutzer", "rarity": "Episch" },
+        { "id": "agios_og", "name": "Das Original", "requirement": "Historischer Fingerabdruck für die ersten 1000 Benutzer", "rarity": "Selten" }
+      ]
+    },
+    {
+      "family_name": "Geheim-Kategorie",
+      "badges": [
+        { "id": "alpha_omega", "name": "Alpha und Omega", "requirement": "Das erste Kapitel der Bibel und das letzte der Offenbarung in derselben Minute lesen", "rarity": "Geheim" },
+        { "id": "ancient_navigator", "name": "Antiker Navigator", "requirement": "Über 20 Orte in einer Sitzung suchen", "rarity": "Geheim" },
+        { "id": "logic_breaker", "name": "Logik-Brecher", "requirement": "NLP-Suche mehr als 3 Mal hintereinander nutzen", "rarity": "Geheim" },
+        { "id": "shadow_reader", "name": "Schattenleser", "requirement": "Einen vollen Monat lang nur den Dark Mode nutzen", "rarity": "Geheim" },
+        { "id": "speed_demon", "name": "Geschwindigkeits-Held", "requirement": "Ein Quiz in weniger als 30 Sekunden mit 100% abschließen", "rarity": "Geheim" },
+        { "id": "deep_diver", "name": "Heilig Vertiefter", "requirement": "Über 10 Minuten auf der Punkteseite verbringen", "rarity": "Geheim" },
+        { "id": "battery_saver", "name": "Leser bis zum Schluss", "requirement": "App nutzen, während der Akku unter 5% ist", "rarity": "Geheim" },
+        { "id": "pattern_master", "name": "Meister der Muster", "requirement": "Quiz nach einem bestimmten Muster lösen", "rarity": "Geheim" },
+        { "id": "ghost_user", "name": "Geister-Nutzer", "requirement": "App genau um 3:00 Uhr morgens öffnen", "rarity": "Geheim" },
+        { "id": "explorer_infinite", "name": "Unendlicher Entdecker", "requirement": "Die ganze Welt durch maximalen Zoom-Out sehen", "rarity": "Geheim" },
+        { "id": "data_obsessive", "name": "Daten-Besessener", "requirement": "Einstellungen mehr als 10 Mal am Tag prüfen", "rarity": "Geheim" }
+      ]
+    }
+  ]
+}

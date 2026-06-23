@@ -1,0 +1,793 @@
+{
+  "common": {
+    "or": "Ou",
+    "google": "Google",
+    "apple": "Apple",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "default_first_name": "Utilisateur",
+    "default_last_name": "Nouveau",
+    "sync_error": "Échec de la synchronisation de la session",
+    "day": "Jour",
+    "chapter": "Chapitre",
+    "details": "Détails",
+    "view_all": "Voir tout",
+    "continue_reading": "Continuer la lecture",
+    "cancel": "Annuler",
+    "open_settings": "Ouvrir les paramètres",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "share": "Partager",
+    "copy": "Copier",
+    "search": "Rechercher",
+    "all": "Tout",
+    "no_results": "Aucun résultat",
+    "confirm": "Confirmer",
+    "undo": "Annuler",
+    "download": "Télécharger",
+    "back": "Retour",
+    "retry": "Réessayer",
+    "error_occurred": "Désolé, une erreur est survenue",
+    "internet_required": "Cette fonctionnalité nécessite une connexion internet"
+  },
+  "login": {
+    "title": "Connexion",
+    "submit": "Se connecter",
+    "submitting": "Connexion en cours...",
+    "error_auth": "E-mail ou mot de passe incorrect.",
+    "error_google": "Échec de la connexion avec Google.",
+    "error_apple": "Échec de la connexion avec Apple.",
+    "no_account": "Vous n'avez pas de compte ?",
+    "create_account": "Créer un compte"
+  },
+  "signup": {
+    "title": "Créer un nouveau compte",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "submit": "Créer un compte",
+    "submitting": "Création du compte en cours...",
+    "error_name_required": "Veuillez entrer votre nom complet",
+    "error_generic": "Échec de la création du compte. L'e-mail est peut-être déjà utilisé.",
+    "error_google": "Échec de l'inscription avec Google.",
+    "error_apple": "Échec de l'inscription avec Apple.",
+    "has_account": "Vous avez déjà un compte ?",
+    "login": "Se connecter"
+  },
+  "home": {
+    "greeting_guest": "Bienvenue dans votre voyage",
+    "greeting_user": "Bonjour, {name}",
+    "daily_goals": "Objectifs du jour",
+    "goals_progress": "{done} sur {total} tâches accomplies",
+    "goals": {
+      "dailyLogin": "Interaction quotidienne",
+      "dailyQuestion": "Question du défi",
+      "mapExploration": "Exploration de la carte",
+      "share": "Partage quotidien",
+      "completedChapter": "Lire un chapitre",
+      "favouriteVerse": "Surligner un verset"
+    },
+    "quick_links": {
+      "bible": "Bible",
+      "maps": "Cartes",
+      "search": "Recherche",
+      "plans": "Plans d'étude",
+      "competitions": "Concours",
+      "favorites": "Favoris"
+    },
+    "badges_section": "Vos badges et exploits",
+    "badges_all": "Tous les badges",
+    "badges_owned": "Meilleurs objets de collection",
+    "badges_near": "Prochainement",
+    "last_read": "Continuer la lecture",
+    "daily_verse": "Verset du jour",
+    "verse_copy": "Copier",
+    "verse_highlight": "Surligner",
+    "verse_highlighted": "Surligné",
+    "ask_agios": "Demander à Agios",
+    "color_palette_title": "Choisir la couleur de surlignage",
+    "clear_highlight": "Supprimer le surlignage",
+    "daily_challenge": "Défi du jour",
+    "ai_features_title": "Essayer les fonctionnalités IA",
+    "ai_features": {
+      "derivatives": {
+        "title": "Recherche de racines/dérivés",
+        "desc": "Recherche intelligente de mots et de leurs racines linguistiques"
+      },
+      "semantic": {
+        "title": "Recherche sémantique et explicative",
+        "desc": "Recherchez des versets bibliques en expliquant leur signification ou leur contexte avec l'assistant intelligent Agios"
+      },
+      "custom_plan": {
+        "title": "Créer un plan IA",
+        "desc": "Dites à 'Agios' comment vous vous sentez et il vous suggérera un plan"
+      },
+      "analysis": {
+        "title": "Assistant Agios (Analyse & Interprétation)",
+        "desc": "Analyse théologique et interprétation patristique profonde soutenue par l'IA pour tous les textes"
+      }
+    },
+    "active_plans": "Vos plans actifs",
+    "plan_progress": "Jour {done} sur {total}",
+    "toasts": {
+      "copied": "Copié",
+      "share_success": "Bravo ! Partage quotidien enregistré +10 points",
+      "correct_answer": "Bonne réponse !",
+      "wrong_answer": "Mauvaise réponse",
+      "deleted_from_treasures": "Supprimé de vos trésors",
+      "deleted_from_favs": "Supprimé de vos favoris",
+      "added_to_favs_points": "Génial ! Ajouté aux favoris +5 points",
+      "highlight_updated": "Couleur de surlignage mise à jour",
+      "added_points": "Génial ! +5 points ajoutés",
+      "welcome_new": "Bienvenue sur Agios ! ",
+      "streak_bonus": "Bonus de régularité ! +{points} points ",
+      "badge_unlocked": " Félicitations ! Vous avez débloqué : {badgeName}",
+      "good_morning": "Bonjour {userName} ! +10 points ",
+      "welcome_back": "Bon retour parmi nous ! Série du jour : {streak} "
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue de l'application",
+    "appearance": {
+      "title": "Apparence de l'application",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "bible": {
+      "title": "Paramètres des versets",
+      "verse_per_line": "Chaque verset sur une nouvelle ligne",
+      "verse_per_line_desc": "Afficher le texte sous forme de liste au lieu d'un paragraphe",
+      "show_tashkeel": "Afficher le Tashkeel (Vocalisation)",
+      "show_tashkeel_desc": "Afficher le texte avec ou sans diacritiques",
+      "font_type": "Type de police (Arabe)",
+      "font_weight": "Graisse de la police ({weight})",
+      "font_size": "Taille de police de lecture ({size}px)",
+      "preview": {
+        "line_1": "1 Voici à quoi ressembleront les versets",
+        "line_2": "2 Lorsque l'option 'Chaque verset sur une nouvelle ligne' est activée",
+        "paragraph": "1 Voici à quoi ressembleront les versets dans le système de paragraphe continu."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "master_label": "Activer les notifications",
+      "alert_time": "Heure d'alerte :",
+      "verse": {
+        "title": "Verset du jour",
+        "desc": "Recevoir un verset encourageant quotidiennement"
+      },
+      "question": {
+        "title": "Question du jour",
+        "desc": "Défis et concours quotidiens"
+      },
+      "study_plans": {
+        "title": "Rappel des plans d'étude",
+        "desc": "Rappel pour suivre les lectures quotidiennes restantes"
+      },
+      "streak": {
+        "title": "Alerte de protection de série",
+        "desc": "Rappel avant la fin de la journée pour maintenir votre série"
+      },
+      "app_suggestions": {
+        "title": "Suggestions et fonctionnalités",
+        "desc": "Découvrez les nouvelles fonctionnalités d'Agios"
+      },
+      "updates": {
+        "title": "Notifications de mise à jour",
+        "desc": "Alerte lorsqu'une nouvelle version de l'application est disponible"
+      }
+    },
+    "account": {
+      "title": "Gestion du compte",
+      "desc": "Gérez votre compte ici. Veuillez noter que la suppression du compte effacera définitivement toutes vos données.",
+      "logout": "Déconnexion",
+      "delete_account": "Supprimer le compte définitivement",
+      "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte définitivement ? Cette action est irréversible.",
+      "fresh_login_required": "Pour des raisons de sécurité, la suppression du compte nécessite une connexion récente. Veuillez vous déconnecter puis vous reconnecter.",
+      "delete_success": "Compte et données supprimés avec succès.",
+      "delete_error": "Une erreur est survenue lors de la suppression du compte.",
+      "reauth_required": "Session de sécurité expirée. Veuillez vous reconnecter."
+    },
+    "sync": {
+      "title": "Synchronisation & Cloud",
+      "desc": "Connectez-vous maintenant pour sauvegarder votre progression, vos notes et vos points, et les synchroniser sur tous vos appareils.",
+      "login_button": "Se connecter pour synchroniser"
+    },
+    "permission_modal": {
+      "title": "Activer les notifications",
+      "desc": "Veuillez activer les notifications dans les paramètres du téléphone pour recevoir le contenu quotidien."
+    }
+  },
+  "about": {
+    "title": "À propos d'Agios",
+    "tagline": "\"Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier\" (Ps 119:105)",
+    "story": {
+      "title": "Histoire & Objectif",
+      "p1": "Le projet Agios a été lancé avec la vision de fournir une expérience numérique sophistiquée pour l'étude de la Bible.",
+      "p2": "Après le succès de ses débuts, le développement de la plateforme s'est poursuivi pour en faire une référence complète combinant outils d'étude et fonctions techniques modernes."
+    },
+    "vision": {
+      "title": "Notre Vision",
+      "desc": "La vision d'Agios est d'être un pont technique reliant les générations à la Parole de Dieu, en utilisant des outils modernes pour présenter le contenu biblique de manière attrayante et simplifiée."
+    },
+    "thanks": {
+      "title": "Remerciements",
+      "priest_name": "Rév. Père Athanasios",
+      "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
+      "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
+      "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
+      "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
+      "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
+    },
+    "footer": "© 2026 Agios System - Tous droits réservés"
+  },
+  "audio": {
+    "artist_default": "Sainte Bible",
+    "album": "Agios Media",
+    "track_title": "Louis Segond version - {book} {chapter}"
+  },
+  "bible": {
+    "title": "Sainte Bible",
+    "chapter_label": "Chapitre",
+    "loading": "Chargement du contenu...",
+    "share_title": "Verset de la Sainte Bible",
+    "share_dialog": "Partager le verset via...",
+    "share_not_supported": "Partage non supporté, texte copié à la place",
+    "reasons": {
+      "share_verse": "Partager un verset",
+      "copy_verse": "Copier un verset",
+      "share_verses": "Partager plusieurs versets",
+      "favourite": "Ajouter aux favoris",
+      "note": "Écrire une réflexion personnelle",
+      "undo_chapter": "Annuler la lecture du chapitre",
+      "complete_chapter": "Chapitre lu entièrement"
+    },
+    "toasts": {
+      "copied": "Copié",
+      "copied_precise": "Copié avec précision",
+      "highlighted": "Surligné",
+      "highlight_removed": "Surlignage supprimé",
+      "note_saved": "Note enregistrée",
+      "plan_day_complete": "Félicitations ! Vous avez terminé les lectures d'aujourd'hui",
+      "plan_all_complete": "Génial ! Vous avez terminé tout le plan d'étude",
+      "chapter_undo": "Chapitre désélectionné",
+      "audio_not_found": "Audio non disponible pour ce chapitre",
+      "audio_not_available_lang": "Audio non disponible pour cette langue actuellement"
+    },
+    "tooltips": {
+      "copy": "Copier",
+      "image_design": "Design d'image",
+      "note": "Note",
+      "ai_analysis": "Analyse IA",
+      "text_settings": "Paramètres du texte"
+    },
+    "notes": {
+      "title": "Ajoutez votre réflexion personnelle",
+      "placeholder": "Écrivez ici ce qui a touché votre cœur dans ce verset..."
+    },
+    "chapter_complete_btn": "Chapitre terminé",
+    "books_title": "Choisir le livre",
+    "testament_ot": "Ancien Testament",
+    "testament_nt": "Nouveau Testament",
+    "search_book": "Rechercher un livre...",
+    "chapters_subtitle": "Choisissez le chapitre que vous souhaitez lire :"
+  },
+  "maps": {
+    "title": "Cartes Bibliques",
+    "search_placeholder": "Rechercher un lieu ou une ville...",
+    "no_results": "Aucun résultat ne correspond à votre recherche",
+    "eras_placeholder": "Époques",
+    "choose_era": "Choisir l'époque",
+    "all_eras": "Toutes les époques",
+    "jump_to_place": "Aller au lieu...",
+    "style_map": "Carte",
+    "style_satellite": "Satellite",
+    "style_topo": "Topo 3D",
+    "default_point_book": "Lieu historique",
+    "no_info": "Aucune information supplémentaire disponible pour ce lieu.",
+    "read_in_bible": "Lire dans la Bible",
+    "era_names": {
+      "0": "Temps d'Abraham",
+      "1": "Exodus & Conquête",
+      "2": "Juges & Royaume Uni",
+      "3": "Royaume Divisé & Exil",
+      "4": "Post-Exil & Ancien Testament",
+      "5": "Évangiles",
+      "6": "Église primitive & Voyages des Apôtres"
+    },
+    "points_reason": "Lieu découvert : {name}",
+    "toasts": {
+      "points_earned": "+{amount} points : {reason}"
+    },
+    "error_offline": "Les cartes 3D nécessitent une connexion internet"
+  },
+  "search": {
+    "title": "Recherche Biblique",
+    "placeholder_derivatives": "Entrez un seul mot...",
+    "placeholder_default": "Entrez le mot à rechercher...",
+    "button_search": "Rechercher maintenant",
+    "type_literal": "Recherche littérale",
+    "type_derivatives": "Recherche de racines (IA)",
+    "type_semantic": "Recherche sémantique (IA)",
+    "rules_cooldown_text": "Disponible dans {time}s",
+    "display_settings": "Paramètres d'affichage :",
+    "option_title": "Titre",
+    "option_reason": "Explication",
+    "label_testament": "Testament",
+    "testament_all": "Les deux",
+    "testament_ot": "Ancien Testament",
+    "testament_nt": "Nouveau Testament",
+    "label_book": "Livre",
+    "book_all": "Tous les livres",
+    "label_chapter": "Chapitre",
+    "chapter_all": "Tous",
+    "status_analyzing": "Analyse linguistique en cours...",
+    "status_searching": "Recherche dans la Sainte Bible...",
+    "warning_static_word": "Alerte : Mot statique ou nom propre",
+    "warning_static_word_desc": "Ce mot n'a pas de dérivés conjugués réels en arabe. Recherche limitée aux occurrences directes.",
+    "ai_verified": "Vérifié linguistiquement par l'assistant Agios",
+    "toggle_derivatives_hide": "Masquer les options de racine ▲",
+    "toggle_derivatives_show": "Personnaliser les mots de recherche ▼",
+    "extracted_root": "Racine extraite :",
+    "select_all": "Tout sélectionner",
+    "deselect_all": "Tout désélectionner",
+    "loading_wait": "Recherche en cours, veuillez patienter...",
+    "results_count_semantic": "Résultats intelligents : {count} versets",
+    "results_count_default": "Résultats de recherche : {count} versets",
+    "copy_all": "Tout copier",
+    "share_all": "Tout partager",
+    "selection_copy": "Copier {count} versets",
+    "selection_share": "Partager {count} versets",
+    "selection_fav": "Tout mettre en favoris",
+    "selection_analyze": "Analyse intelligente",
+    "selection_cancel": "Annuler",
+    "copy_group": "Copier la section",
+    "share_group": "Partager la section",
+    "toast_login_required": "Connectez-vous d'abord",
+    "toast_delete_success": "Surlignage supprimé",
+    "toast_save_success": "Enregistré avec succès",
+    "toast_fav_exists": "Les versets sélectionnés sont déjà dans les favoris",
+    "toast_fav_added": "{count} versets ajoutés aux favoris",
+    "toast_analyze_chapter_limit": "L'analyse est disponible uniquement pour les versets du même chapitre",
+    "toast_copy_success": "Verset copié ✨",
+    "toast_semantic_error": "Désolé, le serveur est occupé. Veuillez réessayer dans une minute.",
+    "error_derivatives_limit": "Le système nécessite un seul mot pour la précision.",
+    "error_arabic_only": "Veuillez entrer un mot arabe correct uniquement.",
+    "reason_search": "Recherche de verset/mot",
+    "reason_highlight": "Surligner un verset de la recherche",
+    "reason_highlight_multi": "Surligner plusieurs versets",
+    "reason_copy": "Copier un verset de la recherche",
+    "reason_share": "Partager un verset de la recherche",
+    "reason_copy_multi": "Copier plusieurs versets",
+    "reason_share_multi": "Partager plusieurs versets",
+    "reason_copy_all": "Copier tous les résultats",
+    "reason_share_all": "Partager tous les résultats",
+    "reason_copy_semantic": "Copier la section de recherche intelligente",
+    "reason_share_semantic": "Partager la section de recherche intelligente",
+    "note_placeholder": "Écrivez votre réflexion personnelle ici...",
+    "select_prompt": "Sélectionner {label}"
+  },
+  "more": {
+    "title": "Plus",
+    "items": {
+      "favourites": "Notes & Favoris",
+      "competitions": "Concours",
+      "studyPlans": "Plans de lecture",
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "points": "Exploits"
+    },
+    "footer": {
+      "about": "À propos",
+      "contact": "Contactez-nous",
+      "versions": "Mises à jour",
+      "privacy": "Confidentialité"
+    }
+  },
+  "profile": {
+    "guest_date": "Invité",
+    "guest_user": "Compte invité",
+    "friend_agios": "Ami d'Agios",
+    "member_since": "Membre depuis : {date}",
+    "fav_verses": "Versets favoris",
+    "xp": "XP",
+    "active_plans_count": "Plans actifs",
+    "account_section": "Compte",
+    "logout": "Déconnexion",
+    "general_options": "Options générales",
+    "app_settings": "Paramètres de l'application",
+    "points_badges": "Points & Badges",
+    "invite_friend": "Inviter un ami",
+    "delete_account": "Supprimer le compte",
+    "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte ?",
+    "version": "Agios App - Version 1.2.0",
+    "share_title": "Application Agios",
+    "share_text": "Téléchargez l'application Agios et lisez la Bible d'une nouvelle façon !",
+    "share_dialog": "Partager l'application avec des amis",
+    "share_not_supported": "Partage non supporté par le navigateur",
+    "points_label": "XP"
+  },
+  "points": {
+    "title": "Points & Exploits",
+    "tab_points": "Points",
+    "tab_badges": "Badges",
+    "tab_history": "Historique",
+    "level": "Niveau {level}",
+    "next_level": "Encore {points} points pour le niveau suivant",
+    "total_points_label": "Points totaux",
+    "streak_label": "Série : {streak} jours",
+    "daily_goals_title": "Objectifs quotidiens",
+    "rarity": {
+      "all": "Toutes",
+      "common": "Commun",
+      "uncommon": "Peu commun",
+      "rare": "Rare",
+      "epic": "Épique",
+      "mythic": "Mythique"
+    },
+    "no_history": "Aucun historique d'activité pour le moment.",
+    "daily_bonus_toast": "Vous avez reçu 10 points aujourd'hui ! ",
+    "goals": {
+      "dailyLogin": "Connexion quotidienne",
+      "dailyQuestion": "Résoudre la question du défi",
+      "mapExploration": "Explorer un lieu sur la carte",
+      "share": "Partager un verset ou du contenu",
+      "completedChapter": "Lire un chapitre complet",
+      "favouriteVerse": "Surligner un verset"
+    },
+    "points_reasons": {
+      "daily_login": "Connexion quotidienne",
+      "share_daily_verse": "Partager le verset du jour depuis la page d'accueil",
+      "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil"
+    }
+  },
+  "competitions": {
+    "title": "Concours Agios",
+    "greeting": "Bonjour, {name}",
+    "guest_user": "Invité Agios",
+    "select_book": "Choisissez un livre pour commencer",
+    "welcome_title": "Défi des livres bibliques",
+    "welcome_desc": "Testez vos connaissances et collectez des points",
+    "history_title": "Historique des résultats",
+    "redo": "Recommencer",
+    "final_results": "Résultats finaux",
+    "back_to_books": "Retour aux livres",
+    "question_progress": "Question {current} on {total}",
+    "streak_count": "{count} consécutifs",
+    "correct_feedback": "Bonne réponse",
+    "incorrect_feedback": "La bonne réponse était : {answer}",
+    "next_question": "Question suivante",
+    "cancel_quiz": "Annuler le concours",
+    "error_no_questions": "Aucune question disponible pour cette catégorie.",
+    "points_reason_complete": "Concours terminé : {category}",
+    "points_reason_perfect": "Score parfait : {category}"
+  },
+  "studyPlans": {
+    "title": "Plans de lecture",
+    "ai_button": "Concevoir un plan intelligent",
+    "search_placeholder": "Rechercher un plan (ex: Évangile, Psaumes...)",
+    "filters": {
+      "all": "Tout",
+      "custom": "Personnalisés",
+      "shared": "Plans partagés"
+    },
+    "card": {
+      "ai_badge": "Assistant intelligent Agios",
+      "shared_badge": "Plan partagé",
+      "community_type": "Plan communautaire",
+      "personal_type": "Plan personnel",
+      "by_author": "Par : {name}",
+      "completed_percent": "{percent}% terminé",
+      "continue": "Continuer",
+      "start": "Commencer maintenant"
+    },
+    "empty": {
+      "no_search_results": "Aucun résultat pour cette recherche",
+      "no_plans": "Aucun plan disponible",
+      "reset_search": "Afficher tous les plans"
+    },
+    "delete_toast": {
+      "confirm_title": "Voulez-vous supprimer ce plan ?",
+      "delete_success": "Supprimé avec succès"
+    },
+    "details": {
+      "loading": "Chargement du plan...",
+      "not_found": "Plan non trouvé",
+      "progress_label": "Pourcentage d'avancement",
+      "by_author": "Par : {name}",
+      "undo_manual": "Sélection manuelle annulée",
+      "done_manual": "Sélectionné manuellement",
+      "sync_error": "Erreur lors de la synchronisation",
+      "day_label": "Jour {day}"
+    },
+    "custom": {
+      "loading_title": "Agios conçoit votre voyage spirituel...",
+      "loading_sub": "Cela peut prendre quelques secondes",
+      "form_title": "Concepteur de plans intelligent",
+      "form_subtitle": "Dites à 'Agios' ce que vous traversez aujourd'hui, et il vous suggérera des lectures.",
+      "mood_label": "Comment vous sentez-vous ? Quel sujet cherchez-vous ?",
+      "mood_placeholder": "Ex: Je suis anxieux pour l'avenir, ou je cherche une étude sur la patience..",
+      "duration_label": "Durée préférée du plan ?",
+      "duration_custom_placeholder": "Ex: 40",
+      "duration_suffix": "Jours",
+      "duration_limit_hint": "(Maximum 180 jours)",
+      "intensity_label": "Combien de chapitres par jour ?",
+      "share_label": "Options de partage",
+      "share_check": "Partager ce plan avec d'autres",
+      "author_check": "Afficher mon nom comme auteur",
+      "author_preview": "Le plan apparaîtra par : {name}",
+      "author_default": "Utilisateur Agios",
+      "guest_hint": "Le plan sera publié anonymement.",
+      "submit_btn": "Commencer mon voyage",
+      "submitting": "Préparation...",
+      "error_incomplete": "Veuillez compléter les données",
+      "error_duration": "Précisez le nombre de jours",
+      "error_duration_max": "Maximum 180 jours",
+      "error_mood_short": "Description trop courte.",
+      "success_toast": "Plan créé avec succès !",
+      "ai_error": "L'IA n'a pas pu créer le plan",
+      "generic_error": "Erreur lors de la création",
+      "durations": {
+        "3": "3 jours",
+        "7": "Une semaine",
+        "14": "Deux semaines",
+        "30": "Un mois",
+        "90": "3 mois",
+        "180": "6 mois",
+        "custom": "Durée personnalisée"
+      },
+      "intensities": {
+        "1": "1 chapitre par jour",
+        "2": "2 chapitres par jour",
+        "3": "3 chapitres par jour",
+        "default": "Un chapitre par jour"
+      }
+    }
+  },
+  "intro": {
+    "title": "N'oubliez pas de vous connecter",
+    "subtitle": "Bénéficiez de plus d'avantages en créant un compte",
+    "features_title": "Pourquoi se connecter ?",
+    "features": [
+      { "title": "Entièrement gratuit", "desc": "Aucun abonnement ou frais." },
+      { "title": "Données sécurisées", "desc": "Toute vos informations sont cryptées." },
+      { "title": "Plusieurs appareils", "desc": "Utilisez le même compte partout." },
+      { "title": "Favoris et Notes", "desc": "Ne perdez jamais vos versets et réflexions." },
+      { "title": "Plans d'étude", "desc": "Conservez votre progression." },
+      { "title": "Système de points", "desc": "Suivez votre vie spirituelle." },
+      { "title": "Avantages exclusifs", "desc": "Accès anticipé aux nouveautés." }
+    ],
+    "cta_text": "Commencez votre voyage spirituel aujourd'hui.",
+    "signup_btn": "Pas de compte ? Inscrivez-vous",
+    "login_btn": "Déjà un compte ? Connectez-vous"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "tagline": "Nous sommes ravis d'écouter vos suggestions",
+    "reasons_title": "Pourquoi nous contacter ?",
+    "reasons": [
+      "Suggestions pour de nouvelles fonctions.",
+      "Signaler un bug ou une erreur.",
+      "Support technique ou volontariat.",
+      "Questions générales."
+    ],
+    "methods_title": "Canaux officiels",
+    "email_btn": "Envoyer un e-mail",
+    "facebook_btn": "Page Facebook",
+    "footer": "Nous répondons à tous dès que possible."
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "subtitle": "Application Agios Bible",
+    "sections": {
+      "desc": "Cette politique s'applique à l'application Agios Bible.",
+      "collection_title": "Collecte des données",
+      "collection_text": "L'application collecte des informations lors de l'utilisation.",
+      "collection_items": [
+        "Adresse IP.",
+        "Pages visitées et temps passé.",
+        "Version du système d'exploitation."
+      ],
+      "ai_title": "Intelligence Artificielle (IA)",
+      "ai_text": "L'application utilise l'IA pour améliorer l'expérience.",
+      "third_party_title": "Accès tiers",
+      "third_party_text": "Nous utilisons des services tiers de confiance.",
+      "children_title": "Vie privée des enfants",
+      "children_text": "L'application ne s'adresse pas aux moins de 13 ans.",
+      "contact_title": "Contact",
+      "contact_text": "Pour toute question, contactez-nous à :"
+    },
+    "footer_effective": "Date d'effet : 22-03-2026",
+    "footer_rights": "© 2026 Agios System. Tous droits réservés."
+  },
+  "favourites": {
+    "title": "Mes favoris",
+    "tab_favs": "Favoris",
+    "tab_notes": "Notes",
+    "color_categories": "Catégories de couleurs :",
+    "no_title": "Sans titre",
+    "modal_title": "Nommer la couleur",
+    "modal_placeholder": "Ex: Versets de réconfort, Promesses...",
+    "empty_color_prompt": "Choisissez une catégorie ci-dessus",
+    "empty_list": "Rien ici pour le moment",
+    "error_save": "Erreur lors de l'enregistrement"
+  },
+  "share_preview": {
+    "title": "Studio de design",
+    "subtitle": "Personnalisez le verset",
+    "label_font": "Type de police",
+    "label_font_size": "Taille : {size}px",
+    "label_box_width": "Largeur : {width}%",
+    "label_line_height": "Interligne : {height}",
+    "label_background": "Choisir le fond",
+    "share_btn": "Partager",
+    "download_btn": "Enregistrer l'image",
+    "save_success": "Image enregistrée !",
+    "error_generic": "Erreur lors du traitement",
+    "share_title": "Verset de l'application Agios",
+    "share_dialog": "Partager le design via..."
+  },
+  "versions": {
+    "title": "Historique des versions",
+    "intro": "Nous sommes en phase de test et d'amélioration continue.",
+    "labels": {
+      "features": "Fonctions & Améliorations",
+      "fixes": "Corrections"
+    },
+    "history": [
+      {
+        "version": "2.0.0",
+        "date": "Dernière mise à jour",
+        "title": "Mise à jour majeure et support multilingue",
+        "features": [
+          "Restructuration complète de l'application pour le support multilingue",
+          "Ajout du support pour 3 nouvelles langues (Anglais, Français, Allemand) avec les fonctionnalités principales",
+          "Amélioration de l'affichage et du formatage du texte arabe dans la Sainte Bible",
+          "Améliorations du design et de la réactivité pour les petits écrans",
+          "Amélioration de l'expérience utilisateur et développement de la page d'accueil"
+        ],
+        "fixes": [
+          "Améliorations générales des performances et de la stabilité du système"
+        ]
+      },
+      {
+        "version": "1.8.4",
+        "date": "Mise à jour précédente",
+        "title": "Précision du Tashkeel, améliorations de la recherche et badges",
+        "features": [
+          "Remplacement du Tashkeel par une version précise à 100%",
+          "Amélioration de la recherche des plans d'étude pour plus de flexibilité",
+          "Amélioration du design de la page des badges"
+        ],
+        "fixes": [
+          "Correction d'un problème d'affichage des suites sur la page des chapitres"
+        ]
+      },
+      {
+        "version": "1.8.3",
+        "date": "Mise à jour précédente",
+        "title": "Personnalisation de la police et améliorations des plans d'étude",
+        "features": [
+          "Ajout de la possibilité de changer la police du texte biblique",
+          "Ajout de la possibilité de changer l'épaisseur du texte",
+          "Amélioration de la réactivité de l'IA dans les plans d'étude"
+        ],
+        "fixes": [
+          "Correction du problème de double bouton retour sur la page des plans d'étude"
+        ]
+      },
+      {
+        "version": "1.8.2",
+        "date": "Mise à jour précédente",
+        "title": "Améliorations des performances et stabilité du système",
+        "features": [
+          "Amélioration de la réactivité du système pour les utilisateurs connectés",
+          "Amélioration du bouton de sélection des livres de la Bible",
+          "Amélioration du système de recherche par racines"
+        ],
+        "fixes": [
+          "Correction des problèmes de carte sous charge élevée",
+          "Correction du lien Facebook ne fonctionnant pas sur la page de contact",
+          "Correction des boutons de la barre de contrôle des versets n'apparaissant pas en mode clair",
+          "Correction de la sélection incorrecte des boutons de la barre de navigation"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "date": "13 mai 2026",
+        "title": "Sortie des cartes améliorées",
+        "features": [
+          "Expansion de la bibliothèque de cartes avec de nouvelles cartes",
+          "Ajout de la recherche intelligente pour les lieux et monuments historiques",
+          "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses mentions bibliques",
+          "Ajout de la section 'Essayer l'IA' sur la page d'accueil pour une meilleure expérience utilisateur"
+        ],
+        "fixes": [
+          "Correction de la lenteur dans les listes de sélection des livres et chapitres",
+          "Améliorations radicales du design de la page des concours",
+          "Correction du flou dans les menus déroulants"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "12 mai 2026",
+        "title": "Première version officielle",
+        "features": [
+          "La première version officielle portant toutes les fonctionnalités de base"
+        ],
+        "fixes": [
+          "Aucun"
+        ]
+      }
+    ]
+  },
+  "offline": {
+    "title": "Pas de connexion internet",
+    "desc": "Il semble que vous soyez hors ligne. Vous pouvez lire le contenu chargé."
+  },
+  "analysis": {
+    "title_prefix": "Étude",
+    "ai_badge": "Propulsé par l'IA",
+    "status_analyzing": "L'assistant Agios analyse le texte...",
+    "wait_title": "Veuillez patienter",
+    "wait_desc": "Veuillez attendre avant une nouvelle analyse.",
+    "streaming_text": "L'assistant Agios écrit pour vous...",
+    "disclaimer": "Cette analyse est générée par IA. Référez-vous toujours aux textes officiels et aux pères de l'Église.",
+    "toast_copy": "Analyse copiée",
+    "toast_copy_paragraph": "Paragraphe copié",
+    "error_incomplete": "Connexion interrompue",
+    "error_generic": "Erreur lors du chargement de l'analyse."
+  },
+  "interpretations": {
+    "no_data": "Interprétation non trouvée",
+    "title_prefix": "Interprétation",
+    "subtitle": "Analyse et explication des chapitres",
+    "default_title": "Interprétation biblique",
+    "chapter_title": "Chapitre {chapter}"
+  },
+  "components": {
+    "bible_nav": {
+      "title": "Index rapide",
+      "search_placeholder": "Rechercher...",
+      "home": "Accueil",
+      "read": "Lire",
+      "maps": "Cartes",
+      "search": "Chercher",
+      "more": "Plus"
+    },
+    "audio_player": {
+      "loading": "Chargement...",
+      "speed": "Vitesse",
+      "settings": "Réglages",
+      "volume": "Volume",
+      "repeat": "Répéter",
+      "auto_play": "Auto",
+      "highlight": "Couleur",
+      "stop": "Stop"
+    },
+    "book_selector": {
+      "title": "Lire les Livres",
+      "search_placeholder": "Rechercher un livre...",
+      "no_results": "Aucun livre trouvé : \"{name}\"",
+      "testament_ot": "Ancien Testament",
+      "testament_nt": "Nouveau Testament"
+    },
+    "top_header": {
+      "back": "Retour"
+    },
+    "badges": {
+      "congrats": "Félicitations ! Nouvel exploit",
+      "share_achievement": "Partager l'exploit",
+      "view_all": "Voir tous les badges",
+      "share_title": "Nouveau Badge !",
+      "share_text": "🎉 J'ai obtenu un nouveau badge sur Agios : {badge}!\n\"{req}\"\nDownload l'application pour nous rejoindre.",
+      "share_dialog": "Partager le badge via..."
+    }
+  },
+  "metadata": {
+    "title": "Site Officiel | Agios Bible",
+    "description": "Un site biblique intégré avec recherche avancée et cartes interactives."
+  }
+}
