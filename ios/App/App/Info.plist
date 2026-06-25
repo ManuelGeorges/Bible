@@ -63,6 +63,8 @@
 	<string>نحتاج لحفظ الصور في مكتبتك عند تحميل الآيات أو المحتوى.</string>
 	<key>NSLocalNotificationsUsageDescription</key>
 	<string>نحتاج لإرسال تنبيهات لك بآية اليوم وخطط القراءة والمسابقات.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>نستخدم هذه البيانات لتحسين تجربتك وتوفير محتوى مخصص لك وتحليل أداء التطبيق.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
