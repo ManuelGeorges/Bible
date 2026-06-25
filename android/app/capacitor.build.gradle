@@ -12,6 +12,7 @@ dependencies {
     implementation project(':capacitor-community-firebase-crashlytics')
     implementation project(':capacitor-community-keep-awake')
     implementation project(':capacitor-community-media')
+    implementation project(':capacitor-firebase-analytics')
     implementation project(':capacitor-firebase-authentication')
     implementation project(':capacitor-firebase-messaging')
     implementation project(':capacitor-app')
