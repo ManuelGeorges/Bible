@@ -638,8 +638,20 @@
     },
     "history": [
       {
-        "version": "2.0.0",
+        "version": "2.0.1",
         "date": "Latest Update",
+        "title": "Technical Fixes & Improvements",
+        "features": [],
+        "fixes": [
+          "Fixed reversed reference direction in the verse sharing page",
+          "Fixed favorite verse color mismatch between search and Bible pages",
+          "Fixed issue with daily verse image not saving correctly for iPhone users",
+          "Fixed error when exiting the app via double back button press"
+        ]
+      },
+      {
+        "version": "2.0.0",
+        "date": "Previous Update",
         "title": "Major Update & Multi-language Support",
         "features": [
           "Completely restructured the app to support multiple languages",

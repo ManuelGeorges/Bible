@@ -638,8 +638,20 @@
     },
     "history": [
       {
-        "version": "2.0.0",
+        "version": "2.0.1",
         "date": "Dernière mise à jour",
+        "title": "Corrections techniques et améliorations",
+        "features": [],
+        "fixes": [
+          "Correction de l'erreur de direction du témoin inversé dans la page de partage de verset",
+          "Correction de la différence de couleurs des versets favoris entre les pages de recherche et de la Bible",
+          "Correction de l'erreur d'enregistrement incorrect de l'image du verset du jour pour les utilisateurs d'iPhone",
+          "Correction de l'erreur lors de la sortie de l'application en appuyant deux fois sur le bouton retour"
+        ]
+      },
+      {
+        "version": "2.0.0",
+        "date": "Mise à jour précédente",
         "title": "Mise à jour majeure et support multilingue",
         "features": [
           "Restructuration complète de l'application pour le support multilingue",

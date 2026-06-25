@@ -215,10 +215,10 @@
     "thanks": {
       "title": "Danksagungen",
       "priest_name": "Ehrw. Pfr. Athanasius",
-      "priest_desc": "Wir sprechen {name} unseren tiefsten Dank und unsere Liebe für seine ständige väterliche Fürsorge für diese Arbeit aus.",
-      "fcbh": "Ein besonderer Dank geht an 'Faith Comes By Hearing' für die Bereitstellung der wunderbaren Audio-Bibliothek von Herrn Adel Noshy.",
-      "church": "Wir danken unserer Heimatkirche, der Erzengel-Michael-Kirche in Mostafa Kamel - Alexandria, für die ständige Unterstützung.",
-      "translations": "Für das Deutsche wird die Luther-Übersetzung verwendet, für das Arabische Smith & Van Dyke, für das Englische die World English Bible und für das Französische Louis Segond. Alle diese Übersetzungen sind Open-Source und gesetzlich zur Verwendung zugelassen.",
+      "priest_desc": "Wir sprechen {name} unseren tiefsten Dank und unsere Liebe für seine ständige väterliche Fürsorge for diese Arbeit aus.",
+      "fcbh": "Ein besonderer Dank geht an 'Faith Comes By Hearing' for die Bereitstellung der wunderbaren Audio-Bibliothek von Herrn Adel Noshy.",
+      "church": "Wir danken unserer Heimatkirche, der Erzengel-Michael-Kirche in Mostafa Kamel - Alexandria, for die ständige Unterstützung.",
+      "translations": "Für das Deutsche wird die Luther-Übersetzung verwendet, for das Arabische Smith & Van Dyke, for das Englische die World English Bible und for das Französische Louis Segond. Alle diese Übersetzungen sind Open-Source und gesetzlich zur Verwendung zugelassen.",
       "general": "Besonderer Dank an alle, die durch technischen oder geistlichen Rat beigetragen haben."
     },
     "footer": "© 2026 Agios System - Alle Rechte vorbehalten"
@@ -253,8 +253,8 @@
       "plan_day_complete": "Glückwunsch! Heutige Lesungen im Plan abgeschlossen",
       "plan_all_complete": "Großartig! Du hast den gesamten Leseplan abgeschlossen",
       "chapter_undo": "Kapitelauswahl aufgehoben",
-      "audio_not_found": "Audio für dieses Kapitel nicht verfügbar",
-      "audio_not_available_lang": "Audio für diese Sprache aktuell nicht verfügbar"
+      "audio_not_found": "Audio for dieses Kapitel nicht verfügbar",
+      "audio_not_available_lang": "Audio for diese Sprache aktuell nicht verfügbar"
     },
     "tooltips": {
       "copy": "Kopieren",
@@ -277,7 +277,7 @@
   "maps": {
     "title": "Bibelkarten",
     "search_placeholder": "Suche nach einem Ort oder einer Stadt...",
-    "no_results": "Keine Ergebnisse für deine Suche",
+    "no_results": "Keine Ergebnisse for deine Suche",
     "eras_placeholder": "Epochen",
     "choose_era": "Epoche wählen",
     "all_eras": "Alle Epochen",
@@ -286,7 +286,7 @@
     "style_satellite": "Satellit",
     "style_topo": "3D Topo",
     "default_point_book": "Historisches Wahrzeichen",
-    "no_info": "Keine zusätzlichen Informationen für diesen Ort verfügbar.",
+    "no_info": "Keine zusätzlichen Informationen for diesen Ort verfügbar.",
     "read_in_bible": "In der Bibel lesen",
     "era_names": {
       "0": "Tage Abrahams",
@@ -350,7 +350,7 @@
     "toast_save_success": "Erfolgreich gespeichert",
     "toast_fav_exists": "Ausgewählte Verse bereits in Favoriten",
     "toast_fav_added": "{count} Verse zu Favoriten hinzugefügt",
-    "toast_analyze_chapter_limit": "Analyse nur für Verse aus demselben Kapitel verfügbar",
+    "toast_analyze_chapter_limit": "Analyse nur for Verse aus demselben Kapitel verfügbar",
     "toast_copy_success": "Vers kopiert ✨",
     "toast_semantic_error": "Entschuldigung, der Server ist momentan überlastet. Bitte versuche es in einer Minute erneut.",
     "error_derivatives_limit": "Die Derivatsuche erfordert zur Genauigkeit nur ein Wort.",
@@ -428,7 +428,7 @@
       "mythic": "Mythisch"
     },
     "no_history": "Noch kein Aktivitätsverlauf vorhanden.",
-    "daily_bonus_toast": "Du hast heute 10 Punkte für dein Engagement erhalten! ",
+    "daily_bonus_toast": "Du hast heute 10 Punkte for dein Engagement erhalten! ",
     "goals": {
       "dailyLogin": "Tägliche Anmeldung",
       "dailyQuestion": "Herausforderungsfrage lösen",
@@ -460,7 +460,7 @@
     "incorrect_feedback": "Die richtige Antwort ist: {answer}",
     "next_question": "Nächste Frage",
     "cancel_quiz": "Wettbewerb abbrechen",
-    "error_no_questions": "Entschuldigung, momentan sind keine Fragen für diese Kategorie verfügbar.",
+    "error_no_questions": "Entschuldigung, momentan sind keine Fragen for diese Kategorie verfügbar.",
     "points_reason_complete": "Abschluss des Wettbewerbs: {category}",
     "points_reason_perfect": "Volle Punktzahl: {category}"
   },
@@ -484,7 +484,7 @@
       "start": "Jetzt starten"
     },
     "empty": {
-      "no_search_results": "Keine Ergebnisse für diese Suche",
+      "no_search_results": "Keine Ergebnisse for diese Suche",
       "no_plans": "Momentan keine Pläne vorhanden",
       "reset_search": "Alle Pläne anzeigen"
     },
@@ -503,7 +503,7 @@
       "day_label": "Tag {day}"
     },
     "custom": {
-      "loading_title": "Agios entwirft eine besondere geistliche Reise für dich...",
+      "loading_title": "Agios entwirft eine besondere geistliche Reise for dich...",
       "loading_sub": "Dies kann einige Sekunden dauern",
       "form_title": "Intelligenter Plan-Designer",
       "form_subtitle": "Sag 'Agios', was dein Herz heute beschäftigt, und es wird dir personalisierte biblische Lesungen vorschlagen.",
@@ -524,7 +524,7 @@
       "submitting": "Vorbereitung läuft...",
       "error_incomplete": "Bitte fülle zuerst die Daten aus",
       "error_duration": "Bitte gib die Anzahl der Tage an",
-      "error_duration_max": "Die maximale Dauer für einen benutzerdefinierten Plan beträgt 180 Tage.",
+      "error_duration_max": "Die maximale Dauer for einen benutzerdefinierten Plan beträgt 180 Tage.",
       "error_mood_short": "Die Beschreibung ist zu kurz. Erzähle uns mehr Details.",
       "success_toast": "Dein Plan wurde erfolgreich erstellt!",
       "ai_error": "KI konnte den Plan nicht erstellen",
@@ -582,7 +582,7 @@
     "title": "Datenschutzerklärung",
     "subtitle": "Agios Bibel App",
     "sections": {
-      "desc": "Diese Datenschutzerklärung gilt für die Agios Bibel App.",
+      "desc": "Diese Datenschutzerklärung gilt for die Agios Bibel App.",
       "collection_title": "Datenerhebung und -verwendung",
       "collection_text": "Die Anwendung sammelt Informationen, wenn du sie herunterlädst und verwendest.",
       "collection_items": [
@@ -638,14 +638,26 @@
     },
     "history": [
       {
-        "version": "2.0.0",
+        "version": "2.0.1",
         "date": "Letztes Update",
+        "title": "Technische Korrekturen & Verbesserungen",
+        "features": [],
+        "fixes": [
+          "Fehler der umgekehrten Referenzrichtung auf der Vers-Teilen-Seite behoben",
+          "Farbabweichung bei favorisierten Versen zwischen Such- und Bibelseite behoben",
+          "Fehler beim Speichern des Vers-des-Tages-Bildes bei iPhone-Nutzern behoben",
+          "Fehler beim Verlassen der App durch doppeltes Drücken der Zurück-Taste behoben"
+        ]
+      },
+      {
+        "version": "2.0.0",
+        "date": "Vorheriges Update",
         "title": "Großes Update & Mehrsprachigkeits-Unterstützung",
         "features": [
           "Vollständige Umstrukturierung der App zur Unterstützung mehrerer Sprachen",
-          "Unterstützung für 3 neue Sprachen (Englisch, Französisch, Deutsch) mit den wichtigsten Funktionen",
+          "Unterstützung for 3 neue Sprachen (Englisch, Französisch, Deutsch) mit den wichtigsten Funktionen",
           "Verbesserte Anzeige und Formatierung des arabischen Textes in der Heiligen Schrift",
-          "Design-Verbesserungen und bessere Reaktionsfähigkeit für kleine Bildschirme",
+          "Design-Verbesserungen und bessere Reaktionsfähigkeit for kleine Bildschirme",
           "Verbesserte Benutzererfahrung und Weiterentwicklung der Homepage"
         ],
         "fixes": [
@@ -683,9 +695,9 @@
         "date": "Vorheriges Update",
         "title": "Leistungsverbesserungen und Systemstabilität",
         "features": [
-          "Reaktionsfähigkeit des Systems für angemeldete Benutzer verbessert",
+          "Reaktionsfähigkeit des Systems for angemeldete Benutzer verbessert",
           "Schaltfläche zur Buchauswahl in der Bibel verbessert",
-          "System für die Derivatsuche verbessert"
+          "System for die Derivatsuche verbessert"
         ],
         "fixes": [
           "Kartenprobleme bei hoher Last behoben",
@@ -702,10 +714,10 @@
           "Kartenbibliothek um neue Karten erweitert",
           "Intelligente Suche nach Orten und historischen Wahrzeichen hinzugefügt",
           "Funktion zum Anzeigen eines Wahrzeichens und Navigieren zu dessen biblischen Erwähnungen hinzugefügt",
-          "Bereich 'KI testen' auf der Startseite für eine bessere Benutzererfahrung hinzugefügt"
+          "Bereich 'KI testen' auf der Startseite for eine bessere Benutzererfahrung hinzugefügt"
         ],
         "fixes": [
-          "Langsamkeit in den Auswahl-Listen für Bücher und Kapitel behoben",
+          "Langsamkeit in den Auswahl-Listen for Bücher und Kapitel behoben",
           "Radikale Verbesserungen im Design der Wettbewerbsseite",
           "Unschärfe in Dropdown-Menüs behoben"
         ]
@@ -733,7 +745,7 @@
     "status_analyzing": "Der intelligente Agios-Assistent analysiert jetzt den Text...",
     "wait_title": "Bitte warte ein wenig",
     "wait_desc": "Um den Server zu schützen, warte bitte vor einer neuen Analyse. Die Analyse startet automatisch nach dem Countdown.",
-    "streaming_text": "Der intelligente Agios-Assistent schreibt gerade für dich...",
+    "streaming_text": "Der intelligente Agios-Assistent schreibt gerade for dich...",
     "disclaimer": "Diese Analyse wurde von einer KI erstellt. Bitte beziehe dich immer auf die Priester und die genehmigten Auslegungsbücher der koptischen Kirche.",
     "toast_copy": "Analyse erfolgreich kopiert",
     "toast_copy_paragraph": "Absatz kopiert",
