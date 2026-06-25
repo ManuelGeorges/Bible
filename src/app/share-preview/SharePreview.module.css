@@ -144,10 +144,10 @@
   color: white;
   text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.8);
   margin-top: 5px;
-  /* حل مشكلة انعكاس أرقام الشاهد (مثل 3:16) في اللغة العربية */
-  direction: ltr;
+  /* تم تعديل هذا الجزء لضمان عدم انعكاس الشواهد العربية */
+  /* استخدام plaintext يسمح للنص بتحديد اتجاهه تلقائياً مما يحافظ على ترتيب (إصحاح:آية) */
+  unicode-bidi: plaintext;
   display: block;
-  unicode-bidi: embed;
 }
 
 .brandTag {
