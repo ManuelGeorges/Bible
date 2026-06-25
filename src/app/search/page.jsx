@@ -37,7 +37,6 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
     try {
       return await fn(attempt);
     } catch (err) {
-      lastError = err;
       const errorMsg = err.message?.toLowerCase() || "";
 
       const isRetryable = errorMsg.includes('429') ||
@@ -79,15 +78,15 @@ async function* streamWithTimeout(stream, timeoutMs = 15000) {
 }
 
 const highlightColors = [
-  { color: "#ffeb3b", label: "اصفر" }, { color: "#ffc107", label: "برتقالي" },
-  { color: "#ff9800", label: "كركمي" }, { color: "#ff5722", label: "احمر" },
-  { color: "#f44336", label: "قرمزي" }, { color: "#e91e63", label: "وردي" },
-  { color: "#9c27b0", label: "بنفسجي" }, { color: "#673ab7", label: "نيلي" },
-  { color: "#3f51b5", label: "كحلي" }, { color: "#2196f3", label: "ازرق" },
-  { color: "#03a9f4", label: "سماوي" }, { color: "#00bcd4", label: "تركواز" },
-  { color: "#009688", label: "جنزاري" }, { color: "#4caf50", label: "اخضر" },
-  { color: "#8bc34a", label: "عشبي" }, { color: "#cddc39", label: "ليموني" },
-  { color: "#795548", label: "بني" }, { color: "#607d8b", label: "رمادي" }
+  { color: '#FFC107', label: "أصفر" }, { color: '#FF5722', label: "برتقالي" },
+  { color: '#F44336', label: "أحمر" }, { color: '#E91E63', label: "وردي" },
+  { color: '#9C27B0', label: "بنفسجي" }, { color: '#673AB7', label: "بنفسجي غامق" },
+  { color: '#3F51B5', label: "نيلي" }, { color: '#2196F3', label: "أزرق" },
+  { color: '#03A9F4', label: "سماوي" }, { color: '#00BCD4', label: "تركواز" },
+  { color: '#009688', label: "جنزاري" }, { color: '#4CAF50', label: "أخضر" },
+  { color: '#8BC34A', label: "عشبي" }, { color: '#CDDC39', label: "ليموني" },
+  { color: '#FFECB3', label: "أصفر فاتح" }, { color: '#F8BBD0', label: "وردي فاتح" },
+  { color: '#E1BEE7', label: "بنفسجي فاتح" }, { color: '#CFD8DC', label: "رمادي فاتح" }
 ];
 
 function normalizeArabicText(text) {
@@ -200,7 +199,6 @@ function SearchContent() {
       if (bookNamesData.length === 0) return;
       try {
         let bJson;
-        // تصحيح المسارات ليشير إلى ../data بدلاً من ../../data
         if (language === 'ar') {
           bJson = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
         } else if (language === 'en') {
@@ -358,7 +356,7 @@ function SearchContent() {
         chapter: v.chapter,
         verse: v.verse,
         book_index: v.book_index,
-        color: color !== null ? color : (newFavorites[verseId]?.color || "#ffeb3b"),
+        color: color !== null ? color : (newFavorites[verseId]?.color || "#FFC107"),
         note: noteText,
         dateAdded: getCairoIsoString()
       };
@@ -366,7 +364,7 @@ function SearchContent() {
     }
 
     try {
-      await updateDoc(doc(db, 'users', u.uid), { 'favorites.verses': newFavorites });
+      await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
       setActiveActionId(null);
       toast.success(isDelete ? strings.search.toast_delete_success : strings.search.toast_save_success);
     } catch (e) {
@@ -374,7 +372,7 @@ function SearchContent() {
     }
   };
 
-  const addSelectedToFavorites = async (color = "#ffeb3b") => {
+  const addSelectedToFavorites = async (color = "#FFC107") => {
     if (!user) return toast.error(strings.search.toast_login_required);
     if (selectedVerses.length === 0) return;
 
@@ -558,7 +556,7 @@ Règles:
 4. Haute précision dans les numéros de chapitre et de verset.`,
       de: (term, allowedBooks, filterContext) => `Sie sind eine theologische Suchmaschine für die "Agios" -Bibel-App.
 Extrahieren Sie 5-7 Verweise auf: "${term}"
-Kontext: ${filterContext}
+Contexte: ${filterContext}
 
 Wichtig: Antworten Sie auf Deutsch und halten Sie alle Erklärungs-/Begründungstexte auf Deutsch.
 
@@ -1425,7 +1423,7 @@ Regeln:
                         <Share2 size={16} />
                         <span>{strings.search.selection_share.replace('{count}', formatNumber(selectedVerses.length))}</span>
                       </button>
-                      <button onClick={() => addSelectedToFavorites("#ffeb3b")} className={styles.multiFavBtn}>
+                      <button onClick={() => addSelectedToFavorites("#FFC107")} className={styles.multiFavBtn}>
                         <Heart size={16} />
                         <span>{strings.search.selection_fav}</span>
                       </button>

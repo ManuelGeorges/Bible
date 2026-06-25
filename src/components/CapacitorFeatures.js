@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Toast } from '@capacitor/toast';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FirebaseCrashlytics } from '@capacitor-community/firebase-crashlytics';
@@ -23,6 +24,7 @@ export default function CapacitorFeatures() {
   const { theme, setTheme } = useTheme();
   const { language } = useLanguage();
   const hasSetup = useRef(false);
+  const lastBackPress = useRef(0);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   // دالة موحدة للتعامل مع التوجيه من الإشعارات أو الروابط
@@ -88,6 +90,25 @@ export default function CapacitorFeatures() {
     hasSetup.current = true;
 
     const setupListeners = async () => {
+      // التعامل مع زر الرجوع
+      App.addListener('backButton', async ({ canGoBack }) => {
+        if (canGoBack) {
+          window.history.back();
+        } else {
+          const now = Date.now();
+          // إذا كانت الضغطة الثانية في أقل من ثانيتين
+          if (now - lastBackPress.current < 2000) {
+            App.exitApp();
+          } else {
+            lastBackPress.current = now;
+            await Toast.show({
+              text: language === 'ar' ? 'اضغط مرة أخرى للخروج' : 'Press back again to exit',
+              duration: 'short',
+            });
+          }
+        }
+      });
+
       App.addListener('appUrlOpen', (data) => {
         const path = data.url.split('://')[1];
         if (path) handleNavigation(path);
@@ -193,7 +214,7 @@ export default function CapacitorFeatures() {
         AppUpdate.removeAllListeners();
       } catch (e) {}
     };
-  }, [router]);
+  }, [router, language]);
 
   return (
     <AnimatePresence>

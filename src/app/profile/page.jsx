@@ -235,10 +235,6 @@ const ProfilePage = () => {
           </button>
         )}
       </div>
-
-      <footer className={styles.profileFooter}>
-        <p>{strings.profile.version}</p>
-      </footer>
     </div>
   );
 };

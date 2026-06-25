@@ -602,9 +602,7 @@ export default function BibleContent() {
     clearTimeout(longPressTimer.current);
     if (isLongPressActive.current || isMoving.current) return;
 
-    if (selectedVerses.length > 0) {
-      toggleVerseSelection(v, i);
-    }
+    toggleVerseSelection(v, i);
   };
 
   const checkDayReadingCompleted = useCallback((readings, allCompleted) => {
@@ -759,7 +757,7 @@ export default function BibleContent() {
       const ntCompletedCount = Object.keys(next).filter(k => next[k] && bookNamesData[parseInt(k.split('-')[0])]?.type === 'new').length;
 
       if (otCompletedCount === otChaptersTotal && otChaptersTotal > 0) unlockBadge('testament_old');
-      if (ntCompletedCount === ntChaptersTotal && ntChaptersTotal > 0) unlockBadge('testament_new');
+      if (ntCompletedCount === ntChaptersTotal && ntCompletedCount > 0) unlockBadge('testament_new');
     }
   };
 
@@ -787,7 +785,12 @@ export default function BibleContent() {
                   const bookName = getBookName(selectedBookIndex);
                   const chapterLabel = formatNumber(selectedChapterIndex + 1);
                   const verseLabel = formatNumber(selectedVerses[0].index + 1);
-                  const refText = `${bookName} ${chapterLabel}:${verseLabel}`;
+
+                  // تطبيق منطق الـ Copy لضمان صحة اتجاه الأرقام في الـ Share Preview
+                  const rlm = language === 'ar' ? "\u200F" : "";
+                  const lrm = language === 'ar' ? "\u200E" : "";
+                  const refText = `${bookName} ${chapterLabel}${lrm}:${rlm}${verseLabel}`;
+
                   router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
                 }}
                 className={styles.actionBtn}

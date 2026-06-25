@@ -11,10 +11,11 @@ import { Capacitor } from '@capacitor/core';
 import { Media } from '@capacitor-community/media';
 import { 
   Share2, Download, Loader2, Check, 
-  Sparkles, Move, Type, Maximize2, AlignCenter, ArrowUpDown
+  Sparkles, Move, Type, Maximize2, AlignCenter, ArrowUpDown, X
 } from 'lucide-react';
 import styles from './SharePreview.module.css';
 import { useLanguage } from '../context/LanguageContext';
+import { toast } from 'react-hot-toast';
 
 const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
   id: i + 1,
@@ -88,12 +89,20 @@ function PreviewContent() {
   const handleAction = async (type) => {
     if (!templateRef.current) return;
     setIsProcessing(true);
+
+    // حل مشكلة Apple: إضافة مهلة بسيطة لضمان رندر كل العناصر
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     try {
       const dataUrl = await toPng(templateRef.current, {
-        pixelRatio: 4,
+        pixelRatio: Capacitor.getPlatform() === 'ios' ? 3 : 4, // تقليل الـ ratio قليلاً في iOS لتجنب مشاكل الذاكرة
         cacheBust: true,
-        style: { transform: 'scale(1)' }
+        style: { transform: 'scale(1)' },
+        // تحسين لـ Apple: تحديد عرض وارتفاع صريحين
+        width: templateRef.current.offsetWidth,
+        height: templateRef.current.offsetHeight,
       });
+
       const fileName = `Agios-Verse-${Date.now()}.png`;
       const base64Data = dataUrl.split(',')[1];
 
@@ -160,6 +169,9 @@ function PreviewContent() {
       `}</style>
 
       <div className={styles.header}>
+        <button onClick={() => router.back()} className={styles.backBtn}>
+          <X size={24} />
+        </button>
         <div className={styles.headerTitle}>
            <h1>{strings.share_preview.title}</h1>
            <p>{strings.share_preview.subtitle}</p>
@@ -171,9 +183,16 @@ function PreviewContent() {
           <div
             ref={templateRef}
             className={styles.previewCard}
-            style={{ backgroundImage: `url(${selectedTemplate.url})` }}
             dir={dir}
           >
+            {/* حل مشكلة Apple: استخدام وسم img بدلاً من background-image */}
+            <img
+              src={selectedTemplate.url}
+              alt=""
+              className={styles.cardBackground}
+              crossOrigin="anonymous"
+            />
+
             <div className={styles.cardOverlay}></div>
             
             <motion.div
