@@ -191,24 +191,25 @@ export default function MapsPage() {
   useEffect(() => {
     setMounted(true);
     const initPage = async () => {
-      const remoteConfig = await getFirebaseRemoteConfig();
-      if (remoteConfig) {
-        try {
+      try {
+        const remoteConfig = await getFirebaseRemoteConfig();
+        if (remoteConfig) {
           await fetchAndActivate(remoteConfig);
           setShowMaptilerFeatures(getBoolean(remoteConfig, 'show_maptiler_features'));
-        } catch (e) {
-          console.error("Remote Config Error:", e);
         }
+      } catch (e) {
+        console.warn("Remote Config Error (Skipped):", e);
       }
 
       try {
         const folder = getLanguageFolder(language);
-        const placesPath = `/data/translations/${folder}/places${language && language !== 'ar' ? '_' + language : ''}.json`;
-        const response = await fetch(placesPath);
-        const data = await response.json();
-        setAllPlaces(data);
+        const suffix = language && language !== 'ar' ? `_${language}` : '';
+
+        // Use dynamic import instead of fetch since files are in src/app/data
+        const data = await import(`../data/translations/${folder}/places${suffix}.json`);
+        setAllPlaces(data.default || data);
       } catch (error) {
-        console.error(error);
+        console.error("Error loading places from local source:", error);
       } finally {
         setIsLoading(false);
       }
