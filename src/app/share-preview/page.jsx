@@ -14,7 +14,7 @@ import {
   Sparkles, Move, Type, Maximize2, AlignCenter, ArrowUpDown, X
 } from 'lucide-react';
 import styles from './SharePreview.module.css';
-import { useLanguage } from '../app/context/LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-hot-toast';
 
 const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
@@ -212,7 +212,7 @@ function PreviewContent() {
             <div className={styles.cardOverlay}></div>
             
             <motion.div
-              drag 
+              drag
               dragConstraints={constraintsRef}
               dragElastic={0.05}
               dragMomentum={false}
@@ -243,7 +243,7 @@ function PreviewContent() {
             <div className={styles.fontScroll}>
               {FONTS.map(f => (
                 <button 
-                  key={f.name} 
+                  key={f.name}
                   className={`${styles.fontOption} ${selectedFont.name === f.name ? styles.activeFont : ''}`}
                   onClick={() => setSelectedFont(f)}
                   style={{ fontFamily: f.family }}

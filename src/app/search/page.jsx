@@ -17,7 +17,7 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
-import { StorageService, KEYS } from '../lib/storage';
+import { StorageService, KEYS } from '../../lib/storage';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -368,7 +368,7 @@ function SearchContent() {
 
     try {
       if (user) {
-        await updateDoc(doc(db, 'users', u.uid), { 'favorites.verses': newFavorites });
+        await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
       } else {
         await StorageService.save(KEYS.FAVORITES, newFavorites);
         setFavouriteVerses(newFavorites);
@@ -518,8 +518,6 @@ function SearchContent() {
         kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
       }
 
-      // إذا كانت اللغة الحالية هي العربية، أو إذا كنا في لغة أخرى ولم نجد كاش خاص بها بعد،
-      // يمكننا اعتبار الكاش القديم (الذي هو عربي غالباً) كنتيجة أولية إذا كان المستخدم يبحث بكلمة عربية.
       if (language === 'ar' || (language !== 'ar' && !cached.some(r => r.language && r.language !== 'ar'))) {
         setSemanticResults(cached);
         return cached;
@@ -596,7 +594,7 @@ Regeln:
       const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const promptFn = semanticPrompts[language] || semanticPrompts.en;
       const prompt = promptFn(term, allowedBooks, filterContext);
-      
+
       const responsePromise = model.generateContent(prompt);
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Semantic search timed out after 25s')), 25000)
@@ -636,7 +634,7 @@ Regeln:
           bookIndex: bookIdx,
           versesContent,
           book: bookNamesData[bookIdx].name,
-          language: language // نضع اللغة لتمييز الكاش الجديد
+          language: language
         };
       }).filter(r => r !== null);
 
@@ -674,13 +672,11 @@ Regeln:
     ];
     const { cached, legacy } = await readLegacyCache(cacheKey, legacyKeys);
     if (cached) {
-      // هجرة الكاش القديم للعربية إذا لم يكن موجوداً
       if (legacy) {
         const migrationKey = `${CACHE_KEYS.SEMANTIC}deriv:ar:${term}`;
         kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
       }
 
-      // إظهار النتائج إذا كانت اللغة هي العربية، أو إذا لم يتوفر كاش خاص باللغة الحالية بعد
       if (language === 'ar' || (language !== 'ar' && !cached.language)) {
         setSearchInfo(cached);
         setSelectedDerivatives(cached.derivatives);
@@ -736,7 +732,7 @@ Geben Sie JSON nur in diesem exakten Format zurück:
 }
 
 Regeln:
-1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verben ableitet.
+1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verبن ableitet.
 2. Wenn statisch, listen Sie nur tatsächliche Formen auf: Plurale, Varianten.
 3. Für ableitbare Wörter: Extrahieren Sie alle gültigen morphologischen Formen (Vergangenheit, Präsens, Partizip, Nominalformen).
 4. Nur JSON zurückgeben, kein zusätzlicher Text.`
@@ -1314,7 +1310,7 @@ Regeln:
               {highlightColors.map(c => (
                 <div key={c.color} className={`${styles.colorCircle} ${savedVerse?.color === c.color ? styles.activeColor : ''} `} style={{ backgroundColor: c.color }} onClick={() => handleUpdateVerse(v, c.color)} />
               ))}
-              <div className={styles.clearColor} onClick={() => handleUpdateVerse(null, true)}>✕</div>
+              <div className={styles.clearColor} onClick={() => handleUpdateVerse(v, null, true)}>✕</div>
             </div>
             <div className={styles.noteInputArea}>
               <textarea placeholder={strings.search.note_placeholder} value={noteText} onChange={(e) => setNoteText(e.target.value)} className={styles.noteTextArea} />
