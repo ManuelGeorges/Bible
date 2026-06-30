@@ -11,6 +11,12 @@
   box-sizing: border-box;
 }
 
+.headerSection {
+  width: 100%;
+  max-width: 1000px;
+  margin-bottom: 10px;
+}
+
 .heading {
   color: var(--color-accent);
   text-align: center;
@@ -25,7 +31,7 @@
   max-width: 600px;
   margin-bottom: 20px;
   position: relative;
-  z-index: 2100; /* Increased from 1001 */
+  z-index: 4000; /* أعلى طبقة على الإطلاق */
 }
 
 .searchBar {
@@ -59,19 +65,31 @@
   opacity: 0.6;
 }
 
+.clearSearch {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  margin-right: 5px;
+}
+
+.clearSearch:hover {
+  opacity: 1;
+}
+
 .searchResults {
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
   right: 0;
   background: var(--color-bg-start);
+  background-color: #1c2237;
   border: 1px solid var(--color-border);
   border-radius: 20px;
   box-shadow: 0 15px 40px var(--color-shadow-medium);
   max-height: 350px;
   overflow-y: auto;
   padding: 10px;
-  z-index: 2101;
+  z-index: 4001;
 }
 
 .searchResultItem {
@@ -88,13 +106,21 @@
   background: rgba(var(--color-accent-rgb), 0.1);
 }
 
-.resultTypeIcon {
-  font-size: 1.4rem;
+.resultIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(var(--color-accent-rgb), 0.1);
+  border-radius: 8px;
+  color: var(--color-accent);
 }
 
 .resultDetails {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .resultNameText {
@@ -105,6 +131,10 @@
 .resultEraText {
   font-size: 0.8rem;
   color: var(--color-text-secondary);
+}
+
+.resultArrow {
+  opacity: 0.3;
 }
 
 .noResults {
@@ -122,7 +152,7 @@
   margin-bottom: 5px;
 }
 
-/* الضوابط */
+/* الضوابط (اختيار العصر والمكان) */
 .controls {
   display: grid;
   grid-template-columns: 1fr;
@@ -131,7 +161,11 @@
   max-width: 600px;
   margin-bottom: 25px;
   position: relative;
-  z-index: 2000; /* Increased from 1000 */
+  z-index: 3000; /* رفع الأولوية لضمان الظهور فوق أزرار النمط والخريطة */
+}
+
+@media (min-width: 768px) {
+  .controls { grid-template-columns: 1fr 1fr; }
 }
 
 .customSelectWrapper {
@@ -143,7 +177,7 @@
 }
 
 .activeWrapper {
-  z-index: 2010; /* Increased from 10 */
+  z-index: 3100; /* أولوية إضافية عند فتح القائمة */
 }
 
 .selectTrigger {
@@ -175,6 +209,7 @@
   left: 0;
   right: 0;
   background: var(--color-bg-start);
+  background-color: #1c2237; /* لون صلب يمنع الشفافية فوق الخريطة */
   border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: 0 15px 40px var(--color-shadow-medium);
@@ -221,9 +256,10 @@
   background: #111;
   margin-bottom: 40px;
   position: relative;
-  z-index: 1;
+  z-index: 1; /* أدنى طبقة */
 }
 
+/* اختيار النمط (خريطة، قمر اصطناعي) */
 .styleSelector {
   display: flex;
   gap: 10px;
@@ -233,7 +269,7 @@
   border-radius: 100px;
   border: 1px solid var(--color-border);
   position: relative;
-  z-index: 5;
+  z-index: 100; /* يجب أن يكون أقل من الـ controls (3000) */
 }
 
 .styleButton {
@@ -272,6 +308,19 @@
   border-bottom: 2px solid var(--color-accent);
   display: inline-block;
   padding-bottom: 4px;
+}
+
+.popupMeta {
+  margin-bottom: 8px;
+}
+
+.popupEraBadge {
+  background: rgba(var(--color-accent-rgb), 0.1);
+  color: var(--color-accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .popupInfoText {
@@ -313,7 +362,7 @@
   border-radius: 24px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  z-index: 10;
+  z-index: 1000;
   animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -343,6 +392,10 @@
   background: rgba(var(--color-accent-rgb), 0.2);
   padding: 8px;
   border-radius: 12px;
+  color: var(--color-accent);
+}
+
+.journeyIcon {
   color: var(--color-accent);
 }
 
@@ -397,6 +450,7 @@
   border-color: var(--color-accent);
 }
 
+/* رسائل التحميل */
 .loadingMessage {
   display: flex;
   flex-direction: column;
@@ -419,7 +473,6 @@
 }
 
 @media (min-width: 768px) {
-  .controls { grid-template-columns: 1fr 1fr; }
   .journeyCard {
     width: 350px;
     right: auto;
