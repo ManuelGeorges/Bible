@@ -17,6 +17,7 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
+import { StorageService, KEYS } from '../lib/storage';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -181,7 +182,7 @@ function SearchContent() {
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
         onSnapshot(doc(db, 'users', u.uid), (snapshot) => {
@@ -189,6 +190,9 @@ function SearchContent() {
             setFavouriteVerses(snapshot.data().favorites?.verses || {});
           }
         });
+      } else {
+        const localFavs = await StorageService.get(KEYS.FAVORITES) || {};
+        setFavouriteVerses(localFavs);
       }
     });
     return () => unsubscribe();
@@ -342,7 +346,6 @@ function SearchContent() {
   };
 
   const handleUpdateVerse = async (v, color = null, isDelete = false) => {
-    if (!user) return toast.error(strings.search.toast_login_required);
     const verseId = `${v.book_index}-${v.chapter}-${v.verse}`;
     const newFavorites = { ...favouriteVerses };
 
@@ -360,11 +363,16 @@ function SearchContent() {
         note: noteText,
         dateAdded: getCairoIsoString()
       };
-      if (isNew) updateUserPoints(5, strings.search.reason_highlight);
+      if (isNew && user) updateUserPoints(5, strings.search.reason_highlight);
     }
 
     try {
-      await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
+      if (user) {
+        await updateDoc(doc(db, 'users', u.uid), { 'favorites.verses': newFavorites });
+      } else {
+        await StorageService.save(KEYS.FAVORITES, newFavorites);
+        setFavouriteVerses(newFavorites);
+      }
       setActiveActionId(null);
       toast.success(isDelete ? strings.search.toast_delete_success : strings.search.toast_save_success);
     } catch (e) {
@@ -373,7 +381,6 @@ function SearchContent() {
   };
 
   const addSelectedToFavorites = async (color = "#FFC107") => {
-    if (!user) return toast.error(strings.search.toast_login_required);
     if (selectedVerses.length === 0) return;
 
     const newFavorites = { ...favouriteVerses };
@@ -399,8 +406,13 @@ function SearchContent() {
     if (addedCount === 0) return toast.error(strings.search.toast_fav_exists);
 
     try {
-      await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
-      updateUserPoints(addedCount * 5, strings.search.reason_highlight_multi);
+      if (user) {
+        await updateDoc(doc(db, 'users', user.uid), { 'favorites.verses': newFavorites });
+        updateUserPoints(addedCount * 5, strings.search.reason_highlight_multi);
+      } else {
+        await StorageService.save(KEYS.FAVORITES, newFavorites);
+        setFavouriteVerses(newFavorites);
+      }
       setSelectedVerses([]);
       toast.success(strings.search.toast_fav_added.replace('{count}', formatNumber(addedCount)));
     } catch (e) {
@@ -505,7 +517,10 @@ function SearchContent() {
         const migrationKey = `${CACHE_KEYS.SEMANTIC}semantic:ar:${term}`;
         kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
       }
-      if (language === 'ar') {
+
+      // إذا كانت اللغة الحالية هي العربية، أو إذا كنا في لغة أخرى ولم نجد كاش خاص بها بعد،
+      // يمكننا اعتبار الكاش القديم (الذي هو عربي غالباً) كنتيجة أولية إذا كان المستخدم يبحث بكلمة عربية.
+      if (language === 'ar' || (language !== 'ar' && !cached.some(r => r.language && r.language !== 'ar'))) {
         setSemanticResults(cached);
         return cached;
       }
@@ -620,7 +635,8 @@ Regeln:
           ...ref,
           bookIndex: bookIdx,
           versesContent,
-          book: bookNamesData[bookIdx].name
+          book: bookNamesData[bookIdx].name,
+          language: language // نضع اللغة لتمييز الكاش الجديد
         };
       }).filter(r => r !== null);
 
@@ -658,19 +674,24 @@ Regeln:
     ];
     const { cached, legacy } = await readLegacyCache(cacheKey, legacyKeys);
     if (cached) {
-      setSearchInfo(cached);
-      setSelectedDerivatives(cached.derivatives);
+      // هجرة الكاش القديم للعربية إذا لم يكن موجوداً
       if (legacy) {
         const migrationKey = `${CACHE_KEYS.SEMANTIC}deriv:ar:${term}`;
         kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
       }
-      return cached;
+
+      // إظهار النتائج إذا كانت اللغة هي العربية، أو إذا لم يتوفر كاش خاص باللغة الحالية بعد
+      if (language === 'ar' || (language !== 'ar' && !cached.language)) {
+        setSearchInfo(cached);
+        setSelectedDerivatives(cached.derivatives);
+        return cached;
+      }
     }
 
     if (!checkRateLimit()) return null;
 
     const searchId = ++currentSearchIdRef.current;
-    let currentInfo = { root: '...', derivatives: [], isStatic: false, explanation: '' };
+    let currentInfo = { root: '...', derivatives: [], isStatic: false, explanation: '', language: language };
     setShowDerivatives(true);
 
     const languagePrompts = {
@@ -784,7 +805,7 @@ Regeln:
       setAiStatus('');
       console.error("Gemini Derivatives Error:", e);
       toast.error(strings.analysis.error_generic);
-      const fallback = { derivatives: [term], root: 'Unknown', isStatic: false, explanation: '' };
+      const fallback = { derivatives: [term], root: 'Unknown', isStatic: false, explanation: '', language: language };
       setSearchInfo(fallback);
       setSelectedDerivatives(fallback.derivatives);
       return fallback;
@@ -903,10 +924,13 @@ Regeln:
   const handleCopy = (v) => {
     const chapterLabel = formatNumber(v.chapter + 1);
     const verseLabel = formatNumber(v.verse + 1);
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const fullText = `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
-    navigator.clipboard.writeText(fullText);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+    }
     toast.success(strings.search.toast_copy_success);
     updateUserPoints(15, strings.search.reason_copy);
   };
@@ -914,8 +938,9 @@ Regeln:
   const handleShare = async (v) => {
     const chapterLabel = formatNumber(v.chapter + 1);
     const verseLabel = formatNumber(v.verse + 1);
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const fullText = `${v.text} ${rlm}(${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
 
     try {
@@ -939,8 +964,9 @@ Regeln:
 
   const copySelected = () => {
     if (selectedVerses.length === 0) return;
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const sorted = [...selectedVerses].sort((a, b) => a.book_index - b.book_index || a.chapter - b.chapter || a.verse - b.verse);
     const text = sorted.map(v => v.text).join(' ');
 
@@ -951,19 +977,26 @@ Regeln:
 
     let reference;
     if (sameChapter) {
-      const isConsecutive = (last.verse - first.verse) === (sorted.length - 1);
-      const verseRange = isConsecutive
-        ? `${formatNumber(first.verse + 1)} - ${formatNumber(last.verse + 1)}`
-        : sorted.map(sv => formatNumber(sv.verse + 1)).join('، ');
+      const isConsecutive = sorted.length > 1 && (last.verse - first.verse) === (sorted.length - 1);
+      let verseRange;
+      if (sorted.length === 1) {
+        verseRange = formatNumber(first.verse + 1);
+      } else if (isConsecutive) {
+        verseRange = `${formatNumber(first.verse + 1)} - ${formatNumber(last.verse + 1)}`;
+      } else {
+        verseRange = sorted.map(sv => formatNumber(sv.verse + 1)).join(isArabic ? '، ' : ', ');
+      }
       reference = `${first.book} ${formatNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
     } else if (sameBook) {
-      reference = `${first.book} (Multiple references)`;
+      reference = `${first.book} (${strings.search.multiple_references || 'Multiple references'})`;
     } else {
-      reference = "Multiple references";
+      reference = strings.search.multiple_references || "Multiple references";
     }
 
     const fullText = `${text} ${rlm}(${reference})`;
-    navigator.clipboard.writeText(fullText);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+    }
     toast.success(strings.search.toast_copy_success);
     updateUserPoints(15, strings.search.reason_copy_multi);
     setSelectedVerses([]);
@@ -971,8 +1004,9 @@ Regeln:
 
   const shareSelected = async () => {
     if (selectedVerses.length === 0) return;
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const sorted = [...selectedVerses].sort((a, b) => a.book_index - b.book_index || a.chapter - b.chapter || a.verse - b.verse);
     const text = sorted.map(v => v.text).join(' ');
 
@@ -983,15 +1017,20 @@ Regeln:
 
     let reference;
     if (sameChapter) {
-      const isConsecutive = (last.verse - first.verse) === (sorted.length - 1);
-      const verseRange = isConsecutive
-        ? `${formatNumber(first.verse + 1)} - ${formatNumber(last.verse + 1)}`
-        : sorted.map(sv => formatNumber(sv.verse + 1)).join('، ');
+      const isConsecutive = sorted.length > 1 && (last.verse - first.verse) === (sorted.length - 1);
+      let verseRange;
+      if (sorted.length === 1) {
+        verseRange = formatNumber(first.verse + 1);
+      } else if (isConsecutive) {
+        verseRange = `${formatNumber(first.verse + 1)} - ${formatNumber(last.verse + 1)}`;
+      } else {
+        verseRange = sorted.map(sv => formatNumber(sv.verse + 1)).join(isArabic ? '، ' : ', ');
+      }
       reference = `${first.book} ${formatNumber(first.chapter + 1)}${lrm}:${rlm}${verseRange}`;
     } else if (sameBook) {
-      reference = `${first.book} (Multiple references)`;
+      reference = `${first.book} (${strings.search.multiple_references || 'Multiple references'})`;
     } else {
-      reference = "Multiple references";
+      reference = strings.search.multiple_references || "Multiple references";
     }
 
     const fullText = `${text} ${rlm}(${reference})`;
@@ -1017,8 +1056,9 @@ Regeln:
   };
 
   const copyAllResults = () => {
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     let fullText = "";
 
     if (searchType === 'semantic') {
@@ -1050,14 +1090,17 @@ Regeln:
       }).join('\n');
     }
 
-    navigator.clipboard.writeText(fullText);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+    }
     toast.success(strings.search.toast_copy_success);
     updateUserPoints(20, strings.search.reason_copy_all);
   };
 
   const shareAllResults = async () => {
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     let fullText = "";
 
     if (searchType === 'semantic') {
@@ -1109,8 +1152,9 @@ Regeln:
   };
 
   const copySemanticGroup = (res) => {
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     let groupText = "";
 
     if (semanticOptions.showTitle) groupText += `Title: ${res.title}\n`;
@@ -1126,14 +1170,17 @@ Regeln:
 
     groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
 
-    navigator.clipboard.writeText(groupText);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(groupText);
+    }
     toast.success(strings.search.toast_copy_success);
     updateUserPoints(10, strings.search.reason_copy_semantic);
   };
 
   const shareSemanticGroup = async (res) => {
-    const rlm = "\u200F";
-    const lrm = "\u200E";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     let groupText = "";
 
     if (semanticOptions.showTitle) groupText += `Title: ${res.title}\n`;
@@ -1218,8 +1265,9 @@ Regeln:
         <div className={styles.verseReference}>
           <Link href={`/bible?book=${encodeURIComponent(v.book)}&chapter=${v.chapter + 1}&verse=${v.verse + 1}`} className={styles.referenceLink}>
             {(() => {
-              const rlm = "\u200F";
-              const lrm = "\u200E";
+              const isArabic = language === 'ar';
+              const rlm = isArabic ? "\u200F" : "";
+              const lrm = isArabic ? "\u200E" : "";
               const chapterLabel = formatNumber(v.chapter + 1);
               const verseLabel = formatNumber(v.verse + 1);
               return `${rlm}${v.book} ${chapterLabel}${lrm}:${rlm}${verseLabel}`;
@@ -1266,7 +1314,7 @@ Regeln:
               {highlightColors.map(c => (
                 <div key={c.color} className={`${styles.colorCircle} ${savedVerse?.color === c.color ? styles.activeColor : ''} `} style={{ backgroundColor: c.color }} onClick={() => handleUpdateVerse(v, c.color)} />
               ))}
-              <div className={styles.clearColor} onClick={() => handleUpdateVerse(v, null, true)}>✕</div>
+              <div className={styles.clearColor} onClick={() => handleUpdateVerse(null, true)}>✕</div>
             </div>
             <div className={styles.noteInputArea}>
               <textarea placeholder={strings.search.note_placeholder} value={noteText} onChange={(e) => setNoteText(e.target.value)} className={styles.noteTextArea} />

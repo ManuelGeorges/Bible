@@ -14,7 +14,7 @@ import {
   Sparkles, Move, Type, Maximize2, AlignCenter, ArrowUpDown, X
 } from 'lucide-react';
 import styles from './SharePreview.module.css';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../app/context/LanguageContext';
 import { toast } from 'react-hot-toast';
 
 const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
@@ -90,18 +90,35 @@ function PreviewContent() {
     if (!templateRef.current) return;
     setIsProcessing(true);
 
-    // حل مشكلة Apple: إضافة مهلة بسيطة لضمان رندر كل العناصر
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // زيادة المهلة لضمان استقرار العناصر في iOS
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
-      const dataUrl = await toPng(templateRef.current, {
-        pixelRatio: Capacitor.getPlatform() === 'ios' ? 3 : 4, // تقليل الـ ratio قليلاً في iOS لتجنب مشاكل الذاكرة
+      const isIOS = Capacitor.getPlatform() === 'ios';
+
+      const options = {
+        pixelRatio: isIOS ? 2 : 4, // تقليل الـ ratio في iOS لتجنب الـ Memory Limit واللون الأسود
         cacheBust: true,
-        style: { transform: 'scale(1)' },
-        // تحسين لـ Apple: تحديد عرض وارتفاع صريحين
+        style: {
+          transform: 'scale(1)',
+        },
+        // تحديد أبعاد صريحة
         width: templateRef.current.offsetWidth,
         height: templateRef.current.offsetHeight,
-      });
+      };
+
+      // حل سحري لـ Apple Safari: استدعاء الدالة مرتين
+      // المرة الأولى تقوم بعمل "warm up" وتحميل الموارد في الكاش الخاص بالرندر
+      if (isIOS) {
+        try {
+          await toPng(templateRef.current, options);
+          await new Promise(r => setTimeout(r, 100));
+        } catch (e) {
+          console.warn("First pass failed, retrying...");
+        }
+      }
+
+      const dataUrl = await toPng(templateRef.current, options);
 
       const fileName = `Agios-Verse-${Date.now()}.png`;
       const base64Data = dataUrl.split(',')[1];
@@ -121,8 +138,7 @@ function PreviewContent() {
           });
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
         } else {
-          const platform = Capacitor.getPlatform();
-          if (platform === 'ios') {
+          if (isIOS) {
             await Media.savePhoto({ path: cacheFile.uri, album: 'Agios Bible' });
           } else {
             await Filesystem.writeFile({
@@ -185,7 +201,7 @@ function PreviewContent() {
             className={styles.previewCard}
             dir={dir}
           >
-            {/* حل مشكلة Apple: استخدام وسم img بدلاً من background-image */}
+            {/* استخدام img بدلاً من background-image مع crossOrigin */}
             <img
               src={selectedTemplate.url}
               alt=""

@@ -345,8 +345,9 @@ export default function BibleContent() {
     const chapterLabel = formatNumber(selectedChapterIndex + 1);
     const verseLabel = formatNumber(index + 1);
     const bookName = getBookName(selectedBookIndex);
-    const rlm = language === 'ar' ? "\u200F" : "";
-    const lrm = language === 'ar' ? "\u200E" : "";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const fullText = `${text} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
 
     try {
@@ -455,10 +456,14 @@ export default function BibleContent() {
   const copyVerse = (text, index) => {
     const chapterLabel = formatNumber(selectedChapterIndex + 1);
     const verseLabel = formatNumber(index + 1);
-    const rlm = language === 'ar' ? "\u200F" : "";
-    const lrm = language === 'ar' ? "\u200E" : "";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
-    navigator.clipboard.writeText(fullText);
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+    }
     setCopiedMessage(strings.bible.toasts.copied);
     setActiveMenu(null);
     updateUserPoints(5, strings.bible.reasons.copy_verse, 'search');
@@ -467,17 +472,28 @@ export default function BibleContent() {
 
   const copySelected = () => {
     const chapterLabel = formatNumber(selectedChapterIndex + 1);
-    const rlm = language === 'ar' ? "\u200F" : "";
-    const lrm = language === 'ar' ? "\u200E" : "";
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const lrm = isArabic ? "\u200E" : "";
     const bookName = getBookName(selectedBookIndex);
     const sortedVerses = [...selectedVerses].sort((a, b) => a.index - b.index);
     const versesText = sortedVerses.map(sv => sv.text).join(' ');
-    let verseRange = sortedVerses.length === 1
-      ? formatNumber(sortedVerses[0].index + 1)
-      : `${formatNumber(sortedVerses[0].index + 1)} - ${formatNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
+
+    const isConsecutive = sortedVerses.length > 1 && sortedVerses.every((v, i) => i === 0 || v.index === sortedVerses[i-1].index + 1);
+
+    let verseRange;
+    if (sortedVerses.length === 1) {
+      verseRange = formatNumber(sortedVerses[0].index + 1);
+    } else if (isConsecutive) {
+      verseRange = `${formatNumber(sortedVerses[0].index + 1)} - ${formatNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
+    } else {
+      verseRange = sortedVerses.map(sv => formatNumber(sv.index + 1)).join(isArabic ? '، ' : ', ');
+    }
 
     const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
-    navigator.clipboard.writeText(fullText);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullText);
+    }
     setCopiedMessage(strings.bible.toasts.copied_precise);
     updateUserPoints(15, strings.bible.reasons.share_verses, 'share');
     setSelectedVerses([]);
@@ -787,8 +803,9 @@ export default function BibleContent() {
                   const verseLabel = formatNumber(selectedVerses[0].index + 1);
 
                   // تطبيق منطق الـ Copy لضمان صحة اتجاه الأرقام في الـ Share Preview
-                  const rlm = language === 'ar' ? "\u200F" : "";
-                  const lrm = language === 'ar' ? "\u200E" : "";
+                  const isArabic = language === 'ar';
+                  const rlm = isArabic ? "\u200F" : "";
+                  const lrm = isArabic ? "\u200E" : "";
                   const refText = `${bookName} ${chapterLabel}${lrm}:${rlm}${verseLabel}`;
 
                   router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
