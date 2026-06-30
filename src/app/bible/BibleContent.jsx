@@ -823,10 +823,11 @@ export default function BibleContent() {
                 const verseNumbers = selectedVerses.map(v => v.index + 1).sort((a, b) => a - b).join(',');
                 router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}&verses=${verseNumbers}`);
               }}
-              className={styles.actionBtn}
+              className={styles.aiBtn}
               title={strings.bible.tooltips.ai_analysis}
             >
               <Sparkles size={20} />
+              <span className={styles.aiBtnText}>{strings.bible.ask_agios}</span>
             </button>
           </div>
           <div className={styles.colorGrid}>
@@ -893,6 +894,7 @@ export default function BibleContent() {
               title={strings.bible.tooltips.ai_analysis}
             >
               <Sparkles size={20} />
+              <span className={styles.aiBtnText}>{strings.bible.ask_agios}</span>
             </button>
           </div>
 

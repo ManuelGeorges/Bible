@@ -231,6 +231,7 @@
   "bible": {
     "title": "Holy Bible",
     "chapter_label": "Chapter",
+    "ask_agios": "Ask Agios",
     "loading": "Loading content...",
     "share_title": "Verse from the Holy Bible",
     "share_dialog": "Share verse via...",

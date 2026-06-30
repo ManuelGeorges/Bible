@@ -221,7 +221,9 @@
       "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
       "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
     },
-    "footer": "© 2026 Agios System - Tous droits réservés"
+    "footer": {
+      "date": "© 2026 Agios System - Tous droits réservés"
+    }
   },
   "audio": {
     "artist_default": "Sainte Bible",
@@ -231,6 +233,7 @@
   "bible": {
     "title": "Sainte Bible",
     "chapter_label": "Chapitre",
+    "ask_agios": "Demander à Agios",
     "loading": "Chargement du contenu...",
     "share_title": "Verset de la Sainte Bible",
     "share_dialog": "Partager le verset via...",
@@ -713,7 +716,7 @@
         "features": [
           "Expansion de la bibliothèque de cartes avec de nouvelles cartes",
           "Ajout de la recherche intelligente pour les lieux et monuments historiques",
-          "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses mentions bibliques",
+          "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses maladies bibliques",
           "Ajout de la section 'Essayer l'IA' sur la page d'accueil pour une meilleure expérience utilisateur"
         ],
         "fixes": [

@@ -152,9 +152,14 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.aiBtnText {
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .aiBtn:hover {

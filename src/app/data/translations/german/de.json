@@ -231,6 +231,7 @@
   "bible": {
     "title": "Heilige Schrift",
     "chapter_label": "Kapitel",
+    "ask_agios": "Frag Agios",
     "loading": "Inhalt wird geladen...",
     "share_title": "Vers aus der Heiligen Schrift",
     "share_dialog": "Vers teilen über...",
@@ -476,8 +477,8 @@
     "card": {
       "ai_badge": "Intelligenter Agios-Assistent",
       "shared_badge": "Geteilter Plan",
-      "community_type": "Community-Plan",
-      "personal_type": "Persönlicher Plan",
+      "community_plan": "Community-Plan",
+      "personal_plan": "Persönlicher Plan",
       "by_author": "Von: {name}",
       "completed_percent": "{percent}% abgeschlossen",
       "continue": "Fortsetzen",
