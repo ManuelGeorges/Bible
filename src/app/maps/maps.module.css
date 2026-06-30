@@ -31,7 +31,7 @@
   max-width: 600px;
   margin-bottom: 20px;
   position: relative;
-  z-index: 4000; /* أعلى طبقة على الإطلاق */
+  z-index: 1000;
 }
 
 .searchBar {
@@ -72,24 +72,19 @@
   margin-right: 5px;
 }
 
-.clearSearch:hover {
-  opacity: 1;
-}
-
 .searchResults {
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
   right: 0;
-  background: var(--color-bg-start);
-  background-color: #1c2237;
+  background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: 20px;
   box-shadow: 0 15px 40px var(--color-shadow-medium);
   max-height: 350px;
   overflow-y: auto;
   padding: 10px;
-  z-index: 4001;
+  z-index: 1001;
 }
 
 .searchResultItem {
@@ -133,25 +128,6 @@
   color: var(--color-text-secondary);
 }
 
-.resultArrow {
-  opacity: 0.3;
-}
-
-.noResults {
-  padding: 30px 20px;
-  text-align: center;
-  color: var(--color-text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.noResultsIcon {
-  opacity: 0.5;
-  margin-bottom: 5px;
-}
-
 /* الضوابط (اختيار العصر والمكان) */
 .controls {
   display: grid;
@@ -161,7 +137,7 @@
   max-width: 600px;
   margin-bottom: 25px;
   position: relative;
-  z-index: 3000; /* رفع الأولوية لضمان الظهور فوق أزرار النمط والخريطة */
+  z-index: 900; /* تحت البحث ولكن فوق البقية */
 }
 
 @media (min-width: 768px) {
@@ -173,11 +149,11 @@
   background: var(--color-card-bg);
   border-radius: 16px;
   border: 1px solid var(--color-border);
-  backdrop-filter: blur(12px);
+  /* أزلنا backdrop-filter من هنا لأنه يدمر سياق الـ z-index */
 }
 
 .activeWrapper {
-  z-index: 3100; /* أولوية إضافية عند فتح القائمة */
+  z-index: 950;
 }
 
 .selectTrigger {
@@ -208,8 +184,7 @@
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: var(--color-bg-start);
-  background-color: #1c2237; /* لون صلب يمنع الشفافية فوق الخريطة */
+  background: var(--color-card-bg); /* لون الخلفية حسب الثيم */
   border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: 0 15px 40px var(--color-shadow-medium);
@@ -222,6 +197,7 @@
   transition: all 0.2s ease;
   padding: 8px;
   list-style: none;
+  backdrop-filter: blur(10px);
 }
 
 .dropdownMenu.open {
@@ -256,10 +232,9 @@
   background: #111;
   margin-bottom: 40px;
   position: relative;
-  z-index: 1; /* أدنى طبقة */
+  z-index: 1;
 }
 
-/* اختيار النمط (خريطة، قمر اصطناعي) */
 .styleSelector {
   display: flex;
   gap: 10px;
@@ -269,7 +244,8 @@
   border-radius: 100px;
   border: 1px solid var(--color-border);
   position: relative;
-  z-index: 100; /* يجب أن يكون أقل من الـ controls (3000) */
+  z-index: 50; /* يجب أن يكون أقل من القوائم (900) */
+  backdrop-filter: blur(8px);
 }
 
 .styleButton {
@@ -310,19 +286,6 @@
   padding-bottom: 4px;
 }
 
-.popupMeta {
-  margin-bottom: 8px;
-}
-
-.popupEraBadge {
-  background: rgba(var(--color-accent-rgb), 0.1);
-  color: var(--color-accent);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
 .popupInfoText {
   margin: 0 0 15px 0;
   font-size: 0.95rem;
@@ -346,23 +309,19 @@
   transition: background 0.2s;
 }
 
-.bibleLinkBtn:hover {
-  background: var(--color-accent);
-}
-
 /* لوحة المسار (Journey Card) */
 .journeyCard {
   position: absolute;
   bottom: 20px;
   left: 20px;
   right: 20px;
-  background: rgba(var(--color-card-bg-rgb), 0.9);
+  background: var(--color-card-bg);
   backdrop-filter: blur(15px);
   border: 1px solid var(--color-border);
   border-radius: 24px;
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  z-index: 1000;
+  box-shadow: 0 10px 30px var(--color-shadow-medium);
+  z-index: 800;
   animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -395,14 +354,10 @@
   color: var(--color-accent);
 }
 
-.journeyIcon {
-  color: var(--color-accent);
-}
-
 .closeJourney {
-  background: rgba(255,255,255,0.1);
+  background: rgba(var(--color-accent-rgb), 0.1);
   border: none;
-  color: white;
+  color: var(--color-text-primary);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -411,10 +366,6 @@
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
-}
-
-.closeJourney:hover {
-  background: rgba(255,255,255,0.2);
 }
 
 .journeyDesc {
@@ -434,8 +385,8 @@
   padding: 12px;
   border-radius: 12px;
   border: 1px solid var(--color-border);
-  background: rgba(255,255,255,0.05);
-  color: white;
+  background: rgba(var(--color-accent-rgb), 0.05);
+  color: var(--color-text-primary);
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
@@ -445,12 +396,6 @@
   gap: 8px;
 }
 
-.journeyNavBtn:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
-/* رسائل التحميل */
 .loadingMessage {
   display: flex;
   flex-direction: column;
@@ -482,20 +427,17 @@
 }
 
 :global(.maplibregl-popup-content) {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: var(--color-card-bg) !important;
   backdrop-filter: blur(10px);
   border-radius: 20px !important;
   padding: 0 !important;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 15px 35px var(--color-shadow-medium) !important;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary) !important;
 }
 
 :global(.maplibregl-popup-close-button) {
-  color: #191d34 !important;
+  color: var(--color-text-primary) !important;
   font-size: 20px !important;
   padding: 5px !important;
-}
-
-:global(.maplibregl-popup-tip) {
-  border-top-color: rgba(255, 255, 255, 0.95) !important;
 }
