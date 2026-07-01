@@ -52,12 +52,12 @@
   margin: 0 auto 1.25rem;
   padding: 0.8rem 1rem;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-card-bg);
   border: 1px solid rgba(var(--color-accent-rgb), 0.16);
   color: var(--color-text-secondary);
   font-size: 0.95rem;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 20px var(--color-shadow-medium);
 }
 
 .inputGroup {

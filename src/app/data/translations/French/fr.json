@@ -641,6 +641,36 @@
     },
     "history": [
       {
+        "version": "2.0.3",
+        "date": "Dernière mise à jour",
+        "title": "Accès simplifié, recherche plus facile et améliorations UI",
+        "features": [
+          "Accès plus simple à la page Facebook",
+          "Expérience de recherche simplifiée pour un usage plus accessible",
+          "Amélioration du design des pages Bible et recherche",
+          "Simplification générale de l'interaction avec les versets"
+        ],
+        "fixes": [
+          "Correction du problème d'envoi incorrect de l'image du verset sur iPhone",
+          "Résolution du problème de référence lors du partage de plusieurs versets"
+        ]
+      },
+      {
+        "version": "2.0.2",
+        "date": "Dernière mise à jour",
+        "title": "Améliorations de la recherche et de l'expérience utilisateur",
+        "features": [
+          "Amélioration de la vitesse de recherche",
+          "Meilleure sélection et copie des versets",
+          "Améliorations majeures de la question du jour",
+          "Simplification de l'affichage et de l'analyse des versets"
+        ],
+        "fixes": [
+          "Correction du problème qui empêchait les cartes de fonctionner",
+          "Correction des bogues de sélection et de copie des versets"
+        ]
+      },
+      {
         "version": "2.0.1",
         "date": "Dernière mise à jour",
         "title": "Corrections techniques et améliorations",

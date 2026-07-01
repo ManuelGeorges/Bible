@@ -639,6 +639,36 @@
     },
     "history": [
       {
+        "version": "2.0.3",
+        "date": "Latest Update",
+        "title": "Easier Access, Simpler Search & UI Improvements",
+        "features": [
+          "Made Facebook page access easier",
+          "Simplified the search experience so it is easier for more people to use",
+          "Improved the design of both the Bible and search pages",
+          "Simplified overall verse interaction experience"
+        ],
+        "fixes": [
+          "Fixed the issue where verse images were not sharing correctly on iPhone devices",
+          "Resolved the reference issue when sharing multiple verses"
+        ]
+      },
+      {
+        "version": "2.0.2",
+        "date": "Latest Update",
+        "title": "Search, Selection & Daily Question Improvements",
+        "features": [
+          "Improved search speed across the app",
+          "Enhanced verse selection and copy flow",
+          "Major improvements to the daily question experience",
+          "Simplified verse analysis presentation"
+        ],
+        "fixes": [
+          "Fixed the issue that prevented maps from working",
+          "Fixed verse selection and copying bugs"
+        ]
+      },
+      {
         "version": "2.0.1",
         "date": "Latest Update",
         "title": "Technical Fixes & Improvements",

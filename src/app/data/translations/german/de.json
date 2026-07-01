@@ -639,6 +639,36 @@
     },
     "history": [
       {
+        "version": "2.0.3",
+        "date": "Letztes Update",
+        "title": "Einfacherer Zugang, einfachere Suche & UI-Verbesserungen",
+        "features": [
+          "Zugang zur Facebook-Seite vereinfacht",
+          "Sucherlebnis vereinfacht, damit es für mehr Nutzer leichter ist",
+          "Design der Bibel- und Suchseiten verbessert",
+          "Gesamte Versinteraktion vereinfacht"
+        ],
+        "fixes": [
+          "Problem behoben, bei dem Versbilder auf iPhone-Geräten nicht korrekt geteilt wurden",
+          "Problem mit der Referenz beim Teilen mehrerer Verse behoben"
+        ]
+      },
+      {
+        "version": "2.0.2",
+        "date": "Letztes Update",
+        "title": "Verbesserungen bei Suche, Auswahl & Tagesfrage",
+        "features": [
+          "Verbesserte Suchgeschwindigkeit in der App",
+          "Bessere Auswahl und Kopie von Versen",
+          "Wesentliche Verbesserungen der Tagesfrage",
+          "Vereinfachte Darstellung der Versanalyse"
+        ],
+        "fixes": [
+          "Problem behoben, das das Funktionieren der Karten verhinderte",
+          "Fehler bei Auswahl und Kopie von Versen behoben"
+        ]
+      },
+      {
         "version": "2.0.1",
         "date": "Letztes Update",
         "title": "Technische Korrekturen & Verbesserungen",
