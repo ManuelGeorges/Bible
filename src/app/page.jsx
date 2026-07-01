@@ -36,6 +36,7 @@ import { useLanguage } from './context/LanguageContext';
 
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
+import { openExternalLink } from '../lib/utils';
 
 // تصحيح المسار ليشير إلى src/app/data
 import badgesAr from './data/translations/arabic/badges_ar.json';
@@ -801,6 +802,11 @@ const LandingPage = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };
 
+    const handleFacebookOpen = (e) => {
+        e.preventDefault();
+        openExternalLink('https://www.facebook.com/AgiosSystem/');
+    };
+
     const dailyVerseKey = `daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-${language}`;
 
     return (
@@ -824,7 +830,7 @@ const LandingPage = () => {
                         <Link href={"/points"} className={styles.iconCircle}><Award size={20} /></Link>
                         <Link href={"/profile"} className={styles.iconCircle}><User size={20} /></Link>
                         <Link href="/settings" className={styles.iconCircle}><Settings size={20} /></Link>
-                        <a href="https://www.facebook.com/AgiosSystem/" target="_blank" rel="noreferrer" className={styles.iconCircle} aria-label="Facebook Page">
+                        <a href="https://www.facebook.com/AgiosSystem/" target="_blank" rel="noreferrer" className={styles.iconCircle} aria-label="Facebook Page" onClick={handleFacebookOpen}>
                             <ExternalLink size={20} />
                         </a>
                     </div>
