@@ -824,6 +824,9 @@ const LandingPage = () => {
                         <Link href={"/points"} className={styles.iconCircle}><Award size={20} /></Link>
                         <Link href={"/profile"} className={styles.iconCircle}><User size={20} /></Link>
                         <Link href="/settings" className={styles.iconCircle}><Settings size={20} /></Link>
+                        <a href="https://www.facebook.com/AgiosSystem/" target="_blank" rel="noreferrer" className={styles.iconCircle} aria-label="Facebook Page">
+                            <ExternalLink size={20} />
+                        </a>
                     </div>
                 </div>
 

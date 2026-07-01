@@ -265,33 +265,39 @@ export function AudioProvider({ children }) {
         if (typeof window !== 'undefined' && 'mediaSession' in navigator && audioUrl) {
             const book = bookNames[currentLocation.bookIdx];
             const chapter = currentLocation.chapIdx + 1;
-
             const iconUrl = "https://agios-bible.vercel.app/agios.png";
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: trackTitle || `${strings.common.chapter} ${chapter}`,
-                artist: book ? book.name : strings.audio.artist_default,
-                album: strings.audio.album,
-                artwork: [
-                    { src: iconUrl, sizes: '192x192', type: 'image/png' },
-                    { src: iconUrl.replace('192', '512'), sizes: '512x512', type: 'image/png' },
-                ]
-            });
+
+            if ('MediaMetadata' in window) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: trackTitle || `${strings.common.chapter} ${chapter}`,
+                    artist: book ? book.name : strings.audio.artist_default,
+                    album: strings.audio.album,
+                    artwork: [
+                        { src: iconUrl, sizes: '192x192', type: 'image/png' },
+                        { src: iconUrl.replace('192', '512'), sizes: '512x512', type: 'image/png' },
+                    ]
+                });
+            }
 
             const handlers = {
-                play: () => audioRef.current?.play(),
+                play: () => {
+                    if (audioRef.current) {
+                        audioRef.current.play().catch(() => {});
+                    }
+                },
                 pause: () => audioRef.current?.pause(),
                 previoustrack: () => goToChapter(-1),
                 nexttrack: () => goToChapter(1),
                 seekbackward: (details) => {
-                    const skipTime = details.seekOffset || 10;
+                    const skipTime = details?.seekOffset || 10;
                     if (audioRef.current) audioRef.current.currentTime -= skipTime;
                 },
                 seekforward: (details) => {
-                    const skipTime = details.seekOffset || 10;
+                    const skipTime = details?.seekOffset || 10;
                     if (audioRef.current) audioRef.current.currentTime += skipTime;
                 },
                 seekto: (details) => {
-                    if (details.seekTime !== undefined && audioRef.current) {
+                    if (details?.seekTime !== undefined && audioRef.current) {
                         audioRef.current.currentTime = details.seekTime;
                     }
                 }
@@ -302,8 +308,10 @@ export function AudioProvider({ children }) {
                     navigator.mediaSession.setActionHandler(action, handler);
                 } catch (e) {}
             });
+
+            navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
         }
-    }, [audioUrl, trackTitle, currentLocation, bookNames, goToChapter, strings]);
+    }, [audioUrl, trackTitle, currentLocation, bookNames, goToChapter, strings, isPlaying]);
 
     useEffect(() => {
         if (Capacitor.isNativePlatform()) {
@@ -313,6 +321,19 @@ export function AudioProvider({ children }) {
                 KeepAwake.allowSleep().catch(() => {});
             }
         }
+    }, [isPlaying]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'hidden' && isPlaying && audioRef.current) {
+                audioRef.current.play().catch(() => {});
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => document.removeEventListener('visibilitychange', handleVisibility);
     }, [isPlaying]);
 
     useEffect(() => {

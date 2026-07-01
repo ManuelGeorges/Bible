@@ -170,6 +170,20 @@ function SearchContent() {
     showReason: true
   });
 
+  const searchHint = language === 'ar'
+    ? 'مثال: سلام، يوسف، النعمة'
+    : language === 'fr'
+      ? 'Exemple : paix, Joseph, grâce'
+      : language === 'de'
+        ? 'Beispiel: Frieden, Josef, Gnade'
+        : 'Example: peace, Joseph, grace';
+
+  const searchModeLabels = {
+    literal: language === 'ar' ? 'بحث مباشر' : language === 'fr' ? 'Recherche directe' : language === 'de' ? 'Direkte Suche' : 'Direct search',
+    derivatives: language === 'ar' ? 'بحث مشتق' : language === 'fr' ? 'Recherche dérivée' : language === 'de' ? 'Wortwurzel-Suche' : 'Root search',
+    semantic: language === 'ar' ? 'بحث معنوي' : language === 'fr' ? 'Recherche sémantique' : language === 'de' ? 'Semantische Suche' : 'Semantic search'
+  };
+
   const resultsRef = useRef(null);
   const currentSearchIdRef = useRef(0);
 
@@ -1228,6 +1242,7 @@ Regeln:
 
   const filteredBooks = selectedTestament ? bookNamesData.filter(b => b.testament === selectedTestament) : bookNamesData;
   const chaptersCount = (selectedBookIndex !== '' && bibleData) ? bibleData[parseInt(selectedBookIndex)].chapters.length : 0;
+  const shortAskLabel = (strings.bible.ask_agios || '').split(/\s+/)[0] || strings.bible.ask_agios;
 
   const VerseCard = ({ v }) => {
     const vId = `${v.book_index}-${v.chapter}-${v.verse}`;
@@ -1285,6 +1300,7 @@ Regeln:
               className={styles.aiActionBtn}
             >
               <Sparkles size={18} />
+              <span className={styles.aiActionBtnText}>{shortAskLabel}</span>
             </button>
             <button
               onClick={(e) => {
@@ -1326,12 +1342,22 @@ Regeln:
     <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <div className={styles.card}>
         <h1 className={styles.heading}>{strings.search.title}</h1>
+        <p className={styles.searchIntro}>
+          {language === 'ar'
+            ? 'اختر طريقة البحث المناسبة لك ثم اكتب كلمة أو موضوعًا وستظهر لك الآيات مباشرة.'
+            : language === 'fr'
+              ? 'Choisissez la manière de chercher qui vous convient, puis saisissez un mot ou un thème.'
+              : language === 'de'
+                ? 'Wähle die Suchmethode aus, die zu dir passt, und gib dann ein Wort oder Thema ein.'
+                : 'Choose the search method that fits you best, then enter a word or theme.'}
+        </p>
         <form onSubmit={(e) => { e.preventDefault(); performSearch(); }} className={styles.controls}>
           <div className={styles.inputGroup}>
             <input type="text" value={inputTerm} onChange={e => setInputTerm(e.target.value)} className={styles.input} placeholder={searchType === 'derivatives' ? strings.search.placeholder_derivatives : strings.search.placeholder_default} />
+            <span className={styles.inputHint}>{searchHint}</span>
             <button type="submit" className={styles.searchButton}>
               <Search size={18} />
-              <span>{strings.search.button_search}</span>
+              <span>{language === 'ar' ? 'ابحث الآن' : language === 'fr' ? 'Rechercher maintenant' : language === 'de' ? 'Jetzt suchen' : 'Search now'}</span>
             </button>
           </div>
           <div className={styles.searchTypeSelector}>
@@ -1339,17 +1365,17 @@ Regeln:
               <label className={searchType === 'literal' ? styles.activeLabel : ''}>
                 <input type="radio" checked={searchType === 'literal'} onChange={() => setSearchType('literal')} />
                 <Type size={16} />
-                <span>{strings.search.type_literal}</span>
+                <span>{searchModeLabels.literal}</span>
               </label>
               <label className={`${searchType === 'derivatives' ? styles.activeLabel : ''} ${timeLeft > 0 ? styles.disabledLabel : ''} `}>
                 <input type="radio" checked={searchType === 'derivatives'} onChange={() => timeLeft === 0 && setSearchType('derivatives')} disabled={timeLeft > 0 && searchType !== 'derivatives'} />
                 <Wand2 size={16} />
-                <span>{strings.search.type_derivatives}</span>
+                <span>{searchModeLabels.derivatives}</span>
               </label>
               <label className={`${searchType === 'semantic' ? styles.activeLabel : ''} ${timeLeft > 0 ? styles.disabledLabel : ''}`}>
                 <input type="radio" checked={searchType === 'semantic'} onChange={() => timeLeft === 0 && setSearchType('semantic')} disabled={timeLeft > 0 && searchType !== 'semantic'} />
                 <Sparkles size={16} />
-                <span>{strings.search.type_semantic}</span>
+                <span>{searchModeLabels.semantic}</span>
               </label>
             </div>
             {timeLeft > 0 && <div className={styles.originalCooldownBadge}><span className={styles.originalTimerText}>{strings.search.cooldown_text.replace('{time}', formatNumber(timeLeft))}</span></div>}
@@ -1473,7 +1499,7 @@ Regeln:
                       </button>
                       <button onClick={analyzeSelected} className={styles.multiAiBtn}>
                         <Sparkles size={16} />
-                        <span>{strings.search.selection_analyze}</span>
+                        <span>{strings.bible.ask_agios}</span>
                       </button>
                       <button onClick={() => setSelectedVerses([])} className={styles.clearSelectionBtn}>{strings.search.selection_cancel}</button>
                     </div>

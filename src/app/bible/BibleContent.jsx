@@ -341,14 +341,34 @@ export default function BibleContent() {
     }
   };
 
-  const shareVerse = async (text, index) => {
+  const buildReferenceText = (verseIndexes) => {
     const chapterLabel = formatNumber(selectedChapterIndex + 1);
-    const verseLabel = formatNumber(index + 1);
-    const bookName = getBookName(selectedBookIndex);
     const isArabic = language === 'ar';
     const rlm = isArabic ? "\u200F" : "";
     const lrm = isArabic ? "\u200E" : "";
-    const fullText = `${text} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
+    const bookName = getBookName(selectedBookIndex);
+
+    const indexes = Array.isArray(verseIndexes) ? verseIndexes.slice() : [verseIndexes];
+    const sortedIndexes = indexes.sort((a, b) => a - b);
+    const verseNumbers = sortedIndexes.map(i => formatNumber(i + 1));
+
+    let verseRange;
+    if (sortedIndexes.length === 1) {
+      verseRange = verseNumbers[0];
+    } else if (sortedIndexes.every((v, idx) => idx === 0 || v === sortedIndexes[idx - 1] + 1)) {
+      verseRange = `${verseNumbers[0]} - ${verseNumbers[verseNumbers.length - 1]}`;
+    } else {
+      verseRange = verseNumbers.join(isArabic ? '، ' : ', ');
+    }
+
+    return `${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange}`;
+  };
+
+  const shareVerse = async (text, verseIndexes) => {
+    const reference = buildReferenceText(verseIndexes);
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "";
+    const fullText = `${text} ${rlm}(${reference})`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -365,7 +385,11 @@ export default function BibleContent() {
         });
       }
       else {
-        copyVerse(text, index);
+        if (Array.isArray(verseIndexes) && verseIndexes.length > 0) {
+          copyVerse(text, verseIndexes[0]);
+        } else {
+          copyVerse(text, verseIndexes);
+        }
         toast.info(strings.bible.share_not_supported);
         return;
       }
@@ -781,6 +805,7 @@ export default function BibleContent() {
 
   const chaptersList = bibleData[selectedBookIndex]?.chapters || [];
   const versesList = chaptersList[selectedChapterIndex] || [];
+  const shortAskLabel = (strings.bible.ask_agios || '').split(/\s+/)[0] || strings.bible.ask_agios;
 
   return (
     <div dir={pageDir} className={`${styles.container} ${pageDir === 'rtl' ? styles.rtl : styles.ltr}`}>
@@ -791,7 +816,8 @@ export default function BibleContent() {
             <button onClick={copySelected} className={styles.actionBtn} title={strings.bible.tooltips.copy}><Copy size={20} /></button>
             <button onClick={() => {
                 const combinedText = selectedVerses.map(v => v.text).join(' ');
-                shareVerse(combinedText, selectedVerses[0].index);
+                const verseIndexes = selectedVerses.map(v => v.index);
+                shareVerse(combinedText, verseIndexes);
             }} className={styles.actionBtn}><Share2 size={20} /></button>
 
             {selectedVerses.length === 1 && (
@@ -827,7 +853,7 @@ export default function BibleContent() {
               title={strings.bible.tooltips.ai_analysis}
             >
               <Sparkles size={20} />
-              <span className={styles.aiBtnText}>{strings.bible.ask_agios}</span>
+              <span className={styles.aiBtnText}>{shortAskLabel}</span>
             </button>
           </div>
           <div className={styles.colorGrid}>

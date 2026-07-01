@@ -74,7 +74,9 @@ function AnalysisContent() {
   const [status, setStatus] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [sectionAnchors, setSectionAnchors] = useState([]);
   const hasFetched = useRef(false);
+  const sectionRefs = useRef({});
 
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
@@ -367,9 +369,17 @@ function AnalysisContent() {
     }
   };
 
+  const scrollToSection = (id) => {
+    const target = sectionRefs.current[id];
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const parseAndRender = (text) => {
     if (!text) return null;
 
+    const anchors = [];
     const renderParagraph = (content, key, originalRaw) => {
       const parts = content.split(/(\*\*.*?\*\*)/g);
       const formattedLine = parts.map((part, pIdx) => {
@@ -407,7 +417,7 @@ function AnalysisContent() {
       );
     };
 
-    return text.split('\n').map((line, i) => {
+    const rendered = text.split('\n').map((line, i) => {
       let cleanLine = line.replace(/[#*]/g, '').trim();
       if (!cleanLine) return <div key={i} className={styles.spacer} />;
 
@@ -417,20 +427,25 @@ function AnalysisContent() {
       if (headerMatch) {
         const headerPart = headerMatch[1].trim();
         const contentPart = headerMatch[2].trim();
+        const anchorId = `section-${i}`;
+        anchors.push(anchorId);
 
         if (contentPart) {
           return (
             <React.Fragment key={i}>
-              <h3 className={styles.sectionHeader}>{headerPart}</h3>
+              <h3 id={anchorId} ref={(el) => { sectionRefs.current[anchorId] = el; }} className={styles.sectionHeader}>{headerPart}</h3>
               {renderParagraph(contentPart, `extra-${i}`, contentPart)}
             </React.Fragment>
           );
         }
-        return <h3 key={i} className={styles.sectionHeader}>{headerPart}</h3>;
+        return <h3 id={anchorId} ref={(el) => { sectionRefs.current[anchorId] = el; }} key={i} className={styles.sectionHeader}>{headerPart}</h3>;
       }
 
       return renderParagraph(line, i, cleanLine);
     });
+
+    setSectionAnchors(anchors);
+    return rendered;
   };
 
   const displayTitle = verses
@@ -463,6 +478,26 @@ function AnalysisContent() {
       </header>
 
       <main className={styles.contentCard}>
+        {!isLoading && analysis && sectionAnchors.length > 0 && (
+          <div className={styles.sectionNav}>
+            {sectionAnchors.map((anchor, idx) => {
+              const labels = [
+                language === 'ar' ? 'مقدمة' : language === 'fr' ? 'Introduction' : language === 'de' ? 'Einleitung' : 'Introduction',
+                language === 'ar' ? 'لغويات' : language === 'fr' ? 'Linguistique' : language === 'de' ? 'Linguistik' : 'Linguistics',
+                language === 'ar' ? 'تاريخ' : language === 'fr' ? 'Contexte historique' : language === 'de' ? 'Historischer Hintergrund' : 'Historical background',
+                language === 'ar' ? 'تفسير' : language === 'fr' ? 'Exégèse' : language === 'de' ? 'Exegese' : 'Exegesis',
+                language === 'ar' ? 'تطبيق' : language === 'fr' ? 'Application' : language === 'de' ? 'Anwendung' : 'Application',
+                language === 'ar' ? 'شبهات' : language === 'fr' ? 'Objections' : language === 'de' ? 'Einwände' : 'Objections'
+              ];
+              return (
+                <button key={anchor} onClick={() => scrollToSection(anchor)} className={styles.sectionNavBtn}>
+                  {labels[idx] || `${language === 'ar' ? 'قسم' : 'Section'} ${idx + 1}`}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {countdown > 0 ? (
           <div className={styles.loadingWrapper}>
             <div className={styles.countdownCircle}>

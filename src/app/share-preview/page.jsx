@@ -101,10 +101,12 @@ function PreviewContent() {
         cacheBust: true,
         style: {
           transform: 'scale(1)',
+          backgroundColor: '#000',
         },
         // تحديد أبعاد صريحة
         width: templateRef.current.offsetWidth,
         height: templateRef.current.offsetHeight,
+        backgroundColor: '#000',
       };
 
       // حل سحري لـ Apple Safari: استدعاء الدالة مرتين
@@ -155,11 +157,19 @@ function PreviewContent() {
           try {
             const blob = await fetch(dataUrl).then(res => res.blob());
             const file = new File([blob], fileName, { type: 'image/png' });
-            await navigator.share({
+            const shareData = {
               files: [file],
               title: strings.share_preview.share_title,
-              text: `"${verse}" (${reference})`
-            });
+            };
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share(shareData);
+            } else {
+              await navigator.share({
+                title: strings.share_preview.share_title,
+                text: `"${verse}" (${reference})`
+              });
+            }
           } catch (err) {
             console.warn("Share failed, falling back to download:", err);
             const link = document.createElement('a');
