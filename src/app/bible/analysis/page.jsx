@@ -78,7 +78,7 @@ function AnalysisContent() {
   const hasFetched = useRef(false);
   const sectionRefs = useRef({});
 
-  // استخراج العناوين في useEffect لتجنب Infinite Loop (React Error #301)
+  // Fix for React Error #301: Extract anchors in useEffect instead of during render
   useEffect(() => {
     if (!analysis) {
       setSectionAnchors([]);
@@ -218,7 +218,7 @@ function AnalysisContent() {
 
     Règles de formatage (strictes) :
     - Chaque numéro et titre de section (p. ex. : "1. Introduction") doit être sur sa propre ligne.
-    - Ne placez aucun texte sur la même ligne que le titre.
+    - Ne placez aucun texte sur la même line as the title.
     - Commencez le contenu de la section sur une nouvelle ligne après le titre.
     - N'utilisez pas Markdown.
     - Concentrez-vous strictement sur le passage.
@@ -392,7 +392,7 @@ function AnalysisContent() {
     }
   };
 
-  const renderAnalysis = (text) => {
+  const parseAndRender = (text) => {
     if (!text) return null;
 
     const renderParagraph = (content, key, originalRaw) => {
@@ -538,7 +538,7 @@ function AnalysisContent() {
         ) : (
           <div className={styles.analysisContainer}>
             <div className={styles.analysisText}>
-              {renderAnalysis(analysis)}
+              {parseAndRender(analysis)}
             </div>
             {isLoading && (
                <div className={styles.streamingIndicator}>

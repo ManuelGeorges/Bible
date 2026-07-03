@@ -7,6 +7,8 @@ const nextConfig = {
   },
   reactStrictMode: true,
   trailingSlash: true,
+  // تحسين معالجة الـ preload وتقليل التحذيرات
+  optimizeFonts: false,
 };
 
 module.exports = nextConfig;
