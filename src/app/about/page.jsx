@@ -3,10 +3,18 @@
 import { useLanguage } from '../context/LanguageContext';
 import styles from './about.module.css';
 import Image from 'next/image';
-import { ExternalLink, Github, Globe, Code } from 'lucide-react';
+import { ExternalLink, Globe, Code } from 'lucide-react';
 
 export default function AboutPage() {
-  const { strings, dir, language } = useLanguage();
+  const { strings, dir } = useLanguage();
+
+  // Localized strings for the developer section
+  const devStrings = strings.about.developer || {
+    title: 'About the Developer',
+    desc: 'Agios System was developed by Manuel Georges, a software developer specialized in building innovative web and mobile applications to serve the Church.',
+    portfolio: 'Portfolio'
+  };
+
   return (
     <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
       <header className={styles.header}>
@@ -24,25 +32,40 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* Developer Section for SEO Boost */}
+      {/* Modern Developer Section - Optimized for SEO and UI */}
       <section className={styles.developerSection}>
         <div className={styles.devCard}>
-          <div className={styles.devIcon}><Code size={32} /></div>
+          <div className={styles.devIcon}>
+            <Code size={32} />
+          </div>
           <div className={styles.devInfo}>
-            <h2 className={styles.subtitle}>{language === 'ar' ? 'عن المطور' : 'About the Developer'}</h2>
+            <h2 className={styles.subtitle}>{devStrings.title}</h2>
             <p className={styles.paragraph}>
-              {language === 'ar'
-                ? 'تم تطوير نظام أجيوس بواسطة مانويل جورج، مطور برمجيات متخصص في بناء تطبيقات الويب والموبايل المبتكرة.'
-                : 'Agios System was developed by Manuel Georges, a software developer specialized in building innovative web and mobile applications.'}
+              {devStrings.desc}
             </p>
             <div className={styles.devLinks}>
-              <a href="https://mano-dev.vercel.app/" target="_blank" rel="noopener noreferrer" className={styles.portfolioLink}>
-                <Globe size={18} /> {language === 'ar' ? 'الموقع الشخصي' : 'Portfolio'}
+              <a
+                href="https://mano-dev.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.portfolioLink}
+              >
+                <Globe size={18} /> {devStrings.portfolio}
               </a>
-              <a href="https://play.google.com/store/apps/details?id=com.agios.bible" target="_blank" rel="noopener noreferrer" className={styles.storeLink}>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.agios.bible"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.storeLink}
+              >
                 <ExternalLink size={18} /> Google Play
               </a>
-              <a href="https://apps.apple.com/eg/app/agios-bible-holy-bible/id6773141320" target="_blank" rel="noopener noreferrer" className={styles.storeLink}>
+              <a
+                href="https://apps.apple.com/eg/app/agios-bible-holy-bible/id6773141320"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.storeLink}
+              >
                 <ExternalLink size={18} /> App Store
               </a>
             </div>

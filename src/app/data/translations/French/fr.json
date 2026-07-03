@@ -208,6 +208,11 @@
       "p1": "Le projet Agios a été lancé with la vision de fournir une expérience numérique sophistiquée pour l'étude de la Bible.",
       "p2": "Après le succès de ses débuts, le développement de la plateforme s'est poursuivi pour en faire une référence complète combinant outils d'étude et fonctions techniques modernes."
     },
+    "developer": {
+      "title": "À propos du développeur",
+      "desc": "Le système Agios a été développé par Manuel Georges, un développeur de logiciels spécialisé dans la création d'applications web et mobiles innovantes au service de l'Église.",
+      "portfolio": "Portfolio"
+    },
     "vision": {
       "title": "Notre Vision",
       "desc": "La vision d'Agios est d'être un pont technique reliant les générations à la Parole de Dieu, en utilisant des outils modernes pour présenter le contenu biblique de manière attrayante et simplifiée."
@@ -217,7 +222,7 @@
       "priest_name": "Rév. Père Athanasios",
       "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
       "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
-      "church": "Merci à notre إglise locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
+      "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
       "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
       "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
     },
@@ -395,7 +400,7 @@
     "fav_verses": "Versets favoris",
     "xp": "XP",
     "active_plans_count": "Plans actifs",
-    "account_section": "Compte",
+    "account_section": "Account",
     "logout": "Déconnexion",
     "general_options": "Options générales",
     "app_settings": "Paramètres de l'application",
@@ -569,7 +574,7 @@
     "tagline": "Nous sommes ravis d'écouter vos suggestions",
     "reasons_title": "Pourquoi nous contacter ?",
     "reasons": [
-      "Suggestions pour de nouvelles fonctions.",
+      "Suggestions pour de nouvelles fonctionnalités.",
       "Signaler un bug ou une erreur.",
       "Support technique ou volontariat.",
       "Questions générales."
@@ -607,7 +612,7 @@
     "title": "Mes favoris",
     "tab_favs": "Favoris",
     "tab_notes": "Notes",
-    "color_categories": "Catغgories de couleurs :",
+    "color_categories": "Catégories de couleurs :",
     "no_title": "Sans titre",
     "modal_title": "Nommer la couleur",
     "modal_placeholder": "Ex: Versets de réconfort, Promesses...",
@@ -639,8 +644,22 @@
     },
     "history": [
       {
-        "version": "2.0.3",
+        "version": "2.0.4",
         "date": "Dernière mise à jour",
+        "title": "Correctifs critiques, support linguistique et liens développeur",
+        "features": [
+          "Ajout des liens App Store, Google Play et Développeur dans la page 'À propos'",
+          "Activation du support de la langue française dans les cartes bibliques"
+        ],
+        "fixes": [
+          "Correction du problème de plantage de la page d'analyse IA",
+          "Correction du plantage de l'application lors de la sélection de la langue française",
+          "Améliorations générales de la stabilité du système"
+        ]
+      },
+      {
+        "version": "2.0.3",
+        "date": "Mise à jour précédente",
         "title": "Accès simplifié, recherche plus facile et améliorations UI",
         "features": [
           "Accès plus simple à la page Facebook",
@@ -655,7 +674,7 @@
       },
       {
         "version": "2.0.2",
-        "date": "Dernière mise à jour",
+        "date": "Mise à jour précédente",
         "title": "Améliorations de la recherche et de l'expérience utilisateur",
         "features": [
           "Amélioration de la vitesse de recherche",
@@ -670,11 +689,11 @@
       },
       {
         "version": "2.0.1",
-        "date": "Dernière mise à jour",
+        "date": "Mise à jour précédente",
         "title": "Corrections techniques et améliorations",
         "features": [],
         "fixes": [
-          "Correction de l'erreur de direction du téمون inversé dans la page de partage de verset",
+          "Correction de l'erreur de direction du témoin inversé dans la page de partage de verset",
           "Correction de la différence de couleurs des versets favoris entre les pages de recherche et de la Bible",
           "Correction de l'erreur d'enregistrement incorrect de l'image du verset du jour pour les utilisateurs d'iPhone",
           "Correction de l'erreur lors de la sortie de l'application en appuyant deux fois sur le bouton retour"
@@ -718,7 +737,7 @@
           "Amélioration de la réactivité de l'IA dans les plans d'étude"
         ],
         "fixes": [
-          "Correction du problème de double bouton retour sur la page des plans d'étude"
+          "Correction du problème de double bouton retour on the study plans page"
         ]
       },
       {
@@ -744,7 +763,7 @@
         "features": [
           "Expansion de la bibliothèque de cartes with de nouvelles cartes",
           "Ajout de la recherche intelligente pour les lieux et monuments historiques",
-          "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses maladies bibliques",
+          "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses mentions bibliques",
           "Ajout de la section 'Essayer l'IA' sur la page d'accueil pour une meilleure expérience utilisateur"
         ],
         "fixes": [

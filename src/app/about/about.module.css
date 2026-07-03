@@ -32,6 +32,95 @@
   word-break: break-word;
 }
 
+.developerSection {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.devCard {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  background: var(--color-card-bg);
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 30px var(--color-shadow-medium);
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.devCard:hover {
+  transform: translateY(-5px);
+}
+
+.devCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.devIcon {
+  background: rgba(var(--color-accent-rgb), 0.1);
+  color: var(--color-accent);
+  padding: 15px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.devInfo {
+  flex: 1;
+}
+
+.devLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.portfolioLink, .storeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-family: 'Cairo', sans-serif;
+}
+
+.portfolioLink {
+  background: var(--color-accent);
+  color: white;
+}
+
+.portfolioLink:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.3);
+}
+
+.storeLink {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.storeLink:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-accent);
+}
+
 .subtitle {
   color: var(--color-accent-gold);
   font-family: 'Cairo', sans-serif;
@@ -99,6 +188,25 @@
   color: var(--color-text-secondary);
   font-size: 0.9rem;
   width: 100%;
+}
+
+@media (max-width: 768px) {
+  .devCard {
+    flex-direction: column;
+    text-align: center;
+    padding: 25px;
+  }
+
+  .devCard::before {
+    width: 100%;
+    height: 4px;
+    top: 0;
+    left: 0;
+  }
+
+  .devLinks {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 600px) {

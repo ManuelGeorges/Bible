@@ -208,6 +208,11 @@
       "p1": "The Agios project was launched with a vision to provide a sophisticated digital experience for Bible study. It started through participation in the St. Mark's Preaching Festival in Alexandria, where the project sought to provide innovative technical solutions, such as advanced linguistic search, interactive maps of holy places, and a modern user interface that helps with focus and spiritual growth.",
       "p2": "After success in its early stages, work continued on developing the platform to become a comprehensive reference that combines daily study tools and modern technical features, serving the needs of youth and students in the digital age."
     },
+    "developer": {
+      "title": "About the Developer",
+      "desc": "Agios System was developed by Manuel Georges, a software developer specialized in building innovative web and mobile applications to serve the Church.",
+      "portfolio": "Portfolio"
+    },
     "vision": {
       "title": "Our Vision",
       "desc": "The vision of Agios is to be a technical bridge connecting generations to the Word of God, using modern tools to present biblical content in an attractive and simplified way, while fully adhering to the foundations of the sound Orthodox faith and the traditions of the universal church."
@@ -639,8 +644,22 @@
     },
     "history": [
       {
-        "version": "2.0.3",
+        "version": "2.0.4",
         "date": "Latest Update",
+        "title": "Critical Fixes, Language Support & Dev Links",
+        "features": [
+          "Added App Store, Google Play and Developer links in 'About' page",
+          "Enabled French language support in Bible Maps"
+        ],
+        "fixes": [
+          "Fixed AI Analysis page crashing issue",
+          "Fixed app crashing when French language is selected",
+          "General system stability improvements"
+        ]
+      },
+      {
+        "version": "2.0.3",
+        "date": "Previous Update",
         "title": "Easier Access, Simpler Search & UI Improvements",
         "features": [
           "Made Facebook page access easier",
@@ -655,7 +674,7 @@
       },
       {
         "version": "2.0.2",
-        "date": "Latest Update",
+        "date": "Previous Update",
         "title": "Search, Selection & Daily Question Improvements",
         "features": [
           "Improved search speed across the app",
@@ -670,7 +689,7 @@
       },
       {
         "version": "2.0.1",
-        "date": "Latest Update",
+        "date": "Previous Update",
         "title": "Technical Fixes & Improvements",
         "features": [],
         "fixes": [

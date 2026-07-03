@@ -208,6 +208,11 @@
       "p1": "Das Agios-Projekt wurde mit der Vision gestartet, eine anspruchsvolle digitale Erfahrung für das Bibelstudium zu bieten. Es begann mit der Teilnahme am St.-Markus-Verkündigungsfestival in Alexandria, wo das Projekt innovative technische Lösungen wie eine fortgeschrittene linguistische Suche, interaktive Karten heiliger Stätten und eine moderne Benutzeroberfläche anstrebte.",
       "p2": "Nach dem Erfolg in den frühen Stadien wurde die Plattform weiterentwickelt, um eine umfassende Referenz zu werden, die tägliche Lernwerkzeuge und moderne technische Funktionen kombiniert."
     },
+    "developer": {
+      "title": "Über den Entwickler",
+      "desc": "Das Agios-System wurde von Manuel Georges entwickelt, einem Softwareentwickler, der sich auf den Aufbau innovativer Web- und Mobilanwendungen im Dienste der Kirche spezialisiert hat.",
+      "portfolio": "Portfolio"
+    },
     "vision": {
       "title": "Unsere Vision",
       "desc": "Die Vision von Agios ist es, eine technische Brücke zu sein, die Generationen mit dem Wort Gottes verbindet, indem moderne Werkzeuge verwendet werden, um biblische Inhalte attraktiv und vereinfacht zu präsentieren, unter voller Einhaltung des rechtgläubigen orthodoxen Glaubens."
@@ -639,8 +644,22 @@
     },
     "history": [
       {
-        "version": "2.0.3",
+        "version": "2.0.4",
         "date": "Letztes Update",
+        "title": "Wichtige Korrekturen, Sprachunterstützung & Entwickler-Links",
+        "features": [
+          "App Store, Google Play und Entwickler-Links auf der Seite 'Über uns' hinzugefügt",
+          "Unterstützung der französischen Sprache in Bibelkarten aktiviert"
+        ],
+        "fixes": [
+          "Absturz der KI-Analyseseite behoben",
+          "App-Absturz bei Auswahl der französischen Sprache behoben",
+          "Allgemeine Verbesserungen der Systemstabilität"
+        ]
+      },
+      {
+        "version": "2.0.3",
+        "date": "Vorheriges Update",
         "title": "Einfacherer Zugang, einfachere Suche & UI-Verbesserungen",
         "features": [
           "Zugang zur Facebook-Seite vereinfacht",
@@ -655,7 +674,7 @@
       },
       {
         "version": "2.0.2",
-        "date": "Letztes Update",
+        "date": "Vorheriges Update",
         "title": "Verbesserungen bei Suche, Auswahl & Tagesfrage",
         "features": [
           "Verbesserte Suchgeschwindigkeit in der App",
@@ -670,7 +689,7 @@
       },
       {
         "version": "2.0.1",
-        "date": "Letztes Update",
+        "date": "Vorheriges Update",
         "title": "Technische Korrekturen & Verbesserungen",
         "features": [],
         "fixes": [
