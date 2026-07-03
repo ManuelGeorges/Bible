@@ -569,7 +569,7 @@ export default function MapsPage() {
               <Layer id="clusters" type="circle" filter={['has', 'point_count']} paint={{ 'circle-color': ['step', ['get', 'point_count'], '#191d34', 10, '#252b4d', 30, '#313966'], 'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40], 'circle-stroke-width': 2, 'circle-stroke-color': '#00c8ff' }} />
               <Layer id="cluster-count" type="symbol" filter={['has', 'point_count']} layout={{ 'text-field': '{point_count}', 'text-size': 12 }} paint={{ 'text-color': '#ffffff' }} />
               <Layer id="unclustered-point" type="circle" filter={['!', ['has', 'point_count']]} paint={{ 'circle-radius': 9, 'circle-color': '#00ffff', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' }} />
-              <Layer id="label-layer" type="symbol" filter={['!', ['has', 'point_count']]} layout={{ 'text-field': ['get', 'name'], 'text-size': 14, 'text-offset': [0, 1.6], 'text-anchor': 'top', 'text-font': ['Noto Sans Arabic Bold'] }} paint={{ 'text-color': '#ffffff', 'text-halo-color': '#000000', 'text-halo-width': 2 }} />
+              <Layer id="label-layer" type="symbol" filter={['!', ['has', 'point_count']]} layout={{ 'text-field': ['get', 'name'], 'text-size': 14, 'text-offset': [0, 1.6], 'text-anchor': 'top', 'text-font': ['Noto Sans Arabic Bold', 'Open Sans Regular', 'Arial Unicode MS Regular'] }} paint={{ 'text-color': '#ffffff', 'text-halo-color': '#000000', 'text-halo-width': 2 }} />
             </Source>
 
             {selectedPoint && (

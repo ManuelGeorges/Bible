@@ -36,8 +36,8 @@
     "submit": "Se connecter",
     "submitting": "Connexion en cours...",
     "error_auth": "E-mail ou mot de passe incorrect.",
-    "error_google": "Échec de la connexion avec Google.",
-    "error_apple": "Échec de la connexion avec Apple.",
+    "error_google": "Échec de la connexion with Google.",
+    "error_apple": "Échec de la connexion with Apple.",
     "no_account": "Vous n'avez pas de compte ?",
     "create_account": "Créer un compte"
   },
@@ -49,8 +49,8 @@
     "submitting": "Création du compte en cours...",
     "error_name_required": "Veuillez entrer votre nom complet",
     "error_generic": "Échec de la création du compte. L'e-mail est peut-être déjà utilisé.",
-    "error_google": "Échec de l'inscription avec Google.",
-    "error_apple": "Échec de l'inscription avec Apple.",
+    "error_google": "Échec de l'inscription with Google.",
+    "error_apple": "Échec de l'inscription with Apple.",
     "has_account": "Vous avez déjà un compte ?",
     "login": "Se connecter"
   },
@@ -96,7 +96,7 @@
       },
       "semantic": {
         "title": "Recherche sémantique et explicative",
-        "desc": "Recherchez des versets bibliques en expliquant leur signification ou leur contexte avec l'assistant intelligent Agios"
+        "desc": "Recherchez des versets bibliques en expliquant leur signification ou leur contexte with l'assistant intelligent Agios"
       },
       "custom_plan": {
         "title": "Créer un plan IA",
@@ -140,7 +140,7 @@
       "verse_per_line": "Chaque verset sur une nouvelle ligne",
       "verse_per_line_desc": "Afficher le texte sous forme de liste au lieu d'un paragraphe",
       "show_tashkeel": "Afficher le Tashkeel (Vocalisation)",
-      "show_tashkeel_desc": "Afficher le texte avec ou sans diacritiques",
+      "show_tashkeel_desc": "Afficher le texte with ou sans diacritiques",
       "font_type": "Type de police (Arabe)",
       "font_weight": "Graisse de la police ({weight})",
       "font_size": "Taille de police de lecture ({size}px)",
@@ -186,7 +186,7 @@
       "delete_account": "Supprimer le compte définitivement",
       "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte définitivement ? Cette action est irréversible.",
       "fresh_login_required": "Pour des raisons de sécurité, la suppression du compte nécessite une connexion récente. Veuillez vous déconnecter puis vous reconnecter.",
-      "delete_success": "Compte et données supprimés avec succès.",
+      "delete_success": "Compte et données supprimés with succès.",
       "delete_error": "Une erreur est survenue lors de la suppression du compte.",
       "reauth_required": "Session de sécurité expirée. Veuillez vous reconnecter."
     },
@@ -205,7 +205,7 @@
     "tagline": "\"Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier\" (Ps 119:105)",
     "story": {
       "title": "Histoire & Objectif",
-      "p1": "Le projet Agios a été lancé avec la vision de fournir une expérience numérique sophistiquée pour l'étude de la Bible.",
+      "p1": "Le projet Agios a été lancé with la vision de fournir une expérience numérique sophistiquée pour l'étude de la Bible.",
       "p2": "Après le succès de ses débuts, le développement de la plateforme s'est poursuivi pour en faire une référence complète combinant outils d'étude et fonctions techniques modernes."
     },
     "vision": {
@@ -217,7 +217,7 @@
       "priest_name": "Rév. Père Athanasios",
       "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
       "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
-      "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
+      "church": "Merci à notre إglise locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
       "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
       "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
     },
@@ -247,7 +247,7 @@
     },
     "toasts": {
       "copied": "Copié",
-      "copied_precise": "Copié avec précision",
+      "copied_precise": "Copié with précision",
       "highlighted": "Surligné",
       "highlight_removed": "Surlignage supprimé",
       "note_saved": "Note enregistrée",
@@ -290,8 +290,8 @@
     "no_info": "Aucune information supplémentaire disponible pour ce lieu.",
     "read_in_bible": "Lire dans la Bible",
     "era_names": {
-      "0": "Temps d'Abraham",
-      "1": "Exodus & Conquête",
+      "0": "Épouse d'Abraham",
+      "1": "Exode & Conquête",
       "2": "Juges & Royaume Uni",
       "3": "Royaume Divisé & Exil",
       "4": "Post-Exil & Ancien Testament",
@@ -348,7 +348,7 @@
     "share_group": "Partager la section",
     "toast_login_required": "Connectez-vous d'abord",
     "toast_delete_success": "Surlignage supprimé",
-    "toast_save_success": "Enregistré avec succès",
+    "toast_save_success": "Enregistré with succès",
     "toast_fav_exists": "Les versets sélectionnés sont déjà dans les favoris",
     "toast_fav_added": "{count} versets ajoutés aux favoris",
     "toast_analyze_chapter_limit": "L'analyse est disponible uniquement pour les versets du même chapitre",
@@ -406,7 +406,7 @@
     "version": "Agios App - Version 1.2.0",
     "share_title": "Application Agios",
     "share_text": "Téléchargez l'application Agios et lisez la Bible d'une nouvelle façon !",
-    "share_dialog": "Partager l'application avec des amis",
+    "share_dialog": "Partager l'application with des amis",
     "share_not_supported": "Partage non supporté par le navigateur",
     "points_label": "XP"
   },
@@ -491,7 +491,7 @@
     },
     "delete_toast": {
       "confirm_title": "Voulez-vous supprimer ce plan ?",
-      "delete_success": "Supprimé avec succès"
+      "delete_success": "Supprimé with succès"
     },
     "details": {
       "loading": "Chargement du plan...",
@@ -516,7 +516,7 @@
       "duration_limit_hint": "(Maximum 180 jours)",
       "intensity_label": "Combien de chapitres par jour ?",
       "share_label": "Options de partage",
-      "share_check": "Partager ce plan avec d'autres",
+      "share_check": "Partager ce plan with d'autres",
       "author_check": "Afficher mon nom comme auteur",
       "author_preview": "Le plan apparaîtra par : {name}",
       "author_default": "Utilisateur Agios",
@@ -527,7 +527,7 @@
       "error_duration": "Précisez le nombre de jours",
       "error_duration_max": "Maximum 180 jours",
       "error_mood_short": "Description trop courte.",
-      "success_toast": "Plan créé avec succès !",
+      "success_toast": "Plan créé with succès !",
       "ai_error": "L'IA n'a pas pu créer le plan",
       "generic_error": "Erreur lors de la création",
       "durations": {
@@ -594,7 +594,7 @@
       "ai_title": "Intelligence Artificielle (IA)",
       "ai_text": "L'application utilise l'IA pour améliorer l'expérience.",
       "third_party_title": "Accès tiers",
-      "third_party_text": "Nous utilisons des services tiers de confiance.",
+      "third_party_text": "We utilisons des services tiers de confiance.",
       "children_title": "Vie privée des enfants",
       "children_text": "L'application ne s'adresse pas aux moins de 13 ans.",
       "contact_title": "Contact",
@@ -607,7 +607,7 @@
     "title": "Mes favoris",
     "tab_favs": "Favoris",
     "tab_notes": "Notes",
-    "color_categories": "Catégories de couleurs :",
+    "color_categories": "Catغgories de couleurs :",
     "no_title": "Sans titre",
     "modal_title": "Nommer la couleur",
     "modal_placeholder": "Ex: Versets de réconfort, Promesses...",
@@ -632,7 +632,7 @@
   },
   "versions": {
     "title": "Historique des versions",
-    "intro": "Nous sommes en phase de test et d'amélioration continue.",
+    "intro": "We sommes en phase de test et d'amélioration continue.",
     "labels": {
       "features": "Fonctions & Améliorations",
       "fixes": "Corrections"
@@ -646,7 +646,7 @@
           "Accès plus simple à la page Facebook",
           "Expérience de recherche simplifiée pour un usage plus accessible",
           "Amélioration du design des pages Bible et recherche",
-          "Simplification générale de l'interaction avec les versets"
+          "Simplification générale de l'interaction with les versets"
         ],
         "fixes": [
           "Correction du problème d'envoi incorrect de l'image du verset sur iPhone",
@@ -674,7 +674,7 @@
         "title": "Corrections techniques et améliorations",
         "features": [],
         "fixes": [
-          "Correction de l'erreur de direction du témoin inversé dans la page de partage de verset",
+          "Correction de l'erreur de direction du téمون inversé dans la page de partage de verset",
           "Correction de la différence de couleurs des versets favoris entre les pages de recherche et de la Bible",
           "Correction de l'erreur d'enregistrement incorrect de l'image du verset du jour pour les utilisateurs d'iPhone",
           "Correction de l'erreur lors de la sortie de l'application en appuyant deux fois sur le bouton retour"
@@ -686,7 +686,7 @@
         "title": "Mise à jour majeure et support multilingue",
         "features": [
           "Restructuration complète de l'application pour le support multilingue",
-          "Ajout du support pour 3 nouvelles langues (Anglais, Français, Allemand) avec les fonctionnalités principales",
+          "Ajout du support pour 3 nouvelles langues (Anglais, Français, Allemand) with les fonctionnalités principales",
           "Amélioration de l'affichage et du formatage du texte arabe dans la Sainte Bible",
           "Améliorations du design et de la réactivité pour les petits écrans",
           "Amélioration de l'expérience utilisateur et développement de la page d'accueil"
@@ -742,7 +742,7 @@
         "date": "13 mai 2026",
         "title": "Sortie des cartes améliorées",
         "features": [
-          "Expansion de la bibliothèque de cartes avec de nouvelles cartes",
+          "Expansion de la bibliothèque de cartes with de nouvelles cartes",
           "Ajout de la recherche intelligente pour les lieux et monuments historiques",
           "Ajout d'une fonctionnalité pour voir un monument et naviguer vers ses maladies bibliques",
           "Ajout de la section 'Essayer l'IA' sur la page d'accueil pour une meilleure expérience utilisateur"
@@ -831,6 +831,6 @@
   },
   "metadata": {
     "title": "Site Officiel | Agios Bible",
-    "description": "Un site biblique intégré avec recherche avancée et cartes interactives."
+    "description": "Un site biblique intégré with recherche avancée et cartes interactives."
   }
 }
