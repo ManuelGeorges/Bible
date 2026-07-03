@@ -221,9 +221,7 @@
       "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
       "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
     },
-    "footer": {
-      "date": "© 2026 Agios System - Tous droits réservés"
-    }
+    "footer": "© 2026 Agios System - Tous droits réservés"
   },
   "audio": {
     "artist_default": "Sainte Bible",

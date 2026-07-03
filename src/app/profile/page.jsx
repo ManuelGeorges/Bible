@@ -30,7 +30,7 @@ const ProfilePage = () => {
   });
   const router = useRouter();
 
-  const { strings, dir } = useLanguage();
+  const { strings, dir, language } = useLanguage();
 
   const fetchLocalProfile = useCallback(async () => {
     const localStats = await StorageService.getLocalStats();
@@ -40,7 +40,7 @@ const ProfilePage = () => {
       verses: Object.keys(localFavs).length,
       chapters: 0,
       plans: 0,
-      joinDate: String(strings.profile.guest_date || 'Guest'),
+      joinDate: strings?.profile?.guest_date || 'Guest',
       points: localStats.points || 0
     });
     setLoading(false);
@@ -61,8 +61,11 @@ const ProfilePage = () => {
           const staticPlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
           const customPlansCount = data.customPlans ? Object.keys(data.customPlans).length : 0;
 
+          // توحيد التنسيق الزمني بناءً على اللغة المختارة
+          const locale = language === 'ar' ? 'ar-EG' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : 'en-US';
+
           const registrationDate = currentUser.metadata.creationTime
-            ? new Date(currentUser.metadata.creationTime).toLocaleDateString('ar-EG', {
+            ? new Date(currentUser.metadata.creationTime).toLocaleDateString(locale, {
                 year: 'numeric',
                 month: 'long',
                 timeZone: 'Africa/Cairo'
@@ -86,7 +89,7 @@ const ProfilePage = () => {
       console.error("Profile Fetch Error:", e);
       setLoading(false);
     }
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -110,10 +113,10 @@ const ProfilePage = () => {
 
   const handleShareApp = async () => {
     const shareData = {
-      title: strings.profile.share_title,
-      text: strings.profile.share_text,
+      title: strings?.profile?.share_title || 'Agios Bible',
+      text: strings?.profile?.share_text || '',
       url: 'https://play.google.com/store/apps/details?id=com.agios.bible', 
-      dialogTitle: strings.profile.share_dialog,
+      dialogTitle: strings?.profile?.share_dialog || 'Share',
     };
 
     if (Capacitor.isNativePlatform()) {
@@ -122,7 +125,7 @@ const ProfilePage = () => {
       if (navigator.share) {
         navigator.share(shareData);
       } else {
-        alert(strings.profile.share_not_supported);
+        alert(strings?.profile?.share_not_supported || 'Not supported');
       }
     }
   };
@@ -138,7 +141,7 @@ const ProfilePage = () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    const confirmed = window.confirm(strings.profile.delete_confirm);
+    const confirmed = window.confirm(strings?.profile?.delete_confirm || 'Are you sure?');
     if (confirmed) {
       try {
         const userId = currentUser.uid;
@@ -146,16 +149,16 @@ const ProfilePage = () => {
         await deleteDoc(doc(db, 'users', userId));
         router.push('/');
       } catch (error) {
-        alert("An error occurred");
+        alert("An error occurred. Please re-authenticate and try again.");
       }
     }
   };
 
-  if (loading) return <div className={styles.loading}>{strings.common.loading}</div>;
+  if (loading) return <div className={styles.loading}>{strings?.common?.loading}</div>;
 
-  // تحويل التاريخ لنص صريح لمنع React Error #31
-  const memberSinceText = (strings.profile.member_since || "Member since: {date}")
-    .replace('{date}', String(userStats.joinDate || ''));
+  // إصلاح وقائي لخطأ الـ date المكتشف في اللغة الفرنسية
+  const memberSinceTemplate = String(strings?.profile?.member_since || "Member since: {date}");
+  const memberSinceText = memberSinceTemplate.replace('{date}', String(userStats.joinDate || ''));
 
   return (
     <div className={styles.container} dir={dir}>
@@ -166,7 +169,7 @@ const ProfilePage = () => {
           </div>
         </div>
         <h1 className={styles.userName}>
-          {isGuest ? strings.profile.guest_user : (userData?.displayName || user?.displayName || strings.profile.friend_agios)}
+          {isGuest ? strings?.profile?.guest_user : (userData?.displayName || user?.displayName || strings?.profile?.friend_agios)}
         </h1>
         {!isGuest && (
           <>
@@ -180,53 +183,53 @@ const ProfilePage = () => {
         <div className={styles.statBox} onClick={() => router.push('/favourites')}>
           <Heart className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.verses}</span>
-          <span className={styles.statLabel}>{strings.profile.fav_verses}</span>
+          <span className={styles.statLabel}>{strings?.profile?.fav_verses}</span>
         </div>
         <div className={styles.statBox}>
           <Trophy className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.points}</span>
-          <span className={styles.statLabel}>{strings.profile.points_label || 'XP'}</span>
+          <span className={styles.statLabel}>{strings?.profile?.points_label || 'XP'}</span>
         </div>
         <div className={styles.statBox} onClick={() => router.push('/studyPlans')}>
           <Activity className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.plans}</span>
-          <span className={styles.statLabel}>{strings.profile.active_plans_count}</span>
+          <span className={styles.statLabel}>{strings?.profile?.active_plans_count}</span>
         </div>
       </div>
 
       <div className={styles.menuSection}>
         {!isGuest && (
           <>
-            <h3 className={styles.menuTitle}>{strings.profile.account_section}</h3>
+            <h3 className={styles.menuTitle}>{strings?.profile?.account_section}</h3>
             <button className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogout}>
               <div className={styles.menuItemRight}>
                 <LogOut size={20} />
-                <span>{strings.profile.logout}</span>
+                <span>{strings?.profile?.logout}</span>
               </div>
             </button>
           </>
         )}
 
-        <h3 className={styles.menuTitle}>{strings.profile.general_options}</h3>
+        <h3 className={styles.menuTitle}>{strings?.profile?.general_options}</h3>
 
         <button className={styles.menuItem} onClick={() => router.push('/settings')}>
           <div className={styles.menuItemRight}>
             <SettingsIcon size={20} />
-            <span>{strings.profile.app_settings}</span>
+            <span>{strings?.profile?.app_settings}</span>
           </div>
         </button>
 
         <button className={styles.menuItem} onClick={() => router.push('/points')}>
           <div className={styles.menuItemRight}>
             <Trophy size={20} />
-            <span>{strings.profile.points_badges}</span>
+            <span>{strings?.profile?.points_badges}</span>
           </div>
         </button>
 
         <button className={styles.menuItem} onClick={handleShareApp}>
           <div className={styles.menuItemRight}>
             <Share2 size={20} />
-            <span>{strings.profile.invite_friend}</span>
+            <span>{strings?.profile?.invite_friend}</span>
           </div>
         </button>
 
@@ -234,7 +237,7 @@ const ProfilePage = () => {
           <button className={`${styles.menuItem} ${styles.deleteAccount}`} onClick={handleDeleteAccount}>
             <div className={styles.menuItemRight}>
               <Trash2 size={20} />
-              <span>{strings.profile.delete_account}</span>
+              <span>{strings?.profile?.delete_account}</span>
             </div>
           </button>
         )}
