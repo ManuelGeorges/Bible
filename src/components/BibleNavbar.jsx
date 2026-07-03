@@ -25,6 +25,14 @@ export default function BibleNavbar() {
         return () => unsubscribe();
     }, []);
 
+    // دالة وقائية للتأكد من أن النص ليس كائناً (Object) لمنع React Error #31
+    const safeText = (text) => {
+        if (typeof text === 'object' && text !== null) {
+            return "";
+        }
+        return text || "";
+    };
+
     return (
         <>
             <div className={styles.navbarWrapper}>
@@ -33,7 +41,7 @@ export default function BibleNavbar() {
                         href="/"
                         prefetch={false}
                         className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}
-                        aria-label={strings.components.bible_nav.home}
+                        aria-label={safeText(strings?.components?.bible_nav?.home)}
                     >
                         <Home size={24} />
                     </Link>
@@ -42,7 +50,7 @@ export default function BibleNavbar() {
                         href="/bible"
                         prefetch={false}
                         className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`}
-                        aria-label={strings.components.bible_nav.read}
+                        aria-label={safeText(strings?.components?.bible_nav?.read)}
                     >
                         <BookOpenText size={24} />
                     </Link>
@@ -51,11 +59,11 @@ export default function BibleNavbar() {
                         href="/maps" 
                         prefetch={false}
                         className={`${styles.navLink} ${pathname.startsWith('/maps') ? styles.active : ''}`}
-                        aria-label={strings.components.bible_nav.maps}
+                        aria-label={safeText(strings?.components?.bible_nav?.maps)}
                         onClick={(e) => {
                             if (!navigator.onLine) {
                                 e.preventDefault();
-                                toast.error(strings.maps.error_offline);
+                                toast.error(safeText(strings?.maps?.error_offline));
                             }
                         }}
                     >
@@ -66,7 +74,7 @@ export default function BibleNavbar() {
                         href="/search"
                         prefetch={false}
                         className={`${styles.navLink} ${pathname.startsWith('/search') ? styles.active : ''}`}
-                        aria-label={strings.components.bible_nav.search}
+                        aria-label={safeText(strings?.components?.bible_nav?.search)}
                     >
                         <Search size={24} />
                     </Link>
@@ -75,7 +83,7 @@ export default function BibleNavbar() {
                         className={styles.navLink}
                         onClick={() => setIsSidebarOpen(true)}
                         style={{ cursor: 'pointer' }}
-                        aria-label={strings.components.bible_nav.more}
+                        aria-label={safeText(strings?.components?.bible_nav?.more)}
                     >
                         <Menu size={24} />
                     </div>

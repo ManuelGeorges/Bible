@@ -40,12 +40,12 @@ const ProfilePage = () => {
       verses: Object.keys(localFavs).length,
       chapters: 0,
       plans: 0,
-      joinDate: strings.profile.guest_date,
+      joinDate: String(strings.profile.guest_date || 'Guest'),
       points: localStats.points || 0
     });
     setLoading(false);
     setIsGuest(true);
-  }, []);
+  }, [strings]);
 
   const fetchProfileData = useCallback(async (currentUser) => {
     try {
@@ -73,7 +73,7 @@ const ProfilePage = () => {
             verses: versesCount,
             chapters: completedChaptersCount,
             plans: staticPlansCount + customPlansCount,
-            joinDate: registrationDate,
+            joinDate: String(registrationDate),
             points: data.totalPoints || 0
           });
         }
@@ -153,6 +153,10 @@ const ProfilePage = () => {
 
   if (loading) return <div className={styles.loading}>{strings.common.loading}</div>;
 
+  // تحويل التاريخ لنص صريح لمنع React Error #31
+  const memberSinceText = (strings.profile.member_since || "Member since: {date}")
+    .replace('{date}', String(userStats.joinDate || ''));
+
   return (
     <div className={styles.container} dir={dir}>
       <div className={styles.profileHeader}>
@@ -167,7 +171,7 @@ const ProfilePage = () => {
         {!isGuest && (
           <>
             <p className={styles.userEmail}><Mail size={14} /> {user?.email}</p>
-            <p className={styles.joinDate}><Calendar size={14} /> {strings.profile.member_since.replace('{date}', userStats.joinDate)}</p>
+            <p className={styles.joinDate}><Calendar size={14} /> {memberSinceText}</p>
           </>
         )}
       </div>
@@ -181,7 +185,7 @@ const ProfilePage = () => {
         <div className={styles.statBox}>
           <Trophy className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.points}</span>
-          <span className={styles.statLabel}>{strings.profile.points_label}</span>
+          <span className={styles.statLabel}>{strings.profile.points_label || 'XP'}</span>
         </div>
         <div className={styles.statBox} onClick={() => router.push('/studyPlans')}>
           <Activity className={styles.statIcon} size={20} />
@@ -204,7 +208,7 @@ const ProfilePage = () => {
         )}
 
         <h3 className={styles.menuTitle}>{strings.profile.general_options}</h3>
-        
+
         <button className={styles.menuItem} onClick={() => router.push('/settings')}>
           <div className={styles.menuItemRight}>
             <SettingsIcon size={20} />

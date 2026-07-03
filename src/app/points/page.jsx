@@ -84,13 +84,22 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
   const historyArray = Array.isArray(historyData) ? historyData : Object.values(historyData);
 
   historyArray.forEach(item => {
-    const ts = item.timestamp?.seconds ? item.timestamp.toDate() : new Date(item.timestamp);
+    // التحقق من صحة الطابع الزمني وتجنب الكائنات غير الصالحة
+    let ts;
+    if (item.timestamp?.seconds) {
+      ts = item.timestamp.toDate();
+    } else if (item.timestamp) {
+      ts = new Date(item.timestamp);
+    } else {
+      ts = new Date();
+    }
+
     history.push({
-      activity: item.type || 'unknown',
-      points: item.points || POINTS_MAP[item.type] || 0,
-      description: item.reason || 'نشاط غير محدد',
+      activity: String(item.type || 'unknown'),
+      points: Number(item.points || POINTS_MAP[item.type] || 0),
+      description: String(item.reason || 'نشاط غير محدد'),
       timestamp: ts,
-      dateStr: getCairoDate(ts)
+      dateStr: String(getCairoDate(ts))
     });
   });
 
@@ -107,22 +116,22 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
           points: q.correct ? 20 : 0,
           description: q.correct ? `إجابة صحيحة على سؤال يوم ${dateKey}` : `محاولة الإجابة على سؤال يوم ${dateKey}`,
           timestamp: qDateObj,
-          dateStr: qDateStr
+          dateStr: String(qDateStr)
         });
       }
     }
   });
 
-  const lastActiveDate = data.lastActiveDate || data.lastActive || "";
+  const lastActiveDate = String(data.lastActiveDate || data.lastActive || "");
 
   const S = stringsParam || {};
   const dailyGoals = [
-    { id: 'dailyLogin', label: S.points?.goals?.dailyLogin || 'Daily login', points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
-    { id: 'dailyQuestion', label: S.points?.goals?.dailyQuestion || 'Daily question', points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
-    { id: 'mapExploration', label: S.points?.goals?.mapExploration || 'Explore map', points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
-    { id: 'share', label: S.points?.goals?.share || 'Share', points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
-    { id: 'completedChapter', label: S.points?.goals?.completedChapter || 'Complete chapter', points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
-    { id: 'favouriteVerse', label: S.points?.goals?.favouriteVerse || 'Favourite verse', points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
+    { id: 'dailyLogin', label: String(S.points?.goals?.dailyLogin || 'Daily login'), points: 10, icon: <FaSignInAlt />, completed: lastActiveDate === today || history.some(h => h.activity === 'dailyLogin' && h.dateStr === today) },
+    { id: 'dailyQuestion', label: String(S.points?.goals?.dailyQuestion || 'Daily question'), points: 20, icon: <FaFeatherAlt />, completed: !!answeredQuestions[today]?.answered },
+    { id: 'mapExploration', label: String(S.points?.goals?.mapExploration || 'Explore map'), points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
+    { id: 'share', label: String(S.points?.goals?.share || 'Share'), points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
+    { id: 'completedChapter', label: String(S.points?.goals?.completedChapter || 'Complete chapter'), points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
+    { id: 'favouriteVerse', label: String(S.points?.goals?.favouriteVerse || 'Favourite verse'), points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
   ];
 
   return { 
@@ -160,7 +169,7 @@ const categorizeActivities = (history) => {
     d.setDate(d.getDate() - (6 - i));
     const dateKey = getCairoDate(d);
     const label = d.toLocaleDateString('ar-EG', { weekday: 'short', timeZone: 'Africa/Cairo' });
-    return { date: dateKey, points: 0, label };
+    return { date: String(dateKey), points: 0, label: String(label) };
   });
 
   history.forEach(item => {
@@ -200,20 +209,6 @@ export default function Points() {
   const [familyFilter, setFamilyFilter] = useState('all');
   const [unlockedOnly, setUnlockedOnly] = useState(false);
   const [user, setUser] = useState(null);
-
-  const [isRarityOpen, setIsRarityOpen] = useState(false);
-  const [isFamilyOpen, setIsFamilyOpen] = useState(false);
-  const rarityRef = useRef(null);
-  const familyRef = useRef(null);
-
-  const rarities = [
-    { id: 'all', name: strings.points.rarity.all },
-    { id: 'عادي', name: strings.points.rarity.common },
-    { id: 'مميز', name: strings.points.rarity.uncommon },
-    { id: 'نادر', name: strings.points.rarity.rare },
-    { id: 'أسطوري', name: strings.points.rarity.epic },
-    { id: 'خرافي', name: strings.points.rarity.mythic }
-  ];
 
   const handleGoalClick = (goalId) => {
     switch (goalId) {
@@ -277,7 +272,6 @@ export default function Points() {
     });
   }, [strings]);
 
-  const activitiesSummary = useMemo(() => pointsData ? categorizeActivities(pointsData.history) : null, [pointsData]);
   const userUnlockedBadges = useMemo(() => pointsData?.unlockedFromFirestore || [], [pointsData]);
 
   const filteredBadges = useMemo(() => {
@@ -319,7 +313,7 @@ export default function Points() {
         return { ...badge, progress };
       }).filter(badge => {
         const isUnlocked = userUnlockedBadges.includes(badge.id);
-        const matchesSearch = badge.name.includes(searchTerm);
+        const matchesSearch = String(badge.name).includes(searchTerm);
         const matchesRarity = rarityFilter === 'all' || badge.rarity === rarityFilter;
         const matchesUnlocked = !unlockedOnly || isUnlocked;
         if (badge.rarity === "سري" && !isUnlocked && !searchTerm) return false;
@@ -340,17 +334,17 @@ export default function Points() {
 
   return (
     <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
-      <h1 className={styles.header}>{strings.points.title}</h1>
+      <h1 className={styles.header}>{String(strings.points.title)}</h1>
 
       <nav className={styles.topNav}>
         <button className={`${styles.navBtn} ${activeTab === 'points' ? styles.active : ''}`} onClick={() => setActiveTab('points')}>
-          <FaChartLine /> <span>{strings.points.tab_points}</span>
+          <FaChartLine /> <span>{String(strings.points.tab_points)}</span>
         </button>
         <button className={`${styles.navBtn} ${activeTab === 'badges' ? styles.active : ''}`} onClick={() => setActiveTab('badges')}>
-          <FaTrophy /> <span>{strings.points.tab_badges}</span>
+          <FaTrophy /> <span>{String(strings.points.tab_badges)}</span>
         </button>
         <button className={`${styles.navBtn} ${activeTab === 'history' ? styles.active : ''}`} onClick={() => setActiveTab('history')}>
-          <FaHistory /> <span>{strings.points.tab_history}</span>
+          <FaHistory /> <span>{String(strings.points.tab_history)}</span>
         </button>
       </nav>
 
@@ -360,30 +354,30 @@ export default function Points() {
             <div className={styles.levelContainer}>
               <div className={styles.levelBadge}>
                   <FaStar className={styles.levelStar} />
-                  <span>{strings.points.level.replace('{level}', formatNumber(pointsData?.levelInfo.level || 1))}</span>
+                  <span>{String(strings.points.level || 'Level').replace('{level}', formatNumber(pointsData?.levelInfo.level || 1))}</span>
               </div>
               <div className={styles.levelBarOuter}>
                   <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
               </div>
-              <p className={styles.nextLevelText}>{strings.points.next_level.replace('{points}', formatNumber(pointsData?.levelInfo.nextXP || 0))}</p>
+              <p className={styles.nextLevelText}>{String(strings.points.next_level || 'Next level in {points} XP').replace('{points}', formatNumber(pointsData?.levelInfo.nextXP || 0))}</p>
             </div>
             <div className={styles.pointsTotal}>
               <span className={styles.pointsNumber}>{formatNumber(pointsData?.totalPoints || 0)}</span>
-              <span className={styles.pointsLabel}>{strings.points.total_points_label}</span>
+              <span className={styles.pointsLabel}>{String(strings.points.total_points_label)}</span>
             </div>
             <div className={styles.streakBadge}>
               <FaFire className={styles.fireIcon} />
-              <span>{strings.points.streak_label.replace('{streak}', formatNumber(pointsData?.streak || 0))}</span>
+              <span>{String(strings.points.streak_label || '{streak} Days').replace('{streak}', formatNumber(pointsData?.streak || 0))}</span>
             </div>
             <div className={styles.dailyGoalsSection}>
-              <h3 className={styles.subTitle}>{strings.points.daily_goals_title}</h3>
+              <h3 className={styles.subTitle}>{String(strings.points.daily_goals_title)}</h3>
               <div className={styles.goalsGrid}>
                   {pointsData?.dailyGoals.map(goal => (
                       <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`} onClick={() => handleGoalClick(goal.id)}>
                           <div className={goal.icon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
                           <div className={styles.goalInfo}>
-                              <span>{goal.label}</span>
-                              <small>+{formatNumber(goal.points)} {strings.points.points_unit || 'Points'}</small>
+                              <span>{String(goal.label)}</span>
+                              <small>+{formatNumber(goal.points)} {String(strings.points.points_unit || 'Points')}</small>
                           </div>
                       </div>
                   ))}
@@ -398,7 +392,7 @@ export default function Points() {
           <div className={styles.badgesGrid}>
             {filteredBadges.map((family) => (
               <div key={family.family_name} className={styles.familyRow}>
-                <h3 className={styles.familyTitleSmall}>{family.family_name}</h3>
+                <h3 className={styles.familyTitleSmall}>{String(family.family_name)}</h3>
                 <div className={styles.badgesListHorizontal}>
                   {family.badges.map((badge) => (
                     <div key={badge.id} className={styles.badgeWrapper}>
@@ -424,12 +418,12 @@ export default function Points() {
             {pointsData?.history.length > 0 ? pointsData.history.map((item, i) => (
               <li key={i} className={styles.activityItem}>
                 <div className={styles.activityInfo}>
-                  <p>{item.description}</p>
+                  <p>{String(item.description)}</p>
                   <span>{new Date(item.timestamp).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</span>
                 </div>
                 <span className={styles.activityPoints}>+{formatNumber(item.points)}</span>
               </li>
-            )) : <p>{strings.points.no_history}</p>}
+            )) : <p>{String(strings.points.no_history)}</p>}
           </ul>
         </section>
       )}
