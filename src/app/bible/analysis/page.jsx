@@ -78,6 +78,24 @@ function AnalysisContent() {
   const hasFetched = useRef(false);
   const sectionRefs = useRef({});
 
+  // استخراج العناوين في useEffect لتجنب Infinite Loop (React Error #301)
+  useEffect(() => {
+    if (!analysis) {
+      setSectionAnchors([]);
+      return;
+    }
+    const lines = analysis.split('\n');
+    const anchors = [];
+    lines.forEach((line, i) => {
+      let cleanLine = line.replace(/[#*]/g, '').trim();
+      const headerMatch = cleanLine.match(/^([123456١٢٣٤٥٦]\.\s*[^:]{1,25}(?::|$))(.*)/);
+      if (headerMatch) {
+        anchors.push(`section-${i}`);
+      }
+    });
+    setSectionAnchors(anchors);
+  }, [analysis]);
+
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
@@ -142,7 +160,7 @@ function AnalysisContent() {
       ? `${book}\n${chapter}\n${verses}`
       : `${book}\n${chapter}`;
 
-        const prompts = {
+    const prompts = {
       ar: `أنت "مساعد آجيوس الذكي". مهمتك: تفسير النص المرفق لاهوتياً ولغوياً بدقة، مع التركيز حصراً على النص المطلوب وتجنب الاستطراد.
 
     # نص البحث:
@@ -183,8 +201,7 @@ function AnalysisContent() {
     - Start the section content on a new line after the title.
     - Do not use Markdown.
     - Keep focus strictly on the passage.
-    - At the end of the Application section add: "Always consult your confessor."`
-      ,
+    - At the end of the Application section add: "Always consult your confessor."`,
 
       fr: `Vous êtes le "Assistant Agios". Votre tâche : fournir une analyse théologique et linguistique du texte fourni, en vous concentrant uniquement sur le passage demandé et en évitant les digressions.
 
@@ -205,8 +222,7 @@ function AnalysisContent() {
     - Commencez le contenu de la section sur une nouvelle ligne après le titre.
     - N'utilisez pas Markdown.
     - Concentrez-vous strictement sur le passage.
-    - À la fin de la section Application, ajoutez : "Consultez toujours والدك الاعتراف."`
-      ,
+    - À la fin de la section Application, ajoutez : "Consultez toujours والدك الاعتراف."`,
 
       de: `Sie sind der "Agios-Assistent". Ihre Aufgabe: Liefern Sie eine theologische und linguistische Analyse des bereitgestellten Textes, die sich genau auf die angeforderte Passage konzentriert und Abschweifungen vermeidet.
 
@@ -228,14 +244,14 @@ function AnalysisContent() {
     - Verwenden Sie kein Markdown.
     - Konzentrieren Sie sich strikt auf die Passage.
     - Am Ende des Anwendungsabschnitts fügen Sie hinzu: "Konsultieren Sie stets Ihren Beichtvater."`
-        };
+    };
 
-        const prompt = prompts[language] || prompts.en;
+    const prompt = prompts[language] || prompts.en;
 
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({
-        model: "gemini-3.1-flash-lite" ,
+        model: "gemini-1.5-flash",
         generationConfig: {
           maxOutputTokens: 2048,
         }
@@ -376,10 +392,9 @@ function AnalysisContent() {
     }
   };
 
-  const parseAndRender = (text) => {
+  const renderAnalysis = (text) => {
     if (!text) return null;
 
-    const anchors = [];
     const renderParagraph = (content, key, originalRaw) => {
       const parts = content.split(/(\*\*.*?\*\*)/g);
       const formattedLine = parts.map((part, pIdx) => {
@@ -417,18 +432,16 @@ function AnalysisContent() {
       );
     };
 
-    const rendered = text.split('\n').map((line, i) => {
+    return text.split('\n').map((line, i) => {
       let cleanLine = line.replace(/[#*]/g, '').trim();
       if (!cleanLine) return <div key={i} className={styles.spacer} />;
 
-      // تعديل: دعم الأرقام العربية والإنجليزية في العناوين
       const headerMatch = cleanLine.match(/^([123456١٢٣٤٥٦]\.\s*[^:]{1,25}(?::|$))(.*)/);
 
       if (headerMatch) {
         const headerPart = headerMatch[1].trim();
         const contentPart = headerMatch[2].trim();
         const anchorId = `section-${i}`;
-        anchors.push(anchorId);
 
         if (contentPart) {
           return (
@@ -443,9 +456,6 @@ function AnalysisContent() {
 
       return renderParagraph(line, i, cleanLine);
     });
-
-    setSectionAnchors(anchors);
-    return rendered;
   };
 
   const displayTitle = verses
@@ -528,7 +538,7 @@ function AnalysisContent() {
         ) : (
           <div className={styles.analysisContainer}>
             <div className={styles.analysisText}>
-              {parseAndRender(analysis)}
+              {renderAnalysis(analysis)}
             </div>
             {isLoading && (
                <div className={styles.streamingIndicator}>
