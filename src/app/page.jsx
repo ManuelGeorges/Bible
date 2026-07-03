@@ -827,9 +827,9 @@ const LandingPage = () => {
                                 {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                             </button>
                         )}
-                        <Link href={"/points"} className={styles.iconCircle}><Award size={20} /></Link>
-                        <Link href={"/profile"} className={styles.iconCircle}><User size={20} /></Link>
-                        <Link href="/settings" className={styles.iconCircle}><Settings size={20} /></Link>
+                        <Link href={"/points"} prefetch={false} className={styles.iconCircle}><Award size={20} /></Link>
+                        <Link href={"/profile"} prefetch={false} className={styles.iconCircle}><User size={20} /></Link>
+                        <Link href="/settings" prefetch={false} className={styles.iconCircle}><Settings size={20} /></Link>
                         <a href="https://www.facebook.com/AgiosSystem/" target="_blank" rel="noreferrer" className={styles.iconCircle} aria-label="Facebook Page" onClick={handleFacebookOpen}>
                             <ExternalLink size={20} />
                         </a>
@@ -837,7 +837,7 @@ const LandingPage = () => {
                 </div>
 
                 <div className={styles.statsRow}>
-                    <Link href={"/points"} className={styles.statPill}>
+                    <Link href={"/points"} prefetch={false} className={styles.statPill}>
                         <Award size={16} />
                         <span>{formatNumber(userStats.points)} XP</span>
                     </Link>
@@ -908,7 +908,7 @@ const LandingPage = () => {
 
             <section className={styles.quickGrid}>
                 {quickLinks.map((link, i) => (
-                    <Link href={link.path} key={i} className={styles.hubCard}>
+                    <Link href={link.path} prefetch={false} key={i} className={styles.hubCard}>
                         <div className={styles.hubIcon} style={{ color: link.color, backgroundColor: `${link.color}15` }}>{link.icon}</div>
                         <div className={styles.hubName}>{link.name}</div>
                     </Link>
@@ -923,7 +923,7 @@ const LandingPage = () => {
                 <section className={styles.dailyGoalsSummary}>
                     <div className={styles.goalsHeader}>
                         <div className={styles.goalsTitle}><Award size={18} color="#f59e0b" /><span>{strings.home.daily_goals}</span></div>
-                        <Link href="/points" className={styles.viewMoreLink}>{strings.common.details} <ArrowUpRight size={14} /></Link>
+                        <Link href="/points" prefetch={false} className={styles.viewMoreLink}>{strings.common.details} <ArrowUpRight size={14} /></Link>
                     </div>
                     <div className={styles.goalsProgressWrapper}>
                         <div className={styles.goalsProgressText}>
@@ -956,7 +956,7 @@ const LandingPage = () => {
                             <Trophy size={20} color="#f59e0b" />
                             <h2 className={styles.sectionTitleMini}>{strings.home.badges_section}</h2>
                         </div>
-                        <Link href="/points" className={strings.home.badges_all}><ArrowUpRight size={14} /></Link>
+                        <Link href="/points" prefetch={false} className={strings.home.badges_all}><ArrowUpRight size={14} /></Link>
                     </div>
 
                     <div className={styles.badgesDashboard}>
@@ -1110,7 +1110,7 @@ const LandingPage = () => {
             <section className={styles.aiFeaturesSection}>
                 <h2 className={styles.sectionTitle}>{strings.home.ai_features_title}</h2>
                 <div className={styles.aiFeaturesGrid}>
-                    <Link href="/search?type=derivatives" className={styles.aiFeatureCard}>
+                    <Link href="/search?type=derivatives" prefetch={false} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                             <Search size={24} />
                         </div>
@@ -1120,7 +1120,7 @@ const LandingPage = () => {
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
-                    <Link href="/search?type=semantic" className={styles.aiFeatureCard}>
+                    <Link href="/search?type=semantic" prefetch={false} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
                             <Sparkles size={24} />
                         </div>
@@ -1130,7 +1130,7 @@ const LandingPage = () => {
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
-                    <Link href="/studyPlans/custom" className={styles.aiFeatureCard}>
+                    <Link href="/studyPlans/custom" prefetch={false} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
                             <Wand2 size={24} />
                         </div>
@@ -1140,7 +1140,7 @@ const LandingPage = () => {
                         </div>
                         <ArrowRight size={18} className={styles.aiArrow} />
                     </Link>
-                    <Link href="/bible" className={styles.aiFeatureCard}>
+                    <Link href="/bible" prefetch={false} className={styles.aiFeatureCard}>
                         <div className={styles.aiFeatureIcon} style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
                             <BrainCircuit size={24} />
                         </div>

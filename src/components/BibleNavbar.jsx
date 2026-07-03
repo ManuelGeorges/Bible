@@ -29,16 +29,27 @@ export default function BibleNavbar() {
         <>
             <div className={styles.navbarWrapper}>
                 <nav className={styles.navbar}>
-                    <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`} aria-label={strings.components.bible_nav.home}>
+                    <Link
+                        href="/"
+                        prefetch={false}
+                        className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}
+                        aria-label={strings.components.bible_nav.home}
+                    >
                         <Home size={24} />
                     </Link>
 
-                    <Link href="/bible" className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`} aria-label={strings.components.bible_nav.read}>
+                    <Link
+                        href="/bible"
+                        prefetch={false}
+                        className={`${styles.navLink} ${pathname.startsWith('/bible') ? styles.active : ''}`}
+                        aria-label={strings.components.bible_nav.read}
+                    >
                         <BookOpenText size={24} />
                     </Link>
 
                     <Link 
                         href="/maps" 
+                        prefetch={false}
                         className={`${styles.navLink} ${pathname.startsWith('/maps') ? styles.active : ''}`}
                         aria-label={strings.components.bible_nav.maps}
                         onClick={(e) => {
@@ -51,7 +62,12 @@ export default function BibleNavbar() {
                         <MapIcon size={24} />
                     </Link>
 
-                    <Link href="/search" className={`${styles.navLink} ${pathname.startsWith('/search') ? styles.active : ''}`} aria-label={strings.components.bible_nav.search}>
+                    <Link
+                        href="/search"
+                        prefetch={false}
+                        className={`${styles.navLink} ${pathname.startsWith('/search') ? styles.active : ''}`}
+                        aria-label={strings.components.bible_nav.search}
+                    >
                         <Search size={24} />
                     </Link>
 
