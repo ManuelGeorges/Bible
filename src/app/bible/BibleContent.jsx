@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import styles from './Bible.module.css';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAuth } from "firebase/auth";
@@ -8,7 +8,7 @@ import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestor
 import { db } from '../../lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { Share2, Copy, Check, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, ChevronDown, Settings } from 'lucide-react';
+import { Share2, Copy, MessageSquare, Volume2, Loader2, CircleCheck, Sparkles, Image as ImageIcon, ChevronDown, Settings, Check } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { useBadge } from '../context/BadgeContext';
@@ -16,11 +16,8 @@ import { useAudio } from '../context/AudioContext';
 import { useLanguage } from '../context/LanguageContext';
 import studyPlansData from '../studyPlans/studyPlansData.json';
 import { getCairoIsoString } from '../../lib/dateUtils';
-
-// Local-first imports
 import { StorageService, KEYS } from '../../lib/storage';
 
-const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 const allPlans = studyPlansData.plans;
 
@@ -40,16 +37,42 @@ const fontOptionsMap = {
 };
 
 const variants = {
-  enter: (direction) => ({
-    x: direction > 0 ? 30 : direction < 0 ? -30 : 0,
-    opacity: 0,
-  }),
+  enter: (direction) => ({ x: direction > 0 ? 30 : -30, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (direction) => ({
-    x: direction < 0 ? 30 : direction > 0 ? -30 : 0,
-    opacity: 0,
-  }),
+  exit: (direction) => ({ x: direction < 0 ? 30 : -30, opacity: 0 }),
 };
+
+// --- مكون الآية فائق الأداء (يحدث فقط عند القراءة أو الاختيار) ---
+const VerseItem = memo(({
+  v, i, isReading, isSelected, annotation, versePerLine, formatNumber,
+  onTouchStart, onTouchMove, onTouchEnd, onClick, onNoteClick
+}) => {
+  const vNum = i + 1;
+  return (
+    <span
+      id={`verse-${vNum}`}
+      className={`${styles.inlineVerse} ${isSelected ? styles.selectedVerse : ''} ${isReading ? styles.readingHighlight : ''}`}
+      onTouchStart={(e) => onTouchStart(e, v, i)}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onContextMenu={(e) => e.preventDefault()}
+      onClick={() => onClick(v, i)}
+      style={{
+        backgroundColor: isReading ? '#ffd54f' : (annotation?.color ? `${annotation.color}66` : 'transparent'),
+        display: versePerLine ? 'block' : 'inline',
+        marginBottom: versePerLine ? '15px' : '0',
+        padding: '2px 4px', borderRadius: '4px', position: 'relative'
+      }}
+    >
+      <span className={styles.styledVerseNumber}>{formatNumber(vNum)}</span>
+      <span className={styles.verseText}>{v} </span>
+      {annotation?.note && (
+        <span className={styles.miniNoteIndicator} onClick={(e) => onNoteClick(e, i)}> 📝 </span>
+      )}
+    </span>
+  );
+});
+VerseItem.displayName = 'VerseItem';
 
 export default function BibleContent() {
   const searchParams = useSearchParams();
@@ -63,36 +86,38 @@ export default function BibleContent() {
     isAutoNext, fetchAudioData: contextFetchAudio, isAudioLoading: contextAudioLoading
   } = useAudio();
 
+  // --- Refs ---
+  const bibleDataRef = useRef(null);
+  const lastAudioSyncRef = useRef("");
+  const longPressTimer = useRef(null);
+  const isMoving = useRef(false);
+  const isLongPressActive = useRef(false);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+
+  // --- State ---
   const [user, setUser] = useState(null);
-  const [bibleData, setBibleData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentVerses, setCurrentVerses] = useState([]);
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
   const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [copiedMessage, setCopiedMessage] = useState('');
-  const [activeMenu, setActiveMenu] = useState(null);
   const [versePerLine, setVersePerLine] = useState(false);
-
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState('');
   const [targetVerseKey, setTargetVerseKey] = useState(null);
 
-  const longPressTimer = useRef(null);
-  const isMoving = useRef(false);
-  const isLongPressActive = useRef(false);
-  const touchStartPos = useRef({ x: 0, y: 0 });
-  const lastAudioSyncRef = useRef("");
-
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
-  const unlockBadge = async (badgeId) => {
-    if (user) {
+  // --- Badges Logic ---
+  const unlockBadge = useCallback(async (badgeId) => {
+    const authUser = getAuth().currentUser;
+    if (authUser) {
       try {
-        const userRef = doc(firestore, 'users', user.uid);
+        const userRef = doc(firestore, 'users', authUser.uid);
         const userSnap = await getDoc(userRef);
         const currentBadges = userSnap.data()?.badges || [];
         if (!currentBadges.includes(badgeId)) {
@@ -108,104 +133,184 @@ export default function BibleContent() {
         triggerBadgeUnlock(badgeId);
       }
     }
-  };
+  }, [triggerBadgeUnlock]);
 
   const saveLastRead = useCallback(async (bookIdx, chapIdx) => {
     if (!bookNamesData[bookIdx]) return;
-
     const lastReadData = {
-      bookIndex: bookIdx,
-      chapterIndex: chapIdx,
+      bookIndex: bookIdx, chapterIndex: chapIdx,
       bookName: bookNamesData[bookIdx].name,
       timestamp: getCairoIsoString()
     };
-
     localStorage.setItem('lastReadLocation', JSON.stringify(lastReadData));
     await StorageService.save(KEYS.LAST_READ, lastReadData);
-
-    if (user) {
-      const userRef = doc(firestore, 'users', user.uid);
-      try {
-        await updateDoc(userRef, { lastRead: lastReadData });
-      } catch (e) {
-        console.error(e);
-      }
+    const authUser = getAuth().currentUser;
+    if (authUser) {
+      updateDoc(doc(firestore, 'users', authUser.uid), { lastRead: lastReadData }).catch(console.error);
     }
-  }, [user, bookNamesData]);
+
+    // Alpha-Omega Badge Logic
+    if (bookIdx === 0 && chapIdx === 0) localStorage.setItem('read_alpha', Date.now());
+    if (bookIdx === 65 && chapIdx === 21) {
+        const alphaTime = localStorage.getItem('read_alpha');
+        if (alphaTime && (Date.now() - parseInt(alphaTime)) < 60000) unlockBadge('alpha_omega');
+    }
+  }, [bookNamesData, unlockBadge]);
+
+  // --- Functions ---
+  const buildReferenceText = useCallback((verseIndexes) => {
+    const chapterLabel = formatNumber(selectedChapterIndex + 1);
+    const isArabic = language === 'ar';
+    const rlm = isArabic ? "\u200F" : "", lrm = isArabic ? "\u200E" : "";
+    const bookName = getBookName(selectedBookIndex);
+    const sorted = (Array.isArray(verseIndexes) ? [...verseIndexes] : [verseIndexes]).sort((a, b) => a - b);
+    const numbers = sorted.map(i => formatNumber(i + 1));
+    let vRange = numbers.length === 1 ? numbers[0] : (sorted.every((v, idx) => idx === 0 || v === sorted[idx-1] + 1) ? `${numbers[0]} - ${numbers[numbers.length-1]}` : numbers.join(isArabic ? '، ' : ', '));
+    return `${bookName} ${chapterLabel}${lrm}:${rlm}${vRange}`;
+  }, [selectedChapterIndex, selectedBookIndex, getBookName, formatNumber, language]);
+
+  const updateUserPoints = useCallback(async (amount, reason, type = 'general', isNegative = false) => {
+    const authUser = getAuth().currentUser;
+    const finalAmount = isNegative ? -amount : amount;
+    if (authUser) {
+        updateDoc(doc(firestore, 'users', authUser.uid), {
+            totalPoints: increment(finalAmount),
+            pointsHistory: arrayUnion({ type, points: finalAmount, reason, timestamp: getCairoIsoString() })
+        }).catch(console.error);
+    } else {
+        if (!isNegative) {
+            await StorageService.addPoints(amount);
+            const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+            history.push({ type, points: finalAmount, reason, timestamp: getCairoIsoString() });
+            await StorageService.save(KEYS.POINTS_HISTORY, history);
+        }
+    }
+  }, []);
+
+  const saveBibleData = useCallback(async (v, c) => {
+    await StorageService.save(KEYS.FAVORITES, v);
+    await StorageService.save(KEYS.COMPLETED_CHAPTERS, c);
+    const authUser = getAuth().currentUser;
+    if (authUser) {
+      updateDoc(doc(firestore, 'users', authUser.uid), { "favorites.verses": v, "completedChapters": c }).catch(console.error);
+    }
+  }, []);
+
+  // --- Interaction Callbacks ---
+  const handleVerseClick = useCallback((v, i) => {
+    setSelectedVerses(prev => {
+      const exists = prev.find(item => item.index === i);
+      if (exists) return prev.filter(item => item.index !== i);
+      return [...prev, { text: v, index: i }];
+    });
+  }, []);
+
+  const onTouchStart = useCallback((e, v, i) => {
+    isMoving.current = false; isLongPressActive.current = false;
+    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    longPressTimer.current = setTimeout(() => {
+      if (!isMoving.current) {
+        isLongPressActive.current = true;
+        handleVerseClick(v, i);
+        if (window.navigator.vibrate) window.navigator.vibrate(60);
+      }
+    }, 700);
+  }, [handleVerseClick]);
+
+  const onTouchMove = useCallback((e) => {
+    if (Math.abs(e.touches[0].clientX - touchStartPos.current.x) > 10) isMoving.current = true;
+  }, []);
+
+  const onTouchEnd = useCallback(() => clearTimeout(longPressTimer.current), []);
+
+  const onNoteClick = useCallback((e, i) => {
+    e.stopPropagation();
+    const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
+    setTargetVerseKey(key);
+    setCurrentNoteText(favouriteVerses[key]?.note || '');
+    setIsNoteModalOpen(true);
+  }, [selectedBookIndex, selectedChapterIndex, favouriteVerses]);
+
+  // --- Data Loader (الطلقة) ---
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setIsLoading(true);
+        let folder = language === 'ar' ? 'arabic' : language === 'en' ? 'English' : language === 'fr' ? 'French' : 'german';
+        let fileName = "";
+        if (language === 'ar') fileName = useTashkeel ? "ar_svd_tashkeel_site.json" : "ar_svd_no_tashkeel.json";
+        else if (language === 'en') fileName = "en_web.json";
+        else if (language === 'fr') fileName = "fr_segond.json";
+        else if (language === 'de') fileName = "de_luther.json";
+
+        const res = await fetch(`/data/translations/${folder}/${fileName}`);
+        const data = await res.json();
+        bibleDataRef.current = data;
+
+        const bParam = searchParams.get('book');
+        const cParam = searchParams.get('chapter');
+        const saved = await StorageService.get(KEYS.LAST_READ);
+
+        let bIdx = 0, cIdx = 0;
+        if (bParam && bookNamesData.length) {
+          const idx = bookNamesData.findIndex(b => b.name === decodeURIComponent(bParam));
+          if (idx !== -1) { bIdx = idx; if (cParam) cIdx = Math.max(0, parseInt(cParam) - 1); }
+        } else if (saved) { bIdx = saved.bookIndex; cIdx = saved.chapterIndex; }
+
+        setSelectedBookIndex(bIdx);
+        setSelectedChapterIndex(cIdx);
+        setCurrentVerses(data[bIdx]?.chapters[cIdx] || []);
+        saveLastRead(bIdx, cIdx);
+        setIsLoading(false);
+      } catch (e) { console.error(e); setIsLoading(false); }
+    };
+    if (bookNamesData.length) init();
+  }, [language, useTashkeel, bookNamesData, searchParams, saveLastRead]);
 
   useEffect(() => {
-    const handleChapterNav = (dir) => {
-        const chapters = bibleData?.[selectedBookIndex]?.chapters || [];
-        const nextChapter = selectedChapterIndex + dir;
+    if (bibleDataRef.current) {
+        setCurrentVerses(bibleDataRef.current[selectedBookIndex]?.chapters[selectedChapterIndex] || []);
+        saveLastRead(selectedBookIndex, selectedChapterIndex);
+    }
+  }, [selectedBookIndex, selectedChapterIndex, saveLastRead]);
 
+  // Navigation Logic
+  useEffect(() => {
+    const handleChapterNav = (dir) => {
+        const chapters = bibleDataRef.current?.[selectedBookIndex]?.chapters || [];
+        const nextChapter = selectedChapterIndex + dir;
         if (nextChapter >= 0 && nextChapter < chapters.length) {
-            setDirection(dir);
-            setSelectedChapterIndex(nextChapter);
-            setSelectedVerses([]);
-            window.scrollTo(0, 0);
-            return true;
+            setDirection(dir); setSelectedChapterIndex(nextChapter);
+            setSelectedVerses([]); window.scrollTo(0, 0); return true;
         } else if (dir > 0 && selectedBookIndex < bookNamesData.length - 1) {
-            setDirection(1);
-            setSelectedBookIndex(prev => prev + 1);
-            setSelectedChapterIndex(0);
-            setSelectedVerses([]);
-            window.scrollTo(0, 0);
-            return true;
+            setDirection(1); setSelectedBookIndex(prev => prev + 1);
+            setSelectedChapterIndex(0); setSelectedVerses([]);
+            window.scrollTo(0, 0); return true;
         } else if (dir < 0 && selectedBookIndex > 0) {
-            setDirection(-1);
-            setSelectedBookIndex(prev => prev - 1);
-            const prevBookChapters = bibleData?.[selectedBookIndex - 1]?.chapters || [];
+            setDirection(-1); setSelectedBookIndex(prev => prev - 1);
+            const prevBookChapters = bibleDataRef.current?.[selectedBookIndex - 1]?.chapters || [];
             setSelectedChapterIndex(Math.max(0, prevBookChapters.length - 1));
-            setSelectedVerses([]);
-            window.scrollTo(0, 0);
-            return true;
+            setSelectedVerses([]); window.scrollTo(0, 0); return true;
         }
         return false;
     };
-
     setNavigationCallback(() => handleChapterNav);
     return () => setNavigationCallback(null);
-  }, [bibleData, selectedBookIndex, selectedChapterIndex, bookNamesData, setNavigationCallback]);
+  }, [selectedBookIndex, selectedChapterIndex, bookNamesData, setNavigationCallback]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      const timer = setTimeout(() => {
-        window.scrollTo(0, 0);
-        document.body.scrollTo(0, 0);
-        document.documentElement.scrollTo(0, 0);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedBookIndex, selectedChapterIndex, isLoading]);
-
-  useEffect(() => {
-    if (isPlaying && currentVerseId !== -1) {
-      const element = document.getElementById(`verse-${currentVerseId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [currentVerseId, isPlaying]);
-
+  // Audio Sync
   useEffect(() => {
     const syncAudio = async () => {
         if (isLoading || bookNamesData.length === 0) return;
-
-        // Only sync for supported languages
         const supportedAudioLangs = ['ar', 'en', 'fr'];
         if (!supportedAudioLangs.includes(language)) return;
-
         const book = bookNamesData[selectedBookIndex];
         const chapter = selectedChapterIndex + 1;
         const currentLocKey = `${book.book_id}-${chapter}`;
-
         if (lastAudioSyncRef.current === currentLocKey) return;
-
-        const isCurrentlyPlayingThis = globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`);
-
-        if (isCurrentlyPlayingThis) {
-            lastAudioSyncRef.current = currentLocKey;
-        } else if (isPlaying || isAutoNext) {
+        const isPlayingThis = globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`);
+        if (isPlayingThis) { lastAudioSyncRef.current = currentLocKey; }
+        else if (isPlaying || isAutoNext) {
             const data = await contextFetchAudio(selectedBookIndex, selectedChapterIndex);
             if (data) {
                 lastAudioSyncRef.current = currentLocKey;
@@ -216,60 +321,14 @@ export default function BibleContent() {
     syncAudio();
   }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, contextFetchAudio, globalAudioUrl, isPlaying, isAutoNext, playTrack, language]);
 
-  useEffect(() => {
-    if (!globalAudioUrl) {
-        lastAudioSyncRef.current = "";
-    }
-  }, [globalAudioUrl]);
-
-  const handleAudioButtonClick = async () => {
-    if (contextAudioLoading) return;
-
-    const supportedAudioLangs = ['ar', 'en', 'fr'];
-    if (!supportedAudioLangs.includes(language)) {
-      toast.error(strings.bible.toasts.audio_not_available_lang || "Audio not available for this language");
-      return;
-    }
-
-    const book = bookNamesData[selectedBookIndex];
-    const chapter = selectedChapterIndex + 1;
-
-    if (globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`)) {
-      setIsPanelOpen(true);
-    } else {
-      const data = await contextFetchAudio(selectedBookIndex, selectedChapterIndex);
-      if (data) {
-        playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex, true);
-      } else {
-        toast.error(strings.bible.toasts.audio_not_found);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (!isLoading && bookNamesData.length > 0) {
-      saveLastRead(selectedBookIndex, selectedChapterIndex);
-
-      if (selectedBookIndex === 0 && selectedChapterIndex === 0) {
-        localStorage.setItem('read_alpha', Date.now());
-      }
-      if (selectedBookIndex === 65 && selectedChapterIndex === 21) {
-        const alphaTime = localStorage.getItem('read_alpha');
-        if (alphaTime && (Date.now() - parseInt(alphaTime)) < 60000) {
-          unlockBadge('alpha_omega');
-        }
-      }
-    }
-  }, [selectedBookIndex, selectedChapterIndex, isLoading, bookNamesData, saveLastRead]);
-
+  // Battery Check Badge
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.getBattery) {
-      navigator.getBattery().then(battery => {
-        if (battery.level <= 0.05) unlockBadge('battery_saver');
-      });
+      navigator.getBattery().then(b => { if (b.level <= 0.05) unlockBadge('battery_saver'); });
     }
-  }, [selectedChapterIndex]);
+  }, [selectedChapterIndex, unlockBadge]);
 
+  // User Settings Sync
   useEffect(() => {
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'system';
@@ -279,245 +338,44 @@ export default function BibleContent() {
       const savedLayout = localStorage.getItem('versePerLine') === 'true';
 
       const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (!isDark) document.body.classList.add('light-theme'); else document.body.classList.remove('light-theme');
 
-      if (!isDark) {
-        document.body.classList.add('light-theme');
-      } else {
-        document.body.classList.remove('light-theme');
-      }
       document.documentElement.style.setProperty('--main-font-size', savedFontSize + 'px');
-
-      const fontValue = fontOptionsMap[savedFontId] || fontOptionsMap['Cairo'];
-      document.documentElement.style.setProperty('--bible-font-family', fontValue);
+      document.documentElement.style.setProperty('--bible-font-family', fontOptionsMap[savedFontId] || fontOptionsMap['Cairo']);
       document.documentElement.style.setProperty('--bible-font-weight', savedFontWeight);
-
       setVersePerLine(savedLayout);
     };
     syncAppSettings();
     window.addEventListener('storage', syncAppSettings);
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleThemeChange = () => {
-        if (localStorage.getItem('theme') === 'system') syncAppSettings();
-    };
-    mediaQuery.addEventListener('change', handleThemeChange);
-
-    return () => {
-        window.removeEventListener('storage', syncAppSettings);
-        mediaQuery.removeEventListener('change', handleThemeChange);
-    };
+    return () => window.removeEventListener('storage', syncAppSettings);
   }, []);
 
-  const updateUserPoints = async (amount, reason, type = 'general', isNegative = false) => {
-    if (user) {
-        const finalAmount = isNegative ? -amount : amount;
-        const userRef = doc(firestore, 'users', user.uid);
-        try {
-          await updateDoc(userRef, {
-            totalPoints: increment(finalAmount),
-            pointsHistory: arrayUnion({
-              type: type,
-              points: finalAmount,
-              reason: reason,
-              timestamp: getCairoIsoString()
-            })
-          });
-        } catch (e) {
-          console.error(e);
-        }
-    } else {
-        const finalAmount = isNegative ? -amount : amount;
-        if (!isNegative) {
-            await StorageService.addPoints(amount);
-            const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
-            history.push({
-              type: type,
-              points: finalAmount,
-              reason: reason,
-              timestamp: getCairoIsoString()
-            });
-            await StorageService.save(KEYS.POINTS_HISTORY, history);
-        }
-    }
-  };
-
-  const buildReferenceText = (verseIndexes) => {
-    const chapterLabel = formatNumber(selectedChapterIndex + 1);
-    const isArabic = language === 'ar';
-    const rlm = isArabic ? "\u200F" : "";
-    const lrm = isArabic ? "\u200E" : "";
-    const bookName = getBookName(selectedBookIndex);
-
-    const indexes = Array.isArray(verseIndexes) ? verseIndexes.slice() : [verseIndexes];
-    const sortedIndexes = indexes.sort((a, b) => a - b);
-    const verseNumbers = sortedIndexes.map(i => formatNumber(i + 1));
-
-    let verseRange;
-    if (sortedIndexes.length === 1) {
-      verseRange = verseNumbers[0];
-    } else if (sortedIndexes.every((v, idx) => idx === 0 || v === sortedIndexes[idx - 1] + 1)) {
-      verseRange = `${verseNumbers[0]} - ${verseNumbers[verseNumbers.length - 1]}`;
-    } else {
-      verseRange = verseNumbers.join(isArabic ? '، ' : ', ');
-    }
-
-    return `${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange}`;
-  };
-
-  const shareVerse = async (text, verseIndexes) => {
-    const reference = buildReferenceText(verseIndexes);
-    const isArabic = language === 'ar';
-    const rlm = isArabic ? "\u200F" : "";
-    const fullText = `${text} ${rlm}(${reference})`;
-
-    try {
-      if (Capacitor.isNativePlatform()) {
-        await Share.share({
-          title: strings.bible.share_title,
-          text: fullText,
-          dialogTitle: strings.bible.share_dialog,
-        });
-      }
-      else if (navigator.share) {
-        await navigator.share({
-          title: strings.bible.share_title,
-          text: fullText
-        });
-      }
-      else {
-        if (Array.isArray(verseIndexes) && verseIndexes.length > 0) {
-          copyVerse(text, verseIndexes[0]);
-        } else {
-          copyVerse(text, verseIndexes);
-        }
-        toast.info(strings.bible.share_not_supported);
-        return;
-      }
-
-      updateUserPoints(15, strings.bible.reasons.share_verse, 'share');
-      unlockBadge('share_1');
-    } catch (err) {
-      console.log('Share error', err);
-    }
-  };
-
-  const saveBibleData = useCallback(async (v, c) => {
-    await StorageService.save(KEYS.FAVORITES, v);
-    await StorageService.save(KEYS.COMPLETED_CHAPTERS, c);
-
-    if (user && firestore) {
-      const userRef = doc(firestore, 'users', user.uid);
-      await updateDoc(userRef, {
-        "favorites.verses": v,
-        "completedChapters": c
-      });
-    }
-  }, [user]);
-
+  // Sync Data (Firestore/Local)
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        let bibleDataImport;
-        // تصحيح المسارات لتشير إلى ../data بدلاً من ../../data
-        if (language === 'ar') {
-          bibleDataImport = useTashkeel
-            ? await import('../../../public/data/translations/arabic/ar_svd_tashkeel_site.json')
-            : await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json');
-        } else if (language === 'en') {
-          bibleDataImport = await import('../../../public/data/translations/English/en_web.json');
-        } else if (language === 'fr') {
-          bibleDataImport = await import('../../../public/data/translations/French/fr_segond.json');
-        } else if (language === 'de') {
-          bibleDataImport = await import('../../../public/data/translations/german/de_luther.json');
-        } else {
-          bibleDataImport = await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json');
-        }
-
-        setBibleData(bibleDataImport.default || bibleDataImport);
-
-        const bParam = searchParams.get('book');
-        const cParam = searchParams.get('chapter');
-        const savedLastRead = await StorageService.get(KEYS.LAST_READ);
-
-        if (bParam && bookNamesData.length > 0) {
-          const idx = bookNamesData.findIndex(b => b.name === decodeURIComponent(bParam));
-          if (idx !== -1) setSelectedBookIndex(idx);
-          if (cParam) setSelectedChapterIndex(Math.max(0, parseInt(cParam) - 1));
-        } else if (savedLastRead) {
-          setSelectedBookIndex(savedLastRead.bookIndex);
-          setSelectedChapterIndex(savedLastRead.chapterIndex);
-        }
-        setIsLoading(false);
-      } catch (e) { setIsLoading(false); }
-    };
-    loadData();
-  }, [searchParams, useTashkeel, language, bookNamesData]);
-
-  useEffect(() => {
-    const initUserData = async () => {
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      setUser(currentUser);
-
-      if (currentUser) {
-        const s = await getDoc(doc(firestore, 'users', currentUser.uid));
+    const authUser = getAuth().currentUser;
+    setUser(authUser);
+    if (authUser) {
+      getDoc(doc(firestore, 'users', authUser.uid)).then(s => {
         if (s.exists()) {
           const data = s.data();
           setFavouriteVerses(data.favorites?.verses || {});
           setCompletedChapters(data.completedChapters || {});
         }
-      } else {
-        const localStats = await StorageService.getLocalStats();
-        setFavouriteVerses(localStats.favorites || {});
-        const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
-        setCompletedChapters(localCompleted);
-      }
-    };
-    initUserData();
+      });
+    } else {
+      StorageService.getLocalStats().then(ls => setFavouriteVerses(ls.favorites || {}));
+      StorageService.get(KEYS.COMPLETED_CHAPTERS).then(lc => setCompletedChapters(lc || {}));
+    }
   }, []);
 
-  const copyVerse = (text, index) => {
-    const chapterLabel = formatNumber(selectedChapterIndex + 1);
-    const verseLabel = formatNumber(index + 1);
-    const isArabic = language === 'ar';
-    const rlm = isArabic ? "\u200F" : "";
-    const lrm = isArabic ? "\u200E" : "";
-    const fullText = `${text} ${rlm}(${getBookName(selectedBookIndex)} ${chapterLabel}${lrm}:${rlm}${verseLabel})`;
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(fullText);
-    }
-    setCopiedMessage(strings.bible.toasts.copied);
-    setActiveMenu(null);
-    updateUserPoints(5, strings.bible.reasons.copy_verse, 'search');
-    setTimeout(() => setCopiedMessage(''), 2000);
-  };
+  // --- Feature Logic (Sharing, Points, Plans) ---
 
   const copySelected = () => {
-    const chapterLabel = formatNumber(selectedChapterIndex + 1);
-    const isArabic = language === 'ar';
-    const rlm = isArabic ? "\u200F" : "";
-    const lrm = isArabic ? "\u200E" : "";
-    const bookName = getBookName(selectedBookIndex);
-    const sortedVerses = [...selectedVerses].sort((a, b) => a.index - b.index);
-    const versesText = sortedVerses.map(sv => sv.text).join(' ');
-
-    const isConsecutive = sortedVerses.length > 1 && sortedVerses.every((v, i) => i === 0 || v.index === sortedVerses[i-1].index + 1);
-
-    let verseRange;
-    if (sortedVerses.length === 1) {
-      verseRange = formatNumber(sortedVerses[0].index + 1);
-    } else if (isConsecutive) {
-      verseRange = `${formatNumber(sortedVerses[0].index + 1)} - ${formatNumber(sortedVerses[sortedVerses.length - 1].index + 1)}`;
-    } else {
-      verseRange = sortedVerses.map(sv => formatNumber(sv.index + 1)).join(isArabic ? '، ' : ', ');
-    }
-
-    const fullText = `${versesText} ${rlm}(${bookName} ${chapterLabel}${lrm}:${rlm}${verseRange})`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(fullText);
-    }
+    const sorted = [...selectedVerses].sort((a, b) => a.index - b.index);
+    const text = sorted.map(sv => sv.text).join(' ');
+    const range = sorted.map(s => s.index);
+    const full = `${text} ${language === 'ar' ? "\u200F" : ""}(${buildReferenceText(range)})`;
+    if (navigator.clipboard) navigator.clipboard.writeText(full);
     setCopiedMessage(strings.bible.toasts.copied_precise);
     updateUserPoints(15, strings.bible.reasons.share_verses, 'share');
     setSelectedVerses([]);
@@ -525,361 +383,178 @@ export default function BibleContent() {
   };
 
   const highlightSelected = async (color) => {
-    const firstVerseKey = selectedVerses.length > 0 ? `${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}` : null;
-    const isAlreadyThisColor = firstVerseKey && favouriteVerses[firstVerseKey]?.color === color;
-    const targetColor = isAlreadyThisColor ? null : color;
-
     const next = { ...favouriteVerses };
-    let newlyAddedCount = 0;
+    let newlyAdded = 0;
+    const targetColor = (selectedVerses.length > 0 && favouriteVerses[`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`]?.color === color) ? null : color;
 
     selectedVerses.forEach(sv => {
       const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
       if (targetColor) {
-        if (!next[key]) newlyAddedCount++;
-        next[key] = {
-          text: sv.text,
-          book: getBookName(selectedBookIndex),
-          ch: selectedChapterIndex,
-          v: sv.index,
-          color: targetColor,
-          dateAdded: getCairoIsoString(),
-          synced: !!user
-        };
-      } else {
-        delete next[key];
-      }
+        if (!next[key]) newlyAdded++;
+        next[key] = { text: sv.text, b: selectedBookIndex, c: selectedChapterIndex, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: targetColor, dateAdded: getCairoIsoString() };
+      } else delete next[key];
     });
 
     setFavouriteVerses(next);
-    if (newlyAddedCount > 0) {
-      updateUserPoints(newlyAddedCount * 5, strings.bible.reasons.favourite, 'favouriteVerse');
+    if (newlyAdded > 0) {
+      updateUserPoints(newlyAdded * 5, strings.bible.reasons.favourite, 'favouriteVerse');
       const count = Object.keys(next).length;
       if (count >= 1) unlockBadge('fav_1');
       if (count >= 20) unlockBadge('fav_20');
       if (count >= 100) unlockBadge('fav_100');
     }
-    await saveBibleData(next, completedChapters);
-
+    saveBibleData(next, completedChapters);
     setCopiedMessage(targetColor ? strings.bible.toasts.highlighted : strings.bible.toasts.highlight_removed);
     setSelectedVerses([]);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
-  const openNoteEditor = (key) => {
-    setTargetVerseKey(key);
-    setCurrentNoteText(favouriteVerses[key]?.note || '');
-    setIsNoteModalOpen(true);
-    setActiveMenu(null);
+  const shareVerse = async (text, verseIndexes) => {
+    const reference = buildReferenceText(verseIndexes);
+    const rlm = language === 'ar' ? "\u200F" : "";
+    const fullText = `${text} ${rlm}(${reference})`;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({ title: strings.bible.share_title, text: fullText, dialogTitle: strings.bible.share_dialog });
+      } else if (navigator.share) {
+        await navigator.share({ title: strings.bible.share_title, text: fullText });
+      } else {
+        navigator.clipboard.writeText(fullText);
+        toast.info(strings.bible.share_not_supported);
+      }
+      updateUserPoints(15, strings.bible.reasons.share_verse, 'share');
+      unlockBadge('share_1');
+    } catch (err) {}
   };
 
   const saveNote = async () => {
     const next = { ...favouriteVerses };
     if (!next[targetVerseKey]) {
       const [b, c, v] = targetVerseKey.split('-');
-      next[targetVerseKey] = {
-        text: bibleData[b].chapters[c][v],
-        book: getBookName(b),
-        ch: parseInt(c),
-        v: parseInt(v),
-        color: '#FFC107',
-        dateAdded: getCairoIsoString(),
-        synced: !!user
-      };
+      next[targetVerseKey] = { text: currentVerses[v], b: parseInt(b), c: parseInt(c), book: getBookName(b), ch: parseInt(c), v: parseInt(v), color: '#FFC107', dateAdded: getCairoIsoString() };
     }
     next[targetVerseKey].note = currentNoteText;
     next[targetVerseKey].noteDate = getCairoIsoString();
-    next[targetVerseKey].synced = !!user;
 
     if (!user) {
         await StorageService.addNote({
-            verseKey: targetVerseKey,
-            text: currentNoteText,
-            book: next[targetVerseKey].book,
+            verseKey: targetVerseKey, text: currentNoteText, book: next[targetVerseKey].book,
             reference: `${next[targetVerseKey].book} ${next[targetVerseKey].v + 1}:${next[targetVerseKey].ch + 1}`
         });
     }
 
     setFavouriteVerses(next);
-    await saveBibleData(next, completedChapters);
-
+    saveBibleData(next, completedChapters);
     setIsNoteModalOpen(false);
     updateUserPoints(5, strings.bible.reasons.note, 'favouriteVerse');
     setCopiedMessage(strings.bible.toasts.note_saved);
     setTimeout(() => setCopiedMessage(''), 2000);
   };
 
-  const toggleVerseSelection = (v, i) => {
-    setSelectedVerses(prev => {
-      const exists = prev.find(item => item.index === i);
-      if (exists) return prev.filter(item => item.index !== i);
-      return [...prev, { text: v, index: i }];
-    });
-  };
-
-  const handleTouchStart = (e, v, i) => {
-    isMoving.current = false;
-    isLongPressActive.current = false;
-    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    longPressTimer.current = setTimeout(() => {
-      if (!isMoving.current) {
-        isLongPressActive.current = true;
-        toggleVerseSelection(v, i);
-        if (window.navigator.vibrate) window.navigator.vibrate(60);
-      }
-    }, 700);
-  };
-
-  const handleTouchMove = (e) => {
-    const diffX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
-    const diffY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
-    if (diffX > 10 || diffY > 10) {
-      isMoving.current = true;
-      clearTimeout(longPressTimer.current);
-    }
-  };
-
-  const handleTouchEnd = (e, v, i) => {
-    clearTimeout(longPressTimer.current);
-    if (isLongPressActive.current || isMoving.current) return;
-
-    toggleVerseSelection(v, i);
-  };
-
   const checkDayReadingCompleted = useCallback((readings, allCompleted) => {
-    if (!readings || !Array.isArray(readings)) return false;
-
+    if (!readings) return false;
     return readings.every(reading => {
-      try {
-        const trimmed = reading.trim();
-        const parts = trimmed.split(' ');
-        const chaptersPart = parts.pop();
-        const bookName = parts.join(' ');
-
-        const bookIdx = bookNamesData.findIndex(b => b.name === bookName);
-        if (bookIdx === -1) return false;
-
-        let chapters = [];
-        if (chaptersPart.includes('-')) {
-          const [start, end] = chaptersPart.split('-').map(Number);
-          for (let i = start; i <= end; i++) chapters.push(i);
-        } else if (chaptersPart.includes(',')) {
-          chapters = chaptersPart.split(',').map(Number);
-        } else {
-          chapters.push(Number(chaptersPart));
-        }
-
-        return chapters.every(ch => allCompleted[`${bookIdx}-${ch - 1}`]);
-      } catch (e) { return false; }
+      const parts = reading.trim().split(' ');
+      const chaptersPart = parts.pop();
+      const bookName = parts.join(' ');
+      const bIdx = bookNamesData.findIndex(b => b.name === bookName);
+      if (bIdx === -1) return false;
+      let chs = chaptersPart.includes('-') ? (function(){ const [s, e] = chaptersPart.split('-').map(Number); let a=[]; for(let i=s;i<=e;i++) a.push(i); return a; })() : chaptersPart.split(',').map(Number);
+      return chs.every(ch => allCompleted[`${bIdx}-${ch - 1}`]);
     });
   }, [bookNamesData]);
 
   const updateStudyPlanProgress = async (planId, planType, day, currentCompleted) => {
-    let planInfo = null;
-
-    if (planType === 'custom') {
-      if (user) {
-        const userSnap = await getDoc(doc(firestore, 'users', user.uid));
-        if (userSnap.exists()) {
-          planInfo = userSnap.data().customPlans?.[planId];
-        }
-      } else {
-        const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
-        planInfo = localCustom[planId];
-      }
-    } else {
-      planInfo = allPlans.find(p => p.id === parseInt(planId));
-    }
-
+    const authUser = getAuth().currentUser;
+    let planInfo = planType === 'custom' ? (authUser ? (await getDoc(doc(firestore, 'users', authUser.uid))).data().customPlans?.[planId] : (await StorageService.get(KEYS.CUSTOM_PLANS))[planId]) : allPlans.find(p => p.id === parseInt(planId));
     if (!planInfo) return;
-
     const dayReading = planInfo.readings?.find(r => r.day === parseInt(day))?.books;
-    const isDayNowCompleted = checkDayReadingCompleted(dayReading, currentCompleted);
+    const isDone = checkDayReadingCompleted(dayReading, currentCompleted);
+    const dayData = { isCompleted: isDone, dateCompleted: isDone ? getCairoIsoString() : null };
 
-    const newDayData = {
-      isCompleted: isDayNowCompleted,
-      dateCompleted: isDayNowCompleted ? getCairoIsoString() : null
-    };
-
-    if (user) {
-      const userRef = doc(firestore, 'users', user.uid);
-      try {
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) return;
-        const userData = userSnap.data();
-
-        const fieldPath = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
-        const planData = planType === 'custom' ? userData.customPlans?.[planId] : userData.completedPlans?.[planId] || { completedDays: {} };
-
-        const currentCompletedDays = planData.completedDays || {};
-        if (!!currentCompletedDays[day]?.isCompleted === isDayNowCompleted) return;
-
-        const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
-        const totalDays = planInfo.readings?.length || 0;
-        const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
-        const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
-
-        await updateDoc(userRef, {
-          [`${fieldPath}.completedDays`]: newCompletedDays,
-          [`${fieldPath}.completionPercentage`]: percentage
-        });
-
-        if (isDayNowCompleted) {
-          toast.success(strings.bible.toasts.plan_day_complete);
-          if (percentage === 100) {
-            unlockBadge(`plan_finish_${planId}`);
-          }
-        }
-      } catch (e) { console.error(e); }
+    if (authUser) {
+      const userRef = doc(firestore, 'users', authUser.uid);
+      const data = (await getDoc(userRef)).data();
+      const field = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
+      const planData = (planType === 'custom' ? data.customPlans?.[planId] : data.completedPlans?.[planId]) || { completedDays: {} };
+      const newDays = { ...(planData.completedDays || {}), [day]: dayData };
+      const total = planInfo.readings?.length || 0;
+      const percent = total > 0 ? Math.round((Object.values(newDays).filter(d => d.isCompleted).length / total) * 100) : 0;
+      updateDoc(userRef, { [`${field}.completedDays`]: newDays, [`${field}.completionPercentage`]: percent });
+      if (isDone) { toast.success(strings.bible.toasts.plan_day_complete); if (percent === 100) unlockBadge(`plan_finish_${planId}`); }
     } else {
-      const storageKey = planType === 'custom' ? KEYS.CUSTOM_PLANS : KEYS.COMPLETED_PLANS;
-      const allData = await StorageService.get(storageKey) || {};
-      let planData = allData[planId];
-
-      if (!planData && planType !== 'custom') {
-        planData = { ...planInfo, completedDays: {}, completionPercentage: 0 };
-      }
-      if (!planData) return;
-
-      const currentCompletedDays = planData.completedDays || {};
-      if (!!currentCompletedDays[day]?.isCompleted === isDayNowCompleted) return;
-
-      const newCompletedDays = { ...currentCompletedDays, [day]: newDayData };
-      const totalDays = planInfo.readings?.length || 0;
-      const daysDone = Object.values(newCompletedDays).filter(d => d.isCompleted).length;
-      const percentage = totalDays > 0 ? Math.round((daysDone / totalDays) * 100) : 0;
-
-      allData[planId] = { ...planData, completedDays: newCompletedDays, completionPercentage: percentage };
-      await StorageService.save(storageKey, allData);
-
-      if (isDayNowCompleted) toast.success(strings.bible.toasts.plan_day_complete);
+      const key = planType === 'custom' ? KEYS.CUSTOM_PLANS : KEYS.COMPLETED_PLANS;
+      const all = await StorageService.get(key) || {};
+      const planData = all[planId] || { ...planInfo, completedDays: {}, completionPercentage: 0 };
+      const newDays = { ...planData.completedDays, [day]: dayData };
+      const total = planInfo.readings?.length || 0;
+      const percent = total > 0 ? Math.round((Object.values(newDays).filter(d => d.isCompleted).length / total) * 100) : 0;
+      all[planId] = { ...planData, completedDays: newDays, completionPercentage: percent };
+      StorageService.save(key, all);
+      if (isDone) toast.success(strings.bible.toasts.plan_day_complete);
     }
   };
 
   const toggleChapterCompletion = async () => {
     const key = `${selectedBookIndex}-${selectedChapterIndex}`;
-    const planId = searchParams.get('planId');
-    const planType = searchParams.get('planType');
-    const day = searchParams.get('day');
+    const next = { ...completedChapters, [key]: !completedChapters[key] };
+    setCompletedChapters(next);
+    saveBibleData(favouriteVerses, next);
+    updateUserPoints(20, next[key] ? strings.bible.reasons.complete_chapter : strings.bible.reasons.undo_chapter, 'completedChapter', !next[key]);
 
-    if (completedChapters[key]) {
-      const next = { ...completedChapters, [key]: false };
-      setCompletedChapters(next);
-      await saveBibleData(favouriteVerses, next);
-      updateUserPoints(20, strings.bible.reasons.undo_chapter, 'completedChapter', true);
-      toast.error(strings.bible.toasts.chapter_undo);
+    const planId = searchParams.get('planId'), planType = searchParams.get('planType'), day = searchParams.get('day');
+    if (planId && day) updateStudyPlanProgress(planId, planType, parseInt(day), next);
 
-      if (planId && day) {
-        updateStudyPlanProgress(planId, planType, parseInt(day), next);
-      }
-    } else {
-      const next = { ...completedChapters, [key]: true };
-      setCompletedChapters(next);
-      await saveBibleData(favouriteVerses, next);
-      updateUserPoints(20, strings.bible.reasons.complete_chapter, 'completedChapter');
+    if (next[key]) {
+      const count = Object.keys(next).filter(k => next[k]).length;
+      ['10','50','100','250','500','594'].forEach(c => { if(count >= parseInt(c)) unlockBadge(`reader_${c}`); });
+      if(count >= 1189) unlockBadge('bible_finisher');
 
-      if (planId && day) {
-        updateStudyPlanProgress(planId, planType, parseInt(day), next);
-      }
-
-      // Badge checks
-      const completedCount = Object.keys(next).filter(k => next[k]).length;
-      if (completedCount >= 10) unlockBadge('reader_10');
-      if (completedCount >= 50) unlockBadge('reader_50');
-      if (completedCount >= 100) unlockBadge('reader_100');
-      if (completedCount >= 250) unlockBadge('reader_250');
-      if (completedCount >= 500) unlockBadge('reader_500');
-      if (completedCount >= 594) unlockBadge('reader_594');
-      if (completedCount >= 1189) unlockBadge('bible_finisher');
-
-      const otChaptersTotal = bookNamesData.filter(b => b.type === 'old').reduce((sum, b) => sum + (b.chapters || 0), 0);
-      const ntChaptersTotal = bookNamesData.filter(b => b.type === 'new').reduce((sum, b) => sum + (b.chapters || 0), 0);
-      const otCompletedCount = Object.keys(next).filter(k => next[k] && bookNamesData[parseInt(k.split('-')[0])]?.type === 'old').length;
-      const ntCompletedCount = Object.keys(next).filter(k => next[k] && bookNamesData[parseInt(k.split('-')[0])]?.type === 'new').length;
-
-      if (otCompletedCount === otChaptersTotal && otChaptersTotal > 0) unlockBadge('testament_old');
-      if (ntCompletedCount === ntChaptersTotal && ntCompletedCount > 0) unlockBadge('testament_new');
+      const otTotal = bookNamesData.filter(b=>b.type==='old').reduce((s,b)=>s+(b.chapters||0),0);
+      const ntTotal = bookNamesData.filter(b=>b.type==='new').reduce((s,b)=>s+(b.chapters||0),0);
+      if(Object.keys(next).filter(k=>next[k] && bookNamesData[k.split('-')[0]]?.type==='old').length === otTotal) unlockBadge('testament_old');
+      if(Object.keys(next).filter(k=>next[k] && bookNamesData[k.split('-')[0]]?.type==='new').length === ntTotal) unlockBadge('testament_new');
     }
   };
 
-  if (isLoading || !bibleData || !bookNamesData.length) return <div className={styles.loading}>{strings.common.loading}</div>;
+  // --- Rendering Helpers ---
+  const selectedIndicesSet = useMemo(() => new Set(selectedVerses.map(sv => sv.index)), [selectedVerses]);
+  const shortAskLabel = (strings.bible.ask_agios || '').split(/\s+/)[0] || "Ask";
 
-  const chaptersList = bibleData[selectedBookIndex]?.chapters || [];
-  const versesList = chaptersList[selectedChapterIndex] || [];
-  const shortAskLabel = (strings.bible.ask_agios || '').split(/\s+/)[0] || strings.bible.ask_agios;
+  if (isLoading || !currentVerses.length) return <div className={styles.loading}><Loader2 className={styles.spinning} /></div>;
 
   return (
     <div dir={pageDir} className={`${styles.container} ${pageDir === 'rtl' ? styles.rtl : styles.ltr}`}>
-      {selectedVerses.length > 0 && (
-        <div className={styles.selectionBar}>
-          <div className={styles.selectionActions}>
-            <button onClick={() => setSelectedVerses([])} className={styles.actionBtn}>✕</button>
-            <button onClick={copySelected} className={styles.actionBtn} title={strings.bible.tooltips.copy}><Copy size={20} /></button>
-            <button onClick={() => {
-                const combinedText = selectedVerses.map(v => v.text).join(' ');
-                const verseIndexes = selectedVerses.map(v => v.index);
-                shareVerse(combinedText, verseIndexes);
-            }} className={styles.actionBtn}><Share2 size={20} /></button>
-
-            {selectedVerses.length === 1 && (
-              <button
-                onClick={() => {
-                  const verseText = selectedVerses[0].text;
-                  const bookName = getBookName(selectedBookIndex);
-                  const chapterLabel = formatNumber(selectedChapterIndex + 1);
-                  const verseLabel = formatNumber(selectedVerses[0].index + 1);
-
-                  // تطبيق منطق الـ Copy لضمان صحة اتجاه الأرقام في الـ Share Preview
-                  const isArabic = language === 'ar';
-                  const rlm = isArabic ? "\u200F" : "";
-                  const lrm = isArabic ? "\u200E" : "";
-                  const refText = `${bookName} ${chapterLabel}${lrm}:${rlm}${verseLabel}`;
-
-                  router.push(`/share-preview?verse=${encodeURIComponent(verseText)}&ref=${encodeURIComponent(refText)}`);
-                }}
-                className={styles.actionBtn}
-                title={strings.bible.tooltips.image_design}
-              >
-                <ImageIcon size={20} />
+      <AnimatePresence>
+        {selectedVerses.length > 0 && (
+          <motion.div initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -60, opacity: 0 }} className={styles.selectionBar}>
+            <div className={styles.selectionActions}>
+              <button onClick={() => setSelectedVerses([])} className={styles.actionBtn}>✕</button>
+              <button onClick={copySelected} className={styles.actionBtn} title={strings.bible.tooltips.copy}><Copy size={20} /></button>
+              <button onClick={async () => {
+                const combined = selectedVerses.sort((a,b)=>a.index-b.index).map(v=>v.text).join(' ');
+                shareVerse(combined, selectedVerses.map(v=>v.index));
+              }} className={styles.actionBtn}><Share2 size={20} /></button>
+              {selectedVerses.length === 1 && (
+                <button onClick={() => router.push(`/share-preview?verse=${encodeURIComponent(selectedVerses[0].text)}&ref=${encodeURIComponent(buildReferenceText([selectedVerses[0].index]))}`)} className={styles.actionBtn} title={strings.bible.tooltips.image_design}><ImageIcon size={20} /></button>
+              )}
+              <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title={strings.bible.tooltips.note}><MessageSquare size={20} /></button>
+              <button onClick={() => router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}&verses=${selectedVerses.map(v=>v.index+1).sort((a,b)=>a-b).join(',')}`)} className={styles.aiBtn} title={strings.bible.tooltips.ai_analysis}>
+                <Sparkles size={20} /><span className={styles.aiBtnText}>{shortAskLabel}</span>
               </button>
-            )}
-
-            <button onClick={() => openNoteEditor(`${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}`)} className={styles.actionBtn} title={strings.bible.tooltips.note}><MessageSquare size={20} /></button>
-            <button
-              onClick={() => {
-                const verseNumbers = selectedVerses.map(v => v.index + 1).sort((a, b) => a - b).join(',');
-                router.push(`/bible/analysis/?book=${encodeURIComponent(getBookName(selectedBookIndex))}&chapter=${selectedChapterIndex + 1}&verses=${verseNumbers}`);
-              }}
-              className={styles.aiBtn}
-              title={strings.bible.tooltips.ai_analysis}
-            >
-              <Sparkles size={20} />
-              <span className={styles.aiBtnText}>{shortAskLabel}</span>
-            </button>
-          </div>
-          <div className={styles.colorGrid}>
-            {HIGHLIGHT_COLORS.map((color, idx) => {
-              const firstVerseKey = selectedVerses.length > 0 ? `${selectedBookIndex}-${selectedChapterIndex}-${selectedVerses[0].index}` : null;
-              const isCurrentColor = firstVerseKey && favouriteVerses[firstVerseKey]?.color === color;
-              return (
-                <span
-                  key={idx}
-                  className={styles.colorDot}
-                  style={{ backgroundColor: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  onClick={() => highlightSelected(color)}
-                >
-                  {isCurrentColor && <Check size={16} color="white" />}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+            </div>
+            <div className={styles.colorGrid}>
+              {HIGHLIGHT_COLORS.map((c, i) => <span key={i} className={styles.colorDot} style={{ backgroundColor: c }} onClick={() => highlightSelected(c)} />)}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isNoteModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.noteModal}>
             <h3>{strings.bible.notes.title}</h3>
-            <textarea value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder={strings.bible.notes.placeholder} />
+            <textarea value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} />
             <div className={styles.modalActions}>
               <button onClick={saveNote} className={styles.saveBtn}>{strings.common.save}</button>
               <button onClick={() => setIsNoteModalOpen(false)} className={styles.cancelBtn}>{strings.common.cancel}</button>
@@ -888,16 +563,10 @@ export default function BibleContent() {
         </div>
       )}
 
-      <h1 className={styles.title}>{strings.bible.title}</h1>
-
       <div className={styles.controls}>
         <button className={styles.navigationDisplay} onClick={() => router.push('/bible/books')}>
-          <div className={styles.navContent}>
-            <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
-            <span className={styles.navSeparator}>|</span>
-            <span className={styles.navText}>{`${strings.bible.chapter_label} ${formatNumber(selectedChapterIndex + 1)}`}</span>
-          </div>
-          <ChevronDown size={20} className={styles.navIcon} />
+          <span className={styles.navText}>{getBookName(selectedBookIndex)} | {formatNumber(selectedChapterIndex + 1)}</span>
+          <ChevronDown size={18} />
         </button>
       </div>
 
@@ -907,10 +576,8 @@ export default function BibleContent() {
         <motion.div
           key={`${selectedBookIndex}-${selectedChapterIndex}`}
           custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
-          transition={{ x: { type: "spring", stiffness: 450, damping: 35 }, opacity: { duration: 0.15 } }}
+          transition={{ duration: 0.15, ease: "linear" }}
           className={styles.verseContainer}
-          style={{ lineHeight: '2', padding: '15px' }}
-          dir={pageDir}
         >
           <div className={styles.chapterHeader}>
             <h2 className={styles.chapterTitle}>{getBookName(selectedBookIndex)} {formatNumber(selectedChapterIndex + 1)}</h2>
@@ -925,78 +592,55 @@ export default function BibleContent() {
           </div>
 
           <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
-            {versesList.map((v, i) => {
-              const verseNumber = (i + 1).toString();
+            {currentVerses.map((v, i) => {
               const key = `${selectedBookIndex}-${selectedChapterIndex}-${i}`;
-              const annotation = favouriteVerses[key];
-              const isSelected = selectedVerses.some(sv => sv.index === i);
-              const isReading = String(currentVerseId) === verseNumber;
               return (
-                <span
-                  key={i} id={`verse-${verseNumber}`}
-                  className={`${styles.inlineVerse} ${isSelected ? styles.selectedVerse : ''} ${isReading ? styles.readingHighlight : ''} ${activeMenu === key ? styles.active : ''}`}
-                  onTouchStart={(e) => handleTouchStart(e, v, i)} onTouchMove={handleTouchMove} onTouchEnd={(e) => handleTouchEnd(e, v, i)}
-                  onContextMenu={(e) => e.preventDefault()}
-                  onClick={() => {
-                    if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
-                        toggleVerseSelection(v, i);
-                    }
-                  }}
-                  style={{
-                    backgroundColor: isReading ? '#ffd54f' : (annotation?.color ? `${annotation.color}66` : 'transparent'),
-                    display: versePerLine ? 'block' : 'inline',
-                    marginBottom: versePerLine ? '15px' : '0',
-                    padding: '2px 4px', borderRadius: '4px', position: 'relative'
-                  }}
-                >
-                  <span className={styles.styledVerseNumber}>{formatNumber(i + 1)}</span>
-                  <span className={styles.verseText}>{v} </span>
-                  {annotation?.note && <span className={styles.miniNoteIndicator} onClick={(e) => { e.stopPropagation(); openNoteEditor(key); }}> 📝 </span>}
-                </span>
+                <VerseItem
+                  key={key}
+                  v={v} i={i}
+                  isReading={Number(currentVerseId) === (i + 1)}
+                  isSelected={selectedIndicesSet.has(i)}
+                  annotation={favouriteVerses[key]}
+                  versePerLine={versePerLine}
+                  formatNumber={formatNumber}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                  onClick={handleVerseClick}
+                  onNoteClick={onNoteClick}
+                />
               );
             })}
           </div>
 
           <div className={styles.completionWrapper}>
-            <button
-              className={`${styles.completionBtn} ${completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? styles.completed : ''}`}
-              onClick={toggleChapterCompletion}
-            >
-              <span>{strings.bible.chapter_complete_btn}</span>
-              {completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? <CircleCheck size={24} color="#4CAF50" /> : <Check size={24} opacity={0.6} />}
-            </button>
+             <button className={`${styles.completionBtn} ${completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? styles.completed : ''}`} onClick={toggleChapterCompletion}>
+                <span>{strings.bible.chapter_complete_btn}</span>
+                <CircleCheck size={24} color={completedChapters[`${selectedBookIndex}-${selectedChapterIndex}`] ? "#4CAF50" : "#ccc"} />
+             </button>
           </div>
         </motion.div>
       </AnimatePresence>
 
       <div className={styles.navigation}>
-        <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> « </button>
-
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <button
-            onClick={() => router.push('/settings#text-settings')}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title={strings.bible.tooltips.text_settings}
-          >
-            <Settings size={28} color="var(--color-text-primary)" />
-          </button>
-
+        <button disabled={selectedChapterIndex === 0} onClick={() => { setDirection(-1); setSelectedChapterIndex(p => p - 1); setSelectedVerses([]); }}> « </button>
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <button onClick={() => router.push('/settings#text-settings')} title={strings.bible.tooltips.text_settings}><Settings size={28} /></button>
           {language !== 'de' && (
-            <button
-              onClick={handleAudioButtonClick}
-              disabled={contextAudioLoading}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              {contextAudioLoading ? (
-                <Loader2 size={28} className={styles.spinning} />
-              ) : (
-                <Volume2 size={28} color={isPlaying ? "#FFC107" : "var(--color-text-primary)"} />
-              )}
+            <button onClick={async () => {
+                const book = bookNamesData[selectedBookIndex], chapter = selectedChapterIndex + 1;
+                if (globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`)) setIsPanelOpen(true);
+                else {
+                    const data = await contextFetchAudio(selectedBookIndex, selectedChapterIndex);
+                    if (data) playTrack(data.url, data.title, data.times, selectedBookIndex, selectedChapterIndex, true);
+                    else toast.error(strings.bible.toasts.audio_not_found);
+                }
+            }}>
+              {contextAudioLoading ? <Loader2 size={28} className={styles.spinning} /> : <Volume2 size={28} color={isPlaying ? "#FFC107" : "currentColor"} />}
             </button>
           )}
         </div>
-
-        <button disabled={selectedChapterIndex === chaptersList.length - 1} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); window.scrollTo(0, 0); }}> » </button>
+        <button disabled={selectedChapterIndex >= (bibleDataRef.current?.[selectedBookIndex]?.chapters.length - 1)} onClick={() => { setDirection(1); setSelectedChapterIndex(p => p + 1); setSelectedVerses([]); }}> » </button>
       </div>
     </div>
   );

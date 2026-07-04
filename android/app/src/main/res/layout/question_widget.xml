@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_light"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="@string/widget_label_question"
+        android:textColor="#1E3A8A"
+        android:textSize="12sp"
+        android:textAllCaps="true"
+        android:letterSpacing="0.1"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_question_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/widget_action_btn"
+        android:layout_below="@id/widget_title"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
+        android:gravity="center"
+        android:text="@string/widget_default_question"
+        android:textColor="#334155"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/widget_action_btn"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/widget_btn_bg"
+        android:gravity="center"
+        android:text="@string/widget_answer_now"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+</RelativeLayout>

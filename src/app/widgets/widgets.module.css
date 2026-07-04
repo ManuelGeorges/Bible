@@ -1,0 +1,122 @@
+.container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+.header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    background: var(--color-bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.iconWrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.cardTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--color-text-primary);
+}
+
+.cardDesc {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.addButton {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.addButton:active {
+    opacity: 0.8;
+}
+
+.iosNote {
+    margin-top: 40px;
+    padding: 20px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 12px;
+    border: 1px dashed #f59e0b;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.iosNoteIcon {
+    color: #f59e0b;
+    flex-shrink: 0;
+}
+
+.iosNoteText {
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    line-height: 1.4;
+}
+
+[dir="rtl"] .iosNote {
+    text-align: right;
+}

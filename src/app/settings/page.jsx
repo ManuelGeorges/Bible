@@ -9,6 +9,7 @@ import {
   Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold, Languages
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
+import { Preferences } from '@capacitor/preferences'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
 import { signOut, deleteUser, onAuthStateChanged } from 'firebase/auth';
@@ -130,6 +131,23 @@ const Settings = () => {
     initSettings()
     return () => unsubscribe()
   }, [])
+
+  // مزامنة الثيم مع النظام الأصلي (Android) لتحديث الويدجت
+  useEffect(() => {
+    if (mounted && Capacitor.isNativePlatform() && theme) {
+      const syncTheme = async () => {
+        try {
+          await Preferences.set({ key: 'theme', value: theme });
+          if (window.AgiosScannerNative?.refreshWidgets) {
+            window.AgiosScannerNative.refreshWidgets();
+          }
+        } catch (e) {
+          console.error("Theme Sync Error:", e);
+        }
+      };
+      syncTheme();
+    }
+  }, [theme, mounted]);
 
   const handleMasterToggle = async () => {
     const nextState = !masterNotifications

@@ -1,21 +1,24 @@
 'use client';
 import Link from 'next/link';
-import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck } from 'lucide-react';
+import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck, LayoutGrid } from 'lucide-react';
 import styles from './more.module.css';
 import { useLanguage } from '../context/LanguageContext';
+import { Capacitor } from '@capacitor/core';
 
 export default function MoreSidebar({ isOpen, onClose, user }) {
   const { strings, language } = useLanguage();
+  const isAndroid = Capacitor.getPlatform() === 'android';
 
   const menuItems = [
     { name: strings.more.items.favourites, icon: <Heart size={20} />, href: '/favourites' },
-    // إظهار المسابقات فقط إذا كانت اللغة عربية
     language === 'ar' ? { name: strings.more.items.competitions, icon: <Trophy size={20} />, href: '/competitions' } : null,
     { name: strings.more.items.studyPlans, icon: <BookOpen size={20} />, href: '/studyPlans' },
+    // إضافة الأدوات المصغرة للأندرويد
+    isAndroid ? { name: strings.more.items.widgets || "الأدوات المصغرة", icon: <LayoutGrid size={20} />, href: '/widgets' } : null,
     { name: strings.more.items.profile, icon: <User size={20} />, href: '/profile' },
     { name: strings.more.items.settings, icon: <Settings size={20} />, href: '/settings' },
     { name: strings.more.items.points, icon: <Coins size={20} />, href: '/points' },
-  ].filter(Boolean); // فلاترة القيم الفارغة
+  ].filter(Boolean);
 
   return (
     <>

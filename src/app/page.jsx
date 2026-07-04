@@ -25,7 +25,7 @@ import {
     ExternalLink, ShieldCheck, QrCode, BookOpen,
     Scroll, Languages, PartyPopper, Mic, Headphones,
     Video, Music, Church, Sun, Moon, Cloud, Target, MapPin, BrainCircuit,
-    ChevronRight, Check, X, Trash2
+    ChevronRight, Check, X, Trash2, LayoutGrid
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
 import Badge from '../components/Badge/Badge';
@@ -333,7 +333,8 @@ const LandingPage = () => {
                         const data = snap.data();
                         setRawUserData(data);
                         const streak = data.streak || 0;
-                        setUserStats({ points: data.totalPoints || 0, streak: streak });
+                        const points = data.totalPoints || 0;
+                        setUserStats({ points: points, streak: streak });
                         checkStreakBadges(streak);
 
                         setUserBadges(data.badges || []);
@@ -379,9 +380,10 @@ const LandingPage = () => {
                                 const plansSummary = allStarted.map(p => ({
                                     id: p.id,
                                     title: p.title,
-                                    percent: p.stats?.percent || 0
+                                    percent: p.stats?.percent || 0,
+                                    remainingDays: (p.stats?.totalDays || 0) - (p.stats?.daysDone || 0)
                                 }));
-                                window.AgiosScannerNative.updateUserStats(streak, JSON.stringify(plansSummary));
+                                window.AgiosScannerNative.updateUserStats(streak, JSON.stringify(plansSummary), points);
                             } catch (err) {
                                 console.error("Native Bridge Error:", err);
                             }
@@ -468,9 +470,10 @@ const LandingPage = () => {
                         const plansSummary = allStarted.map(p => ({
                             id: p.id,
                             title: p.title,
-                            percent: p.stats?.percent || 0
+                            percent: p.stats?.percent || 0,
+                            remainingDays: (p.stats?.totalDays || 0) - (p.stats?.daysDone || 0)
                         }));
-                        window.AgiosScannerNative.updateUserStats(localStats.streak, JSON.stringify(plansSummary));
+                        window.AgiosScannerNative.updateUserStats(localStats.streak, JSON.stringify(plansSummary), localStats.points);
                     } catch (err) {
                         console.error("Native Bridge Error:", err);
                     }
@@ -732,6 +735,7 @@ const LandingPage = () => {
         { name: strings.home.quick_links.plans, icon: <BookMarked size={24} />, path: '/studyPlans', color: '#ec4899' },
         language === 'ar' ? { name: strings.home.quick_links.competitions, icon: <Trophy size={24} />, path: '/competitions', color: '#8b5cf6' } : null,
         { name: strings.home.quick_links.favorites, icon: <Heart size={24} />, path: '/favourites', color: '#ef4444' },
+        Capacitor.getPlatform() === 'android' ? { name: strings.home.quick_links.widgets || "Widgets", icon: <LayoutGrid size={24} />, path: '/widgets', color: '#8b5cf6' } : null,
     ].filter(Boolean);
 
     const completedGoalsCount = useMemo(() => dailyGoals.filter(g => g.completed).length, [dailyGoals]);

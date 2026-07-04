@@ -1,6 +1,9 @@
 package com.agios.bible;
 
 import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,8 +25,6 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         
-        // حل مشكلة الكراش SurfaceControl checkNotReleased
-        // نقوم بإنهاء شاشة البدء فوراً عند بدء الرسم لتجنب تعارض العمليات
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             splashScreen.setOnExitAnimationListener(splashScreenView -> {
                 splashScreenView.remove();
@@ -60,6 +61,37 @@ public class MainActivity extends BridgeActivity {
             }
 
             @JavascriptInterface
+            public void refreshWidgets() {
+                updateAllWidgets();
+            }
+
+            @JavascriptInterface
+            public void pinWidget(String widgetType) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    AppWidgetManager appWidgetManager = getSystemService(AppWidgetManager.class);
+                    Class<?> providerClass;
+
+                    switch (widgetType) {
+                        case "verse": providerClass = VerseWidgetProvider.class; break;
+                        case "question": providerClass = QuestionWidgetProvider.class; break;
+                        case "studyPlan": providerClass = StudyPlanWidgetProvider.class; break;
+                        case "points": providerClass = PointsWidgetProvider.class; break;
+                        default: return;
+                    }
+
+                    ComponentName myProvider = new ComponentName(MainActivity.this, providerClass);
+
+                    if (appWidgetManager.isRequestPinAppWidgetSupported()) {
+                        Intent pinnedWidgetCallbackIntent = new Intent(MainActivity.this, MainActivity.class);
+                        PendingIntent successCallback = PendingIntent.getBroadcast(MainActivity.this, 0,
+                                pinnedWidgetCallbackIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                        appWidgetManager.requestPinAppWidget(myProvider, null, successCallback);
+                    }
+                }
+            }
+
+            @JavascriptInterface
             public void updateSettings(String json, boolean masterEnabled) {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 prefs.edit()
@@ -69,24 +101,33 @@ public class MainActivity extends BridgeActivity {
                         .putString("_cap_masterNotifications", String.valueOf(masterEnabled))
                         .apply();
                 refreshAllAlarms();
+                updateAllWidgets();
             }
 
             @JavascriptInterface
-            public void updateUserStats(int streak, String plansSummaryJson) {
+            public void updateUserStats(int streak, String plansSummaryJson, int points) {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
+                
+                // تحديث الستريك
                 String streakStr = String.valueOf(streak);
-                editor.putString("_cap_agios_streak", streakStr);
-                editor.putString("agios_streak", streakStr);
                 editor.putString("_cap_userStreak", streakStr);
                 editor.putString("userStreak", streakStr);
 
+                // تحديث النقاط (المفتاح الذي يقرأ منه ويدجت النقاط)
+                String pointsStr = String.valueOf(points);
+                editor.putString("_cap_userPoints", pointsStr);
+                editor.putString("userPoints", pointsStr);
+
+                // تحديث الخطط
                 if (plansSummaryJson != null && !plansSummaryJson.isEmpty()) {
                     editor.putString("_cap_studyPlansSummary", plansSummaryJson);
                     editor.putString("studyPlansSummary", plansSummaryJson);
                 }
+                
                 editor.apply();
                 refreshAllAlarms();
+                updateAllWidgets();
             }
 
             @JavascriptInterface
@@ -97,6 +138,26 @@ public class MainActivity extends BridgeActivity {
         }, "AgiosScannerNative");
 
         handleDeepLinkIntent(getIntent());
+    }
+
+    private void updateAllWidgets() {
+        Context context = MainActivity.this;
+        Class<?>[] providers = {
+            VerseWidgetProvider.class,
+            QuestionWidgetProvider.class,
+            StudyPlanWidgetProvider.class,
+            PointsWidgetProvider.class
+        };
+        
+        for (Class<?> provider : providers) {
+            Intent intent = new Intent(context, provider);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, provider));
+            if (ids.length > 0) {
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                context.sendBroadcast(intent);
+            }
+        }
     }
 
     @Override

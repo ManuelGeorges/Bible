@@ -106,9 +106,14 @@ export default function UserTracker() {
           }
         }
 
+        // تحديث إحصائيات الويدجت (النقاط، الستريك، الخطط)
         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
-          const currentStreak = user ? (await getDoc(doc(db, 'users', user.uid))).data().streak : (await StorageService.get('agios_streak'));
-          window.AgiosScannerNative.updateUserStats(currentStreak);
+          const userData = user ? (await getDoc(doc(db, 'users', user.uid))).data() : null;
+          const currentStreak = userData ? userData.streak : (await StorageService.get('agios_streak'));
+          const currentPoints = userData ? (userData.totalPoints || 0) : (await StorageService.getLocalStats()).points;
+
+          // إرسال البيانات كاملة للأندرويد: الستريك، ملخص الخطط (null هنا ليتم تحديثه من page.jsx)، والنقاط
+          window.AgiosScannerNative.updateUserStats(currentStreak || 0, null, currentPoints || 0);
         }
 
       } catch (error) {

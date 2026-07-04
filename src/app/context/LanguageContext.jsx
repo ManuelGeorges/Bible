@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Preferences } from '@capacitor/preferences';
+import { useTheme } from 'next-themes';
+import { Capacitor } from '@capacitor/core';
 // استيراد ملفات الترجمة من المجلد الجديد في src/app/data
 import ar from '../data/translations/arabic/ar.json';
 import en from '../data/translations/English/en.json';
@@ -17,6 +19,7 @@ const translations = { ar, en, de, fr };
 
 export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
+    const { theme } = useTheme();
     const [useTashkeel, setUseTashkeel] = useState(false);
     const [isFirstTime, setIsFirstTime] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
@@ -45,7 +48,7 @@ export function LanguageProvider({ children }) {
 
     const dir = useMemo(() => (language === 'ar' ? 'rtl' : 'ltr'), [language]);
 
-    // مزامنة اللغة مع نظام الأندرويد فور التحميل أو التغيير
+    // مزامنة اللغة مع نظام الأندرويد
     useEffect(() => {
         if (isHydrated) {
             document.documentElement.lang = language;
@@ -53,7 +56,6 @@ export function LanguageProvider({ children }) {
 
             const syncLang = async () => {
                 try {
-                    // Capacitor يحفظ القيم في SharedPreferences بمفتاح يبدأ بـ _cap_
                     await Preferences.set({ key: 'language', value: language });
                     if (window.AgiosScannerNative?.refreshAlarms) {
                         window.AgiosScannerNative.refreshAlarms();
@@ -65,6 +67,24 @@ export function LanguageProvider({ children }) {
             syncLang();
         }
     }, [language, dir, isHydrated]);
+
+    // مزامنة الثيم مع نظام الأندرويد فور التغيير أو التحميل لضمان تحديث الويدجت
+    useEffect(() => {
+        if (isHydrated && Capacitor.isNativePlatform() && theme) {
+            const syncTheme = async () => {
+                try {
+                    await Preferences.set({ key: 'theme', value: theme });
+                    // إشعار الأندرويد بتحديث الويدجت ليعكس الثيم الجديد فوراً
+                    if (window.AgiosScannerNative?.refreshWidgets) {
+                        window.AgiosScannerNative.refreshWidgets();
+                    }
+                } catch (e) {
+                    console.error("Theme Sync Error:", e);
+                }
+            };
+            syncTheme();
+        }
+    }, [theme, isHydrated]);
 
     const changeLanguage = async (newLang) => {
         if (translations[newLang]) {
