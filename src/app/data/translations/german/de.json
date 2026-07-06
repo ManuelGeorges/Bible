@@ -672,8 +672,22 @@
     },
     "history": [
       {
-        "version": "2.0.4",
+        "version": "2.1.0",
         "date": "Letztes Update",
+        "title": "Widget-Unterstützung & Performance-Überholung",
+        "features": [
+          "Startbildschirm-Widgets hinzugefügt (Vers des Tages, Frage des Tages, Meine Punkte, Leseplan)",
+          "Die App-Leistung wurde für ein schnelleres Erlebnis deutlich verbessert",
+          "UI-Navigation und Interaktion vereinfacht",
+          "Verbesserte Datensynchronisation zwischen der App und den Widgets"
+        ],
+        "fixes": [
+          "Allgemeine technische Korrekturen und besserer Batterieverbrauch"
+        ]
+      },
+      {
+        "version": "2.0.4",
+        "date": "Vorheriges Update",
         "title": "Wichtige Korrekturen, Sprachunterstützung & Entwickler-Links",
         "features": [
           "App Store, Google Play und Entwickler-Links auf der Seite 'Über uns' hinzugefügt",
@@ -796,7 +810,7 @@
         ],
         "fixes": [
           "Langsamkeit in den Auswahl-Listen for Bücher und Kapitel behoben",
-          "Radikale Verbesserungen im Design der Wettbewerbsseite",
+          "Radikale Verbesserungen im design der Wettbewerbsseite",
           "Unschärfe in Dropdown-Menüs behoben"
         ]
       },

@@ -19,8 +19,8 @@ public class AgiosApplication extends Application {
         listener = (sharedPreferences, key) -> {
             if (key != null) {
                 Log.d(TAG, "Preference changed: " + key + ". Updating widgets...");
-                // تحديث الويدجت فوراً عند تغير أي قيمة (اللغة، النقاط، الخطط، إلخ)
-                WidgetHelper.updateAllWidgets(getApplicationContext());
+                // استخدام DataHelper لضمان مسح الكاش وتحديث الويدجت فوراً
+                DataHelper.updateAllWidgets(getApplicationContext());
             }
         };
 

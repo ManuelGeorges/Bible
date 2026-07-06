@@ -9,32 +9,23 @@ public class TranslationHelper {
     private static JSONObject translations;
     private static String currentLang = "";
 
-    /**
-     * جلب نص مترجم من ملفات الـ JSON بناءً على لغة التطبيق الحالية
-     */
     public static String getString(Context context, String keyPath, String defaultValue) {
         try {
             String lang = DataHelper.getLang(context);
 
-            // إعادة تحميل ملف الترجمة إذا تغيرت اللغة أو كانت المرة الأولى
             if (translations == null || !currentLang.equals(lang)) {
                 currentLang = lang;
                 translations = loadTranslationFile(context, lang);
             }
 
-            if (translations == null) {
-                Log.w(TAG, "Translations object is null for lang: " + lang);
-                return defaultValue;
-            }
+            if (translations == null) return defaultValue;
 
-            // التنقل داخل هيكلية الـ JSON (مثلاً "home.daily_verse")
             String[] keys = keyPath.split("\\.");
             JSONObject current = translations;
             for (int i = 0; i < keys.length - 1; i++) {
                 if (current.has(keys[i])) {
                     current = current.getJSONObject(keys[i]);
                 } else {
-                    Log.w(TAG, "Key path not found: " + keys[i] + " in " + keyPath);
                     return defaultValue;
                 }
             }
@@ -50,29 +41,27 @@ public class TranslationHelper {
 
     private static JSONObject loadTranslationFile(Context context, String lang) {
         String folder = DataHelper.getLanguageFolder(lang);
-        // تجربة أسماء ملفات مختلفة (ar.json أو French/fr.json)
         String[] possibleFileNames = {
             lang + ".json",
             folder + lang + ".json",
-            folder.toLowerCase() + lang + ".json"
+            lang.toLowerCase() + ".json"
         };
         
         for (String fileName : possibleFileNames) {
-            // محاولة التحميل من المسارات المختلفة
+            // تم تصحيح المسارات هنا (حذف assets/ والتركيز على المسارات الفعلية)
             String content = DataHelper.loadAssetString(context, "data/translations/" + fileName);
             if (content == null) content = DataHelper.loadAssetString(context, "translations/" + fileName);
-            if (content == null) content = DataHelper.loadAssetString(context, "assets/data/translations/" + fileName);
+            if (content == null) content = DataHelper.loadAssetString(context, fileName);
 
             try {
-                if (content != null) {
-                    Log.d(TAG, "Successfully loaded translation file: " + fileName);
+                if (content != null && !content.isEmpty()) {
+                    Log.d(TAG, "Successfully loaded translation: " + fileName);
                     return new JSONObject(content);
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error parsing JSON for: " + fileName, e);
+                Log.e(TAG, "Error parsing JSON: " + fileName);
             }
         }
-
         return null;
     }
 }

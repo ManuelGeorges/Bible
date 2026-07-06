@@ -62,7 +62,7 @@ public class MainActivity extends BridgeActivity {
 
             @JavascriptInterface
             public void refreshWidgets() {
-                updateAllWidgets();
+                DataHelper.updateAllWidgets(MainActivity.this);
             }
 
             @JavascriptInterface
@@ -101,7 +101,7 @@ public class MainActivity extends BridgeActivity {
                         .putString("_cap_masterNotifications", String.valueOf(masterEnabled))
                         .apply();
                 refreshAllAlarms();
-                updateAllWidgets();
+                DataHelper.updateAllWidgets(MainActivity.this);
             }
 
             @JavascriptInterface
@@ -109,17 +109,14 @@ public class MainActivity extends BridgeActivity {
                 SharedPreferences prefs = getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 
-                // تحديث الستريك
                 String streakStr = String.valueOf(streak);
                 editor.putString("_cap_userStreak", streakStr);
                 editor.putString("userStreak", streakStr);
 
-                // تحديث النقاط (المفتاح الذي يقرأ منه ويدجت النقاط)
                 String pointsStr = String.valueOf(points);
                 editor.putString("_cap_userPoints", pointsStr);
                 editor.putString("userPoints", pointsStr);
 
-                // تحديث الخطط
                 if (plansSummaryJson != null && !plansSummaryJson.isEmpty()) {
                     editor.putString("_cap_studyPlansSummary", plansSummaryJson);
                     editor.putString("studyPlansSummary", plansSummaryJson);
@@ -127,7 +124,7 @@ public class MainActivity extends BridgeActivity {
                 
                 editor.apply();
                 refreshAllAlarms();
-                updateAllWidgets();
+                DataHelper.updateAllWidgets(MainActivity.this);
             }
 
             @JavascriptInterface
@@ -140,24 +137,11 @@ public class MainActivity extends BridgeActivity {
         handleDeepLinkIntent(getIntent());
     }
 
-    private void updateAllWidgets() {
-        Context context = MainActivity.this;
-        Class<?>[] providers = {
-            VerseWidgetProvider.class,
-            QuestionWidgetProvider.class,
-            StudyPlanWidgetProvider.class,
-            PointsWidgetProvider.class
-        };
-        
-        for (Class<?> provider : providers) {
-            Intent intent = new Intent(context, provider);
-            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, provider));
-            if (ids.length > 0) {
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                context.sendBroadcast(intent);
-            }
-        }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // تحديث الويدجت فوراً عند خروج المستخدم من التطبيق لضمان تطبيق اللغة/الثيم/النقاط الجديدة
+        DataHelper.updateAllWidgets(this);
     }
 
     @Override

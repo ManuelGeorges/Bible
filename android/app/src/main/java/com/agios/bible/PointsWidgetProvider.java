@@ -42,17 +42,13 @@ public class PointsWidgetProvider extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.points_widget);
         
-        // تطبيق الثيم المحسن
         views.setInt(R.id.widget_root, "setBackgroundResource", isDark ? R.drawable.widget_bg_dark : R.drawable.widget_bg_light);
         views.setTextColor(R.id.widget_title, isDark ? Color.parseColor("#93C5FD") : Color.parseColor("#1E3A8A"));
         views.setTextColor(R.id.widget_points_value, isDark ? Color.parseColor("#F8FAFC") : Color.parseColor("#0F172A"));
         views.setTextColor(R.id.widget_points_label, isDark ? Color.parseColor("#94A3B8") : Color.parseColor("#64748B"));
         
-        // تخصيص مظهر الـ Streak بناءً على الثيم
         if (isDark) {
             views.setTextColor(R.id.widget_streak_value, Color.parseColor("#FDBA74"));
-            // في حالة الدارك مود نستخدم لون خلفية داكن للـ Streak
-            // ملحوظة: setInt مع setBackgroundColor قد لا يظهر الحواف المستديرة، يفضل استخدام Drawable
         } else {
             views.setTextColor(R.id.widget_streak_value, Color.parseColor("#D97706"));
         }
@@ -62,10 +58,11 @@ public class PointsWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_points_label, pointsLabel);
         views.setTextViewText(R.id.widget_streak_value, streakDisplay);
 
-        // إضافة حدث الضغط لفتح صفحة النقاط
+        // جعل الويدجت بالكامل قابلاً للضغط للتوجه لصفحة النقاط
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra("deepLink", "/#points");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        // استخدام requestCode فريد لكل ويدجت لضمان عدم تكرار الـ Intents
         PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId + 100, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
 

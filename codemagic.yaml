@@ -29,7 +29,7 @@ workflows:
       - name: Increment Build Number
         script: |
           cd ios/App
-          agvtool new-marketing-version 2.0.4
+          agvtool new-marketing-version 2.0.5
           agvtool new-version -all $(date +%s)
       - name: Build and Sign IPA
         script: |

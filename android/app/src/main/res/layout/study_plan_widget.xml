@@ -19,13 +19,15 @@
         android:letterSpacing="0.1"
         android:textStyle="bold" />
 
-    <View
+    <!-- استخدام ImageView بدلاً من View لضمان التوافق مع RemoteViews -->
+    <ImageView
         android:id="@+id/widget_divider"
         android:layout_width="24dp"
         android:layout_height="2dp"
         android:layout_below="@id/widget_title"
         android:layout_marginTop="4dp"
-        android:background="#3B82F6" />
+        android:background="#3B82F6"
+        android:contentDescription="divider" />
 
     <ListView
         android:id="@+id/widget_plans_list"

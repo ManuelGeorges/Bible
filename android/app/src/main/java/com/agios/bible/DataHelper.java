@@ -1,31 +1,43 @@
 package com.agios.bible;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
+import java.util.List;
 import java.util.Scanner;
 
 public class DataHelper {
     private static final String TAG = "AgiosDataHelper";
+    private static final String CACHE_PREFS = "AgiosWidgetCache";
+    
+    private static String lastLoadedBiblePath = "";
+    private static JSONArray cachedBibleArray = null;
 
     public static String getLang(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-        String[] langKeys = {"language", "app_lang", "settings_lang", "selected_lang", "settings-language", "lang", "locale"};
-        String lang = null;
-        for (String key : langKeys) {
-            lang = cleanCapacitorString(getPrefsString(prefs, key));
-            if (lang != null && !lang.isEmpty()) break;
+        try {
+            SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+            String[] langKeys = {"language", "app_lang", "settings_lang", "selected_lang", "settings-language"};
+            String lang = null;
+            for (String key : langKeys) {
+                lang = cleanCapacitorString(getPrefsString(prefs, key));
+                if (lang != null && !lang.isEmpty()) break;
+            }
+            
+            if (lang == null || lang.isEmpty()) lang = "ar";
+            lang = lang.toLowerCase().split("-")[0].split("_")[0];
+            return lang;
+        } catch (Exception e) {
+            return "ar";
         }
-        if (lang == null || lang.isEmpty()) lang = "ar";
-        lang = lang.toLowerCase();
-        if (lang.contains("-")) lang = lang.split("-")[0];
-        return lang;
     }
 
     public static boolean isDarkTheme(Context context) {
@@ -34,21 +46,50 @@ public class DataHelper {
             String theme = cleanCapacitorString(getPrefsString(prefs, "theme"));
             if ("dark".equalsIgnoreCase(theme)) return true;
             if ("light".equalsIgnoreCase(theme)) return false;
-            int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-            return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+            return (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public static void updateAllWidgets(Context context) {
+        try {
+            Context appCtx = context.getApplicationContext();
+            AppWidgetManager am = AppWidgetManager.getInstance(appCtx);
+            Class<?>[] providers = {
+                VerseWidgetProvider.class, 
+                QuestionWidgetProvider.class, 
+                StudyPlanWidgetProvider.class, 
+                PointsWidgetProvider.class
+            };
+            
+            for (Class<?> provider : providers) {
+                ComponentName name = new ComponentName(appCtx, provider);
+                int[] ids = am.getAppWidgetIds(name);
+                if (ids != null && ids.length > 0) {
+                    Intent intent = new Intent(appCtx, provider);
+                    intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                    appCtx.sendBroadcast(intent);
+                    
+                    if (provider == StudyPlanWidgetProvider.class) {
+                        am.notifyAppWidgetViewDataChanged(ids, R.id.widget_plans_list);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "updateAllWidgets error", e);
         }
     }
 
     public static String cleanCapacitorString(String val) {
         if (val == null) return null;
         val = val.trim();
+        if (val.equalsIgnoreCase("null")) return null;
         while (val.startsWith("\"") && val.endsWith("\"") && val.length() >= 2) {
             val = val.substring(1, val.length() - 1);
         }
-        val = val.replace("\\\"", "\"");
-        return val;
+        return val.replace("\\\"", "\"");
     }
 
     public static String getPrefsString(SharedPreferences prefs, String key) {
@@ -58,18 +99,22 @@ public class DataHelper {
     }
 
     public static String loadAssetString(Context context, String path) {
-        // هذه المسارات متطابقة تماماً مع منطق الإشعارات (AgiosNotificationReceiver)
+        if (path == null || path.isEmpty()) return null;
+        
         String[] searchPaths = {
                 path,
                 "public/" + path,
-                "public/translations/" + path,
                 "public/data/" + path,
+                "public/translations/" + path,
                 "public/data/translations/" + path,
                 "www/" + path,
                 "www/data/" + path,
                 "data/" + path,
                 "translations/" + path,
-                "arabic/" + path
+                "arabic/" + path,
+                "English/" + path,
+                "French/" + path,
+                "german/" + path
         };
 
         for (String p : searchPaths) {
@@ -82,71 +127,172 @@ public class DataHelper {
         return null;
     }
 
+    private static String tryOpenAsset(Context context, String path) {
+        try (InputStream is = context.getAssets().open(path)) {
+            Scanner s = new Scanner(is).useDelimiter("\\A");
+            return s.hasNext() ? s.next() : "";
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    public static JSONObject getDailyVerse(Context context) {
+        String lang = getLang(context);
+        Calendar now = Calendar.getInstance();
+        int dayOfYear = now.get(Calendar.DAY_OF_YEAR);
+        SharedPreferences cache = context.getSharedPreferences(CACHE_PREFS, Context.MODE_PRIVATE);
+        String cacheKey = "dv_" + lang + "_" + dayOfYear;
+        
+        String cached = cache.getString(cacheKey, null);
+        if (cached != null) {
+            try { return new JSONObject(cached); } catch (Exception ignored) {}
+        }
+
+        String folder = getLanguageFolder(lang);
+        String fileName = "dailyVerses_" + lang + ".json";
+        
+        JSONObject dataResult = null;
+        String[] paths = {
+            folder + fileName,
+            "translations/" + folder + fileName,
+            "data/translations/" + folder + fileName,
+            "dailyVerses.json",
+            "data/dailyVerses.json",
+            "dailyVerses_ar.json"
+        };
+
+        for (String path : paths) {
+            dataResult = getTodayData(context, path);
+            if (dataResult != null) break;
+        }
+
+        if (dataResult != null) {
+            cache.edit().putString(cacheKey, dataResult.toString()).apply();
+        }
+        return dataResult;
+    }
+
+    public static JSONObject getDailyQuestion(Context context) {
+        String lang = getLang(context);
+        Calendar now = Calendar.getInstance();
+        int dayOfYear = now.get(Calendar.DAY_OF_YEAR);
+        SharedPreferences cache = context.getSharedPreferences(CACHE_PREFS, Context.MODE_PRIVATE);
+        String cacheKey = "dq_" + lang + "_" + dayOfYear;
+
+        String cached = cache.getString(cacheKey, null);
+        if (cached != null) {
+            try { return new JSONObject(cached); } catch (Exception ignored) {}
+        }
+
+        String folder = getLanguageFolder(lang);
+        String fileName = "dailyQuestions_" + lang + ".json";
+        
+        JSONObject dataResult = null;
+        String[] paths = {
+            folder + fileName,
+            "public/translations/" + folder + fileName,
+            "public/data/translations/" + folder + fileName,
+            "dailyQuestions.json",
+            "data/dailyQuestions.json"
+        };
+
+        for (String path : paths) {
+            dataResult = getTodayData(context, path);
+            if (dataResult != null) break;
+        }
+
+        if (dataResult != null) {
+            cache.edit().putString(cacheKey, dataResult.toString()).apply();
+        }
+        return dataResult;
+    }
+
     public static JSONObject getTodayData(Context context, String path) {
         try {
             String content = loadAssetString(context, path);
             if (content == null || content.isEmpty()) return null;
-
+            
             JSONArray array = new JSONArray(content);
             Calendar now = Calendar.getInstance();
             int month = now.get(Calendar.MONTH) + 1;
             int day = now.get(Calendar.DAY_OF_MONTH);
-
+            
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-                if (obj.optInt("month") == month && obj.optInt("day") == day) {
-                    return obj;
-                }
+                if (obj.optInt("month") == month && obj.optInt("day") == day) return obj;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error matching today data for: " + path);
+            Log.e(TAG, "Error parsing today data from " + path);
         }
         return null;
     }
 
-    public static String getVerseFromBible(Context context, String lang, String bookId, int chapter, int verseNum) {
+    public static List<JSONObject> getStudyPlansList(Context context) {
+        List<JSONObject> planList = new ArrayList<>();
         try {
-            String biblePath = getBibleFilePath(lang);
-            String content = loadAssetString(context, biblePath);
-            if (content == null) return "";
+            SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
+            String summaryRaw = getPrefsString(prefs, "studyPlansSummary");
+            String summaryJson = cleanCapacitorString(summaryRaw);
+            
+            if (summaryJson != null && !summaryJson.isEmpty()) {
+                if (summaryJson.startsWith("[")) {
+                    JSONArray array = new JSONArray(summaryJson);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.optJSONObject(i);
+                        if (obj != null) planList.add(obj);
+                    }
+                } else if (summaryJson.startsWith("{")) {
+                    planList.add(new JSONObject(summaryJson));
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error reading study plans", e);
+        }
+        return planList;
+    }
 
-            JSONArray bibleArray = new JSONArray(content);
-            for (int i = 0; i < bibleArray.length(); i++) {
-                JSONObject bookObj = bibleArray.getJSONObject(i);
-                if (bookObj.optString("abbrev").equalsIgnoreCase(bookId)) {
+    public static synchronized String getVerseFromBible(Context context, String lang, String bookId, int chapter, int verseNum) {
+        SharedPreferences cache = context.getSharedPreferences(CACHE_PREFS, Context.MODE_PRIVATE);
+        String cacheKey = "vtext_" + lang + "_" + bookId + "_" + chapter + "_" + verseNum;
+        String cachedText = cache.getString(cacheKey, null);
+        if (cachedText != null) return cachedText;
+
+        try {
+            String bibleFile = getBibleFilePath(lang);
+            
+            if (!lastLoadedBiblePath.equals(bibleFile) || cachedBibleArray == null) {
+                String content = loadAssetString(context, bibleFile);
+                if (content == null || content.isEmpty()) return "";
+                cachedBibleArray = new JSONArray(content);
+                lastLoadedBiblePath = bibleFile;
+            }
+            
+            for (int i = 0; i < cachedBibleArray.length(); i++) {
+                JSONObject bookObj = cachedBibleArray.getJSONObject(i);
+                String bAbbrev = bookObj.optString("abbrev", "");
+                String bId = bookObj.optString("id", "");
+                String bBookId = bookObj.optString("book_id", "");
+                
+                if (bAbbrev.equalsIgnoreCase(bookId) || 
+                    bId.equalsIgnoreCase(bookId) ||
+                    bBookId.equalsIgnoreCase(bookId)) {
+                    
                     JSONArray chapters = bookObj.getJSONArray("chapters");
-                    if (chapter <= chapters.length()) {
+                    if (chapter > 0 && chapter <= chapters.length()) {
                         JSONArray verses = chapters.getJSONArray(chapter - 1);
-                        if (verseNum <= verses.length()) {
-                            return verses.getString(verseNum - 1);
+                        if (verseNum > 0 && verseNum <= verses.length()) {
+                            String result = verses.getString(verseNum - 1);
+                            cache.edit().putString(cacheKey, result).apply();
+                            return result;
                         }
                     }
                     break;
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "Bible Lookup Error: " + e.getMessage());
+            Log.e(TAG, "Error getting verse text from " + lang, e);
         }
         return "";
-    }
-
-    public static String getBookName(Context context, String lang, String bookId) {
-        try {
-            String content = loadAssetString(context, "bookNames.json");
-            if (content != null) {
-                JSONObject allNames = new JSONObject(content);
-                if (allNames.has(lang)) {
-                    JSONArray langBooks = allNames.getJSONArray(lang);
-                    for (int i = 0; i < langBooks.length(); i++) {
-                        JSONObject b = langBooks.getJSONObject(i);
-                        if (b.optString("book_id").equalsIgnoreCase(bookId)) {
-                            return b.getString("name");
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-        return bookId;
     }
 
     public static String getBibleFilePath(String lang) {
@@ -157,6 +303,28 @@ public class DataHelper {
             case "de": return folder + "de_luther.json";
             default: return folder + "ar_svd_tashkeel_site.json";
         }
+    }
+
+    public static String getBookName(Context context, String lang, String bookId) {
+        try {
+            String content = loadAssetString(context, "bookNames.json");
+            if (content != null) {
+                JSONObject allNames = new JSONObject(content);
+                String lookupLang = lang;
+                if (!allNames.has(lookupLang)) lookupLang = "ar";
+                
+                JSONArray books = allNames.getJSONArray(lookupLang);
+                for (int i = 0; i < books.length(); i++) {
+                    JSONObject b = books.getJSONObject(i);
+                    if (b.optString("book_id").equalsIgnoreCase(bookId) || 
+                        b.optString("id").equalsIgnoreCase(bookId) ||
+                        b.optString("abbrev").equalsIgnoreCase(bookId)) {
+                        return b.getString("name");
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return bookId;
     }
 
     public static String getLanguageFolder(String lang) {
@@ -173,11 +341,9 @@ public class DataHelper {
         char[] arabicChars = {'٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'};
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < n.length(); i++) {
-            if (Character.isDigit(n.charAt(i))) {
-                builder.append(arabicChars[n.charAt(i) - '0']);
-            } else {
-                builder.append(n.charAt(i));
-            }
+            char c = n.charAt(i);
+            if (c >= '0' && c <= '9') builder.append(arabicChars[c - '0']);
+            else builder.append(c);
         }
         return builder.toString();
     }

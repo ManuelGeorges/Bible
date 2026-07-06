@@ -15,49 +15,55 @@ public class QuestionWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        for (int appWidgetId : appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId);
-        }
+        new Thread(() -> {
+            for (int appWidgetId : appWidgetIds) {
+                updateAppWidget(context, appWidgetManager, appWidgetId);
+            }
+        }).start();
     }
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
-        String lang = DataHelper.getLang(context);
-        boolean isDark = DataHelper.isDarkTheme(context);
-        String question = "...";
-
         try {
-            // استخدام نفس منطق الإشعارات لجلب سؤال اليوم
-            JSONObject data = DataHelper.getTodayData(context, "dailyQuestions.json", lang);
-            if (data != null) {
-                question = data.optString("question", "...");
+            String lang = DataHelper.getLang(context);
+            boolean isDark = DataHelper.isDarkTheme(context);
+            String question = "...";
+
+            try {
+                JSONObject data = DataHelper.getDailyQuestion(context);
+                if (data != null) {
+                    question = data.optString("question", "...");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error matching today question", e);
             }
+
+            String title = TranslationHelper.getString(context, "home.daily_challenge", lang.equals("ar") ? "سؤال اليوم" : "Daily Question");
+            String buttonText = TranslationHelper.getString(context, "common.details", lang.equals("ar") ? "جاوب الآن" : "Answer Now");
+
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.question_widget);
+            
+            views.setInt(R.id.widget_root, "setBackgroundResource", isDark ? R.drawable.widget_bg_dark : R.drawable.widget_bg_light);
+            views.setTextColor(R.id.widget_title, isDark ? Color.parseColor("#60A5FA") : Color.parseColor("#1E3A8A"));
+            views.setTextColor(R.id.widget_question_text, isDark ? Color.parseColor("#E2E8F0") : Color.parseColor("#333333"));
+            
+            views.setTextViewText(R.id.widget_title, title);
+            views.setTextViewText(R.id.widget_question_text, question);
+            views.setTextViewText(R.id.widget_action_btn, buttonText);
+
+            // إعداد الضغط للتوجه لصفحة سؤال اليوم
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.putExtra("deepLink", "/#daily-question");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId + 400, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            
+            // جعل الضغط متاحاً على الويدجت بالكامل وعلى زر الإجراء
+            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
+            views.setOnClickPendingIntent(R.id.widget_action_btn, pendingIntent);
+
+            appWidgetManager.updateAppWidget(appWidgetId, views);
         } catch (Exception e) {
-            Log.e(TAG, "Error matching today question", e);
+            Log.e(TAG, "Error updating question widget UI", e);
         }
-
-        String title = TranslationHelper.getString(context, "home.daily_challenge", lang.equals("ar") ? "سؤال اليوم" : "Daily Question");
-        String buttonText = TranslationHelper.getString(context, "common.details", lang.equals("ar") ? "جاوب الآن" : "Answer Now");
-
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.question_widget);
-        
-        // تطبيق الثيم
-        views.setInt(R.id.widget_root, "setBackgroundResource", isDark ? R.drawable.widget_bg_dark : R.drawable.widget_bg_light);
-        views.setTextColor(R.id.widget_title, isDark ? Color.parseColor("#60A5FA") : Color.parseColor("#1E3A8A"));
-        views.setTextColor(R.id.widget_question_text, isDark ? Color.parseColor("#E2E8F0") : Color.parseColor("#333333"));
-        
-        views.setTextViewText(R.id.widget_title, title);
-        views.setTextViewText(R.id.widget_question_text, question);
-        views.setTextViewText(R.id.widget_action_btn, buttonText);
-
-        // فتح صفحة السؤال عند الضغط
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra("deepLink", "/#daily-question");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId + 400, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        
-        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
-        views.setOnClickPendingIntent(R.id.widget_action_btn, pendingIntent);
-
-        appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 }

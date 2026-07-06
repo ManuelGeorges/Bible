@@ -672,8 +672,22 @@
     },
     "history": [
       {
-        "version": "2.0.4",
+        "version": "2.1.0",
         "date": "Dernière mise à jour",
+        "title": "Support des Widgets et Refonte des Performances",
+        "features": [
+          "Ajout de widgets sur l'écran d'accueil (Verset du jour, Question du jour, Mes points, Plan d'étude)",
+          "Amélioration significative des performances de l'application pour une expérience plus rapide",
+          "Navigation et interaction UI simplifiées",
+          "Amélioration de la synchronisation des données entre l'application et les widgets"
+        ],
+        "fixes": [
+          "Correctifs techniques généraux et meilleure consommation de la batterie"
+        ]
+      },
+      {
+        "version": "2.0.4",
+        "date": "Mise à jour précédente",
         "title": "Correctifs critiques, support linguistique et liens développeur",
         "features": [
           "Ajout des liens App Store, Google Play et Développeur dans la page 'À propos'",
