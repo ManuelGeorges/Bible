@@ -117,7 +117,7 @@ export default function BibleContent() {
 
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
-  // --- Badges Logic (Original) ---
+  // --- Badges Logic ---
   const unlockBadge = useCallback(async (badgeId) => {
     const authUser = getAuth().currentUser;
     if (authUser) {
@@ -161,7 +161,17 @@ export default function BibleContent() {
     }
   }, [bookNamesData, unlockBadge]);
 
-  // --- Initial Data Load ( الطلقة ) ---
+  // --- التمرير التلقائي للآية النشطة عند تشغيل الصوت ---
+  useEffect(() => {
+    if (currentVerseId && currentVerseId !== -1 && isPlaying) {
+      const element = document.getElementById(`verse-${currentVerseId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentVerseId, isPlaying]);
+
+  // --- Initial Data Load ---
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -210,11 +220,11 @@ export default function BibleContent() {
     }
   }, [selectedChapterIndex, unlockBadge]);
 
-  // Audio Sync logic (Original)
+  // Audio Sync logic (Updated: Exclude 'de')
   useEffect(() => {
     const syncAudio = async () => {
         if (isLoading || bookNamesData.length === 0) return;
-        const supportedAudioLangs = ['ar', 'en', 'fr'];
+        const supportedAudioLangs = ['ar', 'en', 'fr']; // Remove 'de'
         if (!supportedAudioLangs.includes(language)) return;
         const book = bookNamesData[selectedBookIndex];
         const chapter = selectedChapterIndex + 1;
@@ -233,7 +243,7 @@ export default function BibleContent() {
     syncAudio();
   }, [selectedChapterIndex, selectedBookIndex, isLoading, bookNamesData, contextFetchAudio, globalAudioUrl, isPlaying, isAutoNext, playTrack, language]);
 
-  // App Settings Logic (Original)
+  // App Settings Logic
   useEffect(() => {
     const syncAppSettings = () => {
       const savedTheme = localStorage.getItem('theme') || 'system';
@@ -255,7 +265,7 @@ export default function BibleContent() {
     return () => window.removeEventListener('storage', syncAppSettings);
   }, []);
 
-  // User Data Sync (Original)
+  // User Data Sync
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(getAuth(), async (authUser) => {
       setUser(authUser);
@@ -276,7 +286,7 @@ export default function BibleContent() {
     return () => unsubAuth();
   }, []);
 
-  // --- Handlers (Original Logic & Speed) ---
+  // --- Handlers ---
 
   const buildReferenceText = useCallback((verseIndexes) => {
     const chapterLabel = formatNumber(selectedChapterIndex + 1);
@@ -508,7 +518,7 @@ export default function BibleContent() {
 
   const handleAudioButtonClick = async () => {
     if (contextAudioLoading) return;
-    const supportedAudioLangs = ['ar', 'en', 'fr'];
+    const supportedAudioLangs = ['ar', 'en', 'fr']; // Remove 'de'
     if (!supportedAudioLangs.includes(language)) { toast.error(strings.bible.toasts.audio_not_available_lang); return; }
     const book = bookNamesData[selectedBookIndex], chapter = selectedChapterIndex + 1;
     if (globalAudioUrl && globalAudioUrl.includes(`/${book.book_id}/${chapter}`)) setIsPanelOpen(true);

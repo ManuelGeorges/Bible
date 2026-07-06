@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import styles from './analysis.module.css';
-import { ArrowRight, Sparkles, Loader2, AlertCircle, Clock, Copy, Check, Share2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, Clock, Copy, Check, Share2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
@@ -233,7 +233,7 @@ function AnalysisContent() {
     1. Einleitung: Begrüßen Sie als "Agios-Assistent".
     2. Linguistik: Herkunft der Wörter (Hebräisch/Griechisch/Aramäisch) nur für die Passage.
     3. Historischer Hintergrund: kultureller und historischer Kontext.
-    4. Exegese: theologische/patristische Interpretation (koptisch-orthodoxe Tradition). Verwenden und zitieren Sie bei der Exegese die Werke oder Lehren von P. Tadros Ya'qub Malaty und P. Antonios Fikry (Arabisch: تادرس يعقوب ملطي، أنطونيوس فكري), wo relevant; fügen Sie ein kurzes Zitat oder eine Quellenangabe hinzu.
+    4. Exegese: theologische/patristische Interpretation (koptisch-orthodoxe Tradition). Verwenden und zitieren Sie bei der Exegese die Werke oder Lehren von P. Tadros Ya'qub Malaty und P. Antonios Fikry (Arabisch: تادرس يعقوب ملطي, أنطونيوس فكري), wo relevant; fügen Sie ein kurzes Zitat oder eine Quellenangabe hinzu.
     5. Application: zeitgenössische praktische Implikationen.
     6. Einwände: Behandeln Sie nur Einwände, die sich AUF DIE PASSAGE beziehen.
 
@@ -466,9 +466,6 @@ function AnalysisContent() {
     <div className={styles.container} dir={dir}>
       <header className={styles.header}>
         <div className={styles.headerRight}>
-          <button onClick={() => router.back()} className={styles.backBtn} title={strings.common.back}>
-            <ArrowRight size={24} />
-          </button>
           <div className={styles.titleInfo}>
             <h1 className={styles.title}>{displayTitle}</h1>
             <span className={styles.aiBadge}><Sparkles size={12} /> {strings.analysis.ai_badge}</span>

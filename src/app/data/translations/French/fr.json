@@ -436,7 +436,7 @@
     "invite_friend": "Inviter un ami",
     "delete_account": "Supprimer le compte",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte ?",
-    "version": "Agios App - Version 1.2.0",
+    "version": "Agios App - Version 2.1.1",
     "share_title": "Application Agios",
     "share_text": "Téléchargez l'application Agios and lisez la Bible d'une nouvelle façon !",
     "share_dialog": "Partager l'application with des amis",
@@ -483,7 +483,7 @@
     "guest_user": "Invité Agios",
     "select_book": "Choisissez un livre pour commencer",
     "welcome_title": "Défi des livres bibliques",
-    "welcome_desc": "Testez vos connaissances et collectez des points",
+    "welcome_desc": "Test vos connaissances et collectez des points",
     "history_title": "Historique des résultats",
     "redo": "Recommencer",
     "final_results": "Résultats finaux",
@@ -672,8 +672,21 @@
     },
     "history": [
       {
-        "version": "2.1.0",
+        "version": "2.1.1",
         "date": "Dernière mise à jour",
+        "title": "Améliorations de l'Audio & de l'IA et corrections de l'interface",
+        "features": [
+          "Améliorations complètes du système de Bible Audio pour prendre en charge toutes les langues et tous les livres",
+          "Amélioration de la réactivité et de la fiabilité des fonctionnalités d'IA dans la recherche et l'analyse"
+        ],
+        "fixes": [
+          "Correction d'un problème où certaines fonctionnalités d'IA s'arrêtaient de fonctionner",
+          "Correction du problème de double bouton retour sur les pages d'Analyse et de Widgets"
+        ]
+      },
+      {
+        "version": "2.1.0",
+        "date": "Mise à jour précédente",
         "title": "Support des Widgets et Refonte des Performances",
         "features": [
           "Ajout de widgets sur l'écran d'accueil (Verset du jour, Question du jour, Mes points, Plan d'étude)",

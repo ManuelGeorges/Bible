@@ -436,7 +436,7 @@
     "invite_friend": "Invite a Friend to App",
     "delete_account": "Delete Account",
     "delete_confirm": "Are you sure you want to delete your account permanently?",
-    "version": "Agios App - Version 2.1.0",
+    "version": "Agios App - Version 2.1.1",
     "share_title": "Agios App",
     "share_text": "Download the Agios application and read the Bible in a new way!",
     "share_dialog": "Share App with friends",
@@ -672,8 +672,21 @@
     },
     "history": [
       {
-        "version": "2.1.0",
+        "version": "2.1.1",
         "date": "Latest Update",
+        "title": "Audio & AI Enhancements and UI Fixes",
+        "features": [
+          "Comprehensive improvements to the Audio Bible system to support all languages and books",
+          "Enhanced response and reliability of AI features in search and analysis"
+        ],
+        "fixes": [
+          "Fixed an issue where some AI features stopped working",
+          "Fixed duplicate back button issue on Analysis and Widgets pages"
+        ]
+      },
+      {
+        "version": "2.1.0",
+        "date": "Previous Update",
         "title": "Widgets Support & Performance Overhaul",
         "features": [
           "Added Home Screen Widgets (Daily Verse, Daily Question, My Points, Study Plan)",

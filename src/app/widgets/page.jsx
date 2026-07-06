@@ -10,9 +10,7 @@ import {
     Award,
     Plus,
     Smartphone,
-    Info,
-    ChevronRight,
-    ArrowLeft
+    Info
 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'react-hot-toast';
@@ -71,9 +69,6 @@ export default function WidgetsPage() {
     return (
         <div className={`${styles.container} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
             <header className={styles.header}>
-                <button onClick={() => router.back()} className={styles.backBtn}>
-                    <ArrowLeft size={24} />
-                </button>
                 <h1 className={styles.title}>{strings.widgets.title}</h1>
                 <p className={styles.subtitle}>{strings.widgets.subtitle}</p>
             </header>

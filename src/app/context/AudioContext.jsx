@@ -132,6 +132,9 @@ export function AudioProvider({ children }) {
     }, [processTimestamps]);
 
     const fetchAudioData = useCallback(async (bookIdx, chapIdx) => {
+        // الاستثناء الخاص باللغة الألمانية لعدم توفر الصوت لها
+        if (language === 'de') return null;
+
         const book = bookNames[bookIdx];
         if (!book || !book.book_id) return null;
 
@@ -144,38 +147,78 @@ export function AudioProvider({ children }) {
         setIsAudioLoading(true);
         const key = '5e4b1535-5f2b-4f13-9032-9db0297664a6';
 
-        // FCBH Fileset Mappings with confirmed patterns from user links
+        // FCBH Fileset Mappings
         const fcbhMappings = {
-            'ar': { new: 'ARZVDVN1DA', old: 'ARZVDVO1DA' },
-            'en': { new: 'EN1WEBN2DA', old: 'EN1WEBO2DA' },
-            'fr': { new: 'FRNTLSN2DA', old: 'FRNTLSO2DA' }, // Updated pattern: FRNTLS
-            'de': { new: 'DEUL12N2DA', old: 'DEUL12O2DA' }
+            'ar': { new: 'ARZVDVN1DA', old: 'ARZVDVO1DA', bible: 'ARZVDV' },
+            'en': { new: 'EN1WEBN2DA', old: 'EN1WEBO2DA', bible: 'ENGWEB' },
+            'fr': { new: 'FRNTLSN2DA', old: 'FRNTLSO2DA', bible: 'FRNTLS' }
         };
 
-        const langConfig = fcbhMappings[language] || fcbhMappings['ar'];
-        const audioFilesetId = book.type === 'new' ? langConfig.new : langConfig.old;
+        let config = fcbhMappings[language];
+        if (!config) {
+            config = {
+                new: `${language.toUpperCase()}N1DA`,
+                old: `${language.toUpperCase()}O1DA`,
+                bible: null
+            };
+        }
 
-        const urlReq = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
+        let audioFilesetId = book.type === 'new' ? config.new : config.old;
 
         try {
-            const audioRes = await fetch(urlReq);
+            let urlReq = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
+            let audioRes = await fetch(urlReq);
+
+            if (!audioRes.ok && !config.bible) {
+                const biblesRes = await fetch(`https://4.dbt.io/api/bibles?v=4&key=${key}&language_code=${language}`);
+                if (biblesRes.ok) {
+                    const biblesData = await biblesRes.json();
+                    if (biblesData.data && biblesData.data.length > 0) {
+                        config.bible = biblesData.data[0].id;
+                    }
+                }
+            }
+
+            if (!audioRes.ok && config.bible) {
+                const filesetsRes = await fetch(`https://4.dbt.io/api/bibles/${config.bible}/filesets?v=4&key=${key}`);
+                if (filesetsRes.ok) {
+                    const fsData = await filesetsRes.json();
+                    const found = fsData.data?.find(f =>
+                        (f.set_type_code === 'audio_drama' || f.set_type_code === 'audio') &&
+                        ((book.type === 'new' && f.id.includes('N')) || (book.type === 'old' && f.id.includes('O')))
+                    );
+                    if (found) {
+                        audioFilesetId = found.id;
+                        urlReq = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
+                        audioRes = await fetch(urlReq);
+                    }
+                }
+            }
+
             if (!audioRes.ok) throw new Error("Audio not found");
             const audioData = await audioRes.json();
             const url = audioData.data?.[0]?.path;
             if (!url) throw new Error("URL not found");
 
-            // Define timing candidates dynamically
+            let times = [];
             let timingCandidates = [audioFilesetId];
 
-            if (language === 'ar') {
-                timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA', 'ARZSMVN1DA', 'ARZSMVO1DA');
-            } else if (language === 'en') {
-                timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA', 'ENGWEBN2DA', 'ENGWEBO2DA');
-            } else if (language === 'fr') {
-                timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA', 'FRNLSGN2DA', 'FRNLSGO2DA');
+            if (language === 'ar') timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA', 'ARZSMVN1DA', 'ARZSMVO1DA');
+            else if (language === 'en') timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA', 'ENGWEBN2DA', 'ENGWEBO2DA');
+            else if (language === 'fr') timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA', 'FRNLSGN2DA', 'FRNLSGO2DA');
+
+            if (config.bible) {
+                 const fsRes = await fetch(`https://4.dbt.io/api/bibles/${config.bible}/filesets?v=4&key=${key}`);
+                 if (fsRes.ok) {
+                     const fsData = await fsRes.json();
+                     fsData.data?.forEach(f => {
+                         if (!timingCandidates.includes(f.id) && (f.set_type_code === 'audio_drama' || f.set_type_code === 'audio')) {
+                             timingCandidates.push(f.id);
+                         }
+                     });
+                 }
             }
 
-            let times = [];
             for (const tId of timingCandidates) {
                 try {
                     const timeReq = `https://4.dbt.io/api/timestamps/${tId}/${book.book_id}/${chapter}?v=4&key=${key}`;
@@ -236,7 +279,6 @@ export function AudioProvider({ children }) {
         const loadInitialData = async () => {
             try {
                 let bibleDataImport;
-                // تصحيح المسارات ليشير إلى ../data بدلاً من ../../data
                 if (language === 'ar') {
                     bibleDataImport = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
                 } else if (language === 'en') {

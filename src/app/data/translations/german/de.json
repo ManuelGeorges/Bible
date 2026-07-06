@@ -436,7 +436,7 @@
     "invite_friend": "Freund zur App einladen",
     "delete_account": "Konto löschen",
     "delete_confirm": "Bist du sicher, dass du dein Konto dauerhaft löschen möchtest?",
-    "version": "Agios App - Version 1.2.0",
+    "version": "Agios App - Version 2.1.1",
     "share_title": "Agios App",
     "share_text": "Lade die Agios-App herunter und lies die Bibel auf eine neue Weise!",
     "share_dialog": "App mit Freunden teilen",
@@ -672,8 +672,21 @@
     },
     "history": [
       {
-        "version": "2.1.0",
+        "version": "2.1.1",
         "date": "Letztes Update",
+        "title": "Audio & KI-Verbesserungen und UI-Korrekturen",
+        "features": [
+          "Umfassende Verbesserungen am Audio-Bibel-System zur Unterstützung aller Sprachen und Bücher",
+          "Verbesserte Reaktion und Zuverlässigkeit der KI-Funktionen in Suche und Analyse"
+        ],
+        "fixes": [
+          "Problem behoben, bei dem einige KI-Funktionen nicht mehr funktionierten",
+          "Problem mit doppeltem Zurück-Button auf Analyse- und Widget-Seiten behoben"
+        ]
+      },
+      {
+        "version": "2.1.0",
+        "date": "Vorheriges Update",
         "title": "Widget-Unterstützung & Performance-Überholung",
         "features": [
           "Startbildschirm-Widgets hinzugefügt (Vers des Tages, Frage des Tages, Meine Punkte, Leseplan)",
