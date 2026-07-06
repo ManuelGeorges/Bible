@@ -123,16 +123,18 @@ export function AudioProvider({ children }) {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.src = url;
-            audioRef.current.load();
-            audioRef.current.play().catch(e => {
-                if (e.name !== 'AbortError') console.error("Playback error", e);
-            });
+            // Removed audioRef.current.load() for faster start as play() handles it
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                    if (e.name !== 'AbortError') console.error("Playback error", e);
+                });
+            }
         }
         if (shouldOpenPanel) setIsPanelOpen(true);
     }, [processTimestamps]);
 
     const fetchAudioData = useCallback(async (bookIdx, chapIdx) => {
-        // الاستثناء الخاص باللغة الألمانية لعدم توفر الصوت لها
         if (language === 'de') return null;
 
         const book = bookNames[bookIdx];
@@ -154,85 +156,60 @@ export function AudioProvider({ children }) {
             'fr': { new: 'FRNTLSN2DA', old: 'FRNTLSO2DA', bible: 'FRNTLS' }
         };
 
-        let config = fcbhMappings[language];
-        if (!config) {
-            config = {
-                new: `${language.toUpperCase()}N1DA`,
-                old: `${language.toUpperCase()}O1DA`,
-                bible: null
-            };
-        }
+        let config = fcbhMappings[language] || {
+            new: `${language.toUpperCase()}N1DA`,
+            old: `${language.toUpperCase()}O1DA`,
+            bible: null
+        };
 
         let audioFilesetId = book.type === 'new' ? config.new : config.old;
 
         try {
-            let urlReq = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
-            let audioRes = await fetch(urlReq);
+            // Concurrent fetching for URL and first set of timestamps for speed
+            const primaryAudioPromise = fetch(`https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`, { priority: 'high' })
+                .then(r => r.ok ? r.json() : null);
 
-            if (!audioRes.ok && !config.bible) {
-                const biblesRes = await fetch(`https://4.dbt.io/api/bibles?v=4&key=${key}&language_code=${language}`);
-                if (biblesRes.ok) {
-                    const biblesData = await biblesRes.json();
-                    if (biblesData.data && biblesData.data.length > 0) {
-                        config.bible = biblesData.data[0].id;
-                    }
-                }
-            }
+            let timingCandidates = [audioFilesetId];
+            if (language === 'ar') timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA', 'ARZSMVN1DA', 'ARZSMVO1DA');
+            else if (language === 'en') timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA', 'ENGWEBN2DA', 'ENGWEBO2DA');
+            else if (language === 'fr') timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA', 'FRNLSGN2DA', 'FRNLSGO2DA');
 
-            if (!audioRes.ok && config.bible) {
-                const filesetsRes = await fetch(`https://4.dbt.io/api/bibles/${config.bible}/filesets?v=4&key=${key}`);
-                if (filesetsRes.ok) {
-                    const fsData = await filesetsRes.json();
+            const timestampsPromise = Promise.all(timingCandidates.map(tId =>
+                fetch(`https://4.dbt.io/api/timestamps/${tId}/${book.book_id}/${chapter}?v=4&key=${key}`, { priority: 'low' })
+                .then(r => r.ok ? r.json() : null)
+                .then(tData => tData?.data || (Array.isArray(tData) ? tData : []))
+                .catch(() => [])
+            )).then(allResults => allResults.find(t => t.length > 0) || []);
+
+            const audioData = await primaryAudioPromise;
+            let url = audioData?.data?.[0]?.path;
+
+            // Fast fallback if primary fails
+            if (!url && config.bible) {
+                const fsRes = await fetch(`https://4.dbt.io/api/bibles/${config.bible}/filesets?v=4&key=${key}`);
+                if (fsRes.ok) {
+                    const fsData = await fsRes.json();
                     const found = fsData.data?.find(f =>
                         (f.set_type_code === 'audio_drama' || f.set_type_code === 'audio') &&
                         ((book.type === 'new' && f.id.includes('N')) || (book.type === 'old' && f.id.includes('O')))
                     );
                     if (found) {
-                        audioFilesetId = found.id;
-                        urlReq = `https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`;
-                        audioRes = await fetch(urlReq);
+                        const audioRes = await fetch(`https://4.dbt.io/api/bibles/filesets/${found.id}/${book.book_id}/${chapter}?v=4&key=${key}`);
+                        if (audioRes.ok) {
+                            const audioData2 = await audioRes.json();
+                            url = audioData2.data?.[0]?.path;
+                        }
                     }
                 }
             }
 
-            if (!audioRes.ok) throw new Error("Audio not found");
-            const audioData = await audioRes.json();
-            const url = audioData.data?.[0]?.path;
-            if (!url) throw new Error("URL not found");
+            if (!url) throw new Error("Audio URL not found");
 
-            let times = [];
-            let timingCandidates = [audioFilesetId];
-
-            if (language === 'ar') timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA', 'ARZSMVN1DA', 'ARZSMVO1DA');
-            else if (language === 'en') timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA', 'ENGWEBN2DA', 'ENGWEBO2DA');
-            else if (language === 'fr') timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA', 'FRNLSGN2DA', 'FRNLSGO2DA');
-
-            if (config.bible) {
-                 const fsRes = await fetch(`https://4.dbt.io/api/bibles/${config.bible}/filesets?v=4&key=${key}`);
-                 if (fsRes.ok) {
-                     const fsData = await fsRes.json();
-                     fsData.data?.forEach(f => {
-                         if (!timingCandidates.includes(f.id) && (f.set_type_code === 'audio_drama' || f.set_type_code === 'audio')) {
-                             timingCandidates.push(f.id);
-                         }
-                     });
-                 }
-            }
-
-            for (const tId of timingCandidates) {
-                try {
-                    const timeReq = `https://4.dbt.io/api/timestamps/${tId}/${book.book_id}/${chapter}?v=4&key=${key}`;
-                    const timeRes = await fetch(timeReq, { priority: 'low' });
-                    if (timeRes.ok) {
-                        const tData = await timeRes.json();
-                        const fetchedTimes = tData.data || (Array.isArray(tData) ? tData : []);
-                        if (fetchedTimes.length > 0) {
-                            times = fetchedTimes;
-                            break;
-                        }
-                    }
-                } catch (e) {}
-            }
+            // Race timestamps with a short timeout to ensure "play immediately" even if timestamps are slow
+            const times = await Promise.race([
+                timestampsPromise,
+                new Promise(resolve => setTimeout(() => resolve([]), 1200)) // Max 1.2s wait for highlighting data
+            ]);
 
             const displayChapter = language === 'ar' ? chapter.toLocaleString('ar-EG') : chapter;
             const title = strings.audio.track_title
@@ -456,6 +433,7 @@ export function AudioProvider({ children }) {
             {children}
             <audio
                 ref={audioRef}
+                preload="auto"
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={(e) => setDuration(e.target.duration)}
                 onPlay={() => setIsPlaying(true)}
