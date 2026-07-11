@@ -16,13 +16,14 @@
         android:textSize="14sp"
         android:textStyle="bold" />
 
-    <View
+    <ImageView
         android:id="@+id/widget_divider"
         android:layout_width="35dp"
         android:layout_height="2.5dp"
         android:layout_below="@id/widget_title"
         android:layout_marginTop="6dp"
-        android:background="@color/widget_verse_accent" />
+        android:background="@color/widget_verse_accent"
+        android:contentDescription="divider" />
 
     <TextView
         android:id="@+id/widget_verse_text"

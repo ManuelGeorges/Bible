@@ -4,7 +4,7 @@ require 'xcodeproj'
 project_path = 'App/App.xcodeproj'
 main_target_name = 'App'
 widget_name = 'AgiosWidget'
-widget_bundle_id = 'com.agios.bible.widget'
+widget_bundle_id = 'com.agios.bible.AgiosWidgets' # Updated to match Apple Developer Portal
 team_id = 'XMBVV283C4'
 
 # أسماء البروفايلات كما تظهر في الـ Logs الخاصة بك
@@ -70,4 +70,4 @@ unless embed_phase.files_references.any? { |f| f.path == widget_target.product_r
 end
 
 project.save
-puts "Successfully configured iOS Project with Explicit Manual Signing!"
+puts "Successfully configured iOS Project with Explicit Manual Signing for #{widget_bundle_id}!"

@@ -16,13 +16,15 @@
         android:textSize="14sp"
         android:textStyle="bold" />
 
-    <View
+    <!-- استخدام ImageView بدلاً من View اقتباساً من ويدجت الخطط الدراسية -->
+    <ImageView
         android:id="@+id/widget_divider"
         android:layout_width="35dp"
         android:layout_height="2.5dp"
         android:layout_below="@id/widget_title"
         android:layout_marginTop="6dp"
-        android:background="@color/widget_question_accent" />
+        android:background="@color/widget_question_accent"
+        android:contentDescription="divider" />
 
     <TextView
         android:id="@+id/widget_question_text"
@@ -36,9 +38,7 @@
         android:text="@string/widget_default_question"
         android:textColor="@color/widget_text_primary"
         android:textStyle="bold"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="14sp"
-        android:autoSizeMaxTextSize="22sp" />
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/widget_action_btn"
