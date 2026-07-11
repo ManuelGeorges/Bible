@@ -4,11 +4,13 @@ import Firebase
 import FirebaseMessaging
 import UserNotifications
 import WebKit
+import WidgetKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
+    static let groupID = "group.com.agios.bible"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
@@ -23,6 +25,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
         }
         return true
+    }
+
+    // مزامنة البيانات مع الـ Widgets برمجياً
+    static func syncToWidget(key: String, value: Any) {
+        if let shared = UserDefaults(suiteName: groupID) {
+            shared.set(value, forKey: key)
+            shared.synchronize()
+            if #available(iOS 14.0, *) {
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+        }
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
@@ -45,10 +58,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
         NotificationCenter.default.post(name: Notification.Name("capacitorDidRegisterForRemoteNotifications"), object: deviceToken)
-    }
-
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        NotificationCenter.default.post(name: Notification.Name("capacitorDidFailToRegisterForRemoteNotifications"), object: error)
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -97,31 +106,11 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
             updateSettings: function(json, masterEnabled) {
                 window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'updateSettings', json: json, master: masterEnabled});
             },
-            updateUserStats: function(streak, plansSummaryJson) {
-                window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'updateUserStats', streak: streak, plansSummary: plansSummaryJson || ''});
+            updateUserStats: function(streak, plansSummaryJson, points) {
+                window.webkit.messageHandlers.AgiosHandler.postMessage({action: 'updateUserStats', streak: streak, plansSummary: plansSummaryJson || '', points: points || 0});
             },
             getSystemTheme: function() { return "\(theme)"; }
         };
-
-        window.addEventListener('agiosDeepLink', function(e) {
-            var path = e.detail.path;
-            if (!path) return;
-            if (path.indexOf('#') !== -1) {
-                var anchor = path.split('#')[1];
-                if (window.location.pathname !== '/') {
-                    window.location.href = '/';
-                    setTimeout(function() {
-                        var el = document.getElementById(anchor);
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }, 800);
-                } else {
-                    var el = document.getElementById(anchor);
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }
-            } else {
-                window.location.href = path;
-            }
-        });
         """
         let script = WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: false)
         self.bridge?.webView?.configuration.userContentController.addUserScript(script)
@@ -137,8 +126,21 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
                 AgiosNotificationHelper.shared.updateSettings(json: json, masterEnabled: master)
             }
         case "updateUserStats":
-            if let streak = body["streak"] as? Int { UserDefaults.standard.set(streak, forKey: "_cap_userStreak") }
-            if let plans = body["plansSummary"] as? String { UserDefaults.standard.set(plans, forKey: "_cap_studyPlansSummary") }
+            if let streak = body["streak"] as? Int {
+                UserDefaults.standard.set(streak, forKey: "_cap_userStreak")
+                AppDelegate.syncToWidget(key: "streak_days", value: "\(streak)")
+            }
+            if let points = body["points"] as? Int {
+                AppDelegate.syncToWidget(key: "points_total", value: "\(points)")
+            }
+            if let plans = body["plansSummary"] as? String {
+                UserDefaults.standard.set(plans, forKey: "_cap_studyPlansSummary")
+                if let data = plans.data(using: .utf8), let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    AppDelegate.syncToWidget(key: "plan_title", value: json["mainPlanTitle"] as? String ?? "")
+                    AppDelegate.syncToWidget(key: "plan_progress", value: "\(json["progress"] as? Int ?? 0)")
+                    AppDelegate.syncToWidget(key: "plan_remaining", value: "متبقي \(json["remainingDays"] as? Int ?? 0) يوم")
+                }
+            }
             AgiosNotificationHelper.shared.refreshAllNotifications()
         default: break
         }
@@ -217,7 +219,7 @@ class AgiosNotificationHelper {
         guard isEnabled("verse", settings: settings) else { return }
         let lang = getLang()
         let folder = getFolder(lang)
-        
+
         let paths = ["\(folder)dailyVerses_\(lang).json", "translations/\(folder)dailyVerses_\(lang).json", "dailyVerses.json"]
         var refData: [String: Any]?
         for p in paths {
@@ -256,6 +258,11 @@ class AgiosNotificationHelper {
         let vStr = lang == "ar" ? toArabicNumbers(verseNum) : "\(verseNum)"
         let title = bookId.isEmpty ? t("verse_title") : "\(bookName) \(cStr):\(vStr)"
 
+        if offset == 0 {
+            AppDelegate.syncToWidget(key: "verse_text", value: verseText)
+            AppDelegate.syncToWidget(key: "verse_ref", value: "(\(bookName) \(cStr):\(vStr))")
+        }
+
         schedule(identifier: "agios_verse_\(offset)", title: title, body: verseText.isEmpty ? t("verse_title") : verseText,
                  hour: resolvedHour("verse", default: 6, settings: settings),
                  minute: resolvedMinute("verse", settings: settings), offset: offset, deepLink: "/#daily-verse")
@@ -267,6 +274,9 @@ class AgiosNotificationHelper {
         let filename = "translations/\(getFolder(lang))dailyQuestions_\(lang).json"
         if let data = getTodayData(filename: filename, daysOffset: offset) {
             let qText = data["question"] as? String ?? t("question_title")
+            if offset == 0 {
+                AppDelegate.syncToWidget(key: "question_text", value: qText)
+            }
             schedule(identifier: "agios_question_\(offset)", title: t("question_title"), body: qText,
                      hour: resolvedHour("question", default: 18, settings: settings),
                      minute: resolvedMinute("question", settings: settings), offset: offset, deepLink: "/#daily-question")

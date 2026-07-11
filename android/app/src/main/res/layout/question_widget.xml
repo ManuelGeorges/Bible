@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg_light"
+    android:background="@drawable/widget_bg_dark"
     android:padding="16dp">
 
     <TextView
@@ -12,35 +11,48 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:text="@string/widget_label_question"
-        android:textColor="#1E3A8A"
-        android:textSize="12sp"
-        android:textAllCaps="true"
-        android:letterSpacing="0.1"
+        android:textColor="@color/widget_question_accent"
+        android:textSize="14sp"
         android:textStyle="bold" />
+
+    <View
+        android:id="@+id/widget_divider"
+        android:layout_width="35dp"
+        android:layout_height="2.5dp"
+        android:layout_below="@id/widget_title"
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_question_accent" />
 
     <TextView
         android:id="@+id/widget_question_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/widget_action_btn"
-        android:layout_below="@id/widget_title"
-        android:layout_marginTop="31dp"
-        android:layout_marginBottom="-11dp"
+        android:layout_below="@id/widget_divider"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:gravity="center"
         android:text="@string/widget_default_question"
-        android:textColor="#334155"
-        android:textSize="14sp" />
+        android:textColor="@color/widget_text_primary"
+        android:textStyle="bold"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="14sp"
+        android:autoSizeMaxTextSize="22sp" />
 
     <TextView
         android:id="@+id/widget_action_btn"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="36dp"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:background="@drawable/widget_btn_bg"
+        android:backgroundTint="#102A20"
         android:gravity="center"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:text="@string/widget_answer_now"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
+        android:textColor="@color/widget_question_accent"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
 </RelativeLayout>

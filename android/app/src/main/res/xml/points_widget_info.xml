@@ -4,6 +4,7 @@
     android:minHeight="140dp"
     android:updatePeriodMillis="86400000"
     android:initialLayout="@layout/points_widget"
+    android:previewLayout="@layout/points_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:previewImage="@drawable/widget_preview_points">

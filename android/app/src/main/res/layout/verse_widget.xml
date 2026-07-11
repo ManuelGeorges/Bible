@@ -1,56 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg_light"
-    android:padding="12dp">
+    android:background="@drawable/widget_bg_dark"
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/widget_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
         android:text="@string/widget_label_verse"
-        android:textColor="#1E3A8A"
-        android:textSize="11sp"
-        android:textAllCaps="true"
+        android:textColor="@color/widget_verse_accent"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
-    <!-- استخدام TextView كفاصل (Divider) بدلاً من View أو ImageView لضمان التوافق التام -->
-    <TextView
+    <View
         android:id="@+id/widget_divider"
-        android:layout_width="24dp"
-        android:layout_height="2dp"
+        android:layout_width="35dp"
+        android:layout_height="2.5dp"
         android:layout_below="@id/widget_title"
-        android:layout_marginTop="4dp"
-        android:background="#3B82F6" />
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_verse_accent" />
+
+    <TextView
+        android:id="@+id/widget_verse_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/widget_verse_ref"
+        android:layout_below="@id/widget_divider"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="@string/widget_default_verse"
+        android:textColor="@color/widget_text_primary"
+        android:textStyle="bold"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="14sp"
+        android:autoSizeMaxTextSize="24sp"
+        android:lineSpacingMultiplier="1.2" />
 
     <TextView
         android:id="@+id/widget_verse_ref"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:text=""
-        android:textColor="#64748B"
-        android:textSize="10sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/widget_verse_text"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/widget_verse_ref"
-        android:layout_below="@id/widget_divider"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="-3dp"
-        android:gravity="center"
-        android:padding="4dp"
-        android:text="..."
-        android:textColor="#334155"
-        android:textSize="14sp"
-        android:textStyle="italic" />
+        android:layout_centerHorizontal="true"
+        android:text="@string/widget_default_ref"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp" />
 
 </RelativeLayout>

@@ -6,16 +6,16 @@
     <string name="custom_url_scheme">com.agios.bible</string>
     <string name="default_web_client_id">900022943169-p5r8tqgfb603vqtfdthh1hv7vr94eqrr.apps.googleusercontent.com</string>
 
-    <!-- Widgets Strings -->
-    <string name="widget_label_verse">آية اليوم</string>
-    <string name="widget_label_question">سؤال اليوم</string>
-    <string name="widget_label_study_plan">خطة القراءة</string>
-    <string name="widget_label_points">نقاطي</string>
+    <!-- Widgets Strings with Icons -->
+    <string name="widget_label_verse">آية اليوم 📖</string>
+    <string name="widget_label_question">سؤال اليوم ❓</string>
+    <string name="widget_label_study_plan">خطط القراءة 📑</string>
+    <string name="widget_label_points">النقاط والـ Streak 🔥</string>
 
     <string name="widget_default_verse">اُدْعُنِي فِي يَوْمِ الضِّيقِ أُنْقِذْكَ فَتُمَجِّدَنِي.</string>
-    <string name="widget_default_ref">مزمور 15:50</string>
-    <string name="widget_default_question">هل أنت مستعد لسؤال اليوم؟</string>
-    <string name="widget_answer_now">جاوب الآن</string>
+    <string name="widget_default_ref">(مزمور 15:50)</string>
+    <string name="widget_default_question">من هو النبي الذي دخل جوف الحوت؟</string>
+    <string name="widget_answer_now">التفاصيل</string>
     <string name="widget_no_plan">لا توجد خطة نشطة</string>
     <string name="widget_loading">جاري التحميل...</string>
 </resources>

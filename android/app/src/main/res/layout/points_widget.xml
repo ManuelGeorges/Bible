@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg_light"
+    android:background="@drawable/widget_bg_dark"
     android:padding="16dp">
 
     <TextView
@@ -11,54 +10,71 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
         android:text="@string/widget_label_points"
-        android:textColor="#1E3A8A"
+        android:textColor="@color/widget_points_accent"
         android:textSize="14sp"
-        android:textAllCaps="true"
-        android:letterSpacing="0.1"
         android:textStyle="bold" />
 
+    <View
+        android:id="@+id/widget_divider"
+        android:layout_width="35dp"
+        android:layout_height="2.5dp"
+        android:layout_below="@id/widget_title"
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_points_accent" />
+
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/widget_streak_container"
+        android:layout_below="@id/widget_divider"
         android:gravity="center"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/widget_points_value"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="#0F172A"
-            android:textSize="48sp"
-            android:textStyle="bold" />
+            android:gravity="center"
+            android:text="17660"
+            android:textColor="@color/widget_text_primary"
+            android:textStyle="bold"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="24sp"
+            android:autoSizeMaxTextSize="42sp"
+            android:maxLines="1" />
 
         <TextView
             android:id="@+id/widget_points_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="نقطة"
-            android:textColor="#64748B"
-            android:textSize="12sp"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="13sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/widget_streak_value"
+    <LinearLayout
+        android:id="@+id/widget_streak_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:background="@drawable/widget_btn_bg"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
-        android:text="🔥 0"
-        android:textColor="#D97706"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        android:backgroundTint="#2A2010"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/widget_streak_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="سلسلة تفاعل : ٩ يوم"
+            android:textColor="@color/widget_points_accent"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </RelativeLayout>

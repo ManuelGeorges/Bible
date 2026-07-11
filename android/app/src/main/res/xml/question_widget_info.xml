@@ -4,6 +4,7 @@
     android:minHeight="110dp"
     android:updatePeriodMillis="86400000"
     android:initialLayout="@layout/question_widget"
+    android:previewLayout="@layout/question_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:previewImage="@drawable/widget_preview_question">

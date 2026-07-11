@@ -232,7 +232,7 @@
     "tagline": "\"Dein Wort ist meines Fußes Leuchte und ein Licht auf meinem Wege\" (Ps 119,105)",
     "story": {
       "title": "Geschichte & Ziel",
-      "p1": "Das Agios-Projekt wurde mit der Vision gestartet, eine anspruchsvolle digitale Erfahrung für das Bibelstudium zu bieten. Es begann mit der Teilnahme am St.-Markus-Verkündigungsfestival in Alexandria, wo das Projekt innovative technische Lösungen wie eine fortgeschrittene linguistische Suche, interaktive Karten heiliger Stätten und eine moderne Benutzeroberfläche anstrebte.",
+      "p1": "Das Agios-Projekt wurde mit der Vision gestartet, eine anspruchsvolle digitale Erfahrung für das Bibelstudium zu bieten. Es begann mit der Teilnahme am St.-Markus-Verkündigungsfestival in Alexandria, wo das Projekt innovative technische Lösungen wie eine fortgeschrittene linguistische Suche, interaktive Karten heiliger Stätten und eine moderne Benunzeroberfläche anstrebte.",
       "p2": "Nach dem Erfolg in den frühen Stadien wurde die Plattform weiterentwickelt, um eine umfassende Referenz zu werden, die tägliche Lernwerkzeuge und moderne technische Funktionen kombiniert."
     },
     "developer": {
@@ -247,7 +247,9 @@
     "thanks": {
       "title": "Danksagungen",
       "priest_name": "Ehrw. Pfr. Athanasius",
-      "priest_desc": "Wir sprechen {name} unseren tiefsten Dank und unsere Liebe für seine ständige väterliche Fürsorge for diese Arbeit aus.",
+      "priest_desc": "Wir sprechen {name} unseren tiefsten Dank und unsere Liebe for seine ständige väterliche Fürsorge for diese Arbeit aus.",
+      "priest_abraam_name": "Hochehrwürden Pfr. Abraam Emil",
+      "priest_abraam_desc": "Wir sprechen {name} (Generalvikar des Patriarchats in Alexandria) unsere besondere Wertschätzung und unseren tiefen Dank aus für seine große väterliche Unterstützung der Anwendung in den ersten Phasen ihrer Einführung sowie für seine wirksame Hilfe bei ihrer Verbreitung, Finanzierung und Bereitstellung aller materiellen und moralischen Möglichkeiten für den Erfolg dieser Arbeit.",
       "fcbh": "Ein besonderer Dank geht an 'Faith Comes By Hearing' for die Bereitstellung der wunderbaren Audio-Bibliothek von Herrn Adel Noshy.",
       "church": "Wir danken unserer Heimatkirche, der Erzengel-Michael-Kirche in Mostafa Kamel - Alexandria, for die ständige Unterstützung.",
       "translations": "Für das Deutsche wird die Luther-Übersetzung verwendet, for das Arabische Smith & Van Dyke, for das Englische die World English Bible und for das Französische Louis Segond. Alle diese Übersetzungen sind Open-Source und gesetzlich zur Verwendung zugelassen.",

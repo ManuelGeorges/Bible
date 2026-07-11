@@ -24,6 +24,7 @@ public class DataHelper {
 
     public static String getLang(Context context) {
         try {
+            if (context == null) return "ar";
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
             String[] langKeys = {"language", "app_lang", "settings_lang", "selected_lang", "settings-language"};
             String lang = null;
@@ -42,6 +43,7 @@ public class DataHelper {
 
     public static boolean isDarkTheme(Context context) {
         try {
+            if (context == null) return false;
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
             String theme = cleanCapacitorString(getPrefsString(prefs, "theme"));
             if ("dark".equalsIgnoreCase(theme)) return true;
@@ -53,9 +55,12 @@ public class DataHelper {
     }
 
     public static void updateAllWidgets(Context context) {
+        if (context == null) return;
         try {
             Context appCtx = context.getApplicationContext();
             AppWidgetManager am = AppWidgetManager.getInstance(appCtx);
+            if (am == null) return;
+
             Class<?>[] providers = {
                 VerseWidgetProvider.class, 
                 QuestionWidgetProvider.class, 
@@ -64,21 +69,25 @@ public class DataHelper {
             };
             
             for (Class<?> provider : providers) {
-                ComponentName name = new ComponentName(appCtx, provider);
-                int[] ids = am.getAppWidgetIds(name);
-                if (ids != null && ids.length > 0) {
-                    Intent intent = new Intent(appCtx, provider);
-                    intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                    appCtx.sendBroadcast(intent);
-                    
-                    if (provider == StudyPlanWidgetProvider.class) {
-                        am.notifyAppWidgetViewDataChanged(ids, R.id.widget_plans_list);
+                try {
+                    ComponentName name = new ComponentName(appCtx, provider);
+                    int[] ids = am.getAppWidgetIds(name);
+                    if (ids != null && ids.length > 0) {
+                        Intent intent = new Intent(appCtx, provider);
+                        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                        appCtx.sendBroadcast(intent);
+                        
+                        if (provider == StudyPlanWidgetProvider.class) {
+                            am.notifyAppWidgetViewDataChanged(ids, R.id.widget_plans_list);
+                        }
                     }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error updating provider: " + provider.getSimpleName(), e);
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "updateAllWidgets error", e);
+            Log.e(TAG, "updateAllWidgets critical error", e);
         }
     }
 
@@ -93,13 +102,14 @@ public class DataHelper {
     }
 
     public static String getPrefsString(SharedPreferences prefs, String key) {
+        if (prefs == null) return null;
         String val = prefs.getString("_cap_" + key, null);
         if (val == null) val = prefs.getString(key, null);
         return val;
     }
 
     public static String loadAssetString(Context context, String path) {
-        if (path == null || path.isEmpty()) return null;
+        if (context == null || path == null || path.isEmpty()) return null;
         
         String[] searchPaths = {
                 path,
@@ -127,16 +137,8 @@ public class DataHelper {
         return null;
     }
 
-    private static String tryOpenAsset(Context context, String path) {
-        try (InputStream is = context.getAssets().open(path)) {
-            Scanner s = new Scanner(is).useDelimiter("\\A");
-            return s.hasNext() ? s.next() : "";
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
     public static JSONObject getDailyVerse(Context context) {
+        if (context == null) return null;
         String lang = getLang(context);
         Calendar now = Calendar.getInstance();
         int dayOfYear = now.get(Calendar.DAY_OF_YEAR);
@@ -173,6 +175,7 @@ public class DataHelper {
     }
 
     public static JSONObject getDailyQuestion(Context context) {
+        if (context == null) return null;
         String lang = getLang(context);
         Calendar now = Calendar.getInstance();
         int dayOfYear = now.get(Calendar.DAY_OF_YEAR);
@@ -230,6 +233,7 @@ public class DataHelper {
     public static List<JSONObject> getStudyPlansList(Context context) {
         List<JSONObject> planList = new ArrayList<>();
         try {
+            if (context == null) return planList;
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
             String summaryRaw = getPrefsString(prefs, "studyPlansSummary");
             String summaryJson = cleanCapacitorString(summaryRaw);
@@ -252,6 +256,7 @@ public class DataHelper {
     }
 
     public static synchronized String getVerseFromBible(Context context, String lang, String bookId, int chapter, int verseNum) {
+        if (context == null) return "";
         SharedPreferences cache = context.getSharedPreferences(CACHE_PREFS, Context.MODE_PRIVATE);
         String cacheKey = "vtext_" + lang + "_" + bookId + "_" + chapter + "_" + verseNum;
         String cachedText = cache.getString(cacheKey, null);

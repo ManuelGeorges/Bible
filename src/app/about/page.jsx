@@ -83,6 +83,30 @@ export default function AboutPage() {
       <section className={styles.section}>
         <h2 className={styles.subtitle}>{strings.about.thanks.title}</h2>
         
+        {/* Special thanks to Fr. Abraam Emil */}
+        {strings.about.thanks.priest_abraam_name && (
+          <>
+            <div className={styles.honorableMention}>
+              <div className={styles.priestImageWrapper}>
+                <Image
+                  src="/images/fr-abraam.jpg"
+                  alt={strings.about.thanks.priest_abraam_name}
+                  width={140}
+                  height={140}
+                  className={styles.priestImage}
+                />
+              </div>
+              <div className={styles.priestText}>
+                <p className={styles.paragraph}>
+                  {strings.about.thanks.priest_abraam_desc.replace('{name}', strings.about.thanks.priest_abraam_name)}
+                </p>
+              </div>
+            </div>
+            <hr className={styles.dividerLine} />
+          </>
+        )}
+
+        {/* Thanks to Fr. Athanasius */}
         <div className={styles.honorableMention}>
           <div className={styles.priestImageWrapper}>
             <Image 

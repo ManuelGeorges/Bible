@@ -4,6 +4,7 @@
     android:minHeight="110dp"
     android:updatePeriodMillis="86400000"
     android:initialLayout="@layout/verse_widget"
+    android:previewLayout="@layout/verse_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:previewImage="@drawable/widget_preview_verse">

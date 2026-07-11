@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#1e3a8a</color>
+    <color name="colorPrimaryDark">#0F172A</color>
+    <color name="colorAccent">#3b82f6</color>
     <color name="splash_background">#020617</color>
+
+    <!-- Widget Specific Colors (Dark Mode) -->
+    <color name="widget_bg">#1A1C1E</color>
+    <color name="widget_border">#333639</color>
+
+    <color name="widget_verse_accent">#3B82F6</color>
+    <color name="widget_plan_accent">#EC4899</color>
+    <color name="widget_question_accent">#10B981</color>
+    <color name="widget_points_accent">#F59E0B</color>
+
+    <color name="widget_text_primary">#FFFFFF</color>
+    <color name="widget_text_secondary">#94A3B8</color>
 </resources>

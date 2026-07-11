@@ -17,7 +17,7 @@ import styles from './SharePreview.module.css';
 import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-hot-toast';
 
-const TEMPLATES = Array.from({ length: 24 }, (_, i) => ({
+const TEMPLATES = Array.from({ length: 21 }, (_, i) => ({
   id: i + 1,
   url: `/templates/${i + 1}.webp`
 }));

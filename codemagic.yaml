@@ -26,10 +26,15 @@ workflows:
       - name: Sync Capacitor
         script: |
           npx cap sync ios
+      - name: Inject iOS Widgets (Automated Xcode Script)
+        script: |
+          cd ios
+          gem install xcodeproj
+          ruby add_widgets.rb
       - name: Increment Build Number
         script: |
           cd ios/App
-          agvtool new-marketing-version 2.0.5
+          agvtool new-marketing-version 2.1.0
           agvtool new-version -all $(date +%s)
       - name: Build and Sign IPA
         script: |
@@ -37,20 +42,20 @@ workflows:
           keychain initialize
           find ~/Library -name "*.mobileprovision" -delete
           
-          # 2. جلب التوقيع المحدث من أبل
+          # 2. جلب التوقيع المحدث للتطبيق وللويدجت
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "com.agios.bible.AgiosWidgets" --type IOS_APP_STORE --create
           keychain add-certificates
           
-          # 3. تعديل ملف المشروع برمجياً لتفعيل Sign In with Apple (بديل لـ Xcode)
-          # هذه الأوامر تقوم بربط ملف الاستحقاقات الذي أنشأناه بالمشروع
+          # 3. تعديل ملف المشروع برمجياً لتفعيل الصلاحيات (Sign In with Apple) وربط الـ Entitlements
           sed -i '' "s/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g" "$XCODE_PROJECT/project.pbxproj"
           
-          # إضافة مرجع ملف الـ Entitlements في إعدادات البناء
+          # إضافة مرجع ملف الـ Entitlements في إعدادات البناء (مهم جداً)
           sed -i '' "/CODE_SIGN_IDENTITY = \"iPhone Distribution\"/a\\
           CODE_SIGN_ENTITLEMENTS = App/App.entitlements;" "$XCODE_PROJECT/project.pbxproj"
           
-          # 4. تطهير ملف المشروع برمجياً
+          # 4. تطهير ملف المشروع برمجياً وضبط الـ Team ID
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$XCODE_PROJECT/project.pbxproj"
           sed -i '' "s/iPhone Distribution/Apple Distribution/g" "$XCODE_PROJECT/project.pbxproj"
           

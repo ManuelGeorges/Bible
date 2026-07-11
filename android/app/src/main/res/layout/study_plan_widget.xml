@@ -3,8 +3,8 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg_light"
-    android:padding="12dp">
+    android:background="@drawable/widget_bg_dark"
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/widget_title"
@@ -13,20 +13,17 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:text="@string/widget_label_study_plan"
-        android:textColor="#1E3A8A"
-        android:textSize="12sp"
-        android:textAllCaps="true"
-        android:letterSpacing="0.1"
+        android:textColor="@color/widget_plan_accent"
+        android:textSize="13sp"
         android:textStyle="bold" />
 
-    <!-- استخدام ImageView بدلاً من View لضمان التوافق مع RemoteViews -->
     <ImageView
         android:id="@+id/widget_divider"
-        android:layout_width="24dp"
+        android:layout_width="32dp"
         android:layout_height="2dp"
         android:layout_below="@id/widget_title"
-        android:layout_marginTop="4dp"
-        android:background="#3B82F6"
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_plan_accent"
         android:contentDescription="divider" />
 
     <ListView
@@ -34,9 +31,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/widget_divider"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:divider="@android:color/transparent"
-        android:dividerHeight="2dp" />
+        android:dividerHeight="4dp" />
 
     <TextView
         android:id="@+id/widget_empty_view"
@@ -45,8 +42,8 @@
         android:layout_below="@id/widget_divider"
         android:gravity="center"
         android:text="@string/widget_no_plan"
-        android:textColor="#94A3B8"
-        android:textSize="13sp"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="14sp"
         android:visibility="gone" />
 
 </RelativeLayout>

@@ -248,6 +248,8 @@
       "title": "Remerciements",
       "priest_name": "Rév. Père Athanasios",
       "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
+      "priest_abraam_name": "Très Révérend Père Abraam Emil",
+      "priest_abraam_desc": "Nous exprimons notre gratitude particulière et notre profonde reconnaissance au {name} (Vicaire Général du Patriarcat à Alexandrie) pour son immense soutien paternel lors des premières phases de lancement de l'application, ainsi que pour son aide précieuse dans sa diffusion, son financement et la mobilisation de tous les moyens matériels et moraux nécessaires à la réussite de ce projet.",
       "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
       "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
       "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
