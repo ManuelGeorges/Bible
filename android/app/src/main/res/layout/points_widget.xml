@@ -19,11 +19,11 @@
     <ImageView
         android:id="@+id/widget_divider"
         android:layout_width="35dp"
-        android:layout_height="2.5dp"
+        android:layout_height="2dp"
         android:layout_below="@id/widget_title"
         android:layout_marginTop="6dp"
         android:background="@color/widget_points_accent"
-        android:contentDescription="@null" />
+        android:contentDescription="divider" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,13 +38,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="17660"
+            android:text="0"
             android:textColor="@color/widget_text_primary"
             android:textStyle="bold"
-            android:autoSizeTextType="uniform"
-            android:autoSizeMinTextSize="24sp"
-            android:autoSizeMaxTextSize="42sp"
-            android:maxLines="1" />
+            android:textSize="32sp" />
 
         <TextView
             android:id="@+id/widget_points_label"
@@ -73,7 +70,7 @@
             android:id="@+id/widget_streak_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="سلسلة تفاعل : ٩ يوم"
+            android:text="سلسلة تفاعل : ٠ يوم"
             android:textColor="@color/widget_points_accent"
             android:textSize="11sp"
             android:textStyle="bold" />
