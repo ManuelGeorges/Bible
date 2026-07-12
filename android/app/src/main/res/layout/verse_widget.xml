@@ -18,7 +18,7 @@
 
     <ImageView
         android:id="@+id/widget_divider"
-        android:layout_width="35dp"
+        android:layout_width="32dp"
         android:layout_height="2dp"
         android:layout_below="@id/widget_title"
         android:layout_marginTop="6dp"
@@ -37,7 +37,8 @@
         android:text="@string/widget_default_verse"
         android:textColor="@color/widget_text_primary"
         android:textStyle="bold"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:lineSpacingMultiplier="1.2" />
 
     <TextView
         android:id="@+id/widget_verse_ref"

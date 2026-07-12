@@ -16,14 +16,15 @@
         android:textSize="14sp"
         android:textStyle="bold" />
 
+    <!-- استخدام ImageView بدلاً من View لضمان التوافق التام كما في ويدجت الخطط -->
     <ImageView
         android:id="@+id/widget_divider"
-        android:layout_width="35dp"
+        android:layout_width="32dp"
         android:layout_height="2dp"
         android:layout_below="@id/widget_title"
         android:layout_marginTop="6dp"
         android:background="@color/widget_question_accent"
-        android:contentDescription="divider" />
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/widget_question_text"

@@ -42,6 +42,7 @@ public class VerseWidgetProvider extends AppWidgetProvider {
             JSONObject refData = DataHelper.getDailyVerse(context);
 
             if (refData != null) {
+                // محاولة جلب المعرفات (إذا كانت موجودة في ملف اللغة المحدد)
                 String bookId = refData.optString("book", refData.optString("bookId", ""));
                 int chapter = refData.optInt("chapter", -1);
                 int verseNum = refData.optInt("verse", -1);
@@ -54,20 +55,32 @@ public class VerseWidgetProvider extends AppWidgetProvider {
                     reference = String.format("%s %s:%s", bookName, cStr, vStr);
                 } 
                 
+                // إذا لم نجد نصاً (مثلاً الملف الأساسي لا يحتوي على معرفات)، نستخدم النص المباشر
+                // ملاحظة: إذا كان lang ليس ar، سيبحث DataHelper عن dailyVerses_en.json مثلاً
                 if (verseText == null || verseText.isEmpty()) {
-                    Object verseObj = refData.opt("verse");
-                    if (verseObj instanceof String) {
-                        verseText = (String) verseObj;
-                    }
+                    verseText = refData.optString("verse", "");
                     reference = refData.optString("reference", "");
                 }
             }
 
+            // نصوص افتراضية مترجمة في حالة الفشل
             if (verseText == null || verseText.isEmpty()) {
-                verseText = lang.equals("ar") ? "اُدْعُنِي فِي يَوْمِ الضِّيقِ أُنْقِذْكَ فَتُمَجِّدَنِي" : "Call upon me in the day of trouble; I will deliver you";
-                reference = lang.equals("ar") ? "(مزمور ٥٠:١٥)" : "(Psalm 50:15)";
+                if (lang.equals("ar")) {
+                    verseText = "اُدْعُنِي فِي يَوْمِ الضِّيقِ أُنْقِذْكَ فَتُمَجِّدَنِي";
+                    reference = "(مزمور ٥٠:١٥)";
+                } else if (lang.equals("fr")) {
+                    verseText = "Invoque-moi au jour de la détresse; Je te délivrerai, et tu me glorifieras.";
+                    reference = "(Psaume 50:15)";
+                } else if (lang.equals("de")) {
+                    verseText = "Rufe mich an in der Zeit der Not, so will ich dich erretten, und du sollst mich preisen.";
+                    reference = "(Psalm 50:15)";
+                } else {
+                    verseText = "Call upon me in the day of trouble; I will deliver you, and you shall glorify me.";
+                    reference = "(Psalm 50:15)";
+                }
             }
 
+            // جلب العنوان المترجم
             String title = TranslationHelper.getString(context, "home.daily_verse", lang.equals("ar") ? "آية اليوم" : "Verse of the Day");
 
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.verse_widget);
@@ -88,7 +101,6 @@ public class VerseWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_verse_text, verseText);
             views.setTextViewText(R.id.widget_verse_ref, reference);
 
-            // إعداد الضغط لفتح التطبيق على آية اليوم
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra("deepLink", "/#daily-verse");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
