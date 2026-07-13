@@ -1,7 +1,6 @@
 import WidgetKit
 import SwiftUI
 
-// MARK: - Data Logic (App Groups Sharing)
 struct WidgetProvider {
     static let groupID = "group.com.agios.bible"
 
@@ -15,9 +14,12 @@ struct WidgetProvider {
         }
         return val
     }
+    
+    static func hasValue(for key: String) -> Bool {
+        return UserDefaults(suiteName: groupID)?.object(forKey: key) != nil
+    }
 }
 
-// MARK: - Colors (Matching Android & Image)
 struct AgiosColors {
     static let bg = Color(UIColor { (traits) -> UIColor in
         return traits.userInterfaceStyle == .dark ? UIColor(red: 0.10, green: 0.11, blue: 0.12, alpha: 1.0) : .white
@@ -27,13 +29,12 @@ struct AgiosColors {
     })
     static let secondaryText = Color(red: 0.58, green: 0.64, blue: 0.72)
 
-    static let verseAccent = Color(red: 0.23, green: 0.51, blue: 0.96)    // Blue
-    static let planAccent = Color(red: 0.93, green: 0.28, blue: 0.60)     // Pink
-    static let questionAccent = Color(red: 0.06, green: 0.73, blue: 0.51) // Green
-    static let pointsAccent = Color(red: 0.96, green: 0.62, blue: 0.04)   // Orange
+    static let verseAccent = Color(red: 0.23, green: 0.51, blue: 0.96)
+    static let planAccent = Color(red: 0.93, green: 0.28, blue: 0.60)
+    static let questionAccent = Color(red: 0.06, green: 0.73, blue: 0.51)
+    static let pointsAccent = Color(red: 0.96, green: 0.62, blue: 0.04)
 }
 
-// MARK: - Shared Header Component
 struct WidgetHeader: View {
     let title: String
     let color: Color
@@ -50,13 +51,12 @@ struct WidgetHeader: View {
     }
 }
 
-// MARK: - 1. Verse of the Day Widget
 struct VerseWidgetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             WidgetHeader(title: "آية اليوم 📖", color: AgiosColors.verseAccent)
             Spacer()
-            Text(WidgetProvider.value(for: "verse_text", default: "اُدْعُنِي فِي يَوْمِ الضِّيقِ أُنْقِذْكَ فَتُمَجِّدَنِي."))
+            Text(WidgetProvider.value(for: "verse_text", default: "اُدْعُنِي فِي يَوْمِ الضِّيقِ أُنْقِذْكَ فَتُمَجِّدَنِي."))
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(AgiosColors.text)
                 .multilineTextAlignment(.center)
@@ -73,40 +73,51 @@ struct VerseWidgetView: View {
     }
 }
 
-// MARK: - 2. Study Plan Widget
 struct PlanWidgetView: View {
+    var hasPlan: Bool {
+        return WidgetProvider.hasValue(for: "plan_title")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             WidgetHeader(title: "خطة القراءة 📑", color: AgiosColors.planAccent)
             Spacer()
-            VStack(alignment: .leading, spacing: 6) {
-                Text(WidgetProvider.value(for: "plan_title", default: "رحلة في قلب المسيح"))
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(AgiosColors.text)
-                    .lineLimit(1)
+            
+            if hasPlan {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(WidgetProvider.value(for: "plan_title", default: ""))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(AgiosColors.text)
+                        .lineLimit(1)
 
-                // Progress Bar Dynamic
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(AgiosColors.planAccent.opacity(0.15))
-                            .frame(height: 8)
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(AgiosColors.planAccent)
-                            .frame(width: geo.size.width * CGFloat(WidgetProvider.doubleValue(for: "plan_progress", default: 33.0) / 100.0), height: 8)
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(AgiosColors.planAccent.opacity(0.15))
+                                .frame(height: 8)
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(AgiosColors.planAccent)
+                                .frame(width: geo.size.width * CGFloat(WidgetProvider.doubleValue(for: "plan_progress", default: 0.0) / 100.0), height: 8)
+                        }
+                    }
+                    .frame(height: 8)
+
+                    HStack {
+                        Text("%" + WidgetProvider.value(for: "plan_progress", default: "0"))
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(AgiosColors.planAccent)
+                        Spacer()
+                        Text(WidgetProvider.value(for: "plan_remaining", default: ""))
+                            .font(.system(size: 11))
+                            .foregroundColor(AgiosColors.secondaryText)
                     }
                 }
-                .frame(height: 8)
-
-                HStack {
-                    Text("%" + WidgetProvider.value(for: "plan_progress", default: "33"))
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(AgiosColors.planAccent)
-                    Spacer()
-                    Text(WidgetProvider.value(for: "plan_remaining", default: "متبقي يومان"))
-                        .font(.system(size: 11))
-                        .foregroundColor(AgiosColors.secondaryText)
-                }
+            } else {
+                Text("ليس لديك خطط جارية حالياً")
+                    .font(.system(size: 13))
+                    .foregroundColor(AgiosColors.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
             Spacer()
         }
@@ -115,7 +126,6 @@ struct PlanWidgetView: View {
     }
 }
 
-// MARK: - 3. Question of the Day Widget
 struct QuestionWidgetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -142,7 +152,6 @@ struct QuestionWidgetView: View {
     }
 }
 
-// MARK: - 4. Points & Streak Widget
 struct PointsWidgetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -173,7 +182,6 @@ struct PointsWidgetView: View {
     }
 }
 
-// MARK: - Widget Bundle
 @main
 struct AgiosWidgetsBundle: WidgetBundle {
     var body: some Widget {
@@ -184,7 +192,6 @@ struct AgiosWidgetsBundle: WidgetBundle {
     }
 }
 
-// MARK: - Widget Configurations
 struct VerseWidget: Widget {
     let kind: String = "AgiosVerseWidget"
     var body: some WidgetConfiguration {
@@ -225,7 +232,6 @@ struct PointsWidget: Widget {
     }
 }
 
-// MARK: - Timeline Provider
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry { SimpleEntry() }
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) { completion(SimpleEntry()) }
@@ -233,4 +239,5 @@ struct Provider: TimelineProvider {
         completion(Timeline(entries: [SimpleEntry()], policy: .atEnd))
     }
 }
+
 struct SimpleEntry: TimelineEntry { let date: Date = Date() }
