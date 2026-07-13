@@ -529,7 +529,7 @@ function SearchContent() {
     if (cached) {
       if (legacy) {
         const migrationKey = `${CACHE_KEYS.SEMANTIC}semantic:ar:${term}`;
-        kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
+        kv.set(migrationKey, cached).catch(console.error);
       }
 
       if (language === 'ar' || (language !== 'ar' && !cached.some(r => r.language && r.language !== 'ar'))) {
@@ -653,7 +653,7 @@ Regeln:
       }).filter(r => r !== null);
 
       if (enriched.length > 0) {
-        kv.set(cacheKey, enriched, { ex: 604800 }).catch(console.error);
+        kv.set(cacheKey, enriched).catch(console.error);
       }
 
       setSemanticResults(enriched);
@@ -688,7 +688,7 @@ Regeln:
     if (cached) {
       if (legacy) {
         const migrationKey = `${CACHE_KEYS.SEMANTIC}deriv:ar:${term}`;
-        kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
+        kv.set(migrationKey, cached).catch(console.error);
       }
 
       if (language === 'ar' || (language !== 'ar' && !cached.language)) {
@@ -801,7 +801,7 @@ Regeln:
       );
 
       if (result && result.derivatives.length > 0) {
-        kv.set(cacheKey, result, { ex: 604800 }).catch(console.error);
+        kv.set(cacheKey, result).catch(console.error);
       }
 
       setAiStatus('');

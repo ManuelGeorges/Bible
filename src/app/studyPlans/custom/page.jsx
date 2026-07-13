@@ -103,7 +103,7 @@ export default function CustomPlanForm() {
             if (cached) {
                 if (legacy) {
                     const migrationKey = `${CACHE_KEYS.STUDY_PLAN}ar:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
-                    kv.set(migrationKey, cached, { ex: 604800 }).catch(console.error);
+                    kv.set(migrationKey, cached).catch(console.error);
                 }
                 if (language === 'ar') {
                     return cached;
@@ -204,7 +204,7 @@ Verfügbare Bücherliste: [${allowedBooks}]
 Wichtiger Hinweis:
 1. Das Ergebnis muss gültiges JSON sein, ohne zusätzlichen Text.
 2. Das readings-Array muss genau ${durationDays} Objekte enthalten.
-3. Wenn das Thema sehr spezifisch ist, beginne damit und erweitere dann auf verwandte spirituelle Bücher und Konzepte, um einen hochwertigen Plan zu gewährleisten.
+3. Wenn das Thema sehr spezifisch ist, beginne damit und erweitere dann على verwandte spirituelle Bücher und Konzepte, um einen hochwertigen Plan zu gewährleisten.
 `
             };
 
@@ -223,7 +223,7 @@ Wichtiger Hinweis:
             const planResult = JSON.parse(jsonMatch[0]);
 
             try {
-                await kv.set(cacheKey, planResult, { ex: 604800 });
+                await kv.set(cacheKey, planResult);
             } catch (e) {
                 console.error("Redis Write Error:", e);
             }
