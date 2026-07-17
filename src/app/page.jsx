@@ -16,7 +16,7 @@ import {
     BookOpenText, Map, Search, User, Trophy,
     Settings, Heart, BookMarked, Sparkles,
     ChevronLeft, Award, Flame, LogIn, ArrowRight,
-    CheckCircle, Circle, ArrowUpRight, Bell, 
+    CheckCircle, Circle, ArrowUpRight, Bell,
     Image as ImageIcon, Info, Star, Gift, Megaphone,
     MessageCircle, Zap, Globe, Shield, Calendar,
     Bot, Brain, Cpu, Wand2, Lightbulb, Rocket,
@@ -129,7 +129,7 @@ const LandingPage = () => {
         }
     };
 
-    const unlockBadge = async (badgeId) => {
+    const unlockBadge = useCallback(async (badgeId) => {
         if (user) {
           try {
             const userRef = doc(firestore, 'users', user.uid);
@@ -141,15 +141,15 @@ const LandingPage = () => {
             }
           } catch (e) { console.error(e); }
         } else {
-            const localBadges = await StorageService.get('local_badges') || [];
+            const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || [];
             if (!localBadges.includes(badgeId)) {
                 localBadges.push(badgeId);
-                await StorageService.save('local_badges', localBadges);
+                await StorageService.save(KEYS.LOCAL_BADGES, localBadges);
                 triggerBadgeUnlock(badgeId);
                 setUserBadges([...localBadges]);
             }
         }
-    };
+    }, [user, triggerBadgeUnlock]);
 
     const checkTimeBadges = useCallback(async () => {
         const now = new Date();
@@ -159,7 +159,7 @@ const LandingPage = () => {
         if (hour < 7) await unlockBadge('early_bird');
         if (hour === 3 && minute === 0) await unlockBadge('ghost_user');
         if (hour >= 0 && hour < 4) await unlockBadge('night_owl');
-    }, [user]);
+    }, [unlockBadge]);
 
     const checkStreakBadges = useCallback(async (streak) => {
         const streakTargets = [3, 7, 15, 30, 60, 90, 180, 365];
@@ -168,7 +168,7 @@ const LandingPage = () => {
                 await unlockBadge(`streak_${target}`);
             }
         }
-    }, [user]);
+    }, [unlockBadge]);
 
     const calculatePlanStats = useCallback((planOrId, isCustom, customPlanData, completionData) => {
         let completedDays = {};
@@ -200,33 +200,30 @@ const LandingPage = () => {
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
-            // استيراد الأسئلة والكتاب المقدس ديناميكياً من المسار الجديد src/app/data
             let questData;
             try {
-                if (language === 'ar') questData = (await import('../../public/data/translations/arabic/dailyQuestions_ar.json')).default;
-                else if (language === 'en') questData = (await import('../../public/data/translations/English/dailyQuestions_en.json')).default;
-                else if (language === 'fr') questData = (await import('../../public/data/translations/French/dailyQuestions_fr.json')).default;
-                else if (language === 'de') questData = (await import('../../public/data/translations/german/dailyQuestions_de.json')).default;
+                if (language === 'ar') questData = (await import('./data/translations/arabic/daily_questions.json')).default;
+                else if (language === 'en') questData = (await import('./data/translations/English/daily_questions_en.json')).default;
+                else if (language === 'fr') questData = (await import('./data/translations/French/daily_questions_fr.json')).default;
+                else if (language === 'de') questData = (await import('./data/translations/german/daily_questions_de.json')).default;
 
                 if (questData) {
-                    const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
+                    const todayQuest = questData[month]?.[day];
                     setDailyQuestion(todayQuest);
                 }
             } catch (e) { console.error("Questions load error:", e); }
 
             if (todayRef) {
                 let bibleData;
-                if (language === 'ar') bibleData = (await import('../../public/data/translations/arabic/ar_svd_tashkeel_site.json')).default;
-                else if (language === 'en') bibleData = (await import('../../public/data/translations/English/en_web.json')).default;
-                else if (language === 'fr') bibleData = (await import('../../public/data/translations/French/fr_segond.json')).default;
-                else if (language === 'de') bibleData = (await import('../../public/data/translations/german/de_luther.json')).default;
+                if (language === 'ar') bibleData = (await import('./data/translations/arabic/ar_svd_no_tashkeel.json')).default;
+                else if (language === 'en') bibleData = (await import('./data/translations/English/en_web.json')).default;
+                else if (language === 'fr') bibleData = (await import('./data/translations/French/fr_segond.json')).default;
+                else if (language === 'de') bibleData = (await import('./data/translations/german/de_luther.json')).default;
 
-                const bibleBook = bibleData?.find(b =>
-                    b.abbrev.toLowerCase() === todayRef.book.toLowerCase()
-                );
+                const bibleBook = bibleData?.[todayRef.bookId];
 
-                const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.book) ||
-                                allBookNames['en']?.find(b => b.book_id === todayRef.book);
+                const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.bookId) ||
+                                allBookNames['en']?.find(b => b.book_id === todayRef.bookId);
 
                 if (bibleBook && bibleBook.chapters[todayRef.chapter - 1]) {
                     const verseText = bibleBook.chapters[todayRef.chapter - 1][todayRef.verse - 1];
@@ -237,7 +234,7 @@ const LandingPage = () => {
                             reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
                             month,
                             day,
-                            bookId: todayRef.book,
+                            bookId: todayRef.bookId,
                             chapter: todayRef.chapter,
                             verseNum: todayRef.verse
                         });
@@ -421,13 +418,13 @@ const LandingPage = () => {
                 if (unsubSnap) { unsubSnap(); unsubSnap = null; }
 
                 const localStats = await StorageService.getLocalStats();
-                const localHistory = await StorageService.get('points_history') || [];
-                const localAnswered = await StorageService.get('answered_questions') || {};
+                const localHistory = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+                const localAnswered = await StorageService.get(KEYS.ANSWERED_QUESTIONS) || {};
 
-                const localStaticCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || await StorageService.get('local_completed_plans') || {};
-                const localCustomPlans = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+                const localStaticCompletion = await StorageService.get(KEYS.COMPLETED_PLANS) || {};
+                const localCustomPlans = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
 
-                const localBadges = await StorageService.get('local_badges') || [];
+                const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || [];
                 const localLastRead = await StorageService.get(KEYS.LAST_READ);
                 const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
 
@@ -512,7 +509,7 @@ const LandingPage = () => {
             unsubAuth?.();
             if (unsubSnap) unsubSnap();
         };
-    }, [calculatePlanStats, checkStreakBadges, language, strings]);
+    }, [calculatePlanStats, checkStreakBadges, language, strings, unlockBadge]);
 
     const handleShareSuccess = async () => {
         if (user) {
@@ -533,14 +530,14 @@ const LandingPage = () => {
             if (shareCount >= 50) await unlockBadge('social_influencer');
         } else {
             await StorageService.addPoints(10);
-            const history = await StorageService.get('points_history') || [];
+            const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
             history.push({
                 type: 'share',
                 points: 10,
                 reason: 'مشاركة آية اليوم من الصفحة الرئيسية',
                 timestamp: getCairoIsoString()
             });
-            await StorageService.save('points_history', history);
+            await StorageService.save(KEYS.POINTS_HISTORY, history);
             setUserStats(prev => ({ ...prev, points: prev.points + 10 }));
 
             const shareCount = history.filter(h => h.type === 'share').length;
@@ -596,23 +593,23 @@ const LandingPage = () => {
             }
             if (qStreak >= 30) await unlockBadge('verse_sync');
         } else {
-            const localQuestions = await StorageService.get('answered_questions') || {};
+            const localQuestions = await StorageService.get(KEYS.ANSWERED_QUESTIONS) || {};
             localQuestions[dateKey] = { answered: true, correct: isCorrect, timestamp: getCairoIsoString() };
-            await StorageService.save('answered_questions', localQuestions);
+            await StorageService.save(KEYS.ANSWERED_QUESTIONS, localQuestions);
 
             if (Object.keys(localQuestions).length >= 30) await unlockBadge('verse_sync');
 
             if (isCorrect) {
                 toast.success(strings.home.toasts.correct_answer);
                 await StorageService.addPoints(20);
-                const history = await StorageService.get('points_history') || [];
+                const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
                 history.push({
                     type: 'dailyQuestion',
                     points: 20,
                     reason: 'إجابة صحيحة على سؤال اليوم',
                     timestamp: getCairoIsoString()
                 });
-                await StorageService.save('points_history', history);
+                await StorageService.save(KEYS.POINTS_HISTORY, history);
                 setUserStats(prev => ({ ...prev, points: prev.points + 20 }));
             } else {
                 toast.error(strings.home.toasts.wrong_answer);
@@ -683,14 +680,14 @@ const LandingPage = () => {
             setFavouriteVerses(updatedFavs);
             if (updatedFavs[verseKey]) {
                 await StorageService.addPoints(5);
-                const history = await StorageService.get('points_history') || [];
+                const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
                 history.push({
                     type: 'favouriteVerse',
                     points: 5,
                     reason: 'تظليل آية اليوم من الصفحة الرئيسية',
                     timestamp: getCairoIsoString()
                 });
-                await StorageService.save('points_history', history);
+                await StorageService.save(KEYS.POINTS_HISTORY, history);
                 setUserStats(prev => ({ ...prev, points: prev.points + 5 }));
                 toast.success(strings.home.toasts.added_points);
 
@@ -813,6 +810,8 @@ const LandingPage = () => {
 
     const dailyVerseKey = `daily-verse-${dailyVerse?.month}-${dailyVerse?.day}-${language}`;
 
+    if (!mounted) return null;
+
     return (
         <main className={`${styles.hubContainer} ${dir === 'rtl' ? styles.rtl : styles.ltr}`} dir={dir}>
             <header className={styles.header}>
@@ -864,10 +863,10 @@ const LandingPage = () => {
                         {remoteNews.map((news, idx) => {
                             const IconComponent = LUCIDE_ICONS[news.iconName] || Bell;
                             return (
-                                <section 
-                                    key={news.id || idx} 
-                                    className={styles.newsBanner} 
-                                    style={{ 
+                                <section
+                                    key={news.id || idx}
+                                    className={styles.newsBanner}
+                                    style={{
                                         backgroundColor: news.bgColor || '#eff6ff',
                                         '--accent-color': news.accentColor || '#3b82f6'
                                     }}

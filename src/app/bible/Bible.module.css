@@ -457,3 +457,35 @@
   background-color: rgba(76, 175, 80, 0.2);
   color: #4CAF50;
 }
+
+/* Parallel Mode Styles */
+.parallelVerseRow {
+  display: flex;
+  gap: 20px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  width: 100%;
+}
+
+.parallelVerseRow:last-child {
+  border-bottom: none;
+}
+
+.verseSide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.verseTextParallel {
+  font-size: 0.95em;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .parallelVerseRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

@@ -52,9 +52,40 @@ const variants = {
 
 // --- مكون الآية المحسن (السرعة) ---
 const VerseItem = memo(({
-  v, i, verseNumber, isReading, isSelected, annotation, versePerLine, formatNumber,
-  handleTouchStart, handleTouchMove, handleTouchEnd, onVerseClick, openNoteEditor, keyId
+  v, v2, i, verseNumber, isReading, isSelected, annotation, versePerLine, formatNumber,
+  handleTouchStart, handleTouchMove, handleTouchEnd, onVerseClick, openNoteEditor, keyId, isParallel
 }) => {
+  const content = (
+    <>
+      <span className={styles.styledVerseNumber}>{formatNumber(i + 1)}</span>
+      <span className={styles.verseText}>{v} </span>
+      {annotation?.note && <span className={styles.miniNoteIndicator} onClick={(e) => { e.stopPropagation(); openNoteEditor(keyId); }}> 📝 </span>}
+    </>
+  );
+
+  if (isParallel && v2) {
+    return (
+      <div
+        id={`verse-${verseNumber}`}
+        className={`${styles.parallelVerseRow} ${isSelected ? styles.selectedVerse : ''} ${isReading ? styles.readingHighlight : ''}`}
+        onTouchStart={(e) => handleTouchStart(e, v, i)}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={() => onVerseClick(v, i)}
+        style={{
+           backgroundColor: isReading ? '#ffd54f' : (annotation?.color ? `${annotation.color}44` : 'transparent'),
+        }}
+      >
+        <div className={styles.verseSide} style={{ direction: 'rtl' }}>
+          {content}
+        </div>
+        <div className={styles.verseSide} style={{ direction: 'ltr' }}>
+           <span className={styles.verseTextParallel}>{v2}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <span
       id={`verse-${verseNumber}`}
@@ -71,9 +102,7 @@ const VerseItem = memo(({
         padding: '2px 4px', borderRadius: '4px', position: 'relative'
       }}
     >
-      <span className={styles.styledVerseNumber}>{formatNumber(i + 1)}</span>
-      <span className={styles.verseText}>{v} </span>
-      {annotation?.note && <span className={styles.miniNoteIndicator} onClick={(e) => { e.stopPropagation(); openNoteEditor(keyId); }}> 📝 </span>}
+      {content}
     </span>
   );
 });
@@ -83,7 +112,7 @@ export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const { language, useTashkeel, strings, dir: pageDir, bookNames: bookNamesData, formatNumber } = useLanguage();
+  const { language, useTashkeel, parallelLanguage, strings, dir: pageDir, bookNames: bookNamesData, formatNumber } = useLanguage();
 
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
@@ -93,6 +122,7 @@ export default function BibleContent() {
 
   // --- Refs & Optimized Storage ---
   const bibleDataRef = useRef(null);
+  const bibleData2Ref = useRef(null);
   const lastAudioSyncRef = useRef("");
   const longPressTimer = useRef(null);
   const isMoving = useRef(false);
@@ -103,6 +133,7 @@ export default function BibleContent() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentChapterVerses, setCurrentChapterVerses] = useState([]);
+  const [currentChapterVerses2, setCurrentChapterVerses2] = useState([]);
   const [favouriteVerses, setFavouriteVerses] = useState({});
   const [completedChapters, setCompletedChapters] = useState({});
   const [selectedBookIndex, setSelectedBookIndex] = useState(0);
@@ -176,6 +207,7 @@ export default function BibleContent() {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        // Load Primary
         let folder = language === 'ar' ? 'arabic' : language === 'en' ? 'English' : language === 'fr' ? 'French' : 'german';
         let fileName = "";
         if (language === 'ar') fileName = useTashkeel ? "ar_svd_tashkeel_site.json" : "ar_svd_no_tashkeel.json";
@@ -186,6 +218,23 @@ export default function BibleContent() {
         const res = await fetch(`/data/translations/${folder}/${fileName}`);
         const data = await res.json();
         bibleDataRef.current = data;
+
+        // Load Parallel
+        if (parallelLanguage) {
+           let folder2 = parallelLanguage === 'ar' ? 'arabic' : parallelLanguage === 'en' ? 'English' : parallelLanguage === 'fr' ? 'French' : 'german';
+           let fileName2 = "";
+           if (parallelLanguage === 'ar') fileName2 = "ar_svd_no_tashkeel.json";
+           else if (parallelLanguage === 'en') fileName2 = "en_web.json";
+           else if (parallelLanguage === 'fr') fileName2 = "fr_segond.json";
+           else if (parallelLanguage === 'de') fileName2 = "de_luther.json";
+
+           try {
+             const res2 = await fetch(`/data/translations/${folder2}/${fileName2}`);
+             bibleData2Ref.current = await res2.json();
+           } catch(e) { bibleData2Ref.current = null; }
+        } else {
+           bibleData2Ref.current = null;
+        }
 
         const bParam = searchParams.get('book');
         const cParam = searchParams.get('chapter');
@@ -200,15 +249,23 @@ export default function BibleContent() {
         setSelectedBookIndex(bIdx);
         setSelectedChapterIndex(cIdx);
         setCurrentChapterVerses(data[bIdx]?.chapters[cIdx] || []);
+        if (bibleData2Ref.current) {
+          setCurrentChapterVerses2(bibleData2Ref.current[bIdx]?.chapters[cIdx] || []);
+        } else {
+          setCurrentChapterVerses2([]);
+        }
         setIsLoading(false);
       } catch (e) { setIsLoading(false); }
     };
     if (bookNamesData.length) loadData();
-  }, [language, useTashkeel, bookNamesData, searchParams]);
+  }, [language, useTashkeel, parallelLanguage, bookNamesData, searchParams]);
 
   useEffect(() => {
     if (bibleDataRef.current) {
       setCurrentChapterVerses(bibleDataRef.current[selectedBookIndex]?.chapters[selectedChapterIndex] || []);
+      if (bibleData2Ref.current) {
+        setCurrentChapterVerses2(bibleData2Ref.current[selectedBookIndex]?.chapters[selectedChapterIndex] || []);
+      }
       saveLastRead(selectedBookIndex, selectedChapterIndex);
     }
   }, [selectedBookIndex, selectedChapterIndex, saveLastRead]);
@@ -601,11 +658,13 @@ export default function BibleContent() {
             </button>
           </div>
 
-          <div className={versePerLine ? styles.versesList : styles.versesParagraph}>
+          <div className={(versePerLine || !!parallelLanguage) ? styles.versesList : styles.versesParagraph}>
             {currentChapterVerses.map((v, i) => (
               <VerseItem
                 key={`${selectedBookIndex}-${selectedChapterIndex}-${i}`}
-                v={v} i={i} verseNumber={i + 1}
+                v={v}
+                v2={currentChapterVerses2[i]}
+                i={i} verseNumber={i + 1}
                 isReading={Number(currentVerseId) === (i + 1)}
                 isSelected={selectedIndicesSet.has(i)}
                 annotation={favouriteVerses[`${selectedBookIndex}-${selectedChapterIndex}-${i}`]}
@@ -617,6 +676,7 @@ export default function BibleContent() {
                 onVerseClick={toggleVerseSelection}
                 openNoteEditor={openNoteEditor}
                 keyId={`${selectedBookIndex}-${selectedChapterIndex}-${i}`}
+                isParallel={!!parallelLanguage}
               />
             ))}
           </div>

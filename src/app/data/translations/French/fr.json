@@ -132,7 +132,7 @@
     "subtitle": "Ajoutez vos infos les plus importantes à votre écran d'accueil pour un accès rapide",
     "add_to_home": "Ajouter à l'écran d'accueil",
     "android_only": "Cette fonctionnalité est désormais disponible pour les utilisateurs d'Android et d'iOS",
-    "how_to_ios": "Pour ajouter un widget sur iPhone, appuyez longuement sur l'écran d'accueil et sélectionnez Agios Bible",
+    "how_to_ios": "Pour ajouter un widget on iPhone, appuyez longuement sur l'écran d'accueil et sélectionnez Agios Bible",
     "items": {
       "verse": {
         "title": "Verset du jour",
@@ -168,6 +168,9 @@
       "verse_per_line_desc": "Afficher le texte sous forme de liste au lieu d'un paragraphe",
       "show_tashkeel": "Afficher le Tashkeel (Vocalisation)",
       "show_tashkeel_desc": "Afficher le texte with ou sans diacritiques",
+      "parallel_language": "Langue parallèle (côte à côte)",
+      "parallel_language_desc": "Afficher une autre traduction à côté du texte principal",
+      "none": "Désactivé",
       "font_type": "Type de police (Arabe)",
       "font_weight": "Graisse de la police ({weight})",
       "font_size": "Taille de police de lecture ({size}px)",
@@ -402,7 +405,8 @@
     "reason_copy_semantic": "Copier la section de recherche intelligente",
     "reason_share_semantic": "Partager la section de recherche intelligente",
     "note_placeholder": "Écrivez votre réflexion personnelle ici...",
-    "select_prompt": "Sélectionner {label}"
+    "select_prompt": "Sélectionner {label}",
+    "ai_disclaimer": "Ces résultats ont été générés ou analysés par l'IA pour aider à la recherche. Vérifiez toujours les références et consultez les sources officielles."
   },
   "more": {
     "title": "Plus",
@@ -438,7 +442,7 @@
     "invite_friend": "Inviter un ami",
     "delete_account": "Supprimer le compte",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte ?",
-    "version": "Agios App - Version 2.1.2",
+    "version": "Agios App - Version 2.2.0",
     "share_title": "Application Agios",
     "share_text": "Téléchargez l'application Agios and lisez la Bible d'une nouvelle façon !",
     "share_dialog": "Partager l'application with des amis",
@@ -463,7 +467,7 @@
       "epic": "Épique",
       "mythic": "Mythique"
     },
-    "no_history": "Aucun historique d'activité pour le moment.",
+    "no_history": "Aucun historique d'activity pour le moment.",
     "daily_bonus_toast": "Vous avez reçu 10 points aujourd'hui ! ",
     "goals": {
       "dailyLogin": "Connexion quotidienne",
@@ -674,6 +678,20 @@
     },
     "history": [
       {
+        "version": "2.2.0",
+        "date": "Mise à jour actuelle",
+        "title": "Mise à jour de sécurité & Améliorations de l'IA",
+        "features": [
+          "Mise à jour de sécurité radicale pour protéger l'application et les données utilisateur",
+          "Moteur d'IA amélioré et prise en charge de la recherche sémantique plus précise",
+          "Support multilingue et traductions parallèles sur la page de la Bible",
+          "Amélioration des performances des plans d'étude pour garantir le fonctionnement sous haute pression"
+        ],
+        "fixes": [
+          "Correction d'un problème où les tâches quotidiennes ne se terminaient pas en mode Local First"
+        ]
+      },
+      {
         "version": "2.1.2",
         "date": "Dernière mise à jour",
         "title": "Réduction de la taille de l'application & Support des widgets iOS",
@@ -763,7 +781,7 @@
         "title": "Corrections techniques et améliorations",
         "features": [],
         "fixes": [
-          "Correction de l'erreur de direction du témoin inversé dans la page de partage de verset",
+          "Correction de l'erreur de direction du témo인 inversé dans la page de partage de verset",
           "Correction de la différence de couleurs des versets favoris entre les pages de recherche et de la Bible",
           "Correction de l'erreur d'enregistrement incorrect de l'image du verset du jour pour les utilisateurs d'iPhone",
           "Correction de l'erreur lors de la sortie de l'application en appuyant deux fois sur le bouton retour"

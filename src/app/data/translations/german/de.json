@@ -168,6 +168,9 @@
       "verse_per_line_desc": "Text als Liste statt als Absatz anzeigen",
       "show_tashkeel": "Taschkil anzeigen (Vokalisierung)",
       "show_tashkeel_desc": "Text mit oder ohne Diakritika anzeigen",
+      "parallel_language": "Parallelsprache (Nebeneinander)",
+      "parallel_language_desc": "Eine weitere Übersetzung neben dem Haupttext anzeigen",
+      "none": "Aus",
       "font_type": "Schriftart (Arabisch)",
       "font_weight": "Schriftstärke ({weight})",
       "font_size": "Schriftgröße beim Lesen ({size}px)",
@@ -402,7 +405,8 @@
     "reason_copy_semantic": "Abschnitt aus intelligenter Suche kopieren",
     "reason_share_semantic": "Abschnitt aus intelligenter Suche teilen",
     "note_placeholder": "Schreibe hier deine persönliche Reflexion...",
-    "select_prompt": "Wähle {label}"
+    "select_prompt": "Wähle {label}",
+    "ai_disclaimer": "Diese Ergebnisse wurden von KI generiert oder analysiert, um bei der Forschung zu helfen. Überprüfen Sie immer die Referenzen und konsultieren Sie offizielle Quellen."
   },
   "more": {
     "title": "Mehr",
@@ -438,7 +442,7 @@
     "invite_friend": "Freund zur App einladen",
     "delete_account": "Konto löschen",
     "delete_confirm": "Bist du sicher, dass du dein Konto dauerhaft löschen möchtest?",
-    "version": "Agios App - Version 2.1.2",
+    "version": "Agios App - Version 2.2.0",
     "share_title": "Agios App",
     "share_text": "Lade die Agios-App herunter und lies die Bibel auf eine neue Weise!",
     "share_dialog": "App mit Freunden teilen",
@@ -674,6 +678,20 @@
     },
     "history": [
       {
+        "version": "2.2.0",
+        "date": "Aktuelles Update",
+        "title": "Sicherheitsupdate & KI-Verbesserungen",
+        "features": [
+          "Radikales Sicherheitsupdate zum Schutz der App und der Benutzerdaten",
+          "Verbesserte KI-Engine und Unterstützung für präzisere semantische Suche",
+          "Mehrsprachige Unterstützung und Parallelübersetzungen auf der Bibelseite",
+          "Verbesserte Leistung der Lesepläne zur Gewährleistung des Betriebs unter hohem Druck"
+        ],
+        "fixes": [
+          "Problem behoben, bei dem tägliche Aufgaben im Local-First-Modus nicht abgeschlossen wurden"
+        ]
+      },
+      {
         "version": "2.1.2",
         "date": "Letztes Update",
         "title": "App-Größenreduzierung & iOS-Widget-Unterstützung",
@@ -747,7 +765,7 @@
         "date": "Vorheriges Update",
         "title": "Verbesserungen bei Suche, Auswahl & Tagesfrage",
         "features": [
-          "Verbesserte Suchgeschwindigkeit in der App",
+          "Verbesserte Suche nach Geschwindigkeit in der App",
           "Bessere Auswahl und Kopie von Versen",
           "Wesentliche Verbesserungen der Tagesfrage",
           "Vereinfachte Darstellung der Versanalyse"

@@ -57,9 +57,9 @@ const awardPoints = async (userId, type, points, reason) => {
     }
   } else {
     await StorageService.addPoints(points);
-    const history = await StorageService.get('points_history') || [];
+    const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
     history.push({ type, points, reason, timestamp: getCairoIsoString() });
-    await StorageService.save('points_history', history);
+    await StorageService.save(KEYS.POINTS_HISTORY, history);
     return true;
   }
 };
@@ -94,12 +94,21 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
       ts = new Date();
     }
 
+    // استخراج التاريخ بشكل آمن لتجنب مشاكل التوقيت (Timezone Shift)
+    // إذا كان الطابع الزمني نصياً يبدأ بـ YYYY-MM-DD، نستخدمه مباشرة
+    let dateStr;
+    if (typeof item.timestamp === 'string' && item.timestamp.length >= 10) {
+      dateStr = item.timestamp.substring(0, 10);
+    } else {
+      dateStr = getCairoDate(ts);
+    }
+
     history.push({
       activity: String(item.type || 'unknown'),
       points: Number(item.points || POINTS_MAP[item.type] || 0),
       description: String(item.reason || 'نشاط غير محدد'),
       timestamp: ts,
-      dateStr: String(getCairoDate(ts))
+      dateStr: dateStr
     });
   });
 
@@ -108,7 +117,7 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
     if (q && q.answered) {
       const qTime = q.timestamp || dateKey;
       const qDateObj = new Date(qTime);
-      const qDateStr = getCairoDate(qDateObj);
+      const qDateStr = dateKey.length >= 10 ? dateKey.substring(0, 10) : getCairoDate(qDateObj);
       const exists = history.some(h => h.activity === 'dailyQuestion' && h.dateStr === qDateStr);
       if (!exists) {
         history.push({
@@ -173,7 +182,7 @@ const categorizeActivities = (history) => {
   });
 
   history.forEach(item => {
-    const dateKey = getCairoDate(item.timestamp);
+    const dateKey = item.dateStr || getCairoDate(item.timestamp);
     const chartDay = last7Days.find(d => d.date === dateKey);
     if (chartDay) chartDay.points += Math.max(0, item.points);
 
@@ -253,7 +262,7 @@ export default function Points() {
         return () => unsubFirestore();
       } else {
         const localStats = await StorageService.getLocalStats();
-        const localHistory = await StorageService.get('points_history') || [];
+        const localHistory = await StorageService.get(KEYS.POINTS_HISTORY) || [];
         const localAnswered = await StorageService.get('answered_questions') || {};
         const localCompleted = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
 

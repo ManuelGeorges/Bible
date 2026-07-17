@@ -10,7 +10,7 @@ const KEYS = {
     LAST_READ: 'agios_last_read',
     LAST_ACTIVE: 'agios_last_active',
     SHOWN_BADGES: 'agios_shown_badges',
-    POINTS_HISTORY: 'agios_points_history',
+    POINTS_HISTORY: 'points_history',
     ANSWERED_QUESTIONS: 'agios_answered_questions',
     LOCAL_BADGES: 'agios_local_badges',
     CUSTOM_PLANS: 'agios_custom_plans',

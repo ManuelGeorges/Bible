@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, increment, arrayUnion, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
-import { getCairoDate } from '../lib/dateUtils';
+import { getCairoDate, getCairoIsoString } from '../lib/dateUtils';
 import { Capacitor } from '@capacitor/core';
 import { StorageService } from '../lib/storage';
 import { useLanguage } from '../app/context/LanguageContext';
@@ -102,6 +102,16 @@ export default function UserTracker() {
             await StorageService.save('agios_last_active', today);
             await StorageService.addPoints(10);
 
+            // إضافة النشاط للسجل المحلي ليظهر كمكتمل في صفحة النقاط
+            const history = await StorageService.get('points_history') || [];
+            history.push({
+              type: 'dailyLogin',
+              points: 10,
+              reason: strings.points?.points_reasons?.daily_login || 'Daily login',
+              timestamp: getCairoIsoString()
+            });
+            await StorageService.save('points_history', history);
+
             toast(strings.home.toasts.welcome_back.replace('{streak}', formatNumber(newStreak)), { icon: '✨' });
           }
         }
@@ -112,7 +122,6 @@ export default function UserTracker() {
           const currentStreak = userData ? userData.streak : (await StorageService.get('agios_streak'));
           const currentPoints = userData ? (userData.totalPoints || 0) : (await StorageService.getLocalStats()).points;
 
-          // إرسال البيانات كاملة للأندرويد: الستريك، ملخص الخطط (null هنا ليتم تحديثه من page.jsx)، والنقاط
           window.AgiosScannerNative.updateUserStats(currentStreak || 0, null, currentPoints || 0);
         }
 

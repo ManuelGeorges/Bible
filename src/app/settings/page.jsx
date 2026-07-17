@@ -6,7 +6,8 @@ import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
-  Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold, Languages
+  Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold, Languages,
+  Columns
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
@@ -36,7 +37,7 @@ const languages = [
 
 const Settings = () => {
   const { theme, setTheme } = useTheme()
-  const { language: currentLang, changeLanguage, strings, dir, useTashkeel, toggleTashkeel } = useLanguage();
+  const { language: currentLang, changeLanguage, strings, dir, useTashkeel, toggleTashkeel, parallelLanguage, changeParallelLanguage } = useLanguage();
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [fontSize, setFontSize] = useState(18)
@@ -396,6 +397,34 @@ const Settings = () => {
             </label>
           </div>
         )}
+
+        <div className={styles.fontControlGroup}>
+          <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
+            <span className={styles.settingLabel}>
+              <Columns size={20} className={styles.iconPrimary} />
+              {strings.settings.bible.parallel_language}
+            </span>
+            <p className={styles.subText}>{strings.settings.bible.parallel_language_desc}</p>
+          </div>
+          <div className={styles.fontOptionsList}>
+            <button
+              className={`${styles.fontChip} ${parallelLanguage === null ? styles.activeChip : ''}`}
+              onClick={() => changeParallelLanguage(null)}
+            >
+              {strings.settings.bible.none}
+            </button>
+            {languages.filter(l => l.id !== currentLang).map(lang => (
+              <button
+                key={lang.id}
+                className={`${styles.fontChip} ${parallelLanguage === lang.id ? styles.activeChip : ''}`}
+                onClick={() => changeParallelLanguage(lang.id)}
+              >
+                <span style={{ marginRight: dir === 'rtl' ? '0' : '8px', marginLeft: dir === 'rtl' ? '8px' : '0' }}>{lang.flag}</span>
+                {lang.name}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className={styles.fontControlGroup}>
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>

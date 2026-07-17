@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useBadge } from '../context/BadgeContext';
-import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Image as ImageIcon, Share2, AlertCircle, Info } from 'lucide-react';
+import { Type, Wand2, Sparkles, Settings2, Eye, EyeOff, Search, Copy, Heart, Image as ImageIcon, Share2, AlertCircle, Info, Sparkle } from 'lucide-react';
 import { getCairoDate, getCairoIsoString } from '../../lib/dateUtils';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
@@ -736,7 +736,7 @@ Geben Sie JSON nur in diesem exakten Format zurück:
 }
 
 Regeln:
-1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verبن ableitet.
+1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verben ableitet.
 2. Wenn statisch, listen Sie nur tatsächliche Formen auf: Plurale, Varianten.
 3. Für ableitbare Wörter: Extrahieren Sie alle gültigen morphologischen Formen (Vergangenheit, Präsens, Partizip, Nominalformen).
 4. Nur JSON zurückgeben, kein zusätzlicher Text.`
@@ -1532,6 +1532,12 @@ Regeln:
                         </div>
                       </div>
                     ))}
+                    {(searchType === 'semantic' || searchType === 'derivatives') && (
+                      <div className={styles.aiDisclaimer}>
+                        <Sparkle className={styles.aiDisclaimerIcon} size={20} />
+                        <p className={styles.aiDisclaimerText}>{strings.search.ai_disclaimer}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1540,6 +1546,12 @@ Regeln:
                     {searchResults.map((v, i) => (
                       <VerseCard key={`${v.book_index}-${v.chapter}-${v.verse}`} v={v} />
                     ))}
+                    {(searchType === 'derivatives') && searchResults.length > 0 && (
+                      <div className={styles.aiDisclaimer}>
+                        <Sparkle className={styles.aiDisclaimerIcon} size={20} />
+                        <p className={styles.aiDisclaimerText}>{strings.search.ai_disclaimer}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
