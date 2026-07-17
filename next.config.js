@@ -9,13 +9,13 @@ const nextConfig = {
   },
   reactStrictMode: true,
   trailingSlash: true,
-  optimizeFonts: false,
 
-  // منع إنشاء ملفات الـ Source Maps نهائياً في النسخة النهائية
+  // منع إنشاء ملفات الـ Source Maps نهائياً
   productionBrowserSourceMaps: false,
 
   webpack: (config, { dev, isServer }) => {
-    if (!isServer) {
+    // التشفير يعمل فقط في النسخة النهائية (Production) لتجنب أخطاء Turbopack في التطوير
+    if (!dev && !isServer) {
       config.plugins.push(
         new JavaScriptObfuscator({
           rotateStringArray: true,

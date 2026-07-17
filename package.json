@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next-sitemap",
-    "build:mobile": "cross-env NEXT_PUBLIC_EXPORT=true next build && next-sitemap",
+    "build": "next build --webpack && next-sitemap",
+    "build:mobile": "cross-env NEXT_PUBLIC_EXPORT=true next build --webpack && next-sitemap",
     "start": "next start",
     "lint": "next lint"
   },
