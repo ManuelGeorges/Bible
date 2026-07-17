@@ -19,16 +19,8 @@ import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
 
-const apiKeys = [
-  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
-  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
-  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
-];
-const getGenAI = (index) => {
-  const key = apiKeys[index % apiKeys.length];
-  return new GoogleGenerativeAI(key);
-};
+const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
+const genAI = new GoogleGenerativeAI(apiKey);
 
 const geminiCache = {};
 
@@ -468,8 +460,7 @@ function SearchContent() {
   };
 
   const attemptStream = async (attemptIndex, term, searchId, currentInfo) => {
-    const genAIInstance = getGenAI(attemptIndex);
-    const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     const prompt = `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}".
 المطلوب رد JSON فقط بهذا التنسيق حصراً:
 {
@@ -604,8 +595,7 @@ Regeln:
         ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
-      const genAIInstance = getGenAI(attemptIndex);
-      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+      const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const promptFn = semanticPrompts[language] || semanticPrompts.en;
       const prompt = promptFn(term, allowedBooks, filterContext);
 
@@ -753,8 +743,7 @@ Regeln:
     };
 
     const attemptStreamInternal = async (attemptIndex) => {
-      const genAIInstance = getGenAI(attemptIndex);
-      const model = genAIInstance.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+      const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = languagePrompts[language] || languagePrompts.en;
 
       const result = await model.generateContentStream(prompt);

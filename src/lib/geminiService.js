@@ -2,11 +2,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function generateWithGemini(prompt, config = {}) {
   try {
-    // نستخدم المفتاح العام المتاح في المتصفح/التطبيق
-    const apiKey = AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ;
+    const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
 
     if (!apiKey) {
-      throw new Error("Gemini API Key is missing (NEXT_PUBLIC_GEMINI_API_KEY)");
+      throw new Error("Gemini API Key is missing");
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);

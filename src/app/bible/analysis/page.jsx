@@ -11,17 +11,8 @@ import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
 
-const apiKeys = [
-  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
-  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
-  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
-];
-
-const getGenAI = (index) => {
-  const key = apiKeys[index % apiKeys.length];
-  return new GoogleGenerativeAI(key);
-};
+const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
+const genAI = new GoogleGenerativeAI(apiKey);
 
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
   let lastError;
@@ -249,7 +240,6 @@ function AnalysisContent() {
     const prompt = prompts[language] || prompts.en;
 
     const attemptGeneration = async (attemptIndex) => {
-      const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({
         model: "gemini-3.1-flash-lite",
         generationConfig: {

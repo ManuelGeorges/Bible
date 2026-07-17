@@ -31,6 +31,15 @@ function PlanDetailsContent() {
   const [completedChapters, setCompletedChapters] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // وظيفة للبحث عن الخطة في الـ Cache المحلي للخطط المشتركة
+  const getSharedPlanFromCache = async (id) => {
+    const cachedPlans = await StorageService.get(KEYS.SHARED_PLANS_CACHE);
+    if (cachedPlans && Array.isArray(cachedPlans)) {
+      return cachedPlans.find(p => String(p.id) === String(id));
+    }
+    return null;
+  };
+
   const loadLocalData = useCallback(async () => {
     try {
       const localChapters = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
@@ -60,12 +69,19 @@ function PlanDetailsContent() {
               setPlan(savedShared);
               setCompletedDays(savedShared.completedDays || {});
           } else {
-              const docRef = doc(db, 'sharedPlans', planId);
-              const snap = await getDoc(docRef);
-              if (snap.exists()) {
-                  const data = snap.data();
-                  setPlan({ ...data, id: planId, isShared: true });
+              // محاولة الجلب من الكاش أولاً قبل Firestore
+              const cachedPlan = await getSharedPlanFromCache(planId);
+              if (cachedPlan) {
+                  setPlan(cachedPlan);
                   setCompletedDays({});
+              } else {
+                  const docRef = doc(db, 'sharedPlans', planId);
+                  const snap = await getDoc(docRef);
+                  if (snap.exists()) {
+                      const data = snap.data();
+                      setPlan({ ...data, id: planId, isShared: true });
+                      setCompletedDays({});
+                  }
               }
           }
       } else {
@@ -175,12 +191,19 @@ function PlanDetailsContent() {
                     setPlan(userCopy);
                     setCompletedDays(userCopy.completedDays || {});
                 } else {
-                    const docRef = doc(db, 'sharedPlans', planId);
-                    const sharedSnap = await getDoc(docRef);
-                    if (sharedSnap.exists()) {
-                        const sharedData = sharedSnap.data();
-                        setPlan({ ...sharedData, id: planId, isShared: true });
+                    // محاولة الجلب من الكاش أولاً
+                    const cachedPlan = await getSharedPlanFromCache(planId);
+                    if (cachedPlan) {
+                        setPlan(cachedPlan);
                         setCompletedDays({});
+                    } else {
+                        const docRef = doc(db, 'sharedPlans', planId);
+                        const sharedSnap = await getDoc(docRef);
+                        if (sharedSnap.exists()) {
+                            const sharedData = sharedSnap.data();
+                            setPlan({ ...sharedData, id: planId, isShared: true });
+                            setCompletedDays({});
+                        }
                     }
                 }
             } else {

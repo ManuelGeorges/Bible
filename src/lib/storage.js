@@ -15,7 +15,9 @@ const KEYS = {
     LOCAL_BADGES: 'agios_local_badges',
     CUSTOM_PLANS: 'agios_custom_plans',
     VISITED_MAP_POINTS: 'agios_visited_map_points',
-    COMPLETED_QUIZZES: 'agios_completed_quizzes'
+    COMPLETED_QUIZZES: 'agios_completed_quizzes',
+    SHARED_PLANS_CACHE: 'agios_shared_plans_cache',
+    LAST_SHARED_PLANS_FETCH: 'agios_last_shared_plans_fetch'
 };
 
 export const StorageService = {

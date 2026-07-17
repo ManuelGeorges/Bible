@@ -5,7 +5,7 @@ import Link from 'next/link';
 import styles from './studyPlans.module.css';
 import studyPlansData from './studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, updateDoc, deleteField, arrayUnion, collection, query, orderBy, limit } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, deleteField, arrayUnion, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -111,18 +111,48 @@ export default function StudyPlans() {
     if (finishedCount >= 20) unlockBadge('plan_finish_20', currentBadges);
   };
 
+  // جلب الخطط المشتركة مع نظام التخزين المؤقت (مرة واحدة يومياً)
   useEffect(() => {
-    const sharedQuery = query(collection(db, 'sharedPlans'), orderBy('createdAt', 'desc'), limit(50));
-    const unsubShared = onSnapshot(sharedQuery, (snapshot) => {
-      const shared = snapshot.docs
-        .map(doc => ({ ...doc.data(), id: doc.id, isShared: true }))
-        .filter(plan => {
-          // فلترة المجتمع: تظهر خطط نفس لغة المستخدم فقط
+    const fetchSharedPlans = async () => {
+      try {
+        const lastFetch = await StorageService.get(KEYS.LAST_SHARED_PLANS_FETCH);
+        const cachedPlans = await StorageService.get(KEYS.SHARED_PLANS_CACHE);
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (lastFetch && cachedPlans && (now - lastFetch < oneDay)) {
+          // استخدام البيانات المخزنة
+          const filtered = cachedPlans.filter(plan => {
+            return plan.language === language || (!plan.language && language === 'ar');
+          });
+          setSharedPlans(filtered);
+          return;
+        }
+
+        // سحب بيانات جديدة من Firestore
+        const sharedQuery = query(collection(db, 'sharedPlans'), orderBy('createdAt', 'desc'), limit(50));
+        const snapshot = await getDocs(sharedQuery);
+        const shared = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, isShared: true }));
+
+        // حفظ في التخزين المؤقت
+        await StorageService.save(KEYS.SHARED_PLANS_CACHE, shared);
+        await StorageService.save(KEYS.LAST_SHARED_PLANS_FETCH, now);
+
+        const filtered = shared.filter(plan => {
           return plan.language === language || (!plan.language && language === 'ar');
         });
-      setSharedPlans(shared);
-    });
-    return () => unsubShared();
+        setSharedPlans(filtered);
+      } catch (error) {
+        console.error("Error fetching shared plans:", error);
+        // في حالة الخطأ، حاول تحميل الكاش القديم إن وجد
+        const cached = await StorageService.get(KEYS.SHARED_PLANS_CACHE);
+        if (cached) {
+          setSharedPlans(cached.filter(p => p.language === language || (!p.language && language === 'ar')));
+        }
+      }
+    };
+
+    fetchSharedPlans();
   }, [language]);
 
   useEffect(() => {

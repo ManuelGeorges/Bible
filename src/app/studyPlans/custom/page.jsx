@@ -204,14 +204,14 @@ Verfügbare Bücherliste: [${allowedBooks}]
 Wichtiger Hinweis:
 1. Das Ergebnis muss gültiges JSON sein, ohne zusätzlichen Text.
 2. Das readings-Array muss genau ${durationDays} Objekte enthalten.
-3. Wenn das Thema sehr spezifisch ist, beginne damit und erweitere dann على verwandte spirituelle Bücher und Konzepte, um einen hochwertigen Plan zu gewährleisten.
+3. Wenn das Thema sehr spezifisch ist, beginne damit und erweitere dann auf verwandte spirituelle Bücher und Konzepte, um einen hochwertigen Plan zu gewährleisten.
 `
             };
 
             const prompt = prompts[language] || prompts.en;
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-3.1-flash-lite",
+                model: "gemini-1.5-flash",
                 generationConfig: { temperature: 0.7 }
             });
 
@@ -306,6 +306,9 @@ Wichtiger Hinweis:
                         originalPlanId: planId,
                         language: language
                     });
+
+                    // تصفير وقت آخر سحب للخطط المشتركة لإجبار التطبيق على تحديث القائمة لإظهار الخطة الجديدة
+                    await StorageService.save(KEYS.LAST_SHARED_PLANS_FETCH, 0);
                 }
 
                 toast.success(strings.studyPlans.custom.success_toast);
