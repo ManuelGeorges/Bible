@@ -191,8 +191,8 @@
   z-index: 1;
 }
 
-/* النافذة المنبثقة (Popup) */
-:global(.maplibregl-popup-content) {
+/* النافذة المنبثقة (Popup) تم الإصلاح ليكون pure */
+.mapContainer :global(.maplibregl-popup-content) {
   background: var(--color-card-bg) !important;
   backdrop-filter: blur(10px);
   border-radius: 20px !important;
@@ -201,7 +201,7 @@
   color: var(--color-text-primary) !important;
 }
 
-:global(.maplibregl-popup-close-button) {
+.mapContainer :global(.maplibregl-popup-close-button) {
   color: var(--color-text-primary) !important;
 }
 

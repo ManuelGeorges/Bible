@@ -1,11 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap');
 
-:root {
+.container {
+  /* نقل المتغيرات من :root إلى هنا لإصلاح خطأ البناء */
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 
-.container {
   width: 100%;
   min-height: 100dvh;
   margin: 0;
@@ -532,7 +531,7 @@
   background: linear-gradient(to bottom, transparent 60%, var(--color-border) 100%);
   color: var(--color-accent);
   font-weight: 900;
-  padding: 0; /* تم التصفير لمنع المسافات داخل الكلمات مثل hi nein */
+  padding: 0;
 }
 
 .verseReference {
