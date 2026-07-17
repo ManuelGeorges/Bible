@@ -9,13 +9,13 @@ const nextConfig = {
   },
   reactStrictMode: true,
   trailingSlash: true,
-  // تحسين معالجة الـ preload وتقليل التحذيرات
   optimizeFonts: false,
 
+  // منع إنشاء ملفات الـ Source Maps نهائياً في النسخة النهائية
+  productionBrowserSourceMaps: false,
+
   webpack: (config, { dev, isServer }) => {
-    // التعتيم يعمل فقط عند بناء النسخة النهائية (Production) وليس في وضع التطوير (Dev)
-    // كما نتجنب تعتيم كود السيرفر إذا لم تكن بحاجة لذلك، ونركز على الكود الذي يذهب للموبايل (Client)
-    if (!dev && !isServer) {
+    if (!isServer) {
       config.plugins.push(
         new JavaScriptObfuscator({
           rotateStringArray: true,
@@ -28,11 +28,11 @@ const nextConfig = {
           debugProtection: true,
           disableConsoleOutput: true,
           selfDefending: true,
-          unicodeEscapeSequence: false // قد تزيد الحجم جداً إذا كانت true
+          unicodeEscapeSequence: false
         }, [
-          // استثناء الملفات التي قد تسبب مشاكل عند التعتيم
           'static/chunks/react-refresh.js',
-          'static/chunks/main-app.js'
+          'static/chunks/main-app.js',
+          'static/chunks/webpack.js'
         ])
       );
     }
