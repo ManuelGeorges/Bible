@@ -4,19 +4,23 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Play, Pause, X, RotateCcw, RotateCw, SkipBack, SkipForward,
-    Settings, Repeat, ListEnd, Volume2, Highlighter, Clock
+    Settings, Repeat, ListEnd, Volume2, Highlighter, Clock,
+    Download, Trash2, Loader2, CheckCircle
 } from 'lucide-react';
 import { useAudio } from '../app/context/AudioContext';
 import styles from './GlobalAudioPlayer.module.css';
 import { useLanguage } from '../app/context/LanguageContext';
+import { Capacitor } from '@capacitor/core';
 
 export default function GlobalAudioPlayer() {
     const { strings, dir } = useLanguage();
     const {
         isPlaying, currentTime, duration, playbackSpeed, isPanelOpen, trackTitle,
-        isRepeat, isAutoPlay, volume, isHighlightEnabled, sleepTimer, timeLeft,
+        isRepeat, isAutoPlay, volume, isHighlightEnabled, sleepTimer,
+        currentLocation, downloadedChapters, downloadProgress,
         setIsPanelOpen, togglePlay, seek, skip, setPlaybackSpeed, goToChapter,
-        setIsRepeat, setIsAutoPlay, setVolume, setIsHighlightEnabled, setSleepTimer
+        setIsRepeat, setIsAutoPlay, setVolume, setIsHighlightEnabled, setSleepTimer,
+        downloadChapter, deleteDownload
     } = useAudio();
 
     const [showSettings, setShowSettings] = useState(false);
@@ -31,9 +35,22 @@ export default function GlobalAudioPlayer() {
     };
 
     const progressPercent = (currentTime / duration) * 100 || 0;
-
-    // Flip icons for RTL to match direction of progress
     const iconStyle = dir === 'rtl' ? { transform: 'scaleX(-1)' } : {};
+
+    // معرف الفصل الحالي للتحقق من حالة التحميل
+    const locKey = `${currentLocation.bookIdx >= 0 ? currentLocation.bookIdx : ''}-${currentLocation.chapIdx + 1}`;
+    const isDownloaded = downloadedChapters[locKey];
+    const isDownloading = downloadProgress[locKey] !== undefined;
+
+    const handleDownloadClick = () => {
+        if (isDownloaded) {
+            if (window.confirm(strings.common.confirm_delete || "هل تريد حذف هذا الملف؟")) {
+                deleteDownload(currentLocation.bookIdx, currentLocation.chapIdx);
+            }
+        } else {
+            downloadChapter(currentLocation.bookIdx, currentLocation.chapIdx);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -108,8 +125,27 @@ export default function GlobalAudioPlayer() {
                 </AnimatePresence>
 
                 <div className={styles.audioPanelHeader}>
-                    <span className={styles.audioPanelTitle}>{trackTitle}</span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className={styles.titleContainer}>
+                        <span className={styles.audioPanelTitle}>{trackTitle}</span>
+                        {isDownloaded && <CheckCircle size={14} color="#10b981" title="Offline" />}
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        {/* زر التحميل متاح فقط على تطبيقات الموبايل */}
+                        {Capacitor.isNativePlatform() && (
+                            <button
+                                className={`${styles.iconBtn} ${isDownloaded ? styles.downloaded : ''}`}
+                                onClick={handleDownloadClick}
+                                disabled={isDownloading}
+                            >
+                                {isDownloading ? (
+                                    <Loader2 size={18} className={styles.spinning} />
+                                ) : isDownloaded ? (
+                                    <Trash2 size={18} color="#ef4444" />
+                                ) : (
+                                    <Download size={18} />
+                                )}
+                            </button>
+                        )}
                         <button className={styles.iconBtn} onClick={() => setShowSettings(true)}>
                             <Settings size={18} />
                         </button>

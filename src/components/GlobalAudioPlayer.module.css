@@ -30,6 +30,13 @@
   align-items: center;
 }
 
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 70%;
+}
+
 .audioPanelTitle {
   font-size: 0.95rem;
   font-weight: 800;
@@ -37,7 +44,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70%;
 }
 
 .iconBtn {
@@ -56,6 +62,19 @@
 
 .iconBtn:active {
   transform: scale(0.9);
+}
+
+.downloaded {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Settings Menu Overlay - Now inside the panel */

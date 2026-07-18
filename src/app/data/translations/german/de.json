@@ -29,7 +29,16 @@
     "back": "Zurück",
     "retry": "Wiederholen",
     "error_occurred": "Entschuldigung, ein Fehler ist aufgetreten",
-    "internet_required": "Diese Funktion erfordert eine Internetverbindung"
+    "internet_required": "Diese Funktion erfordert eine Internetverbindung",
+    "confirm_delete": "Möchten Sie diese Datei von Ihrem Gerät löschen?"
+  },
+  "audio": {
+    "artist_default": "Heilige Schrift",
+    "album": "Agios Media",
+    "track_title": "Luther Bibel - {book} {chapter}",
+    "download_success": "Kapitel erfolgreich für das Offline-Hören gespeichert",
+    "download_error": "Fehler beim Herunterladen der Datei, bitte überprüfe deine Verbindung",
+    "deleted": "Heruntergeladene Datei gelöscht"
   },
   "login": {
     "title": "Anmelden",
@@ -263,7 +272,10 @@
   "audio": {
     "artist_default": "Heilige Schrift",
     "album": "Agios Media",
-    "track_title": "Adel Noshy - {book} {chapter}"
+    "track_title": "Luther Bibel - {book} {chapter}",
+    "download_success": "Kapitel erfolgreich für das Offline-Hören gespeichert",
+    "download_error": "Fehler beim Herunterladen der Datei, bitte überprüfe deine Verbindung",
+    "deleted": "Heruntergeladene Datei gelöscht"
   },
   "bible": {
     "title": "Heilige Schrift",
@@ -546,7 +558,7 @@
       "loading_title": "Agios entwirft eine besondere geistliche Reise für dich...",
       "loading_sub": "Dies kann einige Sekunden dauern",
       "form_title": "Intelligenter Plan-Designer",
-      "form_subtitle": "Sag 'Agios', was dein Herz heute beschäftigt, und es wird dir personalisierte biblische Lesungen vorschlagen.",
+      "form_subtitle": "Sag 'Agios', wie du dein Herz heute beschäftigt, und es wird dir personalisierte biblische Lesungen vorschlagen.",
       "mood_label": "Wie fühlst du dich momentan? Oder nach welchem Thema suchst du?",
       "mood_placeholder": "Z.B.: Ich fühl mich besorgt um die Zukunft, oder ich möchte eine Studie über Geduld..",
       "duration_label": "Was ist die bevorzugte Dauer des Plans?",
@@ -805,7 +817,7 @@
       {
         "version": "1.8.4",
         "date": "Vorheriges Update",
-        "title": "Taschkil-Präzision, Suchverbesserungen und Abzeichen",
+        "title": "Taschkil-Präزision, Suchverbesserungen und Abzeichen",
         "features": [
           "Taschkil durch eine zu 100% präzise Version ersetzt",
           "Suche in Leseplänen flexibler gestaltet",
@@ -856,7 +868,7 @@
         ],
         "fixes": [
           "Langsamkeit in den Auswahl-Listen für Bücher und Kapitel behoben",
-          "Radikale Verbesserungen im design der Wettbewerbsseite",
+          "Radikale Verbesserungen im Design der Wettbewerbsseite",
           "Unschärfe in Dropdown-Menüs behoben"
         ]
       },

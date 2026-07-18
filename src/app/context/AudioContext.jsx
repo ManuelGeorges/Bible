@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Preferences } from '@capacitor/preferences';
 import { useLanguage } from './LanguageContext';
 
 const AudioContext = createContext();
@@ -21,6 +23,10 @@ export function AudioProvider({ children }) {
     const [timestamps, setTimestamps] = useState([]);
     const [isAutoNext, setIsAutoNext] = useState(false);
     const [isAudioLoading, setIsAudioLoading] = useState(false);
+
+    // التحميلات
+    const [downloadedChapters, setDownloadedChapters] = useState({}); // { "bookId-chap": "localPath" }
+    const [downloadProgress, setDownloadProgress] = useState({}); // { "bookId-chap": 0-100 }
 
     // Settings
     const [isRepeat, setIsRepeat] = useState(false);
@@ -44,6 +50,15 @@ export function AudioProvider({ children }) {
     useEffect(() => {
         currentLocationRef.current = currentLocation;
     }, [currentLocation]);
+
+    // تحميل قائمة الفصول المحملة عند البداية
+    useEffect(() => {
+        const loadDownloads = async () => {
+            const { value } = await Preferences.get({ key: 'downloaded_audio' });
+            if (value) setDownloadedChapters(JSON.parse(value));
+        };
+        if (Capacitor.isNativePlatform()) loadDownloads();
+    }, []);
 
     const parseTimeToSeconds = useCallback((val) => {
         if (val === undefined || val === null) return -1;
@@ -73,11 +88,6 @@ export function AudioProvider({ children }) {
                 else if (ts.verse_start !== undefined) startTime = parseTimeToSeconds(ts.verse_start);
 
                 let vIdRaw = ts.verse_id ?? ts.verse ?? ts.verse_number;
-                if (vIdRaw === undefined && ts.verse_start !== undefined) {
-                    const vsNum = Number(ts.verse_start);
-                    if (Number.isInteger(vsNum) && vsNum < 300) vIdRaw = ts.verse_start;
-                }
-
                 if (vIdRaw === undefined || vIdRaw === null) return null;
 
                 let vId = "";
@@ -110,7 +120,11 @@ export function AudioProvider({ children }) {
         }
 
         lastUrlRef.current = url;
-        setAudioUrl(url);
+
+        // إذا كان رابطاً محلياً من Capacitor
+        const finalUrl = (url && url.startsWith('file://')) ? Capacitor.convertFileSrc(url) : url;
+
+        setAudioUrl(finalUrl);
         setTrackTitle(title);
 
         const processed = processTimestamps(chapterTimestamps);
@@ -122,8 +136,7 @@ export function AudioProvider({ children }) {
 
         if (audioRef.current) {
             audioRef.current.pause();
-            audioRef.current.src = url;
-            // Removed audioRef.current.load() for faster start as play() handles it
+            audioRef.current.src = finalUrl;
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.catch(e => {
@@ -143,13 +156,35 @@ export function AudioProvider({ children }) {
         const chapter = chapIdx + 1;
         const locKey = `${book.book_id}-${chapter}`;
 
+        // 1. التحقق من التحميلات المحلية أولاً
+        if (downloadedChapters[locKey]) {
+            try {
+                const fileResult = await Filesystem.getUri({
+                    directory: Directory.Data,
+                    path: `audio/${locKey}.mp3`
+                });
+
+                // جلب التوقيتات المخزنة محلياً أيضاً
+                const { value: storedTimes } = await Preferences.get({ key: `times_${locKey}` });
+                const times = storedTimes ? JSON.parse(storedTimes) : [];
+
+                const displayChapter = language === 'ar' ? chapter.toLocaleString('ar-EG') : chapter;
+                const title = strings.audio.track_title
+                    .replace('{book}', book.name)
+                    .replace('{chapter}', displayChapter);
+
+                return { url: fileResult.uri, title, times };
+            } catch (e) {
+                console.error("Local file fetch error, falling back to network", e);
+            }
+        }
+
         if (fetchingRef.current === locKey) return null;
         fetchingRef.current = locKey;
 
         setIsAudioLoading(true);
         const key = '5e4b1535-5f2b-4f13-9032-9db0297664a6';
 
-        // FCBH Fileset Mappings
         const fcbhMappings = {
             'ar': { new: 'ARZVDVN1DA', old: 'ARZVDVO1DA', bible: 'ARZVDV' },
             'en': { new: 'EN1WEBN2DA', old: 'EN1WEBO2DA', bible: 'ENGWEB' },
@@ -165,14 +200,13 @@ export function AudioProvider({ children }) {
         let audioFilesetId = book.type === 'new' ? config.new : config.old;
 
         try {
-            // Concurrent fetching for URL and first set of timestamps for speed
             const primaryAudioPromise = fetch(`https://4.dbt.io/api/bibles/filesets/${audioFilesetId}/${book.book_id}/${chapter}?v=4&key=${key}`, { priority: 'high' })
                 .then(r => r.ok ? r.json() : null);
 
             let timingCandidates = [audioFilesetId];
-            if (language === 'ar') timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA', 'ARZSMVN1DA', 'ARZSMVO1DA');
-            else if (language === 'en') timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA', 'ENGWEBN2DA', 'ENGWEBO2DA');
-            else if (language === 'fr') timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA', 'FRNLSGN2DA', 'FRNLSGO2DA');
+            if (language === 'ar') timingCandidates.push('ARZVDVN1DA', 'ARZVDVO1DA');
+            else if (language === 'en') timingCandidates.push('EN1WEBN2DA', 'EN1WEBO2DA');
+            else if (language === 'fr') timingCandidates.push('FRNTLSN2DA', 'FRNTLSO2DA');
 
             const timestampsPromise = Promise.all(timingCandidates.map(tId =>
                 fetch(`https://4.dbt.io/api/timestamps/${tId}/${book.book_id}/${chapter}?v=4&key=${key}`, { priority: 'low' })
@@ -184,31 +218,11 @@ export function AudioProvider({ children }) {
             const audioData = await primaryAudioPromise;
             let url = audioData?.data?.[0]?.path;
 
-            // Fast fallback if primary fails
-            if (!url && config.bible) {
-                const fsRes = await fetch(`https://4.dbt.io/api/bibles/${config.bible}/filesets?v=4&key=${key}`);
-                if (fsRes.ok) {
-                    const fsData = await fsRes.json();
-                    const found = fsData.data?.find(f =>
-                        (f.set_type_code === 'audio_drama' || f.set_type_code === 'audio') &&
-                        ((book.type === 'new' && f.id.includes('N')) || (book.type === 'old' && f.id.includes('O')))
-                    );
-                    if (found) {
-                        const audioRes = await fetch(`https://4.dbt.io/api/bibles/filesets/${found.id}/${book.book_id}/${chapter}?v=4&key=${key}`);
-                        if (audioRes.ok) {
-                            const audioData2 = await audioRes.json();
-                            url = audioData2.data?.[0]?.path;
-                        }
-                    }
-                }
-            }
-
             if (!url) throw new Error("Audio URL not found");
 
-            // Race timestamps with a short timeout to ensure "play immediately" even if timestamps are slow
             const times = await Promise.race([
                 timestampsPromise,
-                new Promise(resolve => setTimeout(() => resolve([]), 1200)) // Max 1.2s wait for highlighting data
+                new Promise(resolve => setTimeout(() => resolve([]), 1500))
             ]);
 
             const displayChapter = language === 'ar' ? chapter.toLocaleString('ar-EG') : chapter;
@@ -224,7 +238,75 @@ export function AudioProvider({ children }) {
             if (fetchingRef.current === locKey) fetchingRef.current = null;
             setIsAudioLoading(false);
         }
-    }, [bookNames, strings, language]);
+    }, [bookNames, strings, language, downloadedChapters]);
+
+    // دالة التحميل
+    const downloadChapter = async (bookIdx, chapIdx) => {
+        if (!Capacitor.isNativePlatform()) {
+            alert("التحميل متاح فقط على تطبيقات الموبايل");
+            return;
+        }
+
+        const data = await fetchAudioData(bookIdx, chapIdx);
+        if (!data || data.url.startsWith('file://')) return;
+
+        const book = bookNames[bookIdx];
+        const chapter = chapIdx + 1;
+        const locKey = `${book.book_id}-${chapter}`;
+
+        try {
+            setDownloadProgress(prev => ({ ...prev, [locKey]: 0 }));
+
+            // 1. إنشاء المجلد إذا لم يكن موجوداً
+            await Filesystem.mkdir({ path: 'audio', directory: Directory.Data, recursive: true }).catch(() => {});
+
+            // 2. تحميل الملف
+            const response = await fetch(data.url);
+            const blob = await response.blob();
+
+            // تحويل الـ Blob لـ Base64 للحفظ (Capacitor Filesystem يحتاج Base64)
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                const base64Data = reader.result.split(',')[1];
+
+                await Filesystem.writeFile({
+                    path: `audio/${locKey}.mp3`,
+                    data: base64Data,
+                    directory: Directory.Data
+                });
+
+                // 3. حفظ التوقيتات والمعلومات
+                const newDownloads = { ...downloadedChapters, [locKey]: true };
+                setDownloadedChapters(newDownloads);
+                await Preferences.set({ key: 'downloaded_audio', value: JSON.stringify(newDownloads) });
+                await Preferences.set({ key: `times_${locKey}`, value: JSON.stringify(data.times) });
+
+                setDownloadProgress(prev => {
+                    const next = { ...prev };
+                    delete next[locKey];
+                    return next;
+                });
+
+                alert(strings.audio.download_success || "تم التحميل بنجاح");
+            };
+        } catch (e) {
+            console.error("Download Error:", e);
+            alert("فشل التحميل، يرجى المحاولة لاحقاً");
+        }
+    };
+
+    const deleteDownload = async (bookIdx, chapIdx) => {
+        const book = bookNames[bookIdx];
+        const locKey = `${book.book_id}-${chapIdx + 1}`;
+        try {
+            await Filesystem.deleteFile({ path: `audio/${locKey}.mp3`, directory: Directory.Data });
+            const newDownloads = { ...downloadedChapters };
+            delete newDownloads[locKey];
+            setDownloadedChapters(newDownloads);
+            await Preferences.set({ key: 'downloaded_audio', value: JSON.stringify(newDownloads) });
+        } catch (e) { console.error(e); }
+    };
 
     const goToChapter = useCallback(async (direction, forceOpen = false) => {
         if (navigationCallback) {
@@ -412,6 +494,7 @@ export function AudioProvider({ children }) {
     const contextValue = useMemo(() => ({
         audioUrl, isPlaying, currentTime, duration, playbackSpeed, isPanelOpen, trackTitle, currentVerseId,
         isRepeat, isAutoPlay, volume, isHighlightEnabled, sleepTimer, timeLeft, currentLocation, bookNames, isAutoNext, isAudioLoading,
+        downloadedChapters, downloadProgress,
         setIsPanelOpen, playTrack, togglePlay, seek: (t) => { if(audioRef.current) audioRef.current.currentTime = t; },
         skip: (amt) => { if(audioRef.current) audioRef.current.currentTime += amt; },
         setPlaybackSpeed,
@@ -421,11 +504,14 @@ export function AudioProvider({ children }) {
             setTimestamps(p);
         },
         fetchAudioData,
+        downloadChapter,
+        deleteDownload,
         setIsRepeat, setIsAutoPlay, setVolume, setIsHighlightEnabled, setSleepTimer, setNavigationCallback, goToChapter
     }), [
         audioUrl, isPlaying, currentTime, duration, playbackSpeed, isPanelOpen, trackTitle, currentVerseId,
         isRepeat, isAutoPlay, volume, isHighlightEnabled, sleepTimer, timeLeft, currentLocation, bookNames, isAutoNext, isAudioLoading,
-        playTrack, togglePlay, goToChapter, processTimestamps, fetchAudioData
+        downloadedChapters, downloadProgress,
+        playTrack, togglePlay, goToChapter, processTimestamps, fetchAudioData, downloadChapter, deleteDownload
     ]);
 
     return (

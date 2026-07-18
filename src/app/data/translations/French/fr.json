@@ -29,7 +29,8 @@
     "back": "Retour",
     "retry": "Réessayer",
     "error_occurred": "Désolé, une erreur est survenue",
-    "internet_required": "Cette fonctionnalité nécessite une connexion internet"
+    "internet_required": "Cette fonctionnalité nécessite une connexion internet",
+    "confirm_delete": "Voulez-vous supprimer ce fichier de votre appareil ?"
   },
   "login": {
     "title": "Connexion",
@@ -263,7 +264,10 @@
   "audio": {
     "artist_default": "Sainte Bible",
     "album": "Agios Media",
-    "track_title": "Louis Segond version - {book} {chapter}"
+    "track_title": "Louis Segond version - {book} {chapter}",
+    "download_success": "Chapitre enregistré avec succès pour une écoute hors ligne",
+    "download_error": "Échec du téléchargement du fichier, veuillez vérifier votre connexion",
+    "deleted": "Fichier téléchargé supprimé"
   },
   "bible": {
     "title": "Sainte Bible",
@@ -315,7 +319,7 @@
   "maps": {
     "title": "Cartes Bibliques",
     "search_placeholder": "Rechercher un lieu ou une ville...",
-    "no_results": "Aucun résultat ne correspond à votre recherche",
+    "no_results": "Aucune résultat ne correspond à votre recherche",
     "eras_placeholder": "Époques",
     "choose_era": "Choisir l'époque",
     "all_eras": "Toutes les époques",
@@ -838,7 +842,7 @@
           "Amélioration du système de recherche par racines"
         ],
         "fixes": [
-          "Correction des problèmes de carte sous charge élevée",
+          "Correction des problèmes de carte unter hoher Last",
           "Correction du lien Facebook ne fonctionnant pas sur la page de contact",
           "Correction des boutons de la barre de contrôle des versets n'apparaissant pas en mode clair",
           "Correction de la sélection incorrecte des boutons de la barre de navigation"

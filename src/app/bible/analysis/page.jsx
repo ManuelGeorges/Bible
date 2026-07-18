@@ -78,6 +78,9 @@ function AnalysisContent() {
   const hasFetched = useRef(false);
   const sectionRefs = useRef({});
 
+  // توحيد مفتاح الكوتا مع صفحة البحث والخطط
+  const QUOTA_KEY = 'aiSearchTimestamps';
+
   useEffect(() => {
     if (!analysis) {
       setSectionAnchors([]);
@@ -105,28 +108,23 @@ function AnalysisContent() {
       if (cachedRaw) {
         try {
           const parsed = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
-          if (typeof parsed === 'string') {
-            setAnalysis(parsed);
-            analysisRef.current = parsed;
+          let content = '';
+          if (typeof parsed === 'string') content = parsed;
+          else if (parsed && parsed[language]) content = parsed[language];
+          else if (parsed && parsed.en) content = parsed.en;
+
+          if (content) {
+            setAnalysis(content);
+            analysisRef.current = content;
             setIsLoading(false);
-            return;
-          }
-          if (parsed && parsed[language]) {
-            setAnalysis(parsed[language]);
-            analysisRef.current = parsed[language];
-            setIsLoading(false);
-            return;
-          }
-          if (parsed && parsed.en) {
-            setAnalysis(parsed.en);
-            analysisRef.current = parsed.en;
-            setIsLoading(false);
+            setCountdown(0);
             return;
           }
         } catch (e) {
           setAnalysis(cachedRaw);
           analysisRef.current = cachedRaw;
           setIsLoading(false);
+          setCountdown(0);
           return;
         }
       }
@@ -134,12 +132,14 @@ function AnalysisContent() {
       console.error("KV Read Error:", e);
     }
 
-    const requestTimes = JSON.parse(localStorage.getItem('aiRequestTimestamps') || '[]');
+    // التحقق من الكوتا بنفس منطق صفحة البحث
+    const requestTimes = JSON.parse(localStorage.getItem(QUOTA_KEY) || '[]');
     const now = Date.now();
     const oneMinute = 60000;
     const recentRequests = requestTimes.filter(time => now - time < oneMinute);
 
-    if (recentRequests.length >= 1) {
+    // السماح بطلبيتين في الدقيقة (مثل البحث) لضمان تجربة أفضل
+    if (recentRequests.length >= 2) {
       const oldestInWindow = Math.min(...recentRequests);
       const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
       setCountdown(remaining);
@@ -151,9 +151,11 @@ function AnalysisContent() {
     setError(null);
     setAnalysis('');
     analysisRef.current = '';
+    setCountdown(0);
 
+    // تسجيل الطلب في الكوتا الموحدة
     const updatedRequests = [...recentRequests, now];
-    localStorage.setItem('aiRequestTimestamps', JSON.stringify(updatedRequests));
+    localStorage.setItem(QUOTA_KEY, JSON.stringify(updatedRequests));
 
     const targetText = verses
       ? `${book}\n${chapter}\n${verses}`
@@ -250,7 +252,7 @@ function AnalysisContent() {
     const attemptGeneration = async (attemptIndex) => {
       const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({
-        model: "gemini-';'-flash-lite",
+        model: "gemini-1.5-flash-lite",
         generationConfig: {
           maxOutputTokens: 2048,
         }
@@ -547,7 +549,7 @@ function AnalysisContent() {
 
             {!isLoading && (
               <footer className={styles.analysisFooter}>
-                 <p className={strings.analysis.disclaimer}>
+                 <p className={styles.analysis.disclaimer}>
                    {strings.analysis.disclaimer}
                  </p>
               </footer>
