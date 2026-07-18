@@ -17,11 +17,14 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // تفعيل الـ Minification وحذف الأكواد غير المستخدمة (R8)
+            minifyEnabled true
+            // تفعيل حذف الموارد (الصور والملفات) غير المستخدمة لتقليل حجم التطبيق
+            shrinkResources true
+            // استخدام نسخة الـ "optimize" لتحسين أداء الكود وتشفيره بشكل أقوى
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            // تم إزالة applicationIdSuffix لضمان مطابقة ملف google-services.json
             debuggable true
         }
     }

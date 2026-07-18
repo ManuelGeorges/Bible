@@ -1,21 +1,33 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# قواعد حماية وتصغير الكود (ProGuard/R8) لتطبيق Agios Bible
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Capacitor Core
+-keep class com.getcapacitor.** { *; }
+-keep  class * extends com.getcapacitor.Plugin
+-keep  class * extends com.getcapacitor.Bridge
+-keep  class * extends com.getcapacitor.BridgeActivity
+-keep  class * extends com.getcapacitor.MessageHandler
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Firebase & Google Services
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.firebase.**
+-dontwarn com.google.android.gms.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# الحفاظ على واجهات البرمجة الخاصة بالـ WebView
+-keepattributes JavascriptInterface
+-keepattributes *Annotation*
+-keep class com.agios.bible.** {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# تشفير أسماء الملفات الأصلية مع الإبقاء على أرقام الأسطر لـ Crashlytics
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# تقليل حجم الكود وتحسينه
+-optimizationpasses 5
+-allowaccessmodification
+-mergeinterfacesaggressively
+
+# منع حذف الأكواد المتعلقة بـ Native Settings Plugins
+-keep class com.cyphrbits.native_settings.** { *; }

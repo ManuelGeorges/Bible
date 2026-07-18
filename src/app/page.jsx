@@ -38,7 +38,7 @@ import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
 import { openExternalLink } from '../lib/utils';
 
-// تصحيح المسار ليشير إلى src/app/data
+// تصحيح المسار لملفات الأوسمة (هذه الملفات صغيرة ويمكن عمل import لها)
 import badgesAr from './data/translations/arabic/badges_ar.json';
 import badgesEn from './data/translations/English/badges_en.json';
 import badgesFr from './data/translations/French/badges_fr.json';
@@ -200,45 +200,57 @@ const LandingPage = () => {
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
-            let questData;
-            try {
-                if (language === 'ar') questData = (await import('./data/translations/arabic/daily_questions.json')).default;
-                else if (language === 'en') questData = (await import('./data/translations/English/daily_questions_en.json')).default;
-                else if (language === 'fr') questData = (await import('./data/translations/French/daily_questions_fr.json')).default;
-                else if (language === 'de') questData = (await import('./data/translations/german/daily_questions_de.json')).default;
+            // تحميل الأسئلة اليومية باستخدام fetch بدلاً من import لحل مشكلة Vercel
+            let questPath = '';
+            if (language === 'ar') questPath = '/data/translations/arabic/dailyQuestions_ar.json';
+            else if (language === 'en') questPath = '/data/translations/English/dailyQuestions_en.json';
+            else if (language === 'fr') questPath = '/data/translations/French/dailyQuestions_fr.json';
+            else if (language === 'de') questPath = '/data/translations/german/dailyQuestions_de.json';
 
-                if (questData) {
-                    const todayQuest = questData[month]?.[day];
-                    setDailyQuestion(todayQuest);
-                }
-            } catch (e) { console.error("Questions load error:", e); }
+            if (questPath) {
+                try {
+                    const qRes = await fetch(questPath);
+                    if (qRes.ok) {
+                        const questData = await qRes.json();
+                        const todayQuest = questData[month]?.[day];
+                        setDailyQuestion(todayQuest);
+                    }
+                } catch (e) { console.error("Questions fetch error:", e); }
+            }
 
             if (todayRef) {
-                let bibleData;
-                if (language === 'ar') bibleData = (await import('./data/translations/arabic/ar_svd_no_tashkeel.json')).default;
-                else if (language === 'en') bibleData = (await import('./data/translations/English/en_web.json')).default;
-                else if (language === 'fr') bibleData = (await import('./data/translations/French/fr_segond.json')).default;
-                else if (language === 'de') bibleData = (await import('./data/translations/german/de_luther.json')).default;
+                // تحميل بيانات الكتاب المقدس باستخدام fetch
+                let biblePath = '';
+                if (language === 'ar') biblePath = '/data/translations/arabic/ar_svd_no_tashkeel.json';
+                else if (language === 'en') biblePath = '/data/translations/English/en_web.json';
+                else if (language === 'fr') biblePath = '/data/translations/French/fr_segond.json';
+                else if (language === 'de') biblePath = '/data/translations/german/de_luther.json';
 
-                const bibleBook = bibleData?.[todayRef.bookId];
+                if (biblePath) {
+                    try {
+                        const bRes = await fetch(biblePath);
+                        if (bRes.ok) {
+                            const bibleData = await bRes.json();
+                            const bibleBook = bibleData?.[todayRef.bookId];
+                            const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.bookId) ||
+                                            allBookNames['en']?.find(b => b.book_id === todayRef.bookId);
 
-                const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.bookId) ||
-                                allBookNames['en']?.find(b => b.book_id === todayRef.bookId);
-
-                if (bibleBook && bibleBook.chapters[todayRef.chapter - 1]) {
-                    const verseText = bibleBook.chapters[todayRef.chapter - 1][todayRef.verse - 1];
-
-                    if (verseText) {
-                        setDailyVerse({
-                            verse: verseText,
-                            reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
-                            month,
-                            day,
-                            bookId: todayRef.bookId,
-                            chapter: todayRef.chapter,
-                            verseNum: todayRef.verse
-                        });
-                    }
+                            if (bibleBook && bibleBook.chapters[todayRef.chapter - 1]) {
+                                const verseText = bibleBook.chapters[todayRef.chapter - 1][todayRef.verse - 1];
+                                if (verseText) {
+                                    setDailyVerse({
+                                        verse: verseText,
+                                        reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
+                                        month,
+                                        day,
+                                        bookId: todayRef.bookId,
+                                        chapter: todayRef.chapter,
+                                        verseNum: todayRef.verse
+                                    });
+                                }
+                            }
+                        }
+                    } catch (e) { console.error("Bible fetch error:", e); }
                 }
             }
         } catch (e) {
@@ -253,6 +265,7 @@ const LandingPage = () => {
         checkTimeBadges();
     }, [fetchDailyContent, checkTimeBadges, language]);
 
+    // ... بقية الكود كما هو ...
     useEffect(() => {
         const handleDeepLink = (e) => {
             const path = e.detail?.path;

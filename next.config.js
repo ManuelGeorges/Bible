@@ -10,11 +10,14 @@ const nextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
 
-  // منع إنشاء ملفات الـ Source Maps نهائياً
+  // تفعيل التشفير والتصغير القوي باستخدام SWC
+  swcMinify: true,
+
+  // منع إنشاء ملفات الـ Source Maps نهائياً لإخفاء الكود الأصلي
   productionBrowserSourceMaps: false,
 
   webpack: (config, { dev, isServer }) => {
-    // التشفير يعمل فقط في النسخة النهائية (Production) لتجنب أخطاء Turbopack في التطوير
+    // التشفير يعمل فقط في النسخة النهائية (Production)
     if (!dev && !isServer) {
       config.plugins.push(
         new JavaScriptObfuscator({
@@ -25,9 +28,9 @@ const nextConfig = {
           controlFlowFlatteningThreshold: 0.5,
           deadCodeInjection: true,
           deadCodeInjectionThreshold: 0.2,
-          debugProtection: true,
+          debugProtection: true, // يمنع فتح الـ Console أو محاولة الـ Debugging
           disableConsoleOutput: true,
-          selfDefending: true,
+          selfDefending: true, // الكود يعطل نفسه إذا حاول أحد تعديله
           unicodeEscapeSequence: false
         }, [
           'static/chunks/react-refresh.js',
