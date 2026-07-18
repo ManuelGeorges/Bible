@@ -38,7 +38,7 @@ import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
 import { openExternalLink } from '../lib/utils';
 
-// تصحيح المسار لملفات الأوسمة (هذه الملفات صغيرة ويمكن عمل import لها)
+// تصحيح المسار لملفات الأوسمة
 import badgesAr from './data/translations/arabic/badges_ar.json';
 import badgesEn from './data/translations/English/badges_en.json';
 import badgesFr from './data/translations/French/badges_fr.json';
@@ -195,12 +195,13 @@ const LandingPage = () => {
         const { month, day } = getCairoDateInfo();
 
         try {
+            // جلب مراجع آية اليوم
             const verseRefsRes = await fetch('/data/dailyVerses.json');
             if (!verseRefsRes.ok) throw new Error("Daily verses file not found");
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
-            // تحميل الأسئلة اليومية باستخدام fetch بدلاً من import لحل مشكلة Vercel
+            // تحميل الأسئلة اليومية
             let questPath = '';
             if (language === 'ar') questPath = '/data/translations/arabic/dailyQuestions_ar.json';
             else if (language === 'en') questPath = '/data/translations/English/dailyQuestions_en.json';
@@ -212,14 +213,15 @@ const LandingPage = () => {
                     const qRes = await fetch(questPath);
                     if (qRes.ok) {
                         const questData = await qRes.json();
-                        const todayQuest = questData[month]?.[day];
+                        // ملف الأسئلة عبارة عن مصفوفة، نبحث فيها عن اليوم والشهر
+                        const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
                         setDailyQuestion(todayQuest);
                     }
                 } catch (e) { console.error("Questions fetch error:", e); }
             }
 
             if (todayRef) {
-                // تحميل بيانات الكتاب المقدس باستخدام fetch
+                // تحميل بيانات الكتاب المقدس
                 let biblePath = '';
                 if (language === 'ar') biblePath = '/data/translations/arabic/ar_svd_no_tashkeel.json';
                 else if (language === 'en') biblePath = '/data/translations/English/en_web.json';
@@ -231,9 +233,12 @@ const LandingPage = () => {
                         const bRes = await fetch(biblePath);
                         if (bRes.ok) {
                             const bibleData = await bRes.json();
-                            const bibleBook = bibleData?.[todayRef.bookId];
-                            const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.bookId) ||
-                                            allBookNames['en']?.find(b => b.book_id === todayRef.bookId);
+                            // البحث عن السفر باستخدام المعرف (todayRef.book)
+                            const bookIdx = allBookNames['en']?.findIndex(b => b.book_id === todayRef.book);
+                            const bibleBook = bibleData[bookIdx];
+
+                            const bookInfo = allBookNames[language]?.find(b => b.book_id === todayRef.book) ||
+                                            allBookNames['en']?.find(b => b.book_id === todayRef.book);
 
                             if (bibleBook && bibleBook.chapters[todayRef.chapter - 1]) {
                                 const verseText = bibleBook.chapters[todayRef.chapter - 1][todayRef.verse - 1];
@@ -243,7 +248,7 @@ const LandingPage = () => {
                                         reference: `${bookInfo?.name} ${todayRef.chapter}:${todayRef.verse}`,
                                         month,
                                         day,
-                                        bookId: todayRef.bookId,
+                                        bookId: todayRef.book,
                                         chapter: todayRef.chapter,
                                         verseNum: todayRef.verse
                                     });
@@ -259,13 +264,17 @@ const LandingPage = () => {
     }, [language, allBookNames]);
 
     useEffect(() => {
+        if (allBookNames && Object.keys(allBookNames).length > 0) {
+            fetchDailyContent();
+        }
+    }, [fetchDailyContent, allBookNames]);
+
+    useEffect(() => {
         setMounted(true);
-        fetchDailyContent();
         setBadgesData(badgeFiles[language] || badgeFiles.ar);
         checkTimeBadges();
-    }, [fetchDailyContent, checkTimeBadges, language]);
+    }, [checkTimeBadges, language]);
 
-    // ... بقية الكود كما هو ...
     useEffect(() => {
         const handleDeepLink = (e) => {
             const path = e.detail?.path;

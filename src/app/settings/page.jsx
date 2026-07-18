@@ -356,25 +356,27 @@ const Settings = () => {
           <BookOpen size={22} className={styles.iconPrimary} /> {strings.settings.bible.title}
         </h2>
 
-        <div className={styles.settingItem}>
-          <div className={styles.settingInfo}>
-            <div className={styles.textContainer}>
-              <span className={styles.settingLabel}>
-                <LayoutList size={20} className={styles.iconPrimary} />
-                {strings.settings.bible.verse_per_line}
-              </span>
-              <p className={styles.subText}>{strings.settings.bible.verse_per_line_desc}</p>
+        {parallelLanguage === null && (
+          <div className={styles.settingItem}>
+            <div className={styles.settingInfo}>
+              <div className={styles.textContainer}>
+                <span className={styles.settingLabel}>
+                  <LayoutList size={20} className={styles.iconPrimary} />
+                  {strings.settings.bible.verse_per_line}
+                </span>
+                <p className={styles.subText}>{strings.settings.bible.verse_per_line_desc}</p>
+              </div>
             </div>
+            <label className={styles.switch}>
+              <input
+                type="checkbox"
+                checked={versePerLine}
+                onChange={toggleVerseLayout}
+              />
+              <span className={styles.sliderRound}></span>
+            </label>
           </div>
-          <label className={styles.switch}>
-            <input
-              type="checkbox"
-              checked={versePerLine}
-              onChange={toggleVerseLayout}
-            />
-            <span className={styles.sliderRound}></span>
-          </label>
-        </div>
+        )}
 
         {currentLang === 'ar' && (
           <div className={styles.settingItem}>
@@ -476,7 +478,7 @@ const Settings = () => {
           </div>
 
           <div className={styles.fontPreview} style={{ fontSize: `${fontSize}px`, fontFamily: currentFontValue, fontWeight: fontWeight }}>
-            {versePerLine ? (
+            {(versePerLine || parallelLanguage !== null) ? (
               <div className={styles.previewList}>
                 <div>{strings.settings.bible.preview.line_1}</div>
                 <div>{strings.settings.bible.preview.line_2}</div>
