@@ -19,8 +19,17 @@ import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
 
-const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
-const genAI = new GoogleGenerativeAI(apiKey);
+const apiKeys = [
+  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
+  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
+  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
+  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
+];
+
+const getGenAI = (index) => {
+  const key = apiKeys[index % apiKeys.length];
+  return new GoogleGenerativeAI(key);
+};
 
 const geminiCache = {};
 
@@ -283,7 +292,7 @@ function SearchContent() {
         const pattern = `(^|\\s|\\.|\\،|\\:|\\!|\\?)(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})${suffixes}(?=\\s|\\.|\\،|\\:|\\!|\\?|$)`;
         regex = new RegExp(pattern, 'i');
       } else {
-        const boundary = `(^|\\s|\\.|,|:|!|\\?|\\(|\\)|\\[|\\]|"|'|“|”|«|»|;|/|\\\\)`;
+        const boundary = `(^|\\s|\\.|,|:|!|\\?|\\(|\\|\\||\\[|\\]|"|'|“|”|«|»|;|/|\\\\)`;
         const pattern = `${boundary}(${selectedDerivatives.map(d => _.escapeRegExp(d)).join('|')})(?=${boundary}|$)`;
         regex = new RegExp(pattern, 'i');
       }
@@ -460,6 +469,7 @@ function SearchContent() {
   };
 
   const attemptStream = async (attemptIndex, term, searchId, currentInfo) => {
+    const genAI = getGenAI(attemptIndex);
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     const prompt = `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}".
 المطلوب رد JSON فقط بهذا التنسيق حصراً:
@@ -589,6 +599,7 @@ Regeln:
     };
 
     const attemptSemantic = async (attemptIndex) => {
+      const genAI = getGenAI(attemptIndex);
       const allowedBooks = bookNamesData?.map(b => b.name).join(', ') || '';
       const filterContext = `
         ${selectedTestament ? `Testament: ${selectedTestament === 'OT' ? 'Old' : 'New'}` : ''}
@@ -743,6 +754,7 @@ Regeln:
     };
 
     const attemptStreamInternal = async (attemptIndex) => {
+      const genAI = getGenAI(attemptIndex);
       const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       const prompt = languagePrompts[language] || languagePrompts.en;
 

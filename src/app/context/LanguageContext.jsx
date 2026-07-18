@@ -19,6 +19,7 @@ const translations = { ar, en, de, fr };
 
 export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
+    const [parallelLanguage, setParallelLanguage] = useState(null);
     const { theme } = useTheme();
     const [useTashkeel, setUseTashkeel] = useState(false);
     const [isFirstTime, setIsFirstTime] = useState(false);
@@ -31,6 +32,13 @@ export function LanguageProvider({ children }) {
             setIsFirstTime(false);
         } else {
             setIsFirstTime(true);
+        }
+
+        const savedParallel = localStorage.getItem('parallel_lang');
+        if (savedParallel && translations[savedParallel]) {
+            setParallelLanguage(savedParallel);
+        } else {
+            setParallelLanguage(null);
         }
 
         const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
@@ -91,7 +99,24 @@ export function LanguageProvider({ children }) {
             setLanguage(newLang);
             localStorage.setItem('app_lang', newLang);
             setIsFirstTime(false);
+
+            // إذا كانت اللغة الموازية هي نفسها اللغة الأساسية الجديدة، قم بإلغائها
+            if (parallelLanguage === newLang) {
+                setParallelLanguage(null);
+                localStorage.removeItem('parallel_lang');
+            }
         }
+    };
+
+    const changeParallelLanguage = (newLang) => {
+        if (newLang === null) {
+            setParallelLanguage(null);
+            localStorage.removeItem('parallel_lang');
+        } else if (translations[newLang] && newLang !== language) {
+            setParallelLanguage(newLang);
+            localStorage.setItem('parallel_lang', newLang);
+        }
+        window.dispatchEvent(new Event('storage'));
     };
 
     const toggleTashkeel = useCallback(() => {
@@ -112,12 +137,14 @@ export function LanguageProvider({ children }) {
 
     const value = {
         language,
+        parallelLanguage,
         useTashkeel,
         strings,
         bookNames,
         allBookNames,
         dir,
         changeLanguage,
+        changeParallelLanguage,
         toggleTashkeel,
         isFirstTime,
         setIsFirstTime,

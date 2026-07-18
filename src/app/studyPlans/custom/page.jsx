@@ -13,15 +13,55 @@ import { StorageService, KEYS } from '../../../lib/storage';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
 
-const apiKey = "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ";
-const genAI = new GoogleGenerativeAI(apiKey);
+const apiKeys = [
+  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
+  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
+  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
+  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
+];
+
+const getGenAI = (index) => {
+  const key = apiKeys[index % apiKeys.length];
+  return new GoogleGenerativeAI(key);
+};
+
+async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
+  let lastError;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn(attempt);
+    } catch (err) {
+      lastError = err;
+      const errorMsg = err.message?.toLowerCase() || "";
+      const isRetryable =
+        errorMsg.includes('429') ||
+        errorMsg.includes('quota') ||
+        errorMsg.includes('500') ||
+        errorMsg.includes('503') ||
+        errorMsg.includes('overloaded') ||
+        errorMsg.includes('busy') ||
+        errorMsg.includes('timeout') ||
+        errorMsg.includes('deadline');
+
+      if (attempt < maxAttempts - 1 && isRetryable) {
+        const delay = baseDelayMs * Math.pow(2, attempt);
+        if (onRetry) onRetry(attempt + 1, maxAttempts);
+        await new Promise(r => setTimeout(r, delay));
+      } else if (!isRetryable) {
+        throw err;
+      }
+    }
+  }
+  throw lastError;
+}
 
 export default function CustomPlanForm() {
-    const { strings, bookNames, language } = useLanguage();
+    const { strings, bookNames, language, formatNumber } = useLanguage();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
+    const [status, setStatus] = useState('');
     const [formData, setFormData] = useState({
         mood: '',
         duration: '',
@@ -94,20 +134,18 @@ export default function CustomPlanForm() {
     };
 
     const generatePlanWithAI = async (data) => {
-        try {
-            const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
+        const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
+        const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+        const legacyKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
 
-            const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
-            const legacyKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
+        try {
             const { cached, legacy } = await readLegacyCache(cacheKey, [legacyKey]);
             if (cached) {
                 if (legacy) {
                     const migrationKey = `${CACHE_KEYS.STUDY_PLAN}ar:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
                     kv.set(migrationKey, cached).catch(console.error);
                 }
-                if (language === 'ar') {
-                    return cached;
-                }
+                return cached;
             }
 
             const allowedBooks = bookNames.map(book => book.name).join(', ');
@@ -210,27 +248,33 @@ Wichtiger Hinweis:
 
             const prompt = prompts[language] || prompts.en;
 
-            const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
-                generationConfig: { temperature: 0.7 }
-            });
+            const attemptGeneration = async (attemptIndex) => {
+                const genAIInstance = getGenAI(attemptIndex);
+                const model = genAIInstance.getGenerativeModel({
+                    model: "gemini-3.1-flash-lite",
+                    generationConfig: { temperature: 0.7 }
+                });
 
-            const result = await model.generateContent(prompt);
-            const responseText = result.response.text();
-            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) throw new Error("Format Error");
+                const result = await model.generateContent(prompt);
+                const responseText = result.response.text();
+                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error("Format Error");
 
-            const planResult = JSON.parse(jsonMatch[0]);
-
-            try {
+                const planResult = JSON.parse(jsonMatch[0]);
                 await kv.set(cacheKey, planResult);
-            } catch (e) {
-                console.error("Redis Write Error:", e);
-            }
+                return planResult;
+            };
 
-            return planResult;
+            return await withRetry(
+                attemptGeneration,
+                (attempt) => setStatus(
+                    language === 'ar'
+                    ? `محاولة ${formatNumber(attempt)}: أجيوس يصمم لك رحلة روحية...`
+                    : `Attempt ${formatNumber(attempt)}: Agios is designing your journey...`
+                )
+            );
         } catch (e) {
-            console.error("Gemini Error:", e);
+            console.error("Plan Generation Error:", e);
             return null;
         }
     };
@@ -262,6 +306,7 @@ Wichtiger Hinweis:
         }
 
         setLoading(true);
+        setStatus(strings.studyPlans.custom.loading_title);
 
         try {
             const rawPlan = await generatePlanWithAI(formData);
@@ -307,7 +352,6 @@ Wichtiger Hinweis:
                         language: language
                     });
 
-                    // تصفير وقت آخر سحب للخطط المشتركة لإجبار التطبيق على تحديث القائمة لإظهار الخطة الجديدة
                     await StorageService.save(KEYS.LAST_SHARED_PLANS_FETCH, 0);
                 }
 
@@ -320,6 +364,7 @@ Wichtiger Hinweis:
             toast.error(error.message || strings.studyPlans.custom.generic_error);
         } finally {
             setLoading(false);
+            setStatus('');
         }
     };
 
@@ -328,7 +373,7 @@ Wichtiger Hinweis:
             {loading && (
                 <div className={styles.loadingOverlay}>
                     <div className={styles.spinner}></div>
-                    <h2 className={styles.sectionTitle}>{strings.studyPlans.custom.loading_title}</h2>
+                    <h2 className={styles.sectionTitle}>{status || strings.studyPlans.custom.loading_title}</h2>
                     <p className={styles.loadingSub}>{strings.studyPlans.custom.loading_sub}</p>
                 </div>
             )}
