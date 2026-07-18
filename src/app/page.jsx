@@ -213,6 +213,7 @@ const LandingPage = () => {
                     const qRes = await fetch(questPath);
                     if (qRes.ok) {
                         const questData = await qRes.json();
+                        // ملف الأسئلة عبارة عن مصفوفة، نبحث فيها عن اليوم والشهر
                         const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
                         setDailyQuestion(todayQuest);
                     }
@@ -462,7 +463,7 @@ const LandingPage = () => {
 
                 const activeStatic = (language === 'ar' ? staticPlans : [])
                     .map(plan => {
-                        const stats = calculatePlanStats(plan, false, null, serverComp);
+                        const stats = calculatePlanStats(plan, false, null, localStaticCompletion);
                         return { ...plan, stats };
                     })
                     .filter(p => p.stats.daysDone >= 1 && p.stats.percent < 100);
