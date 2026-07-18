@@ -19,7 +19,7 @@ import { toast } from 'react-hot-toast';
 
 // إضافات لدعم نظام النقاط والمهام اليومية
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
+import { doc, updateDoc, increment, arrayUnion } from "firebase/firestore";
 import { db } from '../../lib/firebase';
 import { getCairoIsoString } from '../../lib/dateUtils';
 import { StorageService, KEYS } from '../../lib/storage';
@@ -101,7 +101,7 @@ function PreviewContent() {
   // دالة تسجيل المشاركة لرفع النقاط وتكملة المهمة اليومية
   const recordShareActivity = async () => {
     const points = 15;
-    const reason = strings.search.reason_share_multi || "مشاركة تصميم آية من الاستوديو";
+    const reason = strings?.search?.reason_share_multi || "مشاركة تصميم آية من الاستوديو";
 
     try {
       if (user) {
@@ -175,8 +175,8 @@ function PreviewContent() {
         if (type === 'share') {
           await Share.share({
             files: [cacheFile.uri],
-            title: strings.share_preview.share_title,
-            dialogTitle: strings.share_preview.share_dialog,
+            title: strings?.share_preview?.share_title || "Agios Bible",
+            dialogTitle: strings?.share_preview?.share_dialog || "Share Verse",
           });
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
           recordShareActivity(); // تسجيل النشاط هنا
@@ -191,7 +191,7 @@ function PreviewContent() {
               recursive: true
             });
           }
-          await Toast.show({ text: strings.share_preview.save_success });
+          await Toast.show({ text: strings?.share_preview?.save_success || "Saved to gallery" });
         }
       } else {
         if (type === 'share' && navigator.share) {
@@ -200,7 +200,7 @@ function PreviewContent() {
             const file = new File([blob], fileName, { type: 'image/png' });
             const shareData = {
               files: [file],
-              title: strings.share_preview.share_title,
+              title: strings?.share_preview?.share_title || "Agios Bible",
             };
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -208,7 +208,7 @@ function PreviewContent() {
               recordShareActivity();
             } else {
               await navigator.share({
-                title: strings.share_preview.share_title,
+                title: strings?.share_preview?.share_title || "Agios Bible",
                 text: `"${verse}" (${reference})`
               });
               recordShareActivity();
@@ -225,7 +225,7 @@ function PreviewContent() {
       }
     } catch (e) {
       console.error(e);
-      toast.error(strings.share_preview.error_generic);
+      toast.error(strings?.share_preview?.error_generic || "Error");
     } finally {
       setIsProcessing(false);
     }
@@ -242,8 +242,8 @@ function PreviewContent() {
           <X size={24} />
         </button>
         <div className={styles.headerTitle}>
-           <h1>{strings.share_preview.title}</h1>
-           <p>{strings.share_preview.subtitle}</p>
+           <h1>{strings?.share_preview?.title}</h1>
+           <p>{strings?.share_preview?.subtitle}</p>
         </div>
       </div>
 
@@ -291,7 +291,7 @@ function PreviewContent() {
 
         <div className={styles.editorPanel}>
           <div className={styles.controlRow}>
-            <label><Type size={18} /> {strings.share_preview.label_font}</label>
+            <label><Type size={18} /> {strings?.share_preview?.label_font}</label>
             <div className={styles.fontScroll}>
               {FONTS.map(f => (
                 <button 
@@ -307,7 +307,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><Maximize2 size={18} /> {strings.share_preview.label_font_size.replace('{size}', fontSize)}</label>
+            <label><Maximize2 size={18} /> {strings?.share_preview?.label_font_size?.replace('{size}', fontSize)}</label>
             <input
               type="range"
               min="16"
@@ -319,7 +319,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><AlignCenter size={18} /> {strings.share_preview.label_box_width.replace('{width}', containerWidth)}</label>
+            <label><AlignCenter size={18} /> {strings?.share_preview?.label_box_width?.replace('{width}', containerWidth)}</label>
             <input
               type="range"
               min="40"
@@ -331,7 +331,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><ArrowUpDown size={18} /> {strings.share_preview.label_line_height.replace('{height}', lineHeight)}</label>
+            <label><ArrowUpDown size={18} /> {strings?.share_preview?.label_line_height?.replace('{height}', lineHeight)}</label>
             <input
               type="range"
               min="1"
@@ -344,7 +344,7 @@ function PreviewContent() {
           </div>
 
           <div className={styles.controlRow}>
-            <label><Move size={18} /> {strings.share_preview.label_background}</label>
+            <label><Move size={18} /> {strings?.share_preview?.label_background}</label>
             <div className={styles.templatesGrid}>
               {TEMPLATES.map(t => (
                 <div
@@ -354,7 +354,7 @@ function PreviewContent() {
                 >
                   <img src={t.url} alt="" />
                   {selectedTemplate.id === t.id && (
-                    <div className={activeCheck}>
+                    <div className={styles.activeCheck}>
                       <Check size={12} color="white" />
                     </div>
                   )}
@@ -367,10 +367,10 @@ function PreviewContent() {
 
       <div className={styles.actionFooter}>
         <button onClick={() => handleAction('share')} className={styles.shareBtn} disabled={isProcessing}>
-          <Share2 size={20} /> {strings.share_preview.share_btn}
+          <Share2 size={20} /> {strings?.share_preview?.share_btn}
         </button>
         <button onClick={() => handleAction('download')} className={styles.saveBtn} disabled={isProcessing}>
-          {isProcessing ? <Loader2 className={styles.spin} /> : <Download size={20} />} {strings.share_preview.download_btn}
+          {isProcessing ? <Loader2 className={styles.spin} /> : <Download size={20} />} {strings?.share_preview?.download_btn}
         </button>
       </div>
     </div>
