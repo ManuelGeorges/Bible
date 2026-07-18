@@ -4,50 +4,56 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { Preferences } from '@capacitor/preferences';
 import { useTheme } from 'next-themes';
 import { Capacitor } from '@capacitor/core';
-// استيراد ملفات الترجمة من المجلد الجديد في src/app/data
-import ar from '../data/translations/arabic/ar.json';
-import en from '../data/translations/English/en.json';
-import de from '../data/translations/german/de.json';
-import fr from '../data/translations/French/fr.json';
-
-// استيراد أسماء الكتب مباشرة
 import allBookNames from '../data/bookNames.json';
 
 const LanguageContext = createContext();
 
-const translations = { ar, en, de, fr };
-
 export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
     const [parallelLanguage, setParallelLanguage] = useState(null);
+    const [strings, setStrings] = useState(null);
     const { theme } = useTheme();
     const [useTashkeel, setUseTashkeel] = useState(false);
     const [isFirstTime, setIsFirstTime] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
 
-    useEffect(() => {
-        const savedLang = localStorage.getItem('app_lang');
-        if (savedLang && translations[savedLang]) {
-            setLanguage(savedLang);
-            setIsFirstTime(false);
-        } else {
-            setIsFirstTime(true);
+    // دالة لتحميل الترجمة ديناميكياً لتقليل حجم الحزمة الابتدائية
+    const loadTranslations = useCallback(async (lang) => {
+        try {
+            let data;
+            switch (lang) {
+                case 'en': data = await import('../data/translations/English/en.json'); break;
+                case 'de': data = await import('../data/translations/german/de.json'); break;
+                case 'fr': data = await import('../data/translations/French/fr.json'); break;
+                default: data = await import('../data/translations/arabic/ar.json'); break;
+            }
+            setStrings(data.default || data);
+        } catch (error) {
+            console.error("Error loading translation:", error);
+            // Fallback to Arabic if error occurs
+            const fallback = await import('../data/translations/arabic/ar.json');
+            setStrings(fallback.default || fallback);
         }
-
-        const savedParallel = localStorage.getItem('parallel_lang');
-        if (savedParallel && translations[savedParallel]) {
-            setParallelLanguage(savedParallel);
-        } else {
-            setParallelLanguage(null);
-        }
-
-        const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
-        setUseTashkeel(savedTashkeel);
-
-        setIsHydrated(true);
     }, []);
 
-    const strings = useMemo(() => translations[language] || translations.ar, [language]);
+    useEffect(() => {
+        const init = async () => {
+            const savedLang = localStorage.getItem('app_lang') || 'ar';
+            setLanguage(savedLang);
+            await loadTranslations(savedLang);
+
+            const savedParallel = localStorage.getItem('parallel_lang');
+            if (savedParallel) {
+                setParallelLanguage(savedParallel);
+            }
+
+            const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
+            setUseTashkeel(savedTashkeel);
+
+            setIsHydrated(true);
+        };
+        init();
+    }, [loadTranslations]);
 
     const bookNames = useMemo(() => {
         if (!allBookNames) return [];
@@ -76,13 +82,12 @@ export function LanguageProvider({ children }) {
         }
     }, [language, dir, isHydrated]);
 
-    // مزامنة الثيم مع نظام الأندرويد فور التغيير أو التحميل لضمان تحديث الويدجت
+    // مزامنة الثيم مع نظام الأندرويد
     useEffect(() => {
         if (isHydrated && Capacitor.isNativePlatform() && theme) {
             const syncTheme = async () => {
                 try {
                     await Preferences.set({ key: 'theme', value: theme });
-                    // إشعار الأندرويد بتحديث الويدجت ليعكس الثيم الجديد فوراً
                     if (window.AgiosScannerNative?.refreshWidgets) {
                         window.AgiosScannerNative.refreshWidgets();
                     }
@@ -95,16 +100,16 @@ export function LanguageProvider({ children }) {
     }, [theme, isHydrated]);
 
     const changeLanguage = async (newLang) => {
-        if (translations[newLang]) {
-            setLanguage(newLang);
-            localStorage.setItem('app_lang', newLang);
-            setIsFirstTime(false);
+        setIsHydrated(false); // إظهار حالة التحميل البسيطة
+        await loadTranslations(newLang);
+        setLanguage(newLang);
+        localStorage.setItem('app_lang', newLang);
+        setIsHydrated(true);
+        setIsFirstTime(false);
 
-            // إذا كانت اللغة الموازية هي نفسها اللغة الأساسية الجديدة، قم بإلغائها
-            if (parallelLanguage === newLang) {
-                setParallelLanguage(null);
-                localStorage.removeItem('parallel_lang');
-            }
+        if (parallelLanguage === newLang) {
+            setParallelLanguage(null);
+            localStorage.removeItem('parallel_lang');
         }
     };
 
@@ -112,7 +117,7 @@ export function LanguageProvider({ children }) {
         if (newLang === null) {
             setParallelLanguage(null);
             localStorage.removeItem('parallel_lang');
-        } else if (translations[newLang] && newLang !== language) {
+        } else {
             setParallelLanguage(newLang);
             localStorage.setItem('parallel_lang', newLang);
         }
@@ -151,6 +156,23 @@ export function LanguageProvider({ children }) {
         isHydrated,
         formatNumber
     };
+
+    // منع ظهور محتوى فارغ أو مكسور قبل تحميل الترجمة
+    if (!isHydrated || !strings) {
+        return (
+            <div style={{
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'var(--color-bg-start)',
+                color: 'var(--color-text-primary)',
+                fontFamily: 'sans-serif'
+            }}>
+                ...
+            </div>
+        );
+    }
 
     return (
         <LanguageContext.Provider value={value}>

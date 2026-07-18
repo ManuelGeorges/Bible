@@ -66,6 +66,10 @@
 
   /* تسريع الاستجابة للمس */
   touch-action: manipulation;
+
+  /* تحسين الأداء الرسومي */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 html, body {
@@ -88,11 +92,11 @@ body {
   font-family: 'Inter', 'Cairo', sans-serif;
   background-color: var(--color-bg-start);
   color: var(--color-text-primary);
-  /* direction: rtl; تمت إزالتها ليتم التحكم بها عبر LanguageContext */
 
   /* تحسين جودة الخطوط لتشبه الـ Native */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
@@ -201,7 +205,6 @@ input, textarea {
   box-shadow: var(--glass-shadow);
   position: relative;
   overflow: hidden;
-  /* direction: rtl; تمت إزالتها */
   animation: modalPop var(--transition-bounce) 0.5s;
 }
 
@@ -299,4 +302,10 @@ input, textarea {
 @keyframes modalPop {
   from { transform: scale(0.92) translateY(20px); opacity: 0; }
   to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* تحسينات أداء إضافية (غير مرئية) */
+.optimize-list {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
 }

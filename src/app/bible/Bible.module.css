@@ -478,9 +478,12 @@
 }
 
 .verseTextParallel {
-  font-size: 0.95em;
+  font-size: var(--main-font-size);
+  font-family: var(--bible-font-family, inherit);
+  font-weight: var(--bible-font-weight, normal);
   opacity: 0.9;
-  line-height: 1.6;
+  line-height: 1.8;
+  color: var(--color-text-primary);
 }
 
 @media (max-width: 600px) {
@@ -488,4 +491,10 @@
     flex-direction: column;
     gap: 10px;
   }
+}
+
+/* تحسينات أداء إضافية (غير مرئية) */
+.optimize-list {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
 }

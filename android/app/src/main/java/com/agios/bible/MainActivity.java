@@ -39,6 +39,20 @@ public class MainActivity extends BridgeActivity {
         WebView webView = getBridge().getWebView();
         WebSettings settings = webView.getSettings();
 
+        // --- تحسينات الأداء للأجهزة الضعيفة ---
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT); // استخدام التخزين المؤقت لتحميل أسرع
+        settings.setDomStorageEnabled(true); // ضروري لتطبيقات React/Next.js
+        settings.setDatabaseEnabled(true);
+        
+        // تحسين سرعة الرندر
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null); // تفعيل تسريع العتاد
+        }
+        
+        // تقليل استهلاك الذاكرة في الخلفية
+        settings.setSaveFormData(false);
+        settings.setSavePassword(false);
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             settings.setForceDark(WebSettings.FORCE_DARK_OFF);
         }
@@ -140,7 +154,6 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onPause() {
         super.onPause();
-        // تحديث الويدجت فوراً عند خروج المستخدم من التطبيق لضمان تطبيق اللغة/الثيم/النقاط الجديدة
         DataHelper.updateAllWidgets(this);
     }
 

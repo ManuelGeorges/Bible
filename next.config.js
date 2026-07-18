@@ -7,13 +7,16 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  reactStrictMode: true,
+  reactStrictMode: false, // تعطيله يزيد الأداء في الإنتاج ويمنع الرندر المزدوج
   trailingSlash: true,
 
-  // تفعيل التشفير والتصغير القوي باستخدام SWC
+  // تفعيل التصغير القوي باستخدام SWC
   swcMinify: true,
 
-  // منع إنشاء ملفات الـ Source Maps نهائياً لإخفاء الكود الأصلي
+  // تفعيل ضغط الملفات
+  compress: true,
+
+  // منع إنشاء ملفات الـ Source Maps
   productionBrowserSourceMaps: false,
 
   webpack: (config, { dev, isServer }) => {
@@ -23,14 +26,13 @@ const nextConfig = {
         new JavaScriptObfuscator({
           rotateStringArray: true,
           stringArray: true,
-          stringArrayThreshold: 0.75,
-          controlFlowFlattening: true,
-          controlFlowFlatteningThreshold: 0.5,
-          deadCodeInjection: true,
-          deadCodeInjectionThreshold: 0.2,
-          debugProtection: true, // يمنع فتح الـ Console أو محاولة الـ Debugging
+          stringArrayThreshold: 0.5, // تقليل القيمة لتقليل استهلاك الذاكرة (RAM)
+          // تعطيل الخصائص التالية لأنها تستهلك المعالج (CPU) جداً في الأجهزة الضعيفة
+          controlFlowFlattening: false,
+          deadCodeInjection: false,
+          debugProtection: true,
           disableConsoleOutput: true,
-          selfDefending: true, // الكود يعطل نفسه إذا حاول أحد تعديله
+          selfDefending: true,
           unicodeEscapeSequence: false
         }, [
           'static/chunks/react-refresh.js',

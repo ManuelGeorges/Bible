@@ -112,7 +112,7 @@ export default function BibleContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
-  const { language, useTashkeel, parallelLanguage, strings, dir: pageDir, bookNames: bookNamesData, formatNumber } = useLanguage();
+  const { language, useTashkeel, parallelLanguage, strings, dir: pageDir, bookNames: bookNamesData, allBookNames, formatNumber } = useLanguage();
 
   const {
     playTrack, isPlaying, currentVerseId, setIsPanelOpen,
@@ -248,27 +248,47 @@ export default function BibleContent() {
 
         setSelectedBookIndex(bIdx);
         setSelectedChapterIndex(cIdx);
-        setCurrentChapterVerses(data[bIdx]?.chapters[cIdx] || []);
-        if (bibleData2Ref.current) {
-          setCurrentChapterVerses2(bibleData2Ref.current[bIdx]?.chapters[cIdx] || []);
-        } else {
-          setCurrentChapterVerses2([]);
-        }
+
+        // تحديث الآيات مع مراعاة اختلاف الأسفار القانونية
+        syncVerses(bIdx, cIdx, data, bibleData2Ref.current);
+
         setIsLoading(false);
       } catch (e) { setIsLoading(false); }
     };
     if (bookNamesData.length) loadData();
   }, [language, useTashkeel, parallelLanguage, bookNamesData, searchParams]);
 
+  // دالة لمزامنة الآيات بين اللغتين بناءً على الـ book_id وليس رقم السفر
+  const syncVerses = useCallback((bIdx, cIdx, primaryData, parallelData) => {
+    if (!primaryData || !primaryData[bIdx]) return;
+
+    // ضبط اللغة الأساسية
+    const primaryVerses = primaryData[bIdx].chapters[cIdx] || [];
+    setCurrentChapterVerses(primaryVerses);
+
+    // ضبط اللغة الموازية بالبحث عن الـ book_id
+    if (parallelData && parallelLanguage) {
+        const currentBookId = bookNamesData[bIdx]?.book_id;
+        // البحث عن ترتيب السفر في اللغة الموازية باستخدام المعرف المختصر
+        const parallelBookIndex = allBookNames[parallelLanguage]?.findIndex(b => b.book_id === currentBookId);
+
+        if (parallelBookIndex !== -1 && parallelData[parallelBookIndex]) {
+            setCurrentChapterVerses2(parallelData[parallelBookIndex].chapters[cIdx] || []);
+        } else {
+            // السفر غير موجود في اللغة الموازية (مثلاً سفر قانوني ثانٍ)
+            setCurrentChapterVerses2([]);
+        }
+    } else {
+        setCurrentChapterVerses2([]);
+    }
+  }, [bookNamesData, parallelLanguage, allBookNames]);
+
   useEffect(() => {
     if (bibleDataRef.current) {
-      setCurrentChapterVerses(bibleDataRef.current[selectedBookIndex]?.chapters[selectedChapterIndex] || []);
-      if (bibleData2Ref.current) {
-        setCurrentChapterVerses2(bibleData2Ref.current[selectedBookIndex]?.chapters[selectedChapterIndex] || []);
-      }
+      syncVerses(selectedBookIndex, selectedChapterIndex, bibleDataRef.current, bibleData2Ref.current);
       saveLastRead(selectedBookIndex, selectedChapterIndex);
     }
-  }, [selectedBookIndex, selectedChapterIndex, saveLastRead]);
+  }, [selectedBookIndex, selectedChapterIndex, saveLastRead, syncVerses]);
 
   // Battery Check
   useEffect(() => {
@@ -658,7 +678,7 @@ export default function BibleContent() {
             </button>
           </div>
 
-          <div className={(versePerLine || !!parallelLanguage) ? styles.versesList : styles.versesParagraph}>
+          <div className={`${(versePerLine || !!parallelLanguage) ? styles.versesList : styles.versesParagraph} optimize-list`}>
             {currentChapterVerses.map((v, i) => (
               <VerseItem
                 key={`${selectedBookIndex}-${selectedChapterIndex}-${i}`}
