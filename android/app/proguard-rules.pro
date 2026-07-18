@@ -13,6 +13,9 @@
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
+# Facebook SDK (Optional dependency for Firebase Auth plugin)
+-dontwarn com.facebook.**
+
 # الحفاظ على واجهات البرمجة الخاصة بالـ WebView
 -keepattributes JavascriptInterface
 -keepattributes *Annotation*

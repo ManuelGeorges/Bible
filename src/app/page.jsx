@@ -901,7 +901,9 @@ const LandingPage = () => {
                                     <div className={styles.newsMainRow}>
                                         <div className={styles.newsContent}>
                                             <div className={styles.newsHeaderLine}>
-                                                <IconComponent size={16} color={news.accentColor || '#3b82f6'} />
+                                                <span className={styles.newsIconBoxSmall}>
+                                                    <IconComponent size={16} color={news.accentColor || '#3b82f6'} />
+                                                </span>
                                                 <h3 style={{ color: news.accentColor || '#1e40af' }}>{news.title}</h3>
                                             </div>
                                             <p>{news.message}</p>

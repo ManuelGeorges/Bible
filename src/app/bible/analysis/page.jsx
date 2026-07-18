@@ -549,7 +549,7 @@ function AnalysisContent() {
 
             {!isLoading && (
               <footer className={styles.analysisFooter}>
-                 <p className={styles.analysis.disclaimer}>
+                 <p className={styles.disclaimer}>
                    {strings.analysis.disclaimer}
                  </p>
               </footer>

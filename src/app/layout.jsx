@@ -117,7 +117,13 @@ export default function RootLayout({ children }) {
                 enableSystem={true}
                 storageKey="theme"
               >
-                <Toaster position="top-center" containerStyle={{ zIndex: 1000000 }} />
+                <Toaster
+                  position="top-center"
+                  containerStyle={{
+                    zIndex: 1000000,
+                    top: 'calc(env(safe-area-inset-top) + 16px)'
+                  }}
+                />
                 <UserTracker />
                 <TopHeader />
                 <BibleNavbar />
