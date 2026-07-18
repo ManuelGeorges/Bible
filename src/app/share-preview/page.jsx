@@ -17,6 +17,13 @@ import styles from './SharePreview.module.css';
 import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-hot-toast';
 
+// إضافات لدعم نظام النقاط والمهام اليومية
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
+import { db } from '../../lib/firebase';
+import { getCairoIsoString } from '../../lib/dateUtils';
+import { StorageService, KEYS } from '../../lib/storage';
+
 const TEMPLATES = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   url: `/templates/${i + 1}.webp`
@@ -48,10 +55,14 @@ function PreviewContent() {
   const [lineHeight, setLineHeight] = useState(1.4);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [user, setUser] = useState(null);
 
   const { strings, dir } = useLanguage();
 
   useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+
     try {
       const saved = localStorage.getItem(CACHE_KEY);
       if (saved) {
@@ -72,6 +83,7 @@ function PreviewContent() {
       console.error("Cache load error:", e);
     }
     setIsInitialized(true);
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -86,31 +98,60 @@ function PreviewContent() {
     localStorage.setItem(CACHE_KEY, JSON.stringify(config));
   }, [selectedTemplate, fontSize, selectedFont, containerWidth, lineHeight, isInitialized]);
 
+  // دالة تسجيل المشاركة لرفع النقاط وتكملة المهمة اليومية
+  const recordShareActivity = async () => {
+    const points = 15;
+    const reason = strings.search.reason_share_multi || "مشاركة تصميم آية من الاستوديو";
+
+    try {
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          totalPoints: increment(points),
+          pointsHistory: arrayUnion({
+            type: 'share',
+            points: points,
+            reason: reason,
+            timestamp: getCairoIsoString()
+          })
+        });
+      } else {
+        await StorageService.addPoints(points);
+        const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+        history.push({
+          type: 'share',
+          points: points,
+          reason: reason,
+          timestamp: getCairoIsoString()
+        });
+        await StorageService.save(KEYS.POINTS_HISTORY, history);
+      }
+    } catch (e) {
+      console.error("Points Update Error:", e);
+    }
+  };
+
   const handleAction = async (type) => {
     if (!templateRef.current) return;
     setIsProcessing(true);
 
-    // زيادة المهلة لضمان استقرار العناصر في iOS
     await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
       const isIOS = Capacitor.getPlatform() === 'ios';
 
       const options = {
-        pixelRatio: isIOS ? 2 : 4, // تقليل الـ ratio في iOS لتجنب الـ Memory Limit واللون الأسود
+        pixelRatio: isIOS ? 2 : 4,
         cacheBust: true,
         style: {
           transform: 'scale(1)',
           backgroundColor: '#000',
         },
-        // تحديد أبعاد صريحة
         width: templateRef.current.offsetWidth,
         height: templateRef.current.offsetHeight,
         backgroundColor: '#000',
       };
 
-      // حل سحري لـ Apple Safari: استدعاء الدالة مرتين
-      // المرة الأولى تقوم بعمل "warm up" وتحميل الموارد في الكاش الخاص بالرندر
       if (isIOS) {
         try {
           await toPng(templateRef.current, options);
@@ -121,7 +162,6 @@ function PreviewContent() {
       }
 
       const dataUrl = await toPng(templateRef.current, options);
-
       const fileName = `Agios-Verse-${Date.now()}.png`;
       const base64Data = dataUrl.split(',')[1];
 
@@ -139,6 +179,7 @@ function PreviewContent() {
             dialogTitle: strings.share_preview.share_dialog,
           });
           await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache });
+          recordShareActivity(); // تسجيل النشاط هنا
         } else {
           if (isIOS) {
             await Media.savePhoto({ path: cacheFile.uri, album: 'Agios Bible' });
@@ -164,11 +205,13 @@ function PreviewContent() {
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share(shareData);
+              recordShareActivity();
             } else {
               await navigator.share({
                 title: strings.share_preview.share_title,
                 text: `"${verse}" (${reference})`
               });
+              recordShareActivity();
             }
           } catch (err) {
             console.warn("Share failed, falling back to download:", err);
@@ -211,7 +254,6 @@ function PreviewContent() {
             className={styles.previewCard}
             dir={dir}
           >
-            {/* استخدام img بدلاً من background-image مع crossOrigin */}
             <img
               src={selectedTemplate.url}
               alt=""
@@ -312,7 +354,7 @@ function PreviewContent() {
                 >
                   <img src={t.url} alt="" />
                   {selectedTemplate.id === t.id && (
-                    <div className={styles.activeCheck}>
+                    <div className={activeCheck}>
                       <Check size={12} color="white" />
                     </div>
                   )}
