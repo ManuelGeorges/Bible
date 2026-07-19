@@ -748,8 +748,8 @@ Geben Sie JSON nur in diesem exakten Format zurück:
 
 Regeln:
 1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verben ableitet.
-2. Wenn statisch, listen Sie nur tatsächliche Formen auf: Plurale, Varianten.
-3. Für ableitbare Wörter: Extrahieren Sie alle gültigen morphologischen Formen (Vergangenheit, Präsens, Partizip, Nominalformen).
+2. Wenn statisch, listen Sie nur tatsächliche Formen auf: Plurale, Variانتen.
+3. For ableitbare Wörter: Extrahieren Sie alle gültigen morphologischen Formen (Vergangenheit, Präsens, Partizip, Nominalformen).
 4. Nur JSON zurückgeben, kein zusätzlicher Text.`
     };
 
@@ -1088,7 +1088,7 @@ Regeln:
           ? formatNumber(first.number)
           : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-        groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+        groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter)}${lrm}:${rlm}${verseRange})`;
         return groupText;
       }).join('\n\n');
 
@@ -1130,7 +1130,7 @@ Regeln:
           ? formatNumber(first.number)
           : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-        groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+        groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter)}${lrm}:${rlm}${verseRange})`;
         return groupText;
       }).join('\n\n');
 
@@ -1179,7 +1179,7 @@ Regeln:
       ? formatNumber(first.number)
       : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-    groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+    groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter)}${lrm}:${rlm}${verseRange})`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(groupText);
@@ -1205,7 +1205,7 @@ Regeln:
       ? formatNumber(first.number)
       : `${formatNumber(first.number)} - ${formatNumber(last.number)}`;
 
-    groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter + 1)}${lrm}:${rlm}${verseRange})`;
+    groupText += `${versesText} ${rlm}(${res.book} ${formatNumber(res.chapter)}${lrm}:${rlm}${verseRange})`;
 
     try {
       if (Capacitor.isNativePlatform()) {

@@ -235,7 +235,6 @@ const LandingPage = () => {
                             const bibleData = await bRes.json();
 
                             // البحث عن السفر داخل ملف البيانات نفسه لضمان الحصول على السفر الصحيح
-                            // بغض النظر عن اختلاف الترتيب (Index) بين اللغات والأسفار القانونية
                             const bibleBook = bibleData.find(b =>
                                 (b.abbrev && b.abbrev.toUpperCase() === todayRef.book.toUpperCase()) ||
                                 (b.book_id && b.book_id.toUpperCase() === todayRef.book.toUpperCase())

@@ -1,6 +1,7 @@
 import { doc, getDoc, updateDoc, increment, arrayUnion, setDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import { StorageService, KEYS } from "./storage";
+import { App } from '@capacitor/app';
 
 export const syncLocalDataToFirebase = async (user) => {
     if (!user || !db) return;
@@ -136,4 +137,17 @@ export const syncLocalDataToFirebase = async (user) => {
     } catch (error) {
         console.error("Sync Error:", error);
     }
+};
+
+// وظيفة للاستماع لحالة التطبيق والمزامنة عند الخروج
+export const initBackgroundSync = () => {
+    App.addListener('appStateChange', async ({ isActive }) => {
+        if (!isActive) {
+            console.log("App going to background, syncing data...");
+            const user = auth.currentUser;
+            if (user) {
+                await syncLocalDataToFirebase(user);
+            }
+        }
+    });
 };

@@ -18,6 +18,7 @@ import { syncNotifications } from '../lib/notificationService';
 import { useLanguage } from '../app/context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Sparkles } from 'lucide-react';
+import { initBackgroundSync } from '../lib/SyncService';
 
 export default function CapacitorFeatures() {
   const router = useRouter();
@@ -141,6 +142,9 @@ export default function CapacitorFeatures() {
           handleNavigation(url);
         });
       }
+
+      // تهيئة المزامنة عند الخروج
+      initBackgroundSync();
     };
 
     const handleAppUpdate = async () => {

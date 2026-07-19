@@ -16,6 +16,60 @@ import { useLanguage } from '../../context/LanguageContext';
 
 const allPlans = studyPlansData.plans;
 
+/**
+ * دالة لتنظيف النص وتوحيده للمقارنة المرنة جداً
+ */
+const flexibleNormalize = (text) => {
+  if (!text) return "";
+  let n = text.toString()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[\u064B-\u0652]/g, "") // إزالة التشكيل
+    .replace(/اول/g, '1')
+    .replace(/ثاني/g, '2')
+    .replace(/ثالث/g, '3')
+    .replace(/\s+/g, '') // إزالة المسافات
+    .toLowerCase()
+    .trim();
+
+  // إزالة البادئات والكلمات الموصلة الشائعة بشكل تكراري
+  const wordsToRemove = ['رساله', 'سفر', 'انجيل', 'بشاره', 'ال', 'الي', 'الى', 'الرساله', 'من', 'عن'];
+  let changed = true;
+  while(changed) {
+    changed = false;
+    for (const w of wordsToRemove) {
+      if (n.startsWith(w)) {
+        n = n.substring(w.length);
+        changed = true;
+      }
+    }
+  }
+  return n;
+};
+
+/**
+ * قاموس الاختصارات العربية لأسفار الكتاب المقدس
+ */
+const arabicAbbreviations = {
+  "تك": "التكوين", "خر": "الخروج", "لا": "اللاويين", "عد": "العدد", "تث": "التثنية",
+  "يش": "يشوع", "قض": "القضاة", "رع": "راعوث", "صم1": "صموئيل الأول", "صم2": "صموئيل الثاني",
+  "مل1": "الملوك الأول", "مل2": "الملوك الثاني", "اخ1": "أخبار الأيام الأول", "اخ2": "أخبار الأيام الثاني",
+  "عز": "عزرا", "نح": "نحميا", "طو": "طوبيا", "يهو": "يهوديت", "اس": "أستير", "اي": "أيوب",
+  "مز": "المزامير", "ام": "الأمثال", "جا": "الجامعة", "نش": "نشيد الأنشاد", "حك": "الحكمة",
+  "سي": "يشوع بن سيراخ", "اش": "إشعياء", "ار": "إرميا", "مرا": "مراثي إرميا", "با": "باروخ",
+  "حز": "حزقيال", "دا": "دانيال", "هو": "هوشع", "يوئ": "يوئيل", "عا": "عاموس", "عو": "عوبديا",
+  "يون": "يونان", "مي": "ميخا", "نا": "ناحوم", "حب": "حبقوق", "صف": "صفنيا", "حج": "حجي",
+  "زك": "زكريا", "ملا": "ملاخي", "مك1": "مكابيين أول", "مك2": "مكابيين ثاني",
+  "مت": "متى", "مر": "مرقس", "لو": "لوقا", "يو": "يوحنا", "اع": "أعمال الرسل",
+  "رو": "رسالة رومية", "كو1": "رسالة كورنثوس الأولى", "كو2": "رسالة كورنثوس الثانية", "غل": "غلاطية", "اف": "أفسس",
+  "في": "رسالة فيلبي", "كل": "رسالة كولوسي", "تس1": "رسالة تسالونيكي الأولى", "تس2": "رسالة تسالونيكي الثانية",
+  "تي1": "رسالة تيموثاوس الأولى", "تي2": "رسالة تيموثاوس الثانية", "تط": "رسالة تيطس", "فل": "رسالة فليمون",
+  "عب": "رسالة العبرانيين", "يع": "رسالة يعقوب", "بط1": "رسالة بطرس الأولى", "بط2": "رسالة بطرس الثانية",
+  "يو1": "رسالة يوحنا الأولى", "يو2": "رسالة يوحنا الثانية", "يو3": "رسالة يوحنا الثالثة", "يه": "رسالة يهوذا", "رؤ": "رؤيا يوحنا اللاهوتي",
+  "كو": "رسالة كولوسي", "فلم": "رسالة فليمون"
+};
+
 function PlanDetailsContent() {
   const { strings, bookNames, language } = useLanguage();
   const searchParams = useSearchParams();
@@ -31,7 +85,6 @@ function PlanDetailsContent() {
   const [completedChapters, setCompletedChapters] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // وظيفة للبحث عن الخطة في الـ Cache المحلي للخطط المشتركة
   const getSharedPlanFromCache = async (id) => {
     const cachedPlans = await StorageService.get(KEYS.SHARED_PLANS_CACHE);
     if (cachedPlans && Array.isArray(cachedPlans)) {
@@ -39,6 +92,60 @@ function PlanDetailsContent() {
     }
     return null;
   };
+
+  /**
+   * البحث عن فهرس السفر بشكل مرن جداً
+   */
+  const findBookIndexFlexibly = useCallback((inputName) => {
+    if (!bookNames || !bookNames.length) return -1;
+
+    const rawInput = inputName.trim();
+    const normalizedInput = flexibleNormalize(rawInput);
+
+    // 1. محاولة التطابق مع book_id (Gen, Exo, etc.)
+    let idx = bookNames.findIndex(b => b.book_id && b.book_id.toLowerCase() === rawInput.toLowerCase());
+    if (idx !== -1) return idx;
+
+    // 2. محاولة التطابق مع الاختصارات العربية
+    if (arabicAbbreviations[normalizedInput]) {
+      const fullArabicName = arabicAbbreviations[normalizedInput];
+      idx = bookNames.findIndex(b => b.name === fullArabicName);
+      if (idx !== -1) return idx;
+    }
+
+    // 3. محاولة التطابق التام مع الاسم الأصلي
+    idx = bookNames.findIndex(b => b.name === rawInput);
+    if (idx !== -1) return idx;
+
+    // 4. محاولة التطابق بعد التوحيد (Normalization)
+    idx = bookNames.findIndex(b => flexibleNormalize(b.name) === normalizedInput);
+    if (idx !== -1) return idx;
+
+    // 5. محاولة التطابق الجزئي
+    idx = bookNames.findIndex(b => {
+      const normName = flexibleNormalize(b.name);
+      return normName.includes(normalizedInput) || normalizedInput.includes(normName);
+    });
+
+    return idx;
+  }, [bookNames]);
+
+  /**
+   * دالة موحدة لتحليل نص القراءة (السفر والعدد) بشكل مرن
+   */
+  const parseReading = useCallback((readingStr) => {
+    if (!readingStr) return null;
+    const trimmed = readingStr.trim();
+
+    // ريجكس لفصل اسم السفر عن رقم الأصحاح/الآيات
+    const match = trimmed.match(/^(.+?)\s+(\d+.*)$/);
+    if (!match) return null;
+
+    return {
+      bookNamePart: match[1].trim(),
+      chapterPart: match[2].trim()
+    };
+  }, []);
 
   const loadLocalData = useCallback(async () => {
     try {
@@ -69,7 +176,6 @@ function PlanDetailsContent() {
               setPlan(savedShared);
               setCompletedDays(savedShared.completedDays || {});
           } else {
-              // محاولة الجلب من الكاش أولاً قبل Firestore
               const cachedPlan = await getSharedPlanFromCache(planId);
               if (cachedPlan) {
                   setPlan(cachedPlan);
@@ -239,31 +345,31 @@ function PlanDetailsContent() {
     }
   }, [user, loadLocalData]);
 
-  const isReadingDone = (readingStr) => {
+  const isReadingDone = useCallback((readingStr) => {
     if (!bookNames.length || !completedChapters) return false;
     try {
-      const trimmed = readingStr.trim();
-      const match = trimmed.match(/^(.+?)\s?(\d+[\d\s\-,]*)$/);
-      if (!match) return false;
+      const parsed = parseReading(readingStr);
+      if (!parsed) return false;
 
-      const bookName = match[1].trim();
-      const chaptersPart = match[2].trim();
+      const { bookNamePart, chapterPart } = parsed;
 
-      const bookIndex = bookNames.findIndex(b => b.name === bookName);
+      const bookIndex = findBookIndexFlexibly(bookNamePart);
       if (bookIndex === -1) return false;
 
       let chaptersToNodes = [];
-      if (chaptersPart.includes('-')) {
-        const [start, end] = chaptersPart.split('-').map(Number);
+      const cleanChapters = chapterPart.split(/[:\s]/)[0]; // التعامل مع 1:1-5 ليصبح 1
+
+      if (cleanChapters.includes('-')) {
+        const [start, end] = cleanChapters.split('-').map(Number);
         for (let i = start; i <= end; i++) chaptersToNodes.push(i);
-      } else if (chaptersPart.includes(',')) {
-        chaptersToNodes = chaptersPart.split(',').map(c => Number(c.trim()));
+      } else if (cleanChapters.includes(',')) {
+        chaptersToNodes = cleanChapters.split(',').map(c => Number(c.trim()));
       } else {
-        chaptersToNodes.push(Number(chaptersPart));
+        chaptersToNodes.push(Number(cleanChapters));
       }
       return chaptersToNodes.every(c => completedChapters[`${bookIndex}-${c - 1}`]);
     } catch (e) { return false; }
-  };
+  }, [bookNames, completedChapters, findBookIndexFlexibly, parseReading]);
 
   const isDayAutoCompleted = (reading) => {
     if (!reading.books || reading.books.length === 0) return false;
@@ -414,12 +520,31 @@ function PlanDetailsContent() {
               <div className={styles.booksGrid}>
                 {reading.books.map((b, i) => {
                   const isDone = isReadingDone(b);
-                  const parts = b.trim().split(' ');
-                  const chapterNum = parts.pop();
-                  const bookName = parts.join(' ');
+                  const parsed = parseReading(b);
+
+                  let bookName = "Genesis";
+                  let chapterNum = "1";
+                  let displayLabel = b;
+
+                  if (parsed) {
+                    const { bookNamePart, chapterPart } = parsed;
+                    chapterNum = chapterPart.split(/[:\s\-]/)[0]; // استخراج رقم الأصحاح الأول فقط
+
+                    const foundIdx = findBookIndexFlexibly(bookNamePart);
+                    if (foundIdx !== -1) {
+                        bookName = bookNames[foundIdx].name;
+                    } else {
+                        bookName = bookNamePart;
+                    }
+                  }
+
                   return (
-                    <Link key={i} href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum.split('-')[0]}&planId=${planId}&planType=${planType}&day=${reading.day}`} className={`${styles.bookLink} ${isDone ? styles.bookDone : ''}`}>
-                      {b} {isDone && '✓'}
+                    <Link
+                      key={i}
+                      href={`/bible?book=${encodeURIComponent(bookName)}&chapter=${chapterNum}&planId=${planId}&planType=${planType}&day=${reading.day}`}
+                      className={`${styles.bookLink} ${isDone ? styles.bookDone : ''}`}
+                    >
+                      {displayLabel} {isDone && '✓'}
                     </Link>
                   );
                 })}

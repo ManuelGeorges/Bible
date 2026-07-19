@@ -148,26 +148,14 @@ export default function BibleContent() {
 
   const getBookName = useCallback((i) => bookNamesData?.[i]?.name || '', [bookNamesData]);
 
-  // --- Badges Logic ---
+  // --- Badges Logic (Local-First) ---
   const unlockBadge = useCallback(async (badgeId) => {
-    const authUser = getAuth().currentUser;
-    if (authUser) {
-      try {
-        const userRef = doc(firestore, 'users', authUser.uid);
-        const userSnap = await getDoc(userRef);
-        const currentBadges = userSnap.data()?.badges || [];
-        if (!currentBadges.includes(badgeId)) {
-          await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-          triggerBadgeUnlock(badgeId);
-        }
-      } catch (e) { console.error(e); }
-    } else {
-      const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || [];
-      if (!localBadges.includes(badgeId)) {
+    // دائماً نحفظ محلياً أولاً
+    const localBadges = await StorageService.get(KEYS.LOCAL_BADGES) || [];
+    if (!localBadges.includes(badgeId)) {
         localBadges.push(badgeId);
         await StorageService.save(KEYS.LOCAL_BADGES, localBadges);
         triggerBadgeUnlock(badgeId);
-      }
     }
   }, [triggerBadgeUnlock]);
 
@@ -180,10 +168,7 @@ export default function BibleContent() {
     };
     localStorage.setItem('lastReadLocation', JSON.stringify(lastReadData));
     await StorageService.save(KEYS.LAST_READ, lastReadData);
-    const authUser = getAuth().currentUser;
-    if (authUser) {
-      updateDoc(doc(firestore, 'users', authUser.uid), { lastRead: lastReadData }).catch(console.error);
-    }
+
     // Alpha-Omega check
     if (bookIdx === 0 && chapIdx === 0) localStorage.setItem('read_alpha', Date.now());
     if (bookIdx === 65 && chapIdx === 21) {
@@ -342,21 +327,27 @@ export default function BibleContent() {
     return () => window.removeEventListener('storage', syncAppSettings);
   }, []);
 
-  // User Data Sync
+  // User Data Sync (Local-First: Fetch once from FB, then work locally)
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(getAuth(), async (authUser) => {
       setUser(authUser);
+
+      // جلب البيانات المحلية أولاً
+      const ls = await StorageService.getLocalStats();
+      const lc = await StorageService.get(KEYS.COMPLETED_CHAPTERS) || {};
+
       if (authUser) {
+        // عند تسجيل الدخول، ندمج بيانات فايربيز مع المحلية (إذا كانت المحلية فارغة)
+        // أو نعتمد على المحلية لأننا سنقوم بمزامنتها عند الخروج
         const s = await getDoc(doc(firestore, 'users', authUser.uid));
         if (s.exists()) {
-          const data = s.data();
-          setFavouriteVerses(data.favorites?.verses || {});
-          setCompletedChapters(data.completedChapters || {});
+          const fbData = s.data();
+          // نفضل البيانات المحلية إذا كانت موجودة، وإلا نستخدم بيانات فايربيز
+          setFavouriteVerses(Object.keys(ls.favorites).length > 0 ? ls.favorites : (fbData.favorites?.verses || {}));
+          setCompletedChapters(Object.keys(lc).length > 0 ? lc : (fbData.completedChapters || {}));
         }
       } else {
-        const ls = await StorageService.getLocalStats();
         setFavouriteVerses(ls.favorites || {});
-        const lc = await StorageService.get(KEYS.COMPLETED_CHAPTERS);
         setCompletedChapters(lc || {});
       }
     });
@@ -377,30 +368,18 @@ export default function BibleContent() {
   }, [selectedChapterIndex, selectedBookIndex, getBookName, formatNumber, language]);
 
   const updateUserPoints = useCallback(async (amount, reason, type = 'general', isNegative = false) => {
-    const authUser = getAuth().currentUser;
     const finalAmount = isNegative ? -amount : amount;
-    if (authUser) {
-        updateDoc(doc(firestore, 'users', authUser.uid), {
-            totalPoints: increment(finalAmount),
-            pointsHistory: arrayUnion({ type, points: finalAmount, reason, timestamp: getCairoIsoString() })
-        }).catch(console.error);
-    } else {
-        if (!isNegative) {
-            await StorageService.addPoints(amount);
-            const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
-            history.push({ type, points: finalAmount, reason, timestamp: getCairoIsoString() });
-            await StorageService.save(KEYS.POINTS_HISTORY, history);
-        }
-    }
+    // حفظ النقاط والسجل محلياً فقط
+    await StorageService.addPoints(finalAmount);
+    const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+    history.push({ type, points: finalAmount, reason, timestamp: getCairoIsoString() });
+    await StorageService.save(KEYS.POINTS_HISTORY, history);
   }, []);
 
   const saveBibleData = useCallback(async (v, c) => {
+    // حفظ محلي فقط
     await StorageService.save(KEYS.FAVORITES, v);
     await StorageService.save(KEYS.COMPLETED_CHAPTERS, c);
-    const authUser = getAuth().currentUser;
-    if (authUser) {
-      updateDoc(doc(firestore, 'users', authUser.uid), { "favorites.verses": v, "completedChapters": c }).catch(console.error);
-    }
   }, []);
 
   const toggleVerseSelection = useCallback((v, i) => {
@@ -520,9 +499,15 @@ export default function BibleContent() {
     }
     next[targetVerseKey].note = currentNoteText;
     next[targetVerseKey].noteDate = getCairoIsoString();
-    if (!user) {
-        await StorageService.addNote({ verseKey: targetVerseKey, text: currentNoteText, book: next[targetVerseKey].book, reference: `${next[targetVerseKey].book} ${next[targetVerseKey].v + 1}:${next[targetVerseKey].ch + 1}` });
-    }
+
+    // حفظ ملاحظة محلياً
+    await StorageService.addNote({
+        verseKey: targetVerseKey,
+        text: currentNoteText,
+        book: next[targetVerseKey].book,
+        reference: `${next[targetVerseKey].book} ${next[targetVerseKey].v + 1}:${next[targetVerseKey].ch + 1}`
+    });
+
     setFavouriteVerses(next);
     saveBibleData(next, completedChapters);
     setIsNoteModalOpen(false);
@@ -545,32 +530,27 @@ export default function BibleContent() {
   }, [bookNamesData]);
 
   const updateStudyPlanProgress = async (planId, planType, day, currentCompleted) => {
-    const authUser = getAuth().currentUser;
-    let planInfo = planType === 'custom' ? (authUser ? (await getDoc(doc(firestore, 'users', authUser.uid))).data().customPlans?.[planId] : (await StorageService.get(KEYS.CUSTOM_PLANS))[planId]) : allPlans.find(p => p.id === parseInt(planId));
+    const key = planType === 'custom' ? KEYS.CUSTOM_PLANS : KEYS.COMPLETED_PLANS;
+    const all = await StorageService.get(key) || {};
+
+    let planInfo = all[planId] || allPlans.find(p => p.id === parseInt(planId));
     if (!planInfo) return;
+
     const dayReading = planInfo.readings?.find(r => r.day === parseInt(day))?.books;
     const isDone = checkDayReadingCompleted(dayReading, currentCompleted);
     const dayData = { isCompleted: isDone, dateCompleted: isDone ? getCairoIsoString() : null };
-    if (authUser) {
-      const userRef = doc(firestore, 'users', authUser.uid);
-      const data = (await getDoc(userRef)).data();
-      const field = planType === 'custom' ? `customPlans.${planId}` : `completedPlans.${planId}`;
-      const planData = (planType === 'custom' ? data.customPlans?.[planId] : data.completedPlans?.[planId]) || { completedDays: {} };
-      const newDays = { ...(planData.completedDays || {}), [day]: dayData };
-      const total = planInfo.readings?.length || 0;
-      const percent = total > 0 ? Math.round((Object.values(newDays).filter(d => d.isCompleted).length / total) * 100) : 0;
-      updateDoc(userRef, { [`${field}.completedDays`]: newDays, [`${field}.completionPercentage`]: percent });
-      if (isDone) { toast.success(strings.bible.toasts.plan_day_complete); if (percent === 100) unlockBadge(`plan_finish_${planId}`); }
-    } else {
-      const key = planType === 'custom' ? KEYS.CUSTOM_PLANS : KEYS.COMPLETED_PLANS;
-      const all = await StorageService.get(key) || {};
-      const planData = all[planId] || { ...planInfo, completedDays: {}, completionPercentage: 0 };
-      const newDays = { ...planData.completedDays, [day]: dayData };
-      const total = planInfo.readings?.length || 0;
-      const percent = total > 0 ? Math.round((Object.values(newDays).filter(d => d.isCompleted).length / total) * 100) : 0;
-      all[planId] = { ...planData, completedDays: newDays, completionPercentage: percent };
-      StorageService.save(key, all);
-      if (isDone) toast.success(strings.bible.toasts.plan_day_complete);
+
+    const planData = all[planId] || { ...planInfo, completedDays: {}, completionPercentage: 0 };
+    const newDays = { ...planData.completedDays, [day]: dayData };
+    const total = planInfo.readings?.length || 0;
+    const percent = total > 0 ? Math.round((Object.values(newDays).filter(d => d.isCompleted).length / total) * 100) : 0;
+
+    all[planId] = { ...planData, completedDays: newDays, completionPercentage: percent };
+    await StorageService.save(key, all);
+
+    if (isDone) {
+        toast.success(strings.bible.toasts.plan_day_complete);
+        if (percent === 100) unlockBadge(`plan_finish_${planId}`);
     }
   };
 
@@ -579,13 +559,17 @@ export default function BibleContent() {
     const next = { ...completedChapters, [key]: !completedChapters[key] };
     setCompletedChapters(next);
     saveBibleData(favouriteVerses, next);
+
     updateUserPoints(20, next[key] ? strings.bible.reasons.complete_chapter : strings.bible.reasons.undo_chapter, 'completedChapter', !next[key]);
+
     const planId = searchParams.get('planId'), planType = searchParams.get('planType'), day = searchParams.get('day');
     if (planId && day) updateStudyPlanProgress(planId, planType, parseInt(day), next);
+
     if (next[key]) {
       const count = Object.keys(next).filter(k => next[k]).length;
       ['10','50','100','250','500','594'].forEach(c => { if(count >= parseInt(c)) unlockBadge(`reader_${c}`); });
       if(count >= 1189) unlockBadge('bible_finisher');
+
       const otTotal = bookNamesData.filter(b=>b.type==='old').reduce((s,b)=>s+(b.chapters||0),0);
       const ntTotal = bookNamesData.filter(b=>b.type==='new').reduce((s,b)=>s+(b.chapters||0),0);
       if(Object.keys(next).filter(k=>next[k] && bookNamesData[k.split('-')[0]]?.type==='old').length === otTotal) unlockBadge('testament_old');

@@ -17,6 +17,14 @@ const apiKeys = [
   "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
   "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
 ];
+عندي
+const fontOptionsMap = {
+  'Cairo': "'Cairo', sans-serif",
+  'Amiri': "'Amiri', serif",
+  'Almarai': "'Almarai', sans-serif",
+  'Tajawal': "'Tajawal', sans-serif",
+  'ReemKufi': "'Reem Kufi', sans-serif"
+};
 
 const getGenAI = (index) => {
   const key = apiKeys[index % apiKeys.length];
@@ -80,6 +88,16 @@ function AnalysisContent() {
 
   // توحيد مفتاح الكوتا مع صفحة البحث والخطط
   const QUOTA_KEY = 'aiSearchTimestamps';
+
+  useEffect(() => {
+    const syncFont = () => {
+      const savedFontId = localStorage.getItem('bibleFontFamily') || 'Cairo';
+      document.documentElement.style.setProperty('--bible-font-family', fontOptionsMap[savedFontId] || fontOptionsMap['Cairo']);
+    };
+    syncFont();
+    window.addEventListener('storage', syncFont);
+    return () => window.removeEventListener('storage', syncFont);
+  }, []);
 
   useEffect(() => {
     if (!analysis) {
