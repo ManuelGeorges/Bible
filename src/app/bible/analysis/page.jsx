@@ -17,7 +17,6 @@ const apiKeys = [
   "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
   "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
 ];
-عندي
 const fontOptionsMap = {
   'Cairo': "'Cairo', sans-serif",
   'Amiri': "'Amiri', serif",
