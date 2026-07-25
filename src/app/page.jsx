@@ -25,7 +25,7 @@ import {
     ExternalLink, ShieldCheck, QrCode, BookOpen,
     Scroll, Languages, PartyPopper, Mic, Headphones,
     Video, Music, Church, Sun, Moon, Cloud, Target, MapPin, BrainCircuit,
-    ChevronRight, Check, X, Trash2, LayoutGrid
+    ChevronRight, Check, X, Trash2, LayoutGrid, Clock
 } from 'lucide-react';
 import ShareVerseCard from '../components/ShareVerseCard';
 import Badge from '../components/Badge/Badge';
@@ -111,6 +111,7 @@ const LandingPage = () => {
     const [userBadges, setUserBadges] = useState([]);
     const [favouriteVerses, setFavouriteVerses] = useState({});
     const [lastRead, setLastRead] = useState(null);
+    const [readingHistory, setReadingHistory] = useState([]);
     const [dailyGoals, setDailyGoals] = useState([]);
     const [remoteNews, setRemoteNews] = useState([]);
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
@@ -350,7 +351,7 @@ const LandingPage = () => {
 
                 if (unsubSnap) { unsubSnap(); unsubSnap = null; }
 
-                unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), (snap) => {
+                unsubSnap = onSnapshot(doc(firestore, 'users', u.uid), async (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
                         setRawUserData(data);
@@ -364,6 +365,10 @@ const LandingPage = () => {
 
                         const lastReadData = data.lastRead || null;
                         setLastRead(lastReadData);
+
+                        // جلب الهستوري المحلي للمستخدم المسجل أيضاً
+                        const ls = await StorageService.getLocalStats();
+                        setReadingHistory(ls.readingHistory || []);
 
                         setHasAnswered(!!data.answeredQuestions?.[today]?.answered);
 
@@ -458,6 +463,7 @@ const LandingPage = () => {
                 setFavouriteVerses(localStats.favorites || {});
                 setUserBadges(localBadges);
                 setLastRead(localLastRead);
+                setReadingHistory(localStats.readingHistory || []);
                 setHasAnswered(!!localAnswered[today]?.answered);
 
                 const activeStatic = (language === 'ar' ? staticPlans : [])
@@ -979,6 +985,34 @@ const LandingPage = () => {
                 </section>
             )}
 
+            {readingHistory.length > 0 && (
+                <section className={styles.historySection}>
+                    <div className={styles.sectionHeader}>
+                        <div className={styles.sectionTitleWithIcon}>
+                            <Clock size={20} color="var(--color-accent)" />
+                            <h2 className={styles.sectionTitleMini}>واصل القراءة</h2>
+                        </div>
+                        <Link href="/bible/history" className={styles.viewMoreLink}>المزيد <ArrowUpRight size={14} /></Link>
+                    </div>
+                    <div className={styles.historyGrid}>
+                        {readingHistory.slice(0, 3).map((item, idx) => (
+                            <button
+                                key={idx}
+                                className={styles.historyCard}
+                                onClick={() => router.push(`/bible?book=${encodeURIComponent(item.bookName)}&chapter=${item.chapterIndex + 1}`)}
+                            >
+                                <div className={styles.historyIcon}><BookOpen size={18} /></div>
+                                <div className={styles.historyInfo}>
+                                    <span className={styles.historyBook}>{item.bookName}</span>
+                                    <span className={styles.historyChapter}>{strings.common.chapter} {formatNumber(item.chapterIndex + 1)}</span>
+                                </div>
+                                <ArrowRight size={16} className={styles.historyArrow} />
+                            </button>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {(highlightBadges.acquired.length > 0 || highlightBadges.near.length > 0) && (
                 <section className={styles.badgesHighlightSection}>
                     <div className={styles.sectionHeader}>
@@ -1036,7 +1070,7 @@ const LandingPage = () => {
                 </section>
             )}
 
-            {lastRead && (
+            {lastRead && !readingHistory.length && (
                 <button
                     onClick={() => {
                         router.push(`/bible?book=${encodeURIComponent(lastRead.bookName)}&chapter=${lastRead.chapterIndex + 1}`)

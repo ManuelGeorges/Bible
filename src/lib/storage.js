@@ -8,6 +8,7 @@ const KEYS = {
     COMPLETED_PLANS: 'agios_completed_plans',
     COMPLETED_CHAPTERS: 'agios_completed_chapters',
     LAST_READ: 'agios_last_read',
+    READING_HISTORY: 'agios_reading_history',
     LAST_ACTIVE: 'agios_last_active',
     SHOWN_BADGES: 'agios_shown_badges',
     POINTS_HISTORY: 'points_history',
@@ -91,12 +92,46 @@ export const StorageService = {
         await this.save(KEYS.STREAK, streak);
     },
 
+    async addToReadingHistory(readingData) {
+        try {
+            const history = (await this.get(KEYS.READING_HISTORY)) || [];
+
+            // إضافة القراءة الجديدة في بداية المصفوفة
+            const newEntry = {
+                ...readingData,
+                id: Date.now().toString(),
+                timestamp: readingData.timestamp || new Date().toISOString()
+            };
+
+            // تجنب التكرار المتتالي لنفس الفصل
+            if (history.length > 0) {
+                const lastEntry = history[0];
+                if (lastEntry.bookIndex === newEntry.bookIndex && lastEntry.chapterIndex === newEntry.chapterIndex) {
+                    // تحديث الوقت فقط إذا كان نفس الفصل
+                    history[0].timestamp = newEntry.timestamp;
+                } else {
+                    history.unshift(newEntry);
+                }
+            } else {
+                history.unshift(newEntry);
+            }
+
+            // الاحتفاظ بآخر 100 قراءة مثلاً لعدم تضخم حجم الملف
+            const limitedHistory = history.slice(0, 100);
+            await this.save(KEYS.READING_HISTORY, limitedHistory);
+            return limitedHistory;
+        } catch (e) {
+            console.error("Error adding to reading history:", e);
+        }
+    },
+
     async getLocalStats() {
         return {
             points: (await this.get(KEYS.POINTS)) || 0,
             streak: (await this.get(KEYS.STREAK)) || 0,
             notes: (await this.get(KEYS.NOTES)) || [],
             favorites: (await this.get(KEYS.FAVORITES)) || {},
+            readingHistory: (await this.get(KEYS.READING_HISTORY)) || [],
         };
     }
 };

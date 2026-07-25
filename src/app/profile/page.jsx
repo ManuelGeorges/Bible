@@ -197,6 +197,26 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {isGuest && (
+        <div className={styles.menuSection} style={{ marginBottom: '20px' }}>
+          <h3 className={styles.menuTitle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <CloudSync size={20} />
+              {strings?.settings?.sync?.title}
+            </div>
+          </h3>
+          <p style={{ padding: '0 20px 10px 20px', fontSize: '14px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+            {strings?.settings?.sync?.desc}
+          </p>
+          <button className={`${styles.menuItem} ${styles.loginBtn}`} onClick={() => router.push('/intro')}>
+            <div className={styles.menuItemRight}>
+              <LogIn size={20} />
+              <span>{strings?.settings?.sync?.login_button}</span>
+            </div>
+          </button>
+        </div>
+      )}
+
       <div className={styles.menuSection}>
         {!isGuest && (
           <>

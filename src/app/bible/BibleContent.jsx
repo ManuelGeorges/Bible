@@ -168,6 +168,7 @@ export default function BibleContent() {
     };
     localStorage.setItem('lastReadLocation', JSON.stringify(lastReadData));
     await StorageService.save(KEYS.LAST_READ, lastReadData);
+    await StorageService.addToReadingHistory(lastReadData);
 
     // Alpha-Omega check
     if (bookIdx === 0 && chapIdx === 0) localStorage.setItem('read_alpha', Date.now());
@@ -634,14 +635,18 @@ export default function BibleContent() {
       <h1 className={styles.title}>{strings.bible.title}</h1>
 
       <div className={styles.controls}>
-        <button className={styles.navigationDisplay} onClick={() => router.push('/bible/books')}>
+        <div className={styles.navigationDisplay}>
           <div className={styles.navContent}>
-            <span className={styles.navText}>{getBookName(selectedBookIndex)}</span>
+            <span className={styles.navText} onClick={() => router.push('/bible/books')}>
+              {getBookName(selectedBookIndex)}
+            </span>
             <span className={styles.navSeparator}>|</span>
-            <span className={styles.navText}>{`${strings.bible.chapter_label} ${formatNumber(selectedChapterIndex + 1)}`}</span>
+            <span className={styles.navText} onClick={() => router.push(`/bible/chapters?book=${encodeURIComponent(getBookName(selectedBookIndex))}`)}>
+              {`${strings.bible.chapter_label} ${formatNumber(selectedChapterIndex + 1)}`}
+            </span>
           </div>
           <ChevronDown size={20} className={styles.navIcon} />
-        </button>
+        </div>
       </div>
 
       {copiedMessage && <div className={styles.toast}>{copiedMessage}</div>}
