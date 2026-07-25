@@ -6,24 +6,11 @@ import { db, auth } from '../../../lib/firebase';
 import { doc, setDoc, serverTimestamp, collection, addDoc, getDoc } from "firebase/firestore";
 import styles from './customPlan.module.css';
 import toast from 'react-hot-toast';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getCairoIsoString } from '../../../lib/dateUtils';
 import { Sparkles, Calendar, BookOpen, MessageCircle, Share2, User } from 'lucide-react';
 import { StorageService, KEYS } from '../../../lib/storage';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
-
-const apiKeys = [
-  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
-  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
-  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
-];
-
-const getGenAI = (index) => {
-  const key = apiKeys[index % apiKeys.length];
-  return new GoogleGenerativeAI(key);
-};
 
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
   let lastError;
@@ -85,6 +72,12 @@ export default function CustomPlanForm() {
         return () => unsubscribe();
     }, []);
 
+    const intensities = [
+        { id: '1', label: strings.studyPlans.custom.intensities['1'] },
+        { id: '2', label: strings.studyPlans.custom.intensities['2'] },
+        { id: '3', label: strings.studyPlans.custom.intensities['3'] }
+    ];
+
     const durations = [
         { id: '3', label: strings.studyPlans.custom.durations['3'] },
         { id: '7', label: strings.studyPlans.custom.durations['7'] },
@@ -95,29 +88,8 @@ export default function CustomPlanForm() {
         { id: 'custom', label: strings.studyPlans.custom.durations['custom'] }
     ];
 
-    const intensities = [
-        { id: '1', label: strings.studyPlans.custom.intensities['1'] },
-        { id: '2', label: strings.studyPlans.custom.intensities['2'] },
-        { id: '3', label: strings.studyPlans.custom.intensities['3'] }
-    ];
-
     const handleSelect = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const readLegacyCache = async (newKey, legacyKeys) => {
-        try {
-            const cached = await kv.get(newKey);
-            if (cached) return { cached, legacy: false };
-            for (const legacyKey of legacyKeys) {
-                const legacyCached = await kv.get(legacyKey);
-                if (legacyCached) return { cached: legacyCached, legacy: true };
-            }
-            return { cached: null, legacy: false };
-        } catch (e) {
-            console.error('Redis Read Error:', e);
-            return { cached: null, legacy: false };
-        }
     };
 
     const cleanPlanData = (plan) => {
@@ -136,128 +108,30 @@ export default function CustomPlanForm() {
     const generatePlanWithAI = async (data) => {
         const durationDays = data.duration === 'custom' ? data.customDays : data.duration;
         const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
-        const legacyKey = `${CACHE_KEYS.STUDY_PLAN}${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
 
         try {
-            const { cached, legacy } = await readLegacyCache(cacheKey, [legacyKey]);
-            if (cached) {
-                if (legacy) {
-                    const migrationKey = `${CACHE_KEYS.STUDY_PLAN}ar:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
-                    kv.set(migrationKey, cached).catch(console.error);
-                }
-                return cached;
-            }
+            const cached = await kv.get(cacheKey);
+            if (cached) return cached;
 
             const allowedBooks = bookNames.map(book => book.name).join(', ');
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 
-            const prompts = {
-                ar: `أنت هو "أجيوس"، خبير الإرشاد الروحي واللاهوتي. مهمتك هي صياغة رحلة قراءة كتابية مخصصة تلمس أعماق احتياج المستخدم.
-
-### [بيانات الحالة]
-- مدخلات المستخدم: "${data.mood}"
-- مدة البرنامج: "${durationDays}" أيام.
-- الكثافة: "${intensityLabel}".
-
-### [قالب المخرجات JSON فقط]
-{
-  "title": "عنوان ملهم",
-  "description": "رسالة قصيرة ملهمة تشجع المستخدم بناءً على حالته",
-  "duration": "${durationDays} أيام",
-  "readings": [
-    { "day": 1, "books": ["اسم_السفر رقم_الأصحاح"] }
-  ]
-}
-
-قائمة الأسفار المتاحة: [${allowedBooks}]
-ملاحظة هامة:
-1. يجب أن تكون النتيجة JSON صالح فقط وبدون أي نصوص إضافية.
-2. يجب أن يحتوي مصفوفة readings على عدد كائنات يساوي تماماً عدد الأيام (${durationDays}).
-3. إذا كان الموضوع متخصصاً جداً، ابدأ به ثم توسع لأسفار ومفاهيم روحية مرتبطة لضمان اكتمال الخطة بجودة عالية.
-`,
-                en: `You are "Agios", a spiritual and theological guide. Your task is to create a personalized Bible reading journey that fits the user's need.
-
-### [State Data]
-- User input: "${data.mood}"
-- Plan duration: "${durationDays}" days.
-- Intensity: "${intensityLabel}"
-
-### [Output JSON only]
-{
-  "title": "Inspiring title",
-  "description": "A short encouraging message based on the user's state",
-  "duration": "${durationDays} days",
-  "readings": [
-    { "day": 1, "books": ["Book_Name Chapter_Number"] }
-  ]
-}
-
-Available books list: [${allowedBooks}]
-Important note:
-1. The result must be valid JSON only with no extra text.
-2. The readings array must contain exactly ${durationDays} objects.
-3. If the topic is very specific, start there then expand to related spiritual books and concepts to ensure a high-quality plan.
-`,
-                fr: `Vous êtes "Agios", un guide spirituel et théologique. Votre tâche est de créer un voyage de lecture biblique personnalisé adapté au besoin de l'utilisateur.
-
-### [Données d'état]
-- Entrée utilisateur : "${data.mood}"
-- Durée du plan : "${durationDays}" jours.
-- Intensité : "${intensityLabel}"
-
-### [JSON de sortie seulement]
-{
-  "title": "Titre inspirant",
-  "description": "Un court message encourageant basé sur l'état de l'utilisateur",
-  "duration": "${durationDays} jours",
-  "readings": [
-    { "day": 1, "books": ["Nom_du_livre Numéro_du_chapitre"] }
-  ]
-}
-
-Liste des livres disponibles : [${allowedBooks}]
-Note importante :
-1. Le résultat doit être un JSON valide uniquement sans texte supplémentaire.
-2. Le tableau readings doit contenir exactement ${durationDays} objets.
-3. Si le sujet est très spécifique, commencez par là puis élargissez aux livres et concepts spirituels liés pour garantir un plan de haute qualité.
-`,
-                de: `Du bist "Agios", ein spiritueller und theologischer Führer. Deine Aufgabe ist es, eine personalisierte Bibellesereise zu erstellen, die den Bedarf des Benutzers erfüllt.
-
-### [Statusdaten]
-- Benutzereingabe: "${data.mood}"
-- Planlänge: "${durationDays}" Tage.
-- Intensität: "${intensityLabel}"
-
-### [Nur JSON-Ausgabe]
-{
-  "title": "Inspirierender Titel",
-  "description": "Eine kurze ermutigende Nachricht basierend auf dem Zustand des Benutzers",
-  "duration": "${durationDays} Tage",
-  "readings": [
-    { "day": 1, "books": ["Buchname Kapitelnummer"] }
-  ]
-}
-
-Verfügbare Bücherliste: [${allowedBooks}]
-Wichtiger Hinweis:
-1. Das Ergebnis muss gültiges JSON sein, ohne zusätzlichen Text.
-2. Das readings-Array muss genau ${durationDays} Objekte enthalten.
-3. Wenn das Thema sehr spezifisch ist, beginne damit und erweitere dann auf verwandte spirituelle Bücher und Konzepte, um einen hochwertigen Plan zu gewährleisten.
-`
-            };
-
-            const prompt = prompts[language] || prompts.en;
-
             const attemptGeneration = async (attemptIndex) => {
-                const genAIInstance = getGenAI(attemptIndex);
-                const model = genAIInstance.getGenerativeModel({
-                    model: "gemini-3.1-flash-lite",
-                    generationConfig: { temperature: 0.7 }
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task: 'studyPlan',
+                        lang: language,
+                        attempt: attemptIndex,
+                        payload: { mood: data.mood, durationDays, intensityLabel, allowedBooks }
+                    })
                 });
 
-                const result = await model.generateContent(prompt);
-                const responseText = result.response.text();
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                if (!response.ok) throw new Error(await response.text());
+                const { text } = await response.json();
+
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) throw new Error("Format Error");
 
                 const planResult = JSON.parse(jsonMatch[0]);
@@ -281,23 +155,11 @@ Wichtiger Hinweis:
 
     const handleSubmit = async () => {
         if (loading) return;
-
         const actualDuration = formData.duration === 'custom' ? parseInt(formData.customDays) : parseInt(formData.duration);
 
         if (!formData.mood.trim() || !formData.duration || !formData.level) {
             toast.error(strings.studyPlans.custom.error_incomplete);
             return;
-        }
-
-        if (formData.duration === 'custom') {
-            if (!formData.customDays || actualDuration <= 0) {
-                toast.error(strings.studyPlans.custom.error_duration);
-                return;
-            }
-            if (actualDuration > 180) {
-                toast.error(strings.studyPlans.custom.error_duration_max);
-                return;
-            }
         }
 
         if (formData.mood.trim().length < 10) {
@@ -330,12 +192,10 @@ Wichtiger Hinweis:
                     const userRef = doc(db, 'users', currentUser.uid);
                     await setDoc(userRef, {
                         lastAIGenerated: serverTimestamp(),
-                        customPlans: {
-                            [planId]: newPlanObject
-                        }
+                        customPlans: { [planId]: newPlanObject }
                     }, { merge: true });
                 } else {
-                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
                     localCustom[planId] = newPlanObject;
                     await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
                 }
@@ -351,8 +211,6 @@ Wichtiger Hinweis:
                         originalPlanId: planId,
                         language: language
                     });
-
-                    await StorageService.save(KEYS.LAST_SHARED_PLANS_FETCH, 0);
                 }
 
                 toast.success(strings.studyPlans.custom.success_toast);
@@ -437,7 +295,6 @@ Wichtiger Hinweis:
                                 max="180"
                             />
                             <span className={styles.inputSuffix}>{strings.studyPlans.custom.duration_suffix}</span>
-                            <p className={styles.limitHint}>{strings.studyPlans.custom.duration_limit_hint}</p>
                         </div>
                     )}
                 </div>
@@ -476,29 +333,6 @@ Wichtiger Hinweis:
                             <span className={styles.checkmark}></span>
                             <span className={styles.checkboxLabel}>{strings.studyPlans.custom.share_check}</span>
                         </label>
-
-                        {formData.isShared && user && (
-                            <div className={styles.authorOption}>
-                                <label className={styles.checkboxContainer}>
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.showAuthor}
-                                        onChange={(e) => handleSelect('showAuthor', e.target.checked)}
-                                        disabled={loading}
-                                    />
-                                    <span className={styles.checkmark}></span>
-                                    <span className={styles.checkboxLabel}>{strings.studyPlans.custom.author_check}</span>
-                                </label>
-                                {formData.showAuthor && (
-                                    <div className={styles.authorPreview}>
-                                        <User size={14} /> {strings.studyPlans.custom.author_preview.replace('{name}', userData?.displayName || strings.studyPlans.custom.author_default)}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        {formData.isShared && !user && (
-                            <p className={styles.authHint}>{strings.studyPlans.custom.guest_hint}</p>
-                        )}
                     </div>
                 </div>
 
