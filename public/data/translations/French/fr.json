@@ -268,6 +268,7 @@
     "share_title": "Verset de la Sainte Bible",
     "share_dialog": "Partager le verset via...",
     "share_not_supported": "Partage non supporté, texte copié à la place",
+    "reading_history": "Historique de lecture",
     "reasons": {
       "share_verse": "Partager un verset",
       "copy_verse": "Copier un verset",
@@ -411,7 +412,8 @@
       "profile": "Profil",
       "settings": "Paramètres",
       "points": "Exploits",
-      "widgets": "Widgets"
+      "widgets": "Widgets",
+      "readingHistory": "Historique"
     },
     "footer": {
       "about": "À propos",
@@ -436,7 +438,7 @@
     "invite_friend": "Inviter un ami",
     "delete_account": "Supprimer le compte",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte ?",
-    "version": "Agios App - Version 1.2.0",
+    "version": "Agios App - Version 2.2.0",
     "share_title": "Application Agios",
     "share_text": "Téléchargez l'application Agios and lisez la Bible d'une nouvelle façon !",
     "share_dialog": "Partager l'application with des amis",
@@ -672,8 +674,62 @@
     },
     "history": [
       {
-        "version": "2.0.4",
+        "version": "2.2.0",
         "date": "Dernière mise à jour",
+        "title": "Mise à jour de sécurité & Améliorations IA",
+        "features": [
+          "Mise à jour de sécurité radicale pour protéger l'application et les données utilisateur",
+          "Moteur IA amélioré et support de recherche sémantique plus précis",
+          "Support multilingue et traductions parallèles dans la page Bible",
+          "Amélioration des performances des plans d'étude pour assurer la stabilité sous forte charge"
+        ],
+        "fixes": [
+          "Correction du problème de complétion des tâches quotidiennes en mode Local First"
+        ]
+      },
+      {
+        "version": "2.1.2",
+        "date": "Mise à jour précédente",
+        "title": "Réduction de la taille de l'application & Support Widget iOS",
+        "features": [
+          "Réduction significative de la taille de l'application pour un chargement et des performances plus rapides",
+          "Améliorations complètes des widgets et support officiel sur iPhone",
+          "Mise à jour et développement de la page 'À propos' pour des informations plus claires"
+        ],
+        "fixes": [
+          "Correction du problème 'Verset du jour' lors de l'utilisation de langues non arabes"
+        ]
+      },
+      {
+        "version": "2.1.1",
+        "date": "Mise à jour précédente",
+        "title": "Améliorations Audio, IA & Corrections UI",
+        "features": [
+          "Améliorations complètes du système de Bible audible pour supporter toutes les langues et tous les livres",
+          "Amélioration de la réactivité et de la fiabilité des fonctionnalités de recherche et d'analyse IA"
+        ],
+        "fixes": [
+          "Correction du problème où certaines fonctionnalités IA cessaient de fonctionner",
+          "Correction des boutons de retour en double sur les pages Analyse et Widgets"
+        ]
+      },
+      {
+        "version": "2.1.0",
+        "date": "Mise à jour précédente",
+        "title": "Ajout de Widgets & Améliorations Complètes",
+        "features": [
+          "Ajout de Widgets pour l'écran d'accueil (Verset, Question, Points, Plan)",
+          "Amélioration significative des performances de l'application pour la vitesse et la stabilité",
+          "Utilisation simplifiée de l'UI et navigation entre les sections de l'application",
+          "Système de synchronisation des données amélioré entre l'application et les widgets"
+        ],
+        "fixes": [
+          "Corrections techniques générales et améliorations de la consommation de batterie"
+        ]
+      },
+      {
+        "version": "2.0.4",
+        "date": "Mise à jour précédente",
         "title": "Correctifs critiques, support linguistique et liens développeur",
         "features": [
           "Ajout des liens App Store, Google Play et Développeur dans la page 'À propos'",
@@ -721,7 +777,7 @@
         "title": "Corrections techniques et améliorations",
         "features": [],
         "fixes": [
-          "Correction de l'erreur de direction du témoin inversé dans la page de partage de verset",
+          "Correction de l'erreur de direction du témo인 inversé dans la page de partage de verset",
           "Correction de la différence de couleurs des versets favoris entre les pages de recherche et de la Bible",
           "Correction de l'erreur d'enregistrement incorrect de l'image du verset du jour pour les utilisateurs d'iPhone",
           "Correction de l'erreur lors de la sortie de l'application en appuyant deux fois sur le bouton retour"

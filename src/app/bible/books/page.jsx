@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, Suspense, useEffect } from 'react';
 import styles from './books.module.css';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '../../context/LanguageContext';
 import {
      Search, Scroll, Sun, Compass, Flame, MapPin, Sword, Shield, Heart, Crown,
@@ -44,8 +44,17 @@ const normalizeArabic = (text) => {
 function BooksContent() {
     const { strings, language, bookNames } = useLanguage();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState('OT');
+    const searchParams = useSearchParams();
+
+    // الحصول على التبويب النشط من الروابط لضمان توجيه المستخدم للمكان الصحيح
+    const initialTab = searchParams.get('tab') || 'OT';
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab) setActiveTab(tab);
+    }, [searchParams]);
 
     const filteredBooks = useMemo(() => {
         const normalizedQuery = normalizeArabic(searchQuery);

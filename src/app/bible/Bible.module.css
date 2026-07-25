@@ -51,65 +51,60 @@
 
 .navigationDisplay {
   background: var(--color-card-bg) ;
-  padding: 10px 24px ;
+  padding: 8px 16px ;
   border-radius: 50px ;
   border: 2px solid var(--color-accent) ;
   display: flex ;
   align-items: center ;
-  justify-content: space-between ;
-  gap: 12px ;
-  cursor: pointer ;
+  justify-content: center ;
+  cursor: default ;
   flex: 1 ;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) ;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
-}
-
-.navigationDisplay:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15) ;
-  background: var(--color-accent);
 }
 
 .navContent {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
-}
-
-.navIcon {
-  color: var(--color-accent);
-  transition: all 0.3s ease;
-}
-
-.navigationDisplay:hover .navIcon {
-  color: #ffffff;
-  transform: rotate(180deg);
-}
-
-.navigationDisplay:hover .navText,
-.navigationDisplay:hover .navSeparator {
-  color: #ffffff !important;
 }
 
 .navText {
   color: var(--color-text-primary) ;
-  font-size: 1.1rem ;
+  font-size: 1rem ;
   font-weight: 700 ;
-  transition: color 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.navText:hover {
+  background: rgba(var(--color-accent-rgb, 99, 102, 241), 0.1);
+  color: var(--color-accent);
+}
+
+.navSubIcon {
+  opacity: 0.5;
+  transition: transform 0.2s;
+}
+
+.navText:hover .navSubIcon {
+  opacity: 1;
+  transform: translateY(1px);
 }
 
 .navSeparator {
-  color: var(--color-accent) ;
+  color: var(--color-border) ;
   font-size: 1.2rem ;
   font-weight: 300 ;
-  margin: 0 5px ;
-  transition: color 0.3s ease;
 }
 
 .verseContainer {

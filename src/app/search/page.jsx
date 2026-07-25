@@ -5,7 +5,6 @@ import { db } from '../../lib/firebase';
 import { doc, onSnapshot, updateDoc, increment, arrayUnion, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import styles from './search.module.css';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -18,20 +17,6 @@ import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
-
-const apiKeys = [
-  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
-  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
-  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
-];
-
-const getGenAI = (index) => {
-  const key = apiKeys[index % apiKeys.length];
-  return new GoogleGenerativeAI(key);
-};
-
-const geminiCache = {};
 
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
   let lastError;
@@ -63,33 +48,11 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
       } else if (!isRetryable) {
         throw err;
       }
+      lastError = err;
     }
   }
   throw lastError;
 }
-
-async function* streamWithTimeout(stream, timeoutMs = 15000) {
-  for await (const chunk of stream) {
-    yield await Promise.race([
-      Promise.resolve(chunk),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Stream chunk timed out')), timeoutMs)
-      )
-    ]);
-  }
-}
-
-const highlightColors = [
-  { color: '#FFC107', label: "أصفر" }, { color: '#FF5722', label: "برتقالي" },
-  { color: '#F44336', label: "أحمر" }, { color: '#E91E63', label: "وردي" },
-  { color: '#9C27B0', label: "بنفسجي" }, { color: '#673AB7', label: "بنفسجي غامق" },
-  { color: '#3F51B5', label: "نيلي" }, { color: '#2196F3', label: "أزرق" },
-  { color: '#03A9F4', label: "سماوي" }, { color: '#00BCD4', label: "تركواز" },
-  { color: '#009688', label: "جنزاري" }, { color: '#4CAF50', label: "أخضر" },
-  { color: '#8BC34A', label: "عشبي" }, { color: '#CDDC39', label: "ليموني" },
-  { color: '#FFECB3', label: "أصفر فاتح" }, { color: '#F8BBD0', label: "وردي فاتح" },
-  { color: '#E1BEE7', label: "بنفسجي فاتح" }, { color: '#CFD8DC', label: "رمادي فاتح" }
-];
 
 function normalizeArabicText(text) {
   if (!text || typeof text !== 'string') return '';
@@ -468,58 +431,6 @@ function SearchContent() {
     }
   };
 
-  const attemptStream = async (attemptIndex, term, searchId, currentInfo) => {
-    const genAI = getGenAI(attemptIndex);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-    const prompt = `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}".
-المطلوب رد JSON فقط بهذا التنسيق حصراً:
-{
-  "root": "الجذر اللغوي"،
-  "isStatic": true/false,
-  "explanation": "تبرير لغوي باختصار شديد"،
-  "derivatives": ["كلمة1", "كلمة2", "..."]
-}
-
-القواعد الصارمة:
-1. "isStatic": اجعلها true إذا كانت الكلمة اسماً جامداً (مثل: حجر، شمس) أو اسم علم (مثل: موسى، إبراهيم، مريم) لا يُبنى عليه أفعال.
-2. إذا كانت الكلمة جامدة أو اسم علم، يمنع منعاً باتاً اختراع أفعال وهمية. فقط ضع صور ورودها المباشرة بالسوابق واللواحق في قائمة المشتقات.
-3. للكلمات المشتقة: استخرج كافة الصور الصرفية الصحيحة (ماضي، مضارع، أمر، فاعل، مفعول، صيغ مبالغة) مع الضمائر.
-4. الرد JSON فقط ولا تخرج عن التنسيق.`;
-
-    const result = await model.generateContentStream(prompt);
-    let fullText = '';
-
-    for await (const chunk of streamWithTimeout(result.stream, 15000)) {
-      if (currentSearchIdRef.current !== searchId) return currentInfo;
-
-      const chunkText = chunk.text();
-      fullText += chunkText;
-
-      const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
-      if (rootMatch) currentInfo.root = rootMatch[1];
-
-      const staticMatch = fullText.match(/"isStatic"\s*:\s*(true|false)/);
-      if (staticMatch) currentInfo.isStatic = staticMatch[1] === 'true';
-
-      const explMatch = fullText.match(/"explanation"\s*:\s*"([^"]+)"/);
-      if (explMatch) currentInfo.explanation = explMatch[1];
-
-      const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
-      if (derivativesMatch) {
-        const wordsString = derivativesMatch[1];
-        const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => normalizeArabicText(m[1]));
-        if (words.length > 0) {
-          const allWords = _.uniq([normalizeArabicText(term), ...words]);
-          currentInfo.derivatives = allWords;
-          setSearchInfo({ ...currentInfo });
-          setSelectedDerivatives(allWords);
-        }
-      }
-    }
-
-    return currentInfo;
-  };
-
   const handleSemanticSearch = async (term) => {
     const cacheKey = `${CACHE_KEYS.SEMANTIC}semantic:${language}:${term}`;
     const legacyKeys = [
@@ -543,85 +454,31 @@ function SearchContent() {
 
     const searchId = ++currentSearchIdRef.current;
 
-    const semanticPrompts = {
-      ar: (term, allowedBooks, filterContext) => `أنت محرك بحث لاهوتي لتطبيق "أجيوس".
-استخرج 5-7 مراجع مرتبطة بـ: "${term}"
-السياق: ${filterContext}
-
-القواعد:
-1. الرد JSON فقط بهذا التنسيق:
-{
-  "results": [{"book": "اسم السفر", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
-}
-2. الالتزام بأسماء الأسفار حصراً: [${allowedBooks}]
-3. للصفات: ابحث عن آيات مباشرة وقصص تجسدها.
-4. دقة عالية في الأرقام.`,
-      en: (term, allowedBooks, filterContext) => `You are a theological search engine for the "Agios" Bible app.
-Extract 5-7 references related to: "${term}"
-Context: ${filterContext}
-
-Rules:
-1. Return JSON only in this exact format:
-{
-  "results": [{"book": "book name", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
-}
-2. Strictly use only these book names: [${allowedBooks}]
-3. For topics: find direct verses and stories that illustrate them.
-4. High accuracy in chapter and verse numbers.`,
-      fr: (term, allowedBooks, filterContext) => `Vous êtes un moteur de recherche théologique pour l'application Bible "Agios".
-Extrayez 5-7 références liées à: "${term}"
-Contexte: ${filterContext}
-
-Important: Répondez en français et gardez tout le texte d'explication/raison en français.
-
-Règles:
-1. Renvoyez JSON uniquement dans ce format exact:
-{
-  "results": [{"book": "nom du livre", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
-}
-2. Utilisez strictement uniquement ces noms de livres: [${allowedBooks}]
-3. Pour les sujets: trouvez des versets directs et les histoires qui les illustrent.
-4. Haute précision dans les numéros de chapitre et de verset.`,
-      de: (term, allowedBooks, filterContext) => `Sie sind eine theologische Suchmaschine für die "Agios" -Bibel-App.
-Extrahieren Sie 5-7 Verweise auf: "${term}"
-Contexte: ${filterContext}
-
-Wichtig: Antworten Sie auf Deutsch und halten Sie alle Erklärungs-/Begründungstexte auf Deutsch.
-
-Regeln:
-1. Geben Sie JSON nur in diesem genauen Format zurück:
-{
-  "results": [{"book": "Buchname", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]
-}
-2. Verwenden Sie streng nur diese Buchnamen: [${allowedBooks}]
-3. Für Themen: Finden Sie direkte Verse und Geschichten, die sie veranschaulichen.
-4. Hohe Genauigkeit bei Kapitel- und Versnummern.`
-    };
-
     const attemptSemantic = async (attemptIndex) => {
-      const genAI = getGenAI(attemptIndex);
       const allowedBooks = bookNamesData?.map(b => b.name).join(', ') || '';
       const filterContext = `
         ${selectedTestament ? `Testament: ${selectedTestament === 'OT' ? 'Old' : 'New'}` : ''}
         ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
-      const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-      const promptFn = semanticPrompts[language] || semanticPrompts.en;
-      const prompt = promptFn(term, allowedBooks, filterContext);
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'semantic',
+          lang: language,
+          attempt: attemptIndex,
+          payload: { term, allowedBooks, filterContext }
+        })
+      });
 
-      const responsePromise = model.generateContent(prompt);
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Semantic search timed out after 25s')), 25000)
-      );
-
-      const result = await Promise.race([responsePromise, timeoutPromise]);
+      if (!response.ok) throw new Error(await response.text());
+      const { text } = await response.json();
 
       if (currentSearchIdRef.current !== searchId) return null;
 
-      const responseText = result.response.text();
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Invalid JSON format from model");
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Invalid JSON format from server");
 
       const data = JSON.parse(jsonMatch[0]);
 
@@ -705,66 +562,29 @@ Regeln:
     let currentInfo = { root: '...', derivatives: [], isStatic: false, explanation: '', language: language };
     setShowDerivatives(true);
 
-    const languagePrompts = {
-      en: `You are a linguistic expert specializing in English morphology. Target word: "${term}".
-Respond in English and keep explanation text in English.
-Return JSON only in this exact format:
-{
-  "root": "root or base form",
-  "isStatic": true/false,
-  "explanation": "brief linguistic explanation",
-  "derivatives": ["word1", "word2", "..."]
-}
-
-Rules:
-1. "isStatic": true if the word is a noun (like "stone", "sun") that doesn't derive verbs.
-2. If static, only list actual forms: plurals, possessive variants.
-3. For derivable words: extract all valid morphological forms (past, present, gerund, agent, adjective, noun forms).
-4. Return JSON only, no additional text.`,
-      fr: `Vous êtes un expert linguistique spécialisé dans la morphologie française. Mot cible: "${term}".
-Répondez en français et gardez l'explication en français.
-Renvoyez JSON uniquement dans ce format exact:
-{
-  "root": "racine ou forme de base",
-  "isStatic": true/false,
-  "explanation": "brève explication linguistique",
-  "derivatives": ["mot1", "mot2", "..."]
-}
-
-Règles:
-1. "isStatic": true si le mot est un nom (comme "pierre", "soleil") qui ne dérive pas de verbes.
-2. Si statique, énumérez uniquement les formes réelles: pluriels, variantes.
-3. Pour les mots dérivables: extrayez toutes les formes morphologiques valides (passé, présent, gérondif, agent, adjectif).
-4. Renvoyez JSON uniquement, pas de texte supplémentaire.`,
-      de: `Sie sind ein Sprachexperte, der sich auf deutsche Morphologie spezialisiert hat. Zielwort: "${term}".
-Antworten Sie auf Deutsch und halten Sie die Erklärung auf Deutsch.
-Geben Sie JSON nur in diesem exakten Format zurück:
-{
-  "root": "Wurzel oder Basisform",
-  "isStatic": true/false,
-  "explanation": "kurze linguistische Erklärung",
-  "derivatives": ["wort1", "wort2", "..."]
-}
-
-Regeln:
-1. "isStatic": true, wenn das Wort ein Substantiv (wie "Stein", "Sonne") ist, das keine Verben ableitet.
-2. Wenn statisch, listen Sie nur tatsächliche Formen auf: Plurale, Variانتen.
-3. For ableitbare Wörter: Extrahieren Sie alle gültigen morphologischen Formen (Vergangenheit, Präsens, Partizip, Nominalformen).
-4. Nur JSON zurückgeben, kein zusätzlicher Text.`
-    };
-
     const attemptStreamInternal = async (attemptIndex) => {
-      const genAI = getGenAI(attemptIndex);
-      const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-      const prompt = languagePrompts[language] || languagePrompts.en;
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'derivatives_stream',
+          lang: language,
+          attempt: attemptIndex,
+          payload: { term }
+        })
+      });
 
-      const result = await model.generateContentStream(prompt);
+      if (!response.ok) throw new Error(await response.text());
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
       let fullText = '';
 
-      for await (const chunk of streamWithTimeout(result.stream, 15000)) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
         if (currentSearchIdRef.current !== searchId) return currentInfo;
 
-        const chunkText = chunk.text();
+        const chunkText = decoder.decode(value);
         fullText += chunkText;
 
         const rootMatch = fullText.match(/"root"\s*:\s*"([^"]+)"/);
@@ -779,9 +599,9 @@ Regeln:
         const derivativesMatch = fullText.match(/"derivatives"\s*:\s*\[([\s\S]*?)\]/);
         if (derivativesMatch) {
           const wordsString = derivativesMatch[1];
-          const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+          const words = [...wordsString.matchAll(/"([^"]+)"/g)].map(m => normalizeArabicText(m[1]));
           if (words.length > 0) {
-            const allWords = _.uniq([term, ...words]);
+            const allWords = _.uniq([normalizeArabicText(term), ...words]);
             currentInfo.derivatives = allWords;
             setSearchInfo({ ...currentInfo });
             setSelectedDerivatives(allWords);
@@ -795,7 +615,7 @@ Regeln:
     try {
       setAiStatus(strings.search.status_analyzing);
       const result = await withRetry(
-        language === 'ar' ? (idx) => attemptStream(idx, term, searchId, currentInfo) : attemptStreamInternal,
+        attemptStreamInternal,
         (attempt, max, reason) => setAiStatus(`Attempt (${formatNumber(attempt)}/${formatNumber(max)}): ${reason}.. Trying next key...`),
         5,
         2000
@@ -1370,12 +1190,16 @@ Regeln:
               </label>
               <label className={`${searchType === 'derivatives' ? styles.activeLabel : ''} ${timeLeft > 0 ? styles.disabledLabel : ''} `}>
                 <input type="radio" checked={searchType === 'derivatives'} onChange={() => timeLeft === 0 && setSearchType('derivatives')} disabled={timeLeft > 0 && searchType !== 'derivatives'} />
-                <Wand2 size={16} />
+                <div className={styles.sparkleIcon}>
+                    <Wand2 size={16} />
+                </div>
                 <span>{searchModeLabels.derivatives}</span>
               </label>
               <label className={`${searchType === 'semantic' ? styles.activeLabel : ''} ${timeLeft > 0 ? styles.disabledLabel : ''}`}>
                 <input type="radio" checked={searchType === 'semantic'} onChange={() => timeLeft === 0 && setSearchType('semantic')} disabled={timeLeft > 0 && searchType !== 'semantic'} />
-                <Sparkles size={16} />
+                <div className={styles.sparkleIcon}>
+                    <Sparkles size={16} />
+                </div>
                 <span>{searchModeLabels.semantic}</span>
               </label>
             </div>

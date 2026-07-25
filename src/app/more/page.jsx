@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck, LayoutGrid } from 'lucide-react';
+import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck, LayoutGrid, Clock } from 'lucide-react';
 import styles from './more.module.css';
 import { useLanguage } from '../context/LanguageContext';
 import { Capacitor } from '@capacitor/core';
@@ -11,6 +11,7 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
 
   const menuItems = [
     { name: strings.more.items.favourites, icon: <Heart size={20} />, href: '/favourites' },
+    { name: strings.more.items.readingHistory, icon: <Clock size={20} />, href: '/bible/history' },
     language === 'ar' ? { name: strings.more.items.competitions, icon: <Trophy size={20} />, href: '/competitions' } : null,
     { name: strings.more.items.studyPlans, icon: <BookOpen size={20} />, href: '/studyPlans' },
     // إضافة الأدوات المصغرة للأندرويد

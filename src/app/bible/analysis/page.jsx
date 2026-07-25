@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import styles from './analysis.module.css';
 import { Sparkles, Loader2, AlertCircle, Clock, Copy, Check, Share2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -11,23 +10,12 @@ import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
 
-const apiKeys = [
-  "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
-  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
-  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
-];
 const fontOptionsMap = {
   'Cairo': "'Cairo', sans-serif",
   'Amiri': "'Amiri', serif",
   'Almarai': "'Almarai', sans-serif",
   'Tajawal': "'Tajawal', sans-serif",
   'ReemKufi': "'Reem Kufi', sans-serif"
-};
-
-const getGenAI = (index) => {
-  const key = apiKeys[index % apiKeys.length];
-  return new GoogleGenerativeAI(key);
 };
 
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
@@ -50,9 +38,7 @@ async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
         errorMsg.includes('timeout') ||
         errorMsg.includes('deadline') ||
         errorMsg.includes('network') ||
-        errorMsg.includes('fetch') ||
-        errorMsg.includes('connection') ||
-        errorMsg.includes('stream');
+        errorMsg.includes('fetch');
 
       if (attempt < maxAttempts - 1 && isRetryable) {
         const delay = baseDelayMs * Math.pow(2, attempt);
@@ -85,7 +71,6 @@ function AnalysisContent() {
   const hasFetched = useRef(false);
   const sectionRefs = useRef({});
 
-  // توحيد مفتاح الكوتا مع صفحة البحث والخطط
   const QUOTA_KEY = 'aiSearchTimestamps';
 
   useEffect(() => {
@@ -149,13 +134,11 @@ function AnalysisContent() {
       console.error("KV Read Error:", e);
     }
 
-    // التحقق من الكوتا بنفس منطق صفحة البحث
     const requestTimes = JSON.parse(localStorage.getItem(QUOTA_KEY) || '[]');
     const now = Date.now();
     const oneMinute = 60000;
     const recentRequests = requestTimes.filter(time => now - time < oneMinute);
 
-    // السماح بطلبيتين في الدقيقة (مثل البحث) لضمان تجربة أفضل
     if (recentRequests.length >= 2) {
       const oldestInWindow = Math.min(...recentRequests);
       const remaining = Math.ceil((oneMinute - (now - oldestInWindow)) / 1000);
@@ -170,7 +153,6 @@ function AnalysisContent() {
     analysisRef.current = '';
     setCountdown(0);
 
-    // تسجيل الطلب في الكوتا الموحدة
     const updatedRequests = [...recentRequests, now];
     localStorage.setItem(QUOTA_KEY, JSON.stringify(updatedRequests));
 
@@ -178,107 +160,28 @@ function AnalysisContent() {
       ? `${book}\n${chapter}\n${verses}`
       : `${book}\n${chapter}`;
 
-    const prompts = {
-      ar: `أنت "مساعد آجيوس الذكي". مهمتك: تفسير النص المرفق لاهوتياً ولغوياً بدقة، مع التركيز حصراً على النص المطلوب وتجنب الاستطراد.
-
-    # نص البحث:
-    ${targetText}
-
-    # المنهجية (محتوى الأقسام):
-    ١. مقدمة: رحب بصفتك "مساعد آجيوس".
-    ٢. لغويات: أصل الكلمات (يوناني/عبري/آرامي) للنص فقط.
-    ٣. تاريخ: الخلفية البيئية للنص.
-    ٤. تفسير: لاهوتي/آبائي (التقليد القبطي الأرثوذكسي). عند تقديم التفسير استخدم واستشهد بأعمال أبونا تادرس يعقوب ملطي وأبونا أنطونيوس فكري حيثما أمكن، واذكر المصدر أو اقتباسًا قصيرًا.
-    ٥. تطبيق: عملي معاصر.
-    ٦. شبهات: تفكيك أي اعتراض على النص المذكور فقط.
-
-    # قواعد التنسيق (صارمة جداً):
-    - يجب أن يكون رقم القسم وعنوانه (مثلاً: ١. مقدمة) في سطر مستقل تماماً.
-    - يمنع منعاً باتاً كتابة أي نص بجانب العنوان في نفس السطر.
-    - ابدأ محتوى القسم دائماً في سطر جديد كلياً بعد العنوان.
-    - ممنوع استخدام Markdown (مثل #).
-    - التزم بالتركيز المطلق على النص دون تشتيت.
-    - في نهاية قسم التطبيق، أضف دائماً: "ودائماً ننصح بالرجوع لأب اعترافك".`,
-
-      en: `You are the "Agios Assistant". Your task: provide a theological and linguistic analysis of the provided text precisely, focusing only on the requested passage and avoiding digressions.
-
-    Search text:
-    ${targetText}
-
-    Sections (content):
-    1. Introduction: greet as "Agios Assistant".
-    2. Linguistics: origins of words (Hebrew/Greek/Aramaic) for the passage only.
-    3. Historical background: cultural and historical context.
-    4. Exegesis: theological/patristic interpretation (Coptic Orthodox tradition). When presenting the exegesis, use and cite the works or teachings of Fr. Tadros Ya'qub Malaty and Fr. Antonios Fikry (Arabic: تادرس يعقوب ملطي، أنطونيوس فكري) where relevant; include a short citation or quote and indicate the source.
-    5. Application: contemporary practical implications.
-    6. Objections: address any challenges related ONLY to the passage.
-
-    Formatting rules (strict):
-    - Each section number and title (e.g., "1. Introduction") must be on its own line.
-    - Do not place any text on the same line as the title.
-    - Start the section content on a new line after the title.
-    - Do not use Markdown.
-    - Keep focus strictly on the passage.
-    - At the end of the Application section add: "Always consult your confessor."`,
-
-      fr: `Vous êtes le "Assistant Agios". Votre tâche : fournir une analyse théologique et linguistique du texte fourni, en vous concentrant uniquement sur le passage demandé et en évitant les digressions.
-
-    Texte de recherche:
-    ${targetText}
-
-    Sections (contenu) :
-    1. Introduction : saluez en tant que "Assistant Agios".
-    2. Linguistique : origines des mots (hébreu/grec/araméen) pour le passage uniquement.
-    3. Contexte historique : contexte culturel et historique.
-    4. Exégèse : interprétation théologique/patristique (tradition copte orthodoxe). Lors de l'exégèse, utilisez et citez les travaux ou enseignements de l'abbé Tadros Ya'qub Malaty et de l'abbé Antonios Fikry (arabe: تادرس يعقوب ملطي، أنطونيوس فكري) lorsque c'est pertinent ; incluez une courte citation ou référence et indiquez la source.
-    5. Application : implications pratiques contemporaines.
-    6. Objections : répondre aux objections liées UNIQUEMENT au passage.
-
-    Règles de formatage (strictes) :
-    - Chaque numéro et titre de section (p. ex. : "1. Introduction") doit être sur sa propre ligne.
-    - Ne placez aucun texte sur la même line as the title.
-    - Commencez le contenu de la section sur une nouvelle ligne après le titre.
-    - N'utilisez pas Markdown.
-    - Concentrez-vous strictement sur le passage.
-    - À la fin de la section Application, ajoutez : "Consultez toujours والدك الاعتراف."`,
-
-      de: `Sie sind der "Agios-Assistent". Ihre Aufgabe: Liefern Sie eine theologische und linguistische Analyse des bereitgestellten Textes, die sich genau auf die angeforderte Passage konzentriert und Abschweifungen vermeidet.
-
-    Suchtext:
-    ${targetText}
-
-    Abschnitte (Inhalt):
-    1. Einleitung: Begrüßen Sie als "Agios-Assistent".
-    2. Linguistik: Herkunft der Wörter (Hebräisch/Griechisch/Aramäisch) nur für die Passage.
-    3. Historischer Hintergrund: kultureller und historischer Kontext.
-    4. Exegese: theologische/patristische Interpretation (koptisch-orthodoxe Tradition). Verwenden und zitieren Sie bei der Exegese die Werke oder Lehren von P. Tadros Ya'qub Malaty und P. Antonios Fikry (Arabisch: تادرس يعقوب ملطي, أنطونيوس فكري), wo relevant; fügen Sie ein kurzes Zitat oder eine Quellenangabe hinzu.
-    5. Application: zeitgenössische praktische Implikationen.
-    6. Einwände: Behandeln Sie nur Einwände, die sich AUF DIE PASSAGE beziehen.
-
-    Formatierungsregeln (streng):
-    - Jede Abschnittsnummer und Überschrift (z. B. "1. Einleitung") muss in einer eigenen Zeile stehen.
-    - Setzen Sie keinen Text in dieselbe Zeile wie die Überschrift.
-    - Beginnen Sie den Abschnittsinhalt in einer neuen Zeile nach der Überschrift.
-    - Verwenden Sie kein Markdown.
-    - Konzentrieren Sie sich strikt auf die Passage.
-    - Am Ende des Anwendungsabschnitts fügen Sie hinzu: "Konsultieren Sie stets Ihren Beichtvater."`
-    };
-
-    const prompt = prompts[language] || prompts.en;
-
     const attemptGeneration = async (attemptIndex) => {
-      const genAI = getGenAI(attemptIndex);
-      const model = genAI.getGenerativeModel({
-        model: "gemini-3.1-flash-lite",
-        generationConfig: {
-          maxOutputTokens: 2048,
-        }
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'analysis',
+          lang: language,
+          attempt: attemptIndex,
+          payload: { targetText }
+        })
       });
 
-      const result = await model.generateContentStream(prompt);
+      if (!response.ok) throw new Error(await response.text());
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
       let text = '';
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunkText = decoder.decode(value);
         text += chunkText;
         setAnalysis(text);
         analysisRef.current = text;

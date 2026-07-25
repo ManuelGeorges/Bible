@@ -637,15 +637,20 @@ export default function BibleContent() {
       <div className={styles.controls}>
         <div className={styles.navigationDisplay}>
           <div className={styles.navContent}>
-            <span className={styles.navText} onClick={() => router.push('/bible/books')}>
+            <span className={styles.navText} onClick={() => {
+              const currentBook = bookNamesData[selectedBookIndex];
+              const testament = currentBook?.testament || (currentBook?.type === 'new' ? 'NT' : 'OT');
+              router.push(`/bible/books?tab=${testament}`);
+            }}>
               {getBookName(selectedBookIndex)}
+              <ChevronDown size={14} className={styles.navSubIcon} />
             </span>
             <span className={styles.navSeparator}>|</span>
             <span className={styles.navText} onClick={() => router.push(`/bible/chapters?book=${encodeURIComponent(getBookName(selectedBookIndex))}`)}>
               {`${strings.bible.chapter_label} ${formatNumber(selectedChapterIndex + 1)}`}
+              <ChevronDown size={14} className={styles.navSubIcon} />
             </span>
           </div>
-          <ChevronDown size={20} className={styles.navIcon} />
         </div>
       </div>
 

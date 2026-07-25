@@ -23,7 +23,7 @@ const HistoryPage = () => {
     }, []);
 
     const clearHistory = async () => {
-        if (confirm(dir === 'rtl' ? 'هل أنت متأكد من مسح سجل القراءات؟' : 'Are you sure you want to clear reading history?')) {
+        if (confirm(strings.bible.clear_history_confirm || 'Are you sure?')) {
             await StorageService.save(KEYS.READING_HISTORY, []);
             setHistory([]);
         }
@@ -37,7 +37,7 @@ const HistoryPage = () => {
                 <button onClick={() => router.back()} className={styles.backBtn}>
                     {dir === 'rtl' ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
                 </button>
-                <h1 className={styles.title}>سجل القراءات</h1>
+                <h1 className={styles.title}>{strings.bible.reading_history}</h1>
                 {history.length > 0 && (
                     <button onClick={clearHistory} className={styles.clearBtn}>
                         <Trash2 size={20} />
@@ -72,9 +72,9 @@ const HistoryPage = () => {
                 ) : (
                     <div className={styles.emptyState}>
                         <Clock size={48} className={styles.emptyIcon} />
-                        <p>لا يوجد سجل قراءات حتى الآن</p>
+                        <p>{strings.bible.no_history}</p>
                         <button onClick={() => router.push('/bible')} className={styles.startBtn}>
-                            ابدأ القراءة الآن
+                            {strings.bible.start_reading}
                         </button>
                     </div>
                 )}

@@ -268,6 +268,7 @@
     "share_title": "Verse from the Holy Bible",
     "share_dialog": "Share verse via...",
     "share_not_supported": "Sharing not supported, text copied instead",
+    "reading_history": "Reading History",
     "reasons": {
       "share_verse": "Share verse",
       "copy_verse": "Copy verse",
@@ -411,7 +412,8 @@
       "profile": "Profile",
       "settings": "Settings",
       "points": "Achievements",
-      "widgets": "Widgets"
+      "widgets": "Widgets",
+      "readingHistory": "Reading History"
     },
     "footer": {
       "about": "About Us",
@@ -436,7 +438,7 @@
     "invite_friend": "Invite a Friend to App",
     "delete_account": "Delete Account",
     "delete_confirm": "Are you sure you want to delete your account permanently?",
-    "version": "Agios App - Version 1.2.0",
+    "version": "Agios App - Version 2.2.0",
     "share_title": "Agios App",
     "share_text": "Download the Agios application and read the Bible in a new way!",
     "share_dialog": "Share App with friends",
@@ -672,8 +674,62 @@
     },
     "history": [
       {
-        "version": "2.0.4",
+        "version": "2.2.0",
         "date": "Latest Update",
+        "title": "Security Update & AI Enhancements",
+        "features": [
+          "Radical security update to protect app and user data",
+          "Improved AI engine and more accurate semantic search support",
+          "Multi-language support and parallel translations in Bible page",
+          "Improved study plans performance to ensure high load stability"
+        ],
+        "fixes": [
+          "Fixed daily tasks completion issue in Local First mode"
+        ]
+      },
+      {
+        "version": "2.1.2",
+        "date": "Previous Update",
+        "title": "App Size Reduction & iOS Widget Support",
+        "features": [
+          "Significant app size reduction for faster loading and performance",
+          "Comprehensive widget improvements and official support on iPhone",
+          "Updated and developed 'About' page for clearer information"
+        ],
+        "fixes": [
+          "Fixed 'Verse of the Day' issue when using non-Arabic languages"
+        ]
+      },
+      {
+        "version": "2.1.1",
+        "date": "Previous Update",
+        "title": "Audio, AI Improvements & UI Fixes",
+        "features": [
+          "Comprehensive improvements in audible Bible system to support all languages and books",
+          "Improved responsiveness and reliability of AI search and analysis features"
+        ],
+        "fixes": [
+          "Fixed issue where some AI features stopped working",
+          "Fixed duplicate back buttons on Analysis and Widgets pages"
+        ]
+      },
+      {
+        "version": "2.1.0",
+        "date": "Previous Update",
+        "title": "Added Widgets & Comprehensive Improvements",
+        "features": [
+          "Added Widgets for home screen (Verse, Question, Points, Plan)",
+          "Significantly improved app performance for speed and stability",
+          "Simplified UI usage and navigation between app sections",
+          "Improved data sync system between app and widgets"
+        ],
+        "fixes": [
+          "General technical fixes and battery consumption improvements"
+        ]
+      },
+      {
+        "version": "2.0.4",
+        "date": "Previous Update",
         "title": "Critical Fixes, Language Support & Dev Links",
         "features": [
           "Added App Store, Google Play and Developer links in 'About' page",

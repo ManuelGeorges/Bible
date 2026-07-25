@@ -285,6 +285,7 @@
     "share_title": "Vers aus der Heiligen Schrift",
     "share_dialog": "Vers teilen über...",
     "share_not_supported": "Teilen nicht unterstützt, Text wurde kopiert",
+    "reading_history": "Leseverlauf",
     "reasons": {
       "share_verse": "Vers teilen",
       "copy_verse": "Vers kopieren",
@@ -315,7 +316,7 @@
     },
     "notes": {
       "title": "Füge deine persönliche Reflexion hinzu",
-      "placeholder": "Schreibe hier, was dein Herz in diesem Vers berührt hat..."
+      "placeholder": "Schreibe hier, what dein Herz in diesem Vers berührt hat..."
     },
     "chapter_complete_btn": "Kapitel abgeschlossen",
     "books_title": "Buch auswählen",
@@ -429,7 +430,8 @@
       "profile": "Profil",
       "settings": "Einstellungen",
       "points": "Erfolge",
-      "widgets": "Widgets"
+      "widgets": "Widgets",
+      "readingHistory": "Verlauf"
     },
     "footer": {
       "about": "Über uns",
@@ -706,7 +708,7 @@
       {
         "version": "2.1.2",
         "date": "Letztes Update",
-        "title": "App-Größenreduzierung & iOS-Widget-Unterstützung",
+        "title": "App-Größenreduزierung & iOS-Widget-Unterstützung",
         "features": [
           "App-Größe für schnellere Ladevorgänge und bessere Leistung deutlich reduziert",
           "Umfassende Widget-Verbesserungen und offizielle Unterstützung für iPhone-Geräte",
@@ -765,7 +767,7 @@
           "Zugang zur Facebook-Seite vereinfacht",
           "Sucherlebnis vereinfacht, damit es für mehr Nutzer leichter ist",
           "Design der Bibel- und Suchseiten verbessert",
-          "Gesamte Versinteraktion vereinfacht"
+          "Gesamته Versinteraktion vereinfacht"
         ],
         "fixes": [
           "Problem behoben, bei dem Versbilder auf iPhone-Geräten nicht korrekt geteilt wurden",
@@ -852,7 +854,7 @@
         "fixes": [
           "Kartenprobleme bei hoher Last behoben",
           "Facebook-Link auf der Kontaktseite repariert",
-          "Fehler behoben, bei dem Tasten der Vers-Steuerung im hellen Modus nicht erschienen",
+          "Fehler behoben, bei dem Tasten der Vers-Steuerung im hellen Modوس nicht erschienen",
           "Falsche Auswahl der Navigationsleisten-Schaltflächen korrigiert"
         ]
       },
