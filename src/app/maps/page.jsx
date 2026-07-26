@@ -8,8 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import styles from './maps.module.css';
 import { getAuth } from "firebase/auth";
 import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
-import { db, getFirebaseRemoteConfig } from '../../lib/firebase';
-import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
+import { db } from '../../lib/firebase';
 import { toast } from 'react-hot-toast';
 import { useBadge } from '../context/BadgeContext';
 import {
@@ -43,13 +42,7 @@ const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
 const API_BASE_URL = 'https://www.agiosbible.com';
-const R2_PMTILES_URL = 'https://<YOUR_PUBLIC_R2_URL>/test-map.pmtiles';
-
-const MAP_STYLES = {
-  streets: 'r2-biblical-world',
-  satellite: `${API_BASE_URL}/api/maps?task=style&type=satellite`,
-  topo: `${API_BASE_URL}/api/maps?task=style&type=topo`
-};
+const R2_PMTILES_URL = "https://pub-7c5b3f5b97ce4621ab9bcc22444fda70.r2.dev/test-map.pmtiles";
 
 const INITIAL_VIEW_STATE = {
   longitude: 35.0,
@@ -70,8 +63,7 @@ export default function MapsPage() {
   const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
   const [selectedEra, setSelectedEra] = useState(strings.maps.eras_placeholder);
-  const [currentStyle, setCurrentStyle] = useState(MAP_STYLES.streets);
-  const [streetsStyle, setStreetsStyle] = useState(null);
+  const [mapStyle, setMapStyle] = useState(null);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -84,10 +76,6 @@ export default function MapsPage() {
   const [visitedPoints, setVisitedPoints] = useState(new Set());
   const [visitedEras, setVisitedEras] = useState(new Set());
   const [infoReads, setInfoReads] = useState(0);
-  const [mapLoaded, setMapLoaded] = useState(false);
-
-  const [isMapTilerAvailable, setIsMapTilerAvailable] = useState(true);
-  const [showMaptilerFeatures, setShowMaptilerFeatures] = useState(true);
 
   const mapRef = useRef(null);
   const eraRef = useRef(null);
@@ -187,13 +175,17 @@ export default function MapsPage() {
     const protocol = new Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
+    // جلب التنسيق الأساسي وتعديله ليعتمد على رابط Cloudflare الخاص بك
     fetch('https://tiles.openfreemap.org/styles/liberty')
       .then((res) => res.json())
       .then((style) => {
-        style.sources.openmaptiles.url = `pmtiles://${R2_PMTILES_URL}`;
-        setStreetsStyle(style);
+        if (style.sources && style.sources.openmaptiles) {
+          style.sources.openmaptiles.type = 'vector';
+          style.sources.openmaptiles.url = `pmtiles://${R2_PMTILES_URL}`;
+        }
+        setMapStyle(style);
       })
-      .catch((err) => console.error('Failed to load base style:', err));
+      .catch((err) => console.error('Failed to load map style:', err));
 
     return () => maplibregl.removeProtocol('pmtiles');
   }, []);
@@ -201,16 +193,6 @@ export default function MapsPage() {
   useEffect(() => {
     setMounted(true);
     const initPage = async () => {
-      try {
-        const remoteConfig = await getFirebaseRemoteConfig();
-        if (remoteConfig) {
-          await fetchAndActivate(remoteConfig);
-          setShowMaptilerFeatures(getBoolean(remoteConfig, 'show_maptiler_features'));
-        }
-      } catch (e) {
-        console.warn("Remote Config Error (Skipped):", e);
-      }
-
       try {
         const response = await fetch(`${API_BASE_URL}/api/maps?task=places&lang=${language}`);
         if (!response.ok) throw new Error("Failed to load places");
@@ -371,70 +353,6 @@ export default function MapsPage() {
     }
   };
 
-  const setupTerrain = (map) => {
-    if (!isMapTilerAvailable || !showMaptilerFeatures) return;
-
-    if (!map.getSource('maptiler-terrain')) {
-      map.addSource('maptiler-terrain', {
-        type: 'raster-dem',
-        url: `${API_BASE_URL}/api/maps?task=style&type=terrain`,
-        tileSize: 512
-      });
-    }
-
-    if (currentStyle === MAP_STYLES.satellite) {
-      map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.8 });
-      if (map.setFog) {
-        map.setFog({
-          'range': [0.5, 10],
-          'color': '#111625',
-          'horizon-blend': 0.2
-        });
-      }
-    } else if (currentStyle === MAP_STYLES.topo) {
-      map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.5 });
-      if (map.setFog) {
-        map.setFog({
-          'range': [0.5, 10],
-          'color': '#ffffff',
-          'horizon-blend': 0.1
-        });
-      }
-    } else {
-      map.setTerrain(null);
-      if (map.setFog) map.setFog(null);
-    }
-  };
-
-  const onMapLoad = (e) => {
-    const map = e.target;
-    setMapLoaded(true);
-    setupTerrain(map);
-  };
-
-  const onStyleData = (e) => {
-    const map = e.target;
-    if (mapLoaded) {
-      setupTerrain(map);
-    }
-  };
-
-  const handleMapError = (e) => {
-    if (e.error && (e.error.status === 403 || e.error.message?.includes('api.maptiler.com') || e.error.message?.includes('/api/maps'))) {
-        setIsMapTilerAvailable(false);
-        setCurrentStyle(MAP_STYLES.streets);
-    }
-  };
-
-  useEffect(() => {
-    if (mapLoaded && mapRef.current) {
-      const map = mapRef.current.getMap();
-      setupTerrain(map);
-    }
-  }, [currentStyle, mapLoaded]);
-
-  const resolvedMapStyle = currentStyle === MAP_STYLES.streets ? streetsStyle : currentStyle;
-
   if (!mounted) return null;
 
   return (
@@ -534,36 +452,17 @@ export default function MapsPage() {
         )}
       </div>
 
-      <div className={styles.styleSelector}>
-        <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.streets ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.streets)}>
-          <MapIcon size={16} /> {strings.maps.style_map}
-        </button>
-        {isMapTilerAvailable && showMaptilerFeatures && (
-          <>
-            <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.satellite ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.satellite)}>
-              <Globe size={16} /> {strings.maps.style_satellite}
-            </button>
-            <button className={`${styles.styleButton} ${currentStyle === MAP_STYLES.topo ? styles.activeStyle : ''}`} onClick={() => setCurrentStyle(MAP_STYLES.topo)}>
-              <Mountain size={16} /> {strings.maps.style_topo}
-            </button>
-          </>
-        )}
-      </div>
-
-      {!isLoading && resolvedMapStyle && (
+      {!isLoading && mapStyle && (
         <div className={styles.mapContainer}>
           <Map
             ref={mapRef}
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
             mapLib={maplibregl}
-            mapStyle={resolvedMapStyle}
-            onLoad={onMapLoad}
-            onStyleData={onStyleData}
+            mapStyle={mapStyle}
             onClick={handleMapClick}
-            onError={handleMapError}
             interactiveLayerIds={['unclustered-point', 'line-layer']}
-            maxZoom={currentStyle === MAP_STYLES.satellite ? 18 : 25}
+            maxZoom={20}
             minZoom={4}
             maxBounds={MAX_BOUNDS}
             style={{ width: '100%', height: '100%' }}
