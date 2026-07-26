@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack && next-sitemap",
-    "build:mobile": "cross-env NEXT_PUBLIC_EXPORT=true next build --webpack && next-sitemap",
+
+    "build:mobile": "cross-env NEXT_PUBLIC_EXPORT=true node scripts/export-mobile.js",
     "start": "next start",
     "lint": "next lint"
   },

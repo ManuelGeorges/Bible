@@ -163,7 +163,7 @@ function AnalysisContent() {
       : `${book}\n${chapter}`;
 
     const attemptGeneration = async (attemptIndex) => {
-      const response = await fetch(`${API_BASE_URL}/api/gemini`, {
+      const response = await fetch(`${API_BASE_URL}/api/gemini/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
