@@ -17,13 +17,11 @@ import {
   Route,
   BookOpen,
   X,
-  ChevronLeft,
   ChevronDown,
-  Globe,
-  Mountain
+  Globe
 } from 'lucide-react';
 import { getCairoIsoString } from '../../lib/dateUtils';
-import { StorageService, KEYS } from '../../lib/storage';
+import { StorageService } from '../../lib/storage';
 import { useLanguage } from '../context/LanguageContext';
 
 if (typeof window !== 'undefined') {
@@ -67,7 +65,6 @@ export default function MapsPage() {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedJourney, setSelectedJourney] = useState(null);
   const [isEraOpen, setIsEraOpen] = useState(false);
-  const [isPlaceOpen, setIsPlaceOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState(null);
   const [visitedPoints, setVisitedPoints] = useState(new Set());
@@ -76,7 +73,6 @@ export default function MapsPage() {
 
   const mapRef = useRef(null);
   const eraRef = useRef(null);
-  const placeRef = useRef(null);
   const searchRef = useRef(null);
 
   const eras = Object.values(strings.maps.era_names);
@@ -126,7 +122,6 @@ export default function MapsPage() {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (eraRef.current && !eraRef.current.contains(event.target)) setIsEraOpen(false);
-      if (placeRef.current && !placeRef.current.contains(event.target)) setIsPlaceOpen(false);
       if (searchRef.current && !searchRef.current.contains(event.target)) setSearchQuery("");
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -254,6 +249,8 @@ export default function MapsPage() {
 
   if (!mounted) return null;
 
+  const showMap = !isLoading && mapStyle;
+
   return (
     <div dir={dir} className={styles.container}>
       <header className={styles.headerSection}>
@@ -291,22 +288,20 @@ export default function MapsPage() {
       </div>
 
       <div className={styles.controls}>
-        <div className={styles.customSelectWrapper} ref={eraRef}>
+        <div className={`${styles.customSelectWrapper} ${isEraOpen ? styles.activeWrapper : ''}`} ref={eraRef}>
           <div className={styles.selectTrigger} onClick={() => setIsEraOpen(!isEraOpen)}>
             <Globe size={18} /> <span>{selectedEra}</span>
-            <ChevronDown size={18} />
+            <ChevronDown size={18} className={isEraOpen ? styles.rotateIcon : ''} />
           </div>
-          {isEraOpen && (
-            <ul className={styles.dropdownMenu}>
-              <li className={styles.dropdownItem} onClick={() => handleEraSelection(strings.maps.eras_placeholder)}>{strings.maps.all_eras}</li>
-              {eras.map(era => <li key={era} className={styles.dropdownItem} onClick={() => handleEraSelection(era)}>{era}</li>)}
-            </ul>
-          )}
+          <ul className={`${styles.dropdownMenu} ${isEraOpen ? styles.open : ''}`}>
+            <li className={styles.dropdownItem} onClick={() => handleEraSelection(strings.maps.eras_placeholder)}>{strings.maps.all_eras}</li>
+            {eras.map(era => <li key={era} className={styles.dropdownItem} onClick={() => handleEraSelection(era)}>{era}</li>)}
+          </ul>
         </div>
       </div>
 
-      {!isLoading && mapStyle && (
-        <div className={styles.mapContainer}>
+      <div className={styles.mapContainer}>
+        {showMap ? (
           <Map
             ref={mapRef}
             {...viewState}
@@ -348,18 +343,22 @@ export default function MapsPage() {
               </Popup>
             )}
           </Map>
+        ) : (
+          <div className={styles.loadingWrapper}>
+            <div className={styles.spinner} />
+          </div>
+        )}
 
-          {selectedJourney && (
-            <div className={styles.journeyCard}>
-              <div className={styles.journeyHeader}>
-                <Route size={24} /> <h3>{selectedJourney.name}</h3>
-                <button onClick={() => setSelectedJourney(null)}><X size={20} /></button>
-              </div>
-              <p>{selectedJourney.info}</p>
+        {selectedJourney && (
+          <div className={styles.journeyCard}>
+            <div className={styles.journeyHeader}>
+              <Route size={24} /> <h3>{selectedJourney.name}</h3>
+              <button onClick={() => setSelectedJourney(null)}><X size={20} /></button>
             </div>
-          )}
-        </div>
-      )}
+            <p>{selectedJourney.info}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
