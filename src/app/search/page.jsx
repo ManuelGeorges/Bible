@@ -463,7 +463,7 @@ function SearchContent() {
         ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
-      const response = await fetch(`${API_BASE_URL}/api/gemini`, {
+      const response = await fetch(`${API_BASE_URL}/api/gemini/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

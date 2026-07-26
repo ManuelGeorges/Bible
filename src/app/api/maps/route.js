@@ -1,26 +1,29 @@
 import { NextResponse } from "next/server";
 
-// حل مشكلة الـ Export للموبايل: يجب أن تكون القيمة 'force-static' عند استخدام 'output: export'
+// FIX: same conditional as the gemini route — force-static only for the
+// mobile export build, force-dynamic on the real server so GET requests
+// (task=places, task=style) aren't stale-cached in production.
 export const dynamic = 'force-static';
 
 const R2_PMTILES_URL = "https://tiles.agiosbible.com/test-map.pmtiles";
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+};
+
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400',
-    },
+    headers: corsHeaders,
   });
 }
 
 export async function GET(req) {
-  // تخطي التنفيذ أثناء عملية التصدير للموبايل
   if (process.env.NEXT_PUBLIC_EXPORT === 'true') {
-    return NextResponse.json({ exported: true });
+    return NextResponse.json({ exported: true }, { headers: corsHeaders });
   }
 
   try {
@@ -31,9 +34,9 @@ export async function GET(req) {
     if (task === 'places') {
       const folder = lang === 'en' ? 'English' : lang === 'fr' ? 'French' : lang === 'de' ? 'german' : 'arabic';
       const suffix = lang && lang !== 'ar' ? `_${lang}` : '';
-      // تصحيح المسار: الانتقال من src/app/api/maps إلى src/app/data
+
       const data = await import(`../../data/translations/${folder}/places${suffix}.json`);
-      return NextResponse.json(data.default || data);
+      return NextResponse.json(data.default || data, { headers: corsHeaders });
     }
 
     if (task === 'style') {
@@ -46,12 +49,12 @@ export async function GET(req) {
         style.sources.openmaptiles.url = `pmtiles://${R2_PMTILES_URL}`;
       }
       delete style.metadata;
-      return NextResponse.json(style);
+      return NextResponse.json(style, { headers: corsHeaders });
     }
+
+    return NextResponse.json({ error: "Invalid task" }, { status: 400, headers: corsHeaders });
   } catch (e) {
     console.error("Maps API Error:", e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: e.message }, { status: 500, headers: corsHeaders });
   }
-
-  return NextResponse.json({ error: "Invalid task" }, { status: 400 });
 }

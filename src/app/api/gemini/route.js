@@ -2,8 +2,15 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { kv } from "../../../lib/kv";
 
-// الحل للموبايل (Static Export): يجب استخدام force-static وقيمة نصية ثابتة
+// FIX: was unconditionally 'force-static', which is meant for GET routes and
+// doesn't make sense forced onto a POST handler that reads a per-request body.
+// This only needs to be 'force-static' during the mobile *export* build (so
+// `next build` with output:'export' doesn't fail on a dynamic route it will
+// never actually call). On your real hosted server (agiosbible.com), this
+// evaluates to 'force-dynamic' so every request is handled live, uncached.
+// NEXT_PUBLIC_ vars are inlined at build time, so this is safe as a static export.
 export const dynamic = 'force-static';
+
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -13,8 +20,18 @@ const apiKeys = [
 ];
 
 const getGenAI = (index) => {
+  if (apiKeys.length === 0) {
+    throw new Error("No Gemini API keys configured on the server");
+  }
   const key = apiKeys[index % apiKeys.length];
   return new GoogleGenerativeAI(key);
+};
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version',
+  'Access-Control-Max-Age': '86400',
 };
 
 const PROMPTS = {
@@ -47,19 +64,15 @@ const PROMPTS = {
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version',
-      'Access-Control-Max-Age': '86400',
-    },
+    headers: corsHeaders,
   });
 }
 
 export async function POST(req) {
-  // تخطي التنفيذ أثناء عملية التصدير للموبايل
+  // Skip real execution only during the mobile static-export build itself.
+  // The deployed server (agiosbible.com) never sets this, so it always runs live.
   if (process.env.NEXT_PUBLIC_EXPORT === 'true') {
-    return NextResponse.json({ static: true });
+    return NextResponse.json({ static: true }, { headers: corsHeaders });
   }
 
   try {
@@ -68,8 +81,12 @@ export async function POST(req) {
     if (cacheKey) {
       const cached = await kv.get(cacheKey);
       if (cached) {
-        if (typeof cached !== 'string') return NextResponse.json(cached);
-        try { return NextResponse.json(JSON.parse(cached)); } catch (e) { return NextResponse.json({ text: cached }); }
+        let responseData;
+        if (typeof cached !== 'string') responseData = cached;
+        else {
+          try { responseData = JSON.parse(cached); } catch (e) { responseData = { text: cached }; }
+        }
+        return NextResponse.json(responseData, { headers: corsHeaders });
       }
     }
 
@@ -103,19 +120,24 @@ export async function POST(req) {
           } catch (e) { controller.error(e); }
         },
       });
-      return new Response(stream, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      return new Response(stream, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/plain; charset=utf-8'
+        }
+      });
     }
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     if (cacheKey) await kv.set(cacheKey, responseText);
-    return NextResponse.json({ text: responseText });
+    return NextResponse.json({ text: responseText }, { headers: corsHeaders });
   } catch (error) {
     console.error("Critical API Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ status: "active" });
+  return NextResponse.json({ status: "active" }, { headers: corsHeaders });
 }

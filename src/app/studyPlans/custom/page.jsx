@@ -122,7 +122,7 @@ export default function CustomPlanForm() {
 
             const attemptGeneration = async (attemptIndex) => {
                 // 2. طلب السيرفر بدلاً من طلب Gemini مباشرة
-                const response = await fetch(`${API_BASE_URL}/api/gemini`, {
+                const response = await fetch(`${API_BASE_URL}/api/gemini/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

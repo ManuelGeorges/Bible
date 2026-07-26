@@ -183,8 +183,8 @@ export default function MapsPage() {
         toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
       } catch (e) { console.error(e); }
     } else {
-        await StorageService.addPoints(amount);
-        toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
+      await StorageService.addPoints(amount);
+      toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
     }
   };
 
@@ -224,7 +224,7 @@ export default function MapsPage() {
     const protocol = new Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
-    fetch(`${API_MAPS_URL}?task=style`)
+    fetch(`${API_MAPS_URL}/?task=style`)
       .then((res) => res.json())
       .then((style) => setMapStyle(style))
       .catch((err) => console.error('Failed to load map style:', err));
@@ -236,7 +236,7 @@ export default function MapsPage() {
     setMounted(true);
     const initPage = async () => {
       try {
-        const response = await fetch(`${API_MAPS_URL}?task=places&lang=${language}`);
+        const response = await fetch(`${API_MAPS_URL}/?task=places&lang=${language}`);
         const data = await response.json();
         setAllPlaces(data);
       } catch (error) { console.error("Error loading places:", error); }

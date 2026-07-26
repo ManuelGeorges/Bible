@@ -3,11 +3,11 @@ const JavaScriptObfuscator = require('webpack-obfuscator');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.NEXT_PUBLIC_EXPORT === 'true' ? 'export' : undefined,
-  
+
   images: {
     unoptimized: true,
   },
-  
+
   reactStrictMode: false,
   trailingSlash: true,
   compress: true,
@@ -38,16 +38,21 @@ const nextConfig = {
           controlFlowFlattening: false,
           deadCodeInjection: false,
           debugProtection: false,
-          disableConsoleOutput: true,
+          // FIX: was `true` — this stripped every console.log/error from the
+          // mobile production bundle, so real runtime errors (CORS failures,
+          // fetch errors, JSON parse errors) were invisible in device debugging.
+          disableConsoleOutput: false,
           selfDefending: false,
           unicodeEscapeSequence: false
         }, [
           'static/chunks/react-refresh.js',
           'static/chunks/main-app.js',
           'static/chunks/webpack.js',
-          'static/chunks/map-vendor*.js',
-          '**/node_modules/maplibre-gl/**',
-          '**/node_modules/@google/generative-ai/**'
+          // FIX: removed 'static/chunks/map-vendor*.js' and the maplibre-gl /
+          // @google/generative-ai node_modules entries below. maplibre-gl spins
+          // up Web Workers by serializing its own function source into blobs at
+          // runtime — obfuscating it rewrites that source and breaks worker
+          // creation silently, which is almost certainly why the map didn't render.
         ])
       );
     }
