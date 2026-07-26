@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+// حل مشكلة الـ Export للموبايل: يجب أن تكون القيمة 'force-static' عند استخدام 'output: export'
+export const dynamic = 'force-static';
 
 const R2_PMTILES_URL = "https://tiles.agiosbible.com/test-map.pmtiles";
 
@@ -17,8 +18,8 @@ export async function OPTIONS() {
 }
 
 export async function GET(req) {
-  // Allow execution on server during build if necessary, but typically we want this live
-  if (process.env.NEXT_PUBLIC_EXPORT === 'true' && typeof window === 'undefined' && !process.env.VERCEL) {
+  // تخطي التنفيذ أثناء عملية التصدير للموبايل
+  if (process.env.NEXT_PUBLIC_EXPORT === 'true') {
     return NextResponse.json({ exported: true });
   }
 
@@ -30,8 +31,8 @@ export async function GET(req) {
     if (task === 'places') {
       const folder = lang === 'en' ? 'English' : lang === 'fr' ? 'French' : lang === 'de' ? 'german' : 'arabic';
       const suffix = lang && lang !== 'ar' ? `_${lang}` : '';
-      // Dynamic import needs to be careful with paths in Next.js App Router
-      const data = await import(`../../../data/translations/${folder}/places${suffix}.json`);
+      // تصحيح المسار: الانتقال من src/app/api/maps إلى src/app/data
+      const data = await import(`../../data/translations/${folder}/places${suffix}.json`);
       return NextResponse.json(data.default || data);
     }
 

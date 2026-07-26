@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { kv } from "../../../lib/kv";
 
-export const dynamic = 'force-dynamic';
+// الحل للموبايل (Static Export): يجب استخدام force-static وقيمة نصية ثابتة
+export const dynamic = 'force-static';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -56,9 +57,9 @@ export async function OPTIONS() {
 }
 
 export async function POST(req) {
-  // السماح بالعمل على السيرفر حتى لو كانت نسخة الموبايل قيد البناء (أهم شيء هو البيئة التي يعمل فيها الكود)
-  if (process.env.NEXT_PUBLIC_EXPORT === 'true' && typeof window === 'undefined' && !process.env.VERCEL) {
-     return NextResponse.json({ static: true });
+  // تخطي التنفيذ أثناء عملية التصدير للموبايل
+  if (process.env.NEXT_PUBLIC_EXPORT === 'true') {
+    return NextResponse.json({ static: true });
   }
 
   try {
