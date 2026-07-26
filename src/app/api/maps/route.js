@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 // FIX: same conditional as the gemini route — force-static only for the
 // mobile export build, force-dynamic on the real server so GET requests
 // (task=places, task=style) aren't stale-cached in production.
-export const dynamic = 'force-static';
 
 const R2_PMTILES_URL = "https://tiles.agiosbible.com/test-map.pmtiles";
 
