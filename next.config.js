@@ -2,42 +2,49 @@ const JavaScriptObfuscator = require('webpack-obfuscator');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // تفعيل التصدير الثابت فقط عند البناء للموبايل
   output: process.env.NEXT_PUBLIC_EXPORT === 'true' ? 'export' : undefined,
   images: {
     unoptimized: true,
   },
-  reactStrictMode: false, // تعطيله يزيد الأداء في الإنتاج ويمنع الرندر المزدوج
+  reactStrictMode: false,
   trailingSlash: true,
-
-  // تفعيل التصغير القوي باستخدام SWC
   swcMinify: true,
-
-  // تفعيل ضغط الملفات
   compress: true,
-
-  // منع إنشاء ملفات الـ Source Maps
   productionBrowserSourceMaps: false,
 
   webpack: (config, { dev, isServer }) => {
-    // التشفير يعمل فقط في النسخة النهائية (Production)
+    if (!isServer) {
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...(config.optimization.splitChunks?.cacheGroups || {}),
+          mapVendor: {
+            test: /[\\/]node_modules[\\/](maplibre-gl|pmtiles|mapbox-gl)[\\/]/,
+            name: 'map-vendor',
+            chunks: 'all',
+            priority: 40,
+          },
+        },
+      };
+    }
+
     if (!dev && !isServer) {
       config.plugins.push(
         new JavaScriptObfuscator({
           rotateStringArray: true,
           stringArray: true,
-          stringArrayThreshold: 0.5, // تقليل القيمة لتقليل استهلاك الذاكرة (RAM)
-          // تعطيل الخصائص التالية لأنها تستهلك المعالج (CPU) جداً في الأجهزة الضعيفة
+          stringArrayThreshold: 0.5,
           controlFlowFlattening: false,
           deadCodeInjection: false,
-          debugProtection: true,
+          debugProtection: false,
           disableConsoleOutput: true,
-          selfDefending: true,
+          selfDefending: false,
           unicodeEscapeSequence: false
         }, [
           'static/chunks/react-refresh.js',
           'static/chunks/main-app.js',
-          'static/chunks/webpack.js'
+          'static/chunks/webpack.js',
+          'static/chunks/map-vendor*.js'
         ])
       );
     }
