@@ -306,6 +306,8 @@ export default function MapsPage() {
     if (!selectedPoint) return null;
     return getEraColors(selectedPoint.era);
   }, [selectedPoint, eras]);
+
+  const nearbyPlaces = useMemo(() => {
     if (!selectedPoint) return [];
     return allPlaces
       .filter(p => p.type === 'point' && p.era === selectedPoint.era && p.name !== selectedPoint.name)
