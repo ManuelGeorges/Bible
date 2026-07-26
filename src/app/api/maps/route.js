@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-static';
 
 const R2_PMTILES_URL = "https://tiles.agiosbible.com/test-map.pmtiles";
 const R2_FALLBACK_URL = "https://pub-7c5b3f5b97ce4621ab9bcc22444fda70.r2.dev/test-map.pmtiles";
