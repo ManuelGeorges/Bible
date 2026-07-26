@@ -29,7 +29,7 @@
     "back": "Zurück",
     "retry": "Wiederholen",
     "error_occurred": "Entschuldigung, ein Fehler ist aufgetreten",
-    "internet_required": "Diese Funktion erfordert eine Internetverbindung",
+    "internet_required": "Diese Funktion erfordert eine Internet verbindung",
     "confirm_delete": "Möchten Sie diese Datei von Ihrem Gerät löschen?"
   },
   "audio": {
@@ -183,6 +183,10 @@
       "font_type": "Schriftart (Arabisch)",
       "font_weight": "Schriftstärke ({weight})",
       "font_size": "Schriftgröße beim Lesen ({size}px)",
+      "keep_app_awake": "App-Bildschirm wach halten",
+      "keep_app_awake_desc": "Verhindert das Ausschalten des Bildschirms in allen App-Bereichen",
+      "keep_bible_awake": "Bibel-Bildschirm wach halten",
+      "keep_bible_awake_desc": "Verhindert das Ausschalten des Bildschirms nur beim Lesen",
       "preview": {
         "line_1": "1 So werden die Verse aussehen",
         "line_2": "2 Wenn die Option 'Jeder Vers in einer neuen Zeile' aktiviert ist",
@@ -203,7 +207,7 @@
       },
       "study_plans": {
         "title": "Leseplan-Erinnerung",
-        "desc": "Erinnerung an verbleibende tägliche Lesungen"
+        "desc": "Erinnerung an verbleibende täliche Lesungen"
       },
       "streak": {
         "title": "Streak-Schutz-Alarm",
@@ -442,7 +446,7 @@
   },
   "profile": {
     "guest_date": "Gast",
-    "guest_user": "Gastkonto",
+    "guest_user": "Guestkonto",
     "friend_agios": "Agios Freund",
     "member_since": "Mitglied seit: {date}",
     "fav_verses": "Favorisierte Verse",
@@ -692,12 +696,26 @@
     },
     "history": [
       {
-        "version": "2.2.0",
+        "version": "2.3.0",
         "date": "Aktuelles Update",
+        "title": "Umfassende Verbesserungen & wichtige Korrekturen",
+        "features": [
+          "Radikale Fehlerbehebung und Verbesserung der Karten für ein besseres Erkundungserlebnis",
+          "Erhebliche Absicherung der App und Daten zur Gewährleistung höchster Privatsphäre",
+          "Verbesserte KI-Leistung für Reaktionsfähigkeit auch bei schwacher Internetverbindung",
+          "Möglichkeit zur getrennten Auswahl von Buch und Kapitel für einfachere Navigation hinzugefügt",
+          "Vollständiges Protokoll aller Benutzerlesungen zur Verfolgung des geistlichen Wachstums hinzugefügt",
+          "Problem mit dem automatischen Ausschalten des Bildschirms während der App-Nutzung behoben"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.2.0",
+        "date": "Vorheriges Update",
         "title": "Sicherheitsupdate & KI-Verbesserungen",
         "features": [
           "Radikales Sicherheitsupdate zum Schutz der App und der Benutzerdaten",
-          "Verbesserte KI-Engine und Unterstützung für präzisere semantische Suche",
+          "Verbesserter KI-Engine und Unterstützung für präzisere semantische Suche",
           "Mehrsprachige Unterstützung und Parallelübersetzungen auf der Bibelseite",
           "Verbesserte Leistung der Lesepläne zur Gewährleistung des Betriebs unter hohem Druck"
         ],
@@ -707,7 +725,7 @@
       },
       {
         "version": "2.1.2",
-        "date": "Letztes Update",
+        "date": "Vorheriges Update",
         "title": "App-Größenreduزierung & iOS-Widget-Unterstützung",
         "features": [
           "App-Größe für schnellere Ladevorgänge und bessere Leistung deutlich reduziert",
@@ -739,7 +757,7 @@
           "Startbildschirm-Widgets hinzugefügt (Vers des Tages, Frage des Tages, Meine Punkte, Leseplan)",
           "Die App-Leistung wurde für ein schnelleres Erlebnis deutlich verbessert",
           "UI-Navigation und Interaktion vereinfacht",
-          "Verbesserte Datensynchronisation zwischen der App und den Widgets"
+          "Verbesserte Datensynchronisation zwischen der App and den Widgets"
         ],
         "fixes": [
           "Allgemeine technische Korrekturen und besserer Batterieverbrauch"
@@ -780,7 +798,7 @@
         "title": "Verbesserungen bei Suche, Auswahl & Tagesfrage",
         "features": [
           "Verbesserte Suche nach Geschwindigkeit in der App",
-          "Bessere Auswahl und Kopie von Versen",
+          "Bessere Auswahl und Kopie von Verse",
           "Wesentliche Verbesserungen der Tagesfrage",
           "Vereinfachte Darstellung der Versanalyse"
         ],

@@ -7,7 +7,7 @@ import {
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
   Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold, Languages,
-  Columns
+  Columns, Zap, Book
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
@@ -37,7 +37,21 @@ const languages = [
 
 const Settings = () => {
   const { theme, setTheme } = useTheme()
-  const { language: currentLang, changeLanguage, strings, dir, useTashkeel, toggleTashkeel, parallelLanguage, changeParallelLanguage } = useLanguage();
+  const {
+    language: currentLang,
+    changeLanguage,
+    strings,
+    dir,
+    useTashkeel,
+    toggleTashkeel,
+    parallelLanguage,
+    changeParallelLanguage,
+    keepAppAwake,
+    toggleKeepAppAwake,
+    keepBibleAwake,
+    toggleKeepBibleAwake
+  } = useLanguage();
+
   const [mounted, setMounted] = useState(false)
   const [isNative, setIsNative] = useState(false)
   const [fontSize, setFontSize] = useState(18)
@@ -398,6 +412,52 @@ const Settings = () => {
               <span className={styles.sliderRound}></span>
             </label>
           </div>
+        )}
+
+        {isNative && (
+            <>
+                <div className={styles.settingItem}>
+                  <div className={styles.settingInfo}>
+                    <div className={styles.textContainer}>
+                      <span className={styles.settingLabel}>
+                        <Zap size={20} className={styles.iconPrimary} />
+                        {strings.settings.bible.keep_app_awake}
+                      </span>
+                      <p className={styles.subText}>{strings.settings.bible.keep_app_awake_desc}</p>
+                    </div>
+                  </div>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={keepAppAwake}
+                      onChange={toggleKeepAppAwake}
+                    />
+                    <span className={styles.sliderRound}></span>
+                  </label>
+                </div>
+
+                {!keepAppAwake && (
+                    <div className={styles.settingItem} style={{ borderTop: '1px solid var(--color-border)', paddingTop: '15px' }}>
+                      <div className={styles.settingInfo}>
+                        <div className={styles.textContainer}>
+                          <span className={styles.settingLabel}>
+                            <Book size={20} className={styles.iconPrimary} />
+                            {strings.settings.bible.keep_bible_awake}
+                          </span>
+                          <p className={styles.subText}>{strings.settings.bible.keep_bible_awake_desc}</p>
+                        </div>
+                      </div>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={keepBibleAwake}
+                          onChange={toggleKeepBibleAwake}
+                        />
+                        <span className={styles.sliderRound}></span>
+                      </label>
+                    </div>
+                )}
+            </>
         )}
 
         <div className={styles.fontControlGroup}>

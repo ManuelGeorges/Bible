@@ -175,6 +175,10 @@
       "font_type": "Type de police (Arabe)",
       "font_weight": "Graisse de la police ({weight})",
       "font_size": "Taille de police de lecture ({size}px)",
+      "keep_app_awake": "Garder l'application éveillée",
+      "keep_app_awake_desc": "Empêche l'écran de s'éteindre dans toutes les sections de l'application",
+      "keep_bible_awake": "Garder la Bible éveillée",
+      "keep_bible_awake_desc": "Empêche l'écran de s'éteindre uniquement pendant la lecture",
       "preview": {
         "line_1": "1 Voici à quoi ressembleront les versets",
         "line_2": "2 Lorsque l'option 'Chaque verset sur une nouvelle ligne' est activée",
@@ -277,6 +281,7 @@
     "share_title": "Verset de la Sainte Bible",
     "share_dialog": "Partager le verset via...",
     "share_not_supported": "Partage non supporté, texte copié à la place",
+    "Reading_history": "Historique de lecture",
     "reasons": {
       "share_verse": "Partager un verset",
       "copy_verse": "Copier un verset",
@@ -612,7 +617,7 @@
     "tagline": "Nous sommes ravis d'écouter vos suggestions",
     "reasons_title": "Pourquoi nous contacter ?",
     "reasons": [
-      "Suggestions pour de nouvelles fonctionnalités.",
+      "Suggestions for de nouvelles fonctionnalités.",
       "Signaler un bug ou une erreur.",
       "Support technique ou volontariat.",
       "Questions générales."
@@ -682,8 +687,22 @@
     },
     "history": [
       {
-        "version": "2.2.0",
+        "version": "2.3.0",
         "date": "Mise à jour actuelle",
+        "title": "Améliorations complètes et corrections importantes",
+        "features": [
+          "Correction radicale et amélioration des cartes pour une meilleure expérience d'exploration",
+          "Sécurisation importante de l'application et des données pour garantir la confidentialité",
+          "Amélioration des performances de l'IA pour assurer une réactivité même avec une faible connexion",
+          "Ajout de la possibilité de sélectionner le livre et le chapitre séparément",
+          "Ajout d'un historique complet de toutes les lectures de l'utilisateur",
+          "Correction du problème de mise en veille automatique de l'écran pendant l'utilisation"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.2.0",
+        "date": "Mise à jour précédente",
         "title": "Mise à jour de sécurité & Améliorations de l'IA",
         "features": [
           "Mise à jour de sécurité radicale pour protéger l'application et les données utilisateur",

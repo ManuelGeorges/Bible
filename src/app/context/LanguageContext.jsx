@@ -1,19 +1,27 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { Preferences } from '@capacitor/preferences';
 import { useTheme } from 'next-themes';
 import { Capacitor } from '@capacitor/core';
+import { KeepAwake } from '@capacitor-community/keep-awake';
 import allBookNames from '../data/bookNames.json';
 
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
+    const pathname = usePathname();
     const [language, setLanguage] = useState('ar');
     const [parallelLanguage, setParallelLanguage] = useState(null);
     const [strings, setStrings] = useState(null);
     const { theme } = useTheme();
     const [useTashkeel, setUseTashkeel] = useState(false);
+
+    // إعدادات إبقاء الشاشة مضيئة
+    const [keepAppAwake, setKeepAppAwake] = useState(true);
+    const [keepBibleAwake, setKeepBibleAwake] = useState(true);
+
     const [isFirstTime, setIsFirstTime] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
 
@@ -50,10 +58,41 @@ export function LanguageProvider({ children }) {
             const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
             setUseTashkeel(savedTashkeel);
 
+            // تحميل إعدادات إبقاء الشاشة (تفعيل تلقائي إذا لم يكن هناك إعداد مسبق)
+            const appAwakeRaw = localStorage.getItem('keepAppAwake');
+            const bibleAwakeRaw = localStorage.getItem('keepBibleAwake');
+
+            const appAwake = appAwakeRaw === null ? true : appAwakeRaw === 'true';
+            const bibleAwake = bibleAwakeRaw === null ? true : bibleAwakeRaw === 'true';
+
+            setKeepAppAwake(appAwake);
+            setKeepBibleAwake(bibleAwake);
+
             setIsHydrated(true);
         };
         init();
     }, [loadTranslations]);
+
+    // منطق التحكم في إبقاء الشاشة مضيئة بناءً على المسار والإعدادات
+    useEffect(() => {
+        if (!isHydrated || !Capacitor.isNativePlatform()) return;
+
+        const updateAwakeStatus = async () => {
+            try {
+                if (keepAppAwake) {
+                    await KeepAwake.keepAwake();
+                } else if (keepBibleAwake && pathname?.includes('/bible')) {
+                    await KeepAwake.keepAwake();
+                } else {
+                    await KeepAwake.allowSleep();
+                }
+            } catch (e) {
+                console.error("Awake Status Error:", e);
+            }
+        };
+
+        updateAwakeStatus();
+    }, [keepAppAwake, keepBibleAwake, pathname, isHydrated]);
 
     const bookNames = useMemo(() => {
         if (!allBookNames) return [];
@@ -133,6 +172,22 @@ export function LanguageProvider({ children }) {
         });
     }, []);
 
+    const toggleKeepAppAwake = useCallback(async () => {
+        setKeepAppAwake(prev => {
+            const newState = !prev;
+            localStorage.setItem('keepAppAwake', newState.toString());
+            return newState;
+        });
+    }, []);
+
+    const toggleKeepBibleAwake = useCallback(() => {
+        setKeepBibleAwake(prev => {
+            const newState = !prev;
+            localStorage.setItem('keepBibleAwake', newState.toString());
+            return newState;
+        });
+    }, []);
+
     const formatNumber = useCallback((num) => {
         if (num === null || num === undefined) return "";
         if (language !== 'ar') return num.toString();
@@ -144,6 +199,8 @@ export function LanguageProvider({ children }) {
         language,
         parallelLanguage,
         useTashkeel,
+        keepAppAwake,
+        keepBibleAwake,
         strings,
         bookNames,
         allBookNames,
@@ -151,6 +208,8 @@ export function LanguageProvider({ children }) {
         changeLanguage,
         changeParallelLanguage,
         toggleTashkeel,
+        toggleKeepAppAwake,
+        toggleKeepBibleAwake,
         isFirstTime,
         setIsFirstTime,
         isHydrated,

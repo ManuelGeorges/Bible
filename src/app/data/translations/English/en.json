@@ -183,6 +183,10 @@
       "font_type": "Font Type (Arabic)",
       "font_weight": "Font Weight ({weight})",
       "font_size": "Reading Font Size ({size}px)",
+      "keep_app_awake": "Keep App Screen Awake",
+      "keep_app_awake_desc": "Prevent screen from turning off in all app sections",
+      "keep_bible_awake": "Keep Bible Screen Awake",
+      "keep_bible_awake_desc": "Prevent screen from turning off during reading only",
       "preview": {
         "line_1": "1 This is how verses will look",
         "line_2": "2 When 'Each verse on a new line' option is enabled",
@@ -285,6 +289,7 @@
     "share_title": "Verse from the Holy Bible",
     "share_dialog": "Share verse via...",
     "share_not_supported": "Sharing not supported, text copied instead",
+    "Reading_history": "Reading History",
     "reasons": {
       "share_verse": "Share a verse",
       "copy_verse": "Copy a verse",
@@ -690,8 +695,22 @@
     },
     "history": [
       {
-        "version": "2.2.0",
+        "version": "2.3.0",
         "date": "Current Update",
+        "title": "Comprehensive Improvements & Important Fixes",
+        "features": [
+          "Radically fixed and improved maps for a better exploration experience",
+          "Significantly secured the application and data to ensure highest levels of privacy",
+          "Improved AI performance to ensure responsiveness even with poor internet connection",
+          "Added the ability to select book and chapter separately for easier navigation",
+          "Added a full record of all user readings to track spiritual growth",
+          "Fixed the issue of the screen turning off automatically while using the app"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.2.0",
+        "date": "Latest Update",
         "title": "Security Update & AI Enhancements",
         "features": [
           "Radical security update to protect the app and user data",
@@ -705,7 +724,7 @@
       },
       {
         "version": "2.1.2",
-        "date": "Latest Update",
+        "date": "Previous Update",
         "title": "App Size Reduction & iOS Widgets Support",
         "features": [
           "Significantly reduced app size for faster loading and performance",
