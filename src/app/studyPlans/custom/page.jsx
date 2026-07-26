@@ -12,6 +12,9 @@ import { StorageService, KEYS } from '../../../lib/storage';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
 
+// الدومين الأساسي لطلبات الـ API ليعمل على الموبايل (Android/iOS)
+const API_BASE_URL = 'https://www.agiosbible.com';
+
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
   let lastError;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -110,6 +113,7 @@ export default function CustomPlanForm() {
         const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
 
         try {
+            // 1. التحقق من Redis أولاً (Client-side cache check)
             const cached = await kv.get(cacheKey);
             if (cached) return cached;
 
@@ -117,14 +121,20 @@ export default function CustomPlanForm() {
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 
             const attemptGeneration = async (attemptIndex) => {
-                const response = await fetch('/api/gemini', {
+                // 2. طلب السيرفر بدلاً من طلب Gemini مباشرة
+                const response = await fetch(`${API_BASE_URL}/api/gemini`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         task: 'studyPlan',
                         lang: language,
                         attempt: attemptIndex,
-                        payload: { mood: data.mood, durationDays, intensityLabel, allowedBooks }
+                        payload: {
+                            mood: data.mood,
+                            durationDays,
+                            intensityLabel,
+                            allowedBooks
+                        }
                     })
                 });
 
@@ -135,6 +145,8 @@ export default function CustomPlanForm() {
                 if (!jsonMatch) throw new Error("Format Error");
 
                 const planResult = JSON.parse(jsonMatch[0]);
+
+                // 3. تخزين النتيجة في Redis بعد النجاح
                 await kv.set(cacheKey, planResult);
                 return planResult;
             };
@@ -195,7 +207,7 @@ export default function CustomPlanForm() {
                         customPlans: { [planId]: newPlanObject }
                     }, { merge: true });
                 } else {
-                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
+                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
                     localCustom[planId] = newPlanObject;
                     await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
                 }

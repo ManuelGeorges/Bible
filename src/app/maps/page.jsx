@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import { Map, Source, Layer, NavigationControl, Popup, FullscreenControl } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
+import { Protocol } from 'pmtiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import styles from './maps.module.css';
 import { getAuth } from "firebase/auth";
@@ -41,10 +42,13 @@ if (typeof window !== 'undefined') {
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
+const API_BASE_URL = 'https://www.agiosbible.com';
+const R2_PMTILES_URL = 'https://<YOUR_PUBLIC_R2_URL>/test-map.pmtiles';
+
 const MAP_STYLES = {
-  streets: 'https://tiles.openfreemap.org/styles/liberty',
-  satellite: 'https://api.maptiler.com/maps/hybrid/style.json?key=QvkUns3IvYwEEKb9dIJ7',
-  topo: 'https://api.maptiler.com/maps/topo-v2/style.json?key=QvkUns3IvYwEEKb9dIJ7'
+  streets: 'r2-biblical-world',
+  satellite: `${API_BASE_URL}/api/maps?task=style&type=satellite`,
+  topo: `${API_BASE_URL}/api/maps?task=style&type=topo`
 };
 
 const INITIAL_VIEW_STATE = {
@@ -67,6 +71,7 @@ export default function MapsPage() {
   const [allPlaces, setAllPlaces] = useState([]);
   const [selectedEra, setSelectedEra] = useState(strings.maps.eras_placeholder);
   const [currentStyle, setCurrentStyle] = useState(MAP_STYLES.streets);
+  const [streetsStyle, setStreetsStyle] = useState(null);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -178,15 +183,20 @@ export default function MapsPage() {
     return () => unsubscribe();
   }, []);
 
-  const getLanguageFolder = (lang) => {
-    switch (lang) {
-        case 'ar': return 'arabic';
-        case 'en': return 'English';
-        case 'fr': return 'French';
-        case 'de': return 'german';
-        default: return 'arabic';
-    }
-  };
+  useEffect(() => {
+    const protocol = new Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
+
+    fetch('https://tiles.openfreemap.org/styles/liberty')
+      .then((res) => res.json())
+      .then((style) => {
+        style.sources.openmaptiles.url = `pmtiles://${R2_PMTILES_URL}`;
+        setStreetsStyle(style);
+      })
+      .catch((err) => console.error('Failed to load base style:', err));
+
+    return () => maplibregl.removeProtocol('pmtiles');
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -202,14 +212,12 @@ export default function MapsPage() {
       }
 
       try {
-        const folder = getLanguageFolder(language);
-        const suffix = language && language !== 'ar' ? `_${language}` : '';
-
-        // Use dynamic import instead of fetch since files are in src/app/data
-        const data = await import(`../data/translations/${folder}/places${suffix}.json`);
-        setAllPlaces(data.default || data);
+        const response = await fetch(`${API_BASE_URL}/api/maps?task=places&lang=${language}`);
+        if (!response.ok) throw new Error("Failed to load places");
+        const data = await response.json();
+        setAllPlaces(data);
       } catch (error) {
-        console.error("Error loading places from local source:", error);
+        console.error("Error loading places from API:", error);
       } finally {
         setIsLoading(false);
       }
@@ -273,7 +281,7 @@ export default function MapsPage() {
       if (user) {
         await updateDoc(doc(firestore, 'users', user.uid), { mapInfoReads: increment(1) });
       } else {
-        await StorageService.save('map_info_reads', newReads);
+        await StorageService.save(KEYS.MAP_INFO_READS, newReads);
       }
       if (newReads === 50) await unlockBadge('info_addict');
     }
@@ -369,7 +377,7 @@ export default function MapsPage() {
     if (!map.getSource('maptiler-terrain')) {
       map.addSource('maptiler-terrain', {
         type: 'raster-dem',
-        url: `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=QvkUns3IvYwEEKb9dIJ7`,
+        url: `${API_BASE_URL}/api/maps?task=style&type=terrain`,
         tileSize: 512
       });
     }
@@ -412,7 +420,7 @@ export default function MapsPage() {
   };
 
   const handleMapError = (e) => {
-    if (e.error && (e.error.status === 403 || e.error.message?.includes('api.maptiler.com'))) {
+    if (e.error && (e.error.status === 403 || e.error.message?.includes('api.maptiler.com') || e.error.message?.includes('/api/maps'))) {
         setIsMapTilerAvailable(false);
         setCurrentStyle(MAP_STYLES.streets);
     }
@@ -424,6 +432,8 @@ export default function MapsPage() {
       setupTerrain(map);
     }
   }, [currentStyle, mapLoaded]);
+
+  const resolvedMapStyle = currentStyle === MAP_STYLES.streets ? streetsStyle : currentStyle;
 
   if (!mounted) return null;
 
@@ -540,14 +550,14 @@ export default function MapsPage() {
         )}
       </div>
 
-      {!isLoading && (
+      {!isLoading && resolvedMapStyle && (
         <div className={styles.mapContainer}>
           <Map
             ref={mapRef}
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
             mapLib={maplibregl}
-            mapStyle={currentStyle}
+            mapStyle={resolvedMapStyle}
             onLoad={onMapLoad}
             onStyleData={onStyleData}
             onClick={handleMapClick}

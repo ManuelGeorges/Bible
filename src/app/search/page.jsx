@@ -18,6 +18,8 @@ import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
 
+const API_BASE_URL = 'https://www.agiosbible.com';
+
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
   let lastError;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -461,7 +463,7 @@ function SearchContent() {
         ${selectedBookIndex !== '' ? `Book: ${bookNamesData[parseInt(selectedBookIndex)].name}` : ''}
       `;
 
-      const response = await fetch('/api/gemini', {
+      const response = await fetch(`${API_BASE_URL}/api/gemini`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -563,7 +565,7 @@ function SearchContent() {
     setShowDerivatives(true);
 
     const attemptStreamInternal = async (attemptIndex) => {
-      const response = await fetch('/api/gemini', {
+      const response = await fetch(`${API_BASE_URL}/api/gemini`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
