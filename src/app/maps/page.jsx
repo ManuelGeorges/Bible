@@ -39,7 +39,6 @@ if (typeof window !== 'undefined') {
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
-// نستخدم مسار الـ API الذي تم تعديله لتقديم التنسيق من Cloudflare
 const API_MAPS_URL = '/api/maps';
 
 const INITIAL_VIEW_STATE = {
@@ -82,7 +81,6 @@ export default function MapsPage() {
 
   const eras = Object.values(strings.maps.era_names);
 
-  // منطق الأوسمة
   const unlockBadge = async (badgeId) => {
     if (user) {
       try {
@@ -104,7 +102,6 @@ export default function MapsPage() {
     }
   };
 
-  // تحديث النقاط
   const updateUserPoints = async (amount, reason) => {
     if (user) {
       try {
@@ -154,7 +151,6 @@ export default function MapsPage() {
     return () => unsubscribe();
   }, []);
 
-  // إعداد بروتوكول PMTiles وجلب التنسيق (Style)
   useEffect(() => {
     const protocol = new Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -264,7 +260,6 @@ export default function MapsPage() {
         <h1 className={styles.heading}>{strings.maps.title}</h1>
       </header>
 
-      {/* البحث والتحكم */}
       <div className={styles.searchContainer} ref={searchRef}>
         <div className={styles.searchBar}>
           <Search size={20} className={styles.searchIcon} />
@@ -328,12 +323,10 @@ export default function MapsPage() {
             <NavigationControl position="top-right" showCompass={false} />
             <FullscreenControl position="top-right" />
 
-            {/* طبقة المسارات */}
             <Source id="paths-data" type="geojson" data={geojsonPaths}>
               <Layer id="line-layer" type="line" paint={{ 'line-color': '#00c8ff', 'line-width': 4 }} />
             </Source>
 
-            {/* طبقة النقاط والتجمعات */}
             <Source id="points-data" type="geojson" data={geojsonPoints} cluster={true} clusterMaxZoom={14} clusterRadius={50}>
               <Layer id="clusters" type="circle" filter={['has', 'point_count']} paint={{ 'circle-color': '#191d34', 'circle-radius': 20 }} />
               <Layer id="cluster-count" type="symbol" filter={['has', 'point_count']} layout={{ 'text-field': '{point_count}', 'text-size': 12 }} paint={{ 'text-color': '#fff' }} />
@@ -341,7 +334,6 @@ export default function MapsPage() {
               <Layer id="label-layer" type="symbol" filter={['!', ['has', 'point_count']]} layout={{ 'text-field': ['get', 'name'], 'text-size': 14, 'text-anchor': 'top', 'text-offset': [0, 1.5], 'text-font': ['Noto Sans Arabic Bold'] }} paint={{ 'text-color': '#fff', 'text-halo-color': '#000', 'text-halo-width': 2 }} />
             </Source>
 
-            {/* النافذة المنبثقة */}
             {selectedPoint && (
               <Popup longitude={selectedPoint.lng} latitude={selectedPoint.lat} anchor="bottom" onClose={() => setSelectedPoint(null)}>
                 <div className={styles.popupWrapper}>
@@ -357,7 +349,6 @@ export default function MapsPage() {
             )}
           </Map>
 
-          {/* بطاقة الرحلات */}
           {selectedJourney && (
             <div className={styles.journeyCard}>
               <div className={styles.journeyHeader}>
