@@ -43,7 +43,24 @@ const PROMPTS = {
   }
 };
 
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 export async function POST(req) {
+  // السماح بالعمل على السيرفر حتى لو كانت نسخة الموبايل قيد البناء (أهم شيء هو البيئة التي يعمل فيها الكود)
+  if (process.env.NEXT_PUBLIC_EXPORT === 'true' && typeof window === 'undefined' && !process.env.VERCEL) {
+     return NextResponse.json({ static: true });
+  }
+
   try {
     const { task, lang, payload, attempt = 0, cacheKey } = await req.json();
 
@@ -96,4 +113,8 @@ export async function POST(req) {
     console.error("Critical API Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ status: "active" });
 }

@@ -40,7 +40,8 @@ if (typeof window !== 'undefined') {
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
-const API_MAPS_URL = '/api/maps';
+const API_BASE_URL = 'https://www.agiosbible.com';
+const API_MAPS_URL = `${API_BASE_URL}/api/maps`;
 
 const INITIAL_VIEW_STATE = {
   longitude: 35.0,

@@ -2,14 +2,32 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
+    signingConfigs {
+        release {
+            // Use a path relative to the project root to avoid drive letter issues
+            def keystoreFile = rootProject.file("E://AlMalak system//Agios Bible//website/my-release-key.jks")
+            storeFile file('E:\\AlMalak system\\Agios Bible\\website\\my-release-key.jks')
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+            } else {
+                // Fallback or warning if file is missing in the expected location
+                println("Warning: Keystore file not found at ${keystoreFile.absolutePath}")
+            }
+
+            // These properties should ideally be in local.properties or environment variables
+            // storePassword 'your_password'
+            // keyAlias 'your_alias'
+            // keyPassword 'your_password'
+        }
+    }
     namespace = "com.agios.bible"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.agios.bible"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 109
-        versionName "2.2.0"
+        versionCode 111
+        versionName "2.3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
@@ -17,11 +35,9 @@ android {
     }
     buildTypes {
         release {
-            // تفعيل الـ Minification وحذف الأكواد غير المستخدمة (R8)
+            signingConfig signingConfigs.release
             minifyEnabled true
-            // تفعيل حذف الموارد (الصور والملفات) غير المستخدمة لتقليل حجم التطبيق
             shrinkResources true
-            // استخدام نسخة الـ "optimize" لتحسين أداء الكود وتشفيره بشكل أقوى
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {

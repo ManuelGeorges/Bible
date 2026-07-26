@@ -3,12 +3,13 @@ const JavaScriptObfuscator = require('webpack-obfuscator');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.NEXT_PUBLIC_EXPORT === 'true' ? 'export' : undefined,
+  
   images: {
     unoptimized: true,
   },
+  
   reactStrictMode: false,
   trailingSlash: true,
-  swcMinify: true,
   compress: true,
   productionBrowserSourceMaps: false,
 

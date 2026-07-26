@@ -10,6 +10,8 @@ import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
 
+const API_BASE_URL = 'https://www.agiosbible.com';
+
 const fontOptionsMap = {
   'Cairo': "'Cairo', sans-serif",
   'Amiri': "'Amiri', serif",
@@ -161,7 +163,7 @@ function AnalysisContent() {
       : `${book}\n${chapter}`;
 
     const attemptGeneration = async (attemptIndex) => {
-      const response = await fetch('/api/gemini', {
+      const response = await fetch(`${API_BASE_URL}/api/gemini`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
