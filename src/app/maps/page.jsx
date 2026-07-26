@@ -59,6 +59,37 @@ const MAX_BOUNDS = [
 // Update this if more map-related badges are added elsewhere in the app.
 const TOTAL_MAP_BADGES = 3;
 
+// Bold, saturated accent per era — indexed by era order (not by translated name),
+// so it stays consistent across ar/en/fr/de. Add/reorder colors if you add more eras.
+const ERA_COLORS = [
+  '#E67E22', // 1. Abraham
+  '#D4AC0D', // 2. Exodus & Conquest
+  '#8E44AD', // 3. Judges & United Kingdom
+  '#C0392B', // 4. Divided Kingdom & Exile
+  '#16A085', // 5. Post-Exile / Old Testament
+  '#2980B9', // 6. Gospels
+  '#27AE60', // 7. Early Church & Apostles' Journeys
+];
+
+// Computed here in JS (not via CSS color-mix()) because color-mix() silently fails
+// on older mobile WebViews, which drops the whole declaration and makes cards
+// look "empty" — only elements with hardcoded colors (like the button) survive.
+const FALLBACK_HEX = '#00c8ff';
+const hexToRgb = (hex) => {
+  const clean = /^#([0-9a-f]{6})$/i.test(hex) ? hex : FALLBACK_HEX;
+  const bigint = parseInt(clean.replace('#', ''), 16);
+  return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+};
+const withAlpha = (hex, alpha) => {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+const darkenHex = (hex, amount = 0.18) => {
+  const { r, g, b } = hexToRgb(hex);
+  const d = (c) => Math.max(0, Math.round(c * (1 - amount)));
+  return `rgb(${d(r)}, ${d(g)}, ${d(b)})`;
+};
+
 // Haversine distance in kilometers between two lat/lng points.
 const toRad = (deg) => (deg * Math.PI) / 180;
 const getDistanceKm = (lat1, lng1, lat2, lng2) => {
@@ -99,6 +130,18 @@ export default function MapsPage() {
   const searchRef = useRef(null);
 
   const eras = Object.values(strings.maps.era_names);
+
+  const getEraColors = (eraName) => {
+    const idx = eras.indexOf(eraName);
+    const base = idx >= 0 ? ERA_COLORS[idx % ERA_COLORS.length] : FALLBACK_HEX;
+    return {
+      base,
+      dark: darkenHex(base, 0.2),
+      tint10: withAlpha(base, 0.1),
+      tint15: withAlpha(base, 0.15),
+      tint25: withAlpha(base, 0.25),
+    };
+  };
 
   const unlockBadge = async (badgeId) => {
     if (user) {
@@ -259,7 +302,10 @@ export default function MapsPage() {
     ? Math.round((visitedPoints.size / totalPointsCount) * 100)
     : 0;
 
-  const nearbyPlaces = useMemo(() => {
+  const popupEraColors = useMemo(() => {
+    if (!selectedPoint) return null;
+    return getEraColors(selectedPoint.era);
+  }, [selectedPoint, eras]);
     if (!selectedPoint) return [];
     return allPlaces
       .filter(p => p.type === 'point' && p.era === selectedPoint.era && p.name !== selectedPoint.name)
@@ -455,33 +501,62 @@ export default function MapsPage() {
             </Source>
 
             {selectedPoint && (
-              <Popup longitude={selectedPoint.lng} latitude={selectedPoint.lat} anchor="bottom" onClose={() => setSelectedPoint(null)}>
-                <div className={styles.popupWrapper}>
-                  <h3>{selectedPoint.name}</h3>
-                  <p>{selectedPoint.info}</p>
-                  {selectedPoint.book && (
-                    <button className={styles.bibleLinkBtn} onClick={() => router.push(`/bible?book=${encodeURIComponent(selectedPoint.book)}&chapter=${selectedPoint.chapter || 1}`)}>
-                      <BookOpen size={18} /> {strings.maps.read_in_bible}
-                    </button>
-                  )}
+              <Popup
+                longitude={selectedPoint.lng}
+                latitude={selectedPoint.lat}
+                anchor="bottom"
+                maxWidth="300px"
+                onClose={() => setSelectedPoint(null)}
+              >
+                <div
+                  className={styles.popupCard}
+                  style={{
+                    '--era-color': popupEraColors.base,
+                    '--era-color-dark': popupEraColors.dark,
+                    '--era-color-tint-10': popupEraColors.tint10,
+                    '--era-color-tint-15': popupEraColors.tint15,
+                    '--era-color-tint-25': popupEraColors.tint25,
+                  }}
+                >
+                  <div className={styles.popupBand}>
+                    <MapPin size={26} className={styles.popupBandIcon} />
+                  </div>
 
-                  {nearbyPlaces.length > 0 && (
-                    <div className={styles.nearbyWrapper}>
-                      <span className={styles.nearbyTitle}>
-                        <Navigation size={14} /> {strings.maps.nearby_places_label || 'أماكن قريبة'}
-                      </span>
-                      <div className={styles.nearbyList}>
-                        {nearbyPlaces.map((np, idx) => (
-                          <button key={idx} className={styles.nearbyItem} onClick={() => flyToPlace(np)}>
-                            <span>{np.name}</span>
-                            <span className={styles.nearbyDistance}>
-                              {np.distanceKm.toFixed(1)} {strings.maps.km_unit || 'كم'}
-                            </span>
-                          </button>
-                        ))}
+                  <div className={styles.popupBody}>
+                    {selectedPoint.era && (
+                      <span className={styles.popupEraTag}>{selectedPoint.era}</span>
+                    )}
+                    <h3 className={styles.popupTitle}>{selectedPoint.name}</h3>
+                    <p className={styles.popupInfo}>{selectedPoint.info}</p>
+
+                    {selectedPoint.book && (
+                      <button
+                        className={styles.bibleLinkBtn}
+                        onClick={() => router.push(`/bible?book=${encodeURIComponent(selectedPoint.book)}&chapter=${selectedPoint.chapter || 1}`)}
+                      >
+                        <BookOpen size={18} /> {strings.maps.read_in_bible}
+                      </button>
+                    )}
+
+                    {nearbyPlaces.length > 0 && (
+                      <div className={styles.nearbyWrapper}>
+                        <span className={styles.nearbyTitle}>
+                          <Navigation size={14} /> {strings.maps.nearby_places_label || 'أماكن قريبة'}
+                        </span>
+                        <div className={styles.nearbyList}>
+                          {nearbyPlaces.map((np, idx) => (
+                            <button key={idx} className={styles.nearbyItem} onClick={() => flyToPlace(np)}>
+                              <span className={styles.nearbyDot} />
+                              <span className={styles.nearbyName}>{np.name}</span>
+                              <span className={styles.nearbyDistance}>
+                                {np.distanceKm.toFixed(1)} {strings.maps.km_unit || 'كم'}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </Popup>
             )}

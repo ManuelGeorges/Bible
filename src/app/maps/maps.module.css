@@ -65,194 +65,6 @@
   z-index: 5001;
 }
 
-/* الضوابط (أدوات التحكم) */
-.controls {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 25px;
-  position: relative;
-  z-index: 4000; /* تحت البحث ولكن فوق الخريطة */
-}
-
-@media (min-width: 768px) {
-  .controls { grid-template-columns: 1fr 1fr; }
-}
-
-.customSelectWrapper {
-  position: relative;
-  background: var(--color-card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-}
-
-.activeWrapper {
-  z-index: 4100;
-}
-
-.selectTrigger {
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.dropdownMenu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
-  background: var(--color-bg-start); /* لون خلفية من الـ globals */
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  box-shadow: var(--glass-shadow);
-  max-height: 250px;
-  overflow-y: auto;
-  z-index: 99999 !important; /* قيمة فلكية للتأكد من الظهور فوق الأزرار */
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(5px);
-  transition: all 0.2s ease;
-  padding: 8px;
-  list-style: none;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-}
-
-.dropdownMenu.open {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.dropdownItem {
-  padding: 12px 15px;
-  border-radius: 10px;
-  cursor: pointer;
-  color: var(--color-text-primary);
-  text-align: right;
-  transition: background 0.2s;
-}
-
-.dropdownItem:hover {
-  background: rgba(var(--color-accent-rgb), 0.1);
-  color: var(--color-accent);
-}
-
-/* نمط الخريطة */
-.styleSelector {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  background: var(--color-card-bg);
-  padding: 6px;
-  border-radius: 100px;
-  border: 1px solid var(--color-border);
-  position: relative;
-  z-index: 100; /* أقل من القوائم */
-  backdrop-filter: blur(8px);
-}
-
-.styleButton {
-  padding: 8px 20px;
-  border-radius: 100px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.activeStyle {
-  background: var(--color-accent) !important;
-  color: white !important;
-}
-
-.mapContainer {
-  width: 100%;
-  max-width: 1000px;
-  height: clamp(400px, 70vh, 700px);
-  border-radius: 28px;
-  border: 1px solid var(--color-border);
-  overflow: hidden;
-  box-shadow: var(--glass-shadow);
-  background: #000;
-  margin-bottom: 40px;
-  position: relative;
-  z-index: 1;
-}
-
-/* النافذة المنبثقة (Popup) تم الإصلاح ليكون pure */
-.mapContainer :global(.maplibregl-popup-content) {
-  background: var(--color-card-bg) !important;
-  backdrop-filter: blur(10px);
-  border-radius: 20px !important;
-  box-shadow: var(--glass-shadow) !important;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary) !important;
-}
-
-.mapContainer :global(.maplibregl-popup-close-button) {
-  color: var(--color-text-primary) !important;
-}
-
-/* لوحة المسار (Journey Card) */
-.journeyCard {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  background: var(--color-card-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: var(--glass-shadow);
-  z-index: 1000;
-  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(var(--color-accent-rgb), 0.1);
-  border-top-color: var(--color-accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-.loadingWrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* ============================================
-   Add the styles below to maps.module.css
-   (they extend the existing design tokens —
-   --color-card-bg, --color-border, --color-accent,
-   --color-accent-rgb, --color-text-primary/secondary,
-   --glass-shadow — already defined in your globals)
-   ============================================ */
-
 /* لوحة التقدم (Progress Panel) */
 .progressPanel {
   width: 100%;
@@ -315,6 +127,91 @@
   transition: width 0.4s ease;
 }
 
+/* الضوابط (أدوات التحكم) */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 4000; /* تحت البحث ولكن فوق الخريطة */
+}
+
+@media (min-width: 768px) {
+  .controls { grid-template-columns: 1fr 1fr; }
+}
+
+.customSelectWrapper {
+  position: relative;
+  background: var(--color-card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.activeWrapper {
+  z-index: 4100;
+}
+
+.selectTrigger {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.disabledTrigger {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--color-bg-start); /* لون خلفية من الـ globals */
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 99999 !important; /* قيمة فلكية للتأكد من الظهور فوق الأزرار */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  transition: all 0.2s ease;
+  padding: 8px;
+  list-style: none;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+
+.dropdownMenu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownItem {
+  padding: 12px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  text-align: right;
+  transition: background 0.2s;
+}
+
+.dropdownItem:hover {
+  background: rgba(var(--color-accent-rgb), 0.1);
+  color: var(--color-accent);
+}
+
 /* زر الاكتشاف العشوائي */
 .discoverBtn {
   display: flex;
@@ -345,72 +242,53 @@
   cursor: not-allowed;
 }
 
-/* حالة تعطيل قائمة اختيار المكان عند عدم وجود نتائج */
-.disabledTrigger {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* الأماكن القريبة داخل الـ Popup */
-.nearbyWrapper {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
-}
-
-.nearbyTitle {
+/* نمط الخريطة */
+.styleSelector {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: var(--color-card-bg);
+  padding: 6px;
+  border-radius: 100px;
+  border: 1px solid var(--color-border);
+  position: relative;
+  z-index: 100; /* أقل من القوائم */
+  backdrop-filter: blur(8px);
 }
 
-.nearbyList {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.nearbyItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(var(--color-accent-rgb), 0.06);
+.styleButton {
+  padding: 8px 20px;
+  border-radius: 100px;
   border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
-  color: var(--color-text-primary);
-  font-size: 0.85rem;
-  cursor: pointer;
-  text-align: right;
-  transition: background 0.2s;
-}
-
-.nearbyItem:hover {
-  background: rgba(var(--color-accent-rgb), 0.15);
-}
-
-.nearbyDistance {
+  background: transparent;
   color: var(--color-text-secondary);
-  font-size: 0.75rem;
-  flex-shrink: 0;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-/* ============================================
-   Popup card styling — add this AFTER the
-   maps.module.additions.css block, and REPLACE
-   your existing two ":global(.maplibregl-popup-*)"
-   rules with the versions below (the card now
-   supplies its own background/shadow/padding,
-   so the outer popup shell needs to get out of the way).
-   Uses --era-color, set inline per place via
-   getEraColor() in page.jsx — everything else still
-   pulls from your existing design tokens.
-   ============================================ */
 
-/* REPLACES the old .maplibregl-popup-content / close-button rules */
+.activeStyle {
+  background: var(--color-accent) !important;
+  color: white !important;
+}
+
+.mapContainer {
+  width: 100%;
+  max-width: 1000px;
+  height: clamp(400px, 70vh, 700px);
+  border-radius: 28px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+  background: #000;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* النافذة المنبثقة (Popup) — الحاوية الخارجية شفافة، البطاقة (.popupCard) هي التي ترسم الخلفية */
 .mapContainer :global(.maplibregl-popup-content) {
   background: transparent !important;
   backdrop-filter: none !important;
@@ -420,6 +298,7 @@
   border: none !important;
   padding: 0 !important;
   overflow: hidden;
+  color: var(--color-text-primary);
 }
 
 .mapContainer :global(.maplibregl-popup-close-button) {
@@ -447,7 +326,10 @@
   display: none;
 }
 
-/* بطاقة المكان (Place Popup Card) */
+/* بطاقة المكان (Place Popup Card)
+   الألوان --era-color / --era-color-dark / --era-color-tint-* تُمرَّر من page.jsx
+   محسوبة في JavaScript (وليس عبر color-mix في CSS) حتى تعمل على متصفحات
+   ومتصفحات WebView القديمة داخل التطبيقات على الجوال. */
 .popupCard {
   width: 100%;
   background: var(--color-card-bg);
@@ -464,7 +346,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--era-color, var(--color-accent)), color-mix(in srgb, var(--era-color, var(--color-accent)) 70%, #000 15%));
+  background: linear-gradient(135deg, var(--era-color, var(--color-accent)), var(--era-color-dark, var(--color-accent)));
 }
 
 .popupBandIcon {
@@ -481,7 +363,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--era-color, var(--color-accent));
-  background: color-mix(in srgb, var(--era-color, var(--color-accent)) 15%, transparent);
+  background: var(--era-color-tint-15, rgba(var(--color-accent-rgb), 0.15));
   border-radius: 100px;
   padding: 4px 12px;
   margin-bottom: 8px;
@@ -510,7 +392,7 @@
   padding: 11px 16px;
   border: none;
   border-radius: 100px;
-  background: linear-gradient(135deg, var(--era-color, var(--color-accent)), color-mix(in srgb, var(--era-color, var(--color-accent)) 70%, #000 15%));
+  background: linear-gradient(135deg, var(--era-color, var(--color-accent)), var(--era-color-dark, var(--color-accent)));
   color: #fff;
   font-weight: 700;
   font-size: 0.9rem;
@@ -553,8 +435,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: color-mix(in srgb, var(--era-color, var(--color-accent)) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--era-color, var(--color-accent)) 25%, transparent);
+  background: var(--era-color-tint-10, rgba(var(--color-accent-rgb), 0.06));
+  border: 1px solid var(--era-color-tint-25, rgba(var(--color-accent-rgb), 0.2));
   border-radius: 12px;
   padding: 9px 12px;
   color: var(--color-text-primary);
@@ -566,7 +448,7 @@
 }
 
 .nearbyItem:hover {
-  background: color-mix(in srgb, var(--era-color, var(--color-accent)) 20%, transparent);
+  background: var(--era-color-tint-25, rgba(var(--color-accent-rgb), 0.15));
   transform: translateX(-2px);
 }
 
@@ -587,4 +469,45 @@
   font-size: 0.72rem;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+/* لوحة المسار (Journey Card) */
+.journeyCard {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: var(--color-card-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: var(--glass-shadow);
+  z-index: 1000;
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(var(--color-accent-rgb), 0.1);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loadingWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
