@@ -245,3 +245,346 @@
   align-items: center;
   justify-content: center;
 }
+/* ============================================
+   Add the styles below to maps.module.css
+   (they extend the existing design tokens —
+   --color-card-bg, --color-border, --color-accent,
+   --color-accent-rgb, --color-text-primary/secondary,
+   --glass-shadow — already defined in your globals)
+   ============================================ */
+
+/* لوحة التقدم (Progress Panel) */
+.progressPanel {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
+}
+
+.progressStat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progressIcon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.progressText {
+  display: flex;
+  flex-direction: column;
+}
+
+.progressValue {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.progressBarOuter {
+  flex: 1;
+  min-width: 100px;
+  height: 6px;
+  background: rgba(var(--color-accent-rgb), 0.15);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progressBarInner {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
+
+/* زر الاكتشاف العشوائي */
+.discoverBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  padding: 12px 20px;
+  margin-bottom: 25px;
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: 100px;
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.discoverBtn:hover:not(:disabled) {
+  background: rgba(var(--color-accent-rgb), 0.08);
+  border-color: var(--color-accent);
+}
+
+.discoverBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* حالة تعطيل قائمة اختيار المكان عند عدم وجود نتائج */
+.disabledTrigger {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* الأماكن القريبة داخل الـ Popup */
+.nearbyWrapper {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.nearbyTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.nearbyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nearbyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(var(--color-accent-rgb), 0.06);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: right;
+  transition: background 0.2s;
+}
+
+.nearbyItem:hover {
+  background: rgba(var(--color-accent-rgb), 0.15);
+}
+
+.nearbyDistance {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+/* ============================================
+   Popup card styling — add this AFTER the
+   maps.module.additions.css block, and REPLACE
+   your existing two ":global(.maplibregl-popup-*)"
+   rules with the versions below (the card now
+   supplies its own background/shadow/padding,
+   so the outer popup shell needs to get out of the way).
+   Uses --era-color, set inline per place via
+   getEraColor() in page.jsx — everything else still
+   pulls from your existing design tokens.
+   ============================================ */
+
+/* REPLACES the old .maplibregl-popup-content / close-button rules */
+.mapContainer :global(.maplibregl-popup-content) {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 20px !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.mapContainer :global(.maplibregl-popup-close-button) {
+  color: #fff !important;
+  background: rgba(0, 0, 0, 0.25);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  transition: background 0.2s;
+}
+
+.mapContainer :global(.maplibregl-popup-close-button:hover) {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.mapContainer :global(.maplibregl-popup-tip) {
+  display: none;
+}
+
+/* بطاقة المكان (Place Popup Card) */
+.popupCard {
+  width: 100%;
+  background: var(--color-card-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 32px -8px var(--era-color, var(--color-accent));
+  overflow: hidden;
+}
+
+.popupBand {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--era-color, var(--color-accent)), color-mix(in srgb, var(--era-color, var(--color-accent)) 70%, #000 15%));
+}
+
+.popupBandIcon {
+  color: #fff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.popupBody {
+  padding: 16px 18px 18px;
+}
+
+.popupEraTag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--era-color, var(--color-accent));
+  background: color-mix(in srgb, var(--era-color, var(--color-accent)) 15%, transparent);
+  border-radius: 100px;
+  padding: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.popupTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+}
+
+.popupInfo {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0 0 14px;
+}
+
+.bibleLinkBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--era-color, var(--color-accent)), color-mix(in srgb, var(--era-color, var(--color-accent)) 70%, #000 15%));
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -4px var(--era-color, var(--color-accent));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bibleLinkBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -4px var(--era-color, var(--color-accent));
+}
+
+/* الأماكن القريبة — نسخة بارزة بألوان قوية */
+.nearbyWrapper {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.nearbyTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.nearbyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nearbyItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: color-mix(in srgb, var(--era-color, var(--color-accent)) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--era-color, var(--color-accent)) 25%, transparent);
+  border-radius: 12px;
+  padding: 9px 12px;
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: right;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.nearbyItem:hover {
+  background: color-mix(in srgb, var(--era-color, var(--color-accent)) 20%, transparent);
+  transform: translateX(-2px);
+}
+
+.nearbyDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--era-color, var(--color-accent));
+  flex-shrink: 0;
+}
+
+.nearbyName {
+  flex: 1;
+}
+
+.nearbyDistance {
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
