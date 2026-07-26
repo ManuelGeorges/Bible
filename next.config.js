@@ -45,7 +45,9 @@ const nextConfig = {
           'static/chunks/react-refresh.js',
           'static/chunks/main-app.js',
           'static/chunks/webpack.js',
-          'static/chunks/map-vendor*.js'
+          'static/chunks/map-vendor*.js',
+          '**/node_modules/maplibre-gl/**',
+          '**/node_modules/@google/generative-ai/**'
         ])
       );
     }
