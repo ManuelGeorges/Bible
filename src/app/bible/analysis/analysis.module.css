@@ -165,8 +165,9 @@
 
 .paragraph {
   margin-bottom: 0;
-  font-size: 1.25rem;
-  line-height: 2.2;
+  font-size: var(--bible-font-size, 1.25rem);
+  font-weight: var(--bible-font-weight, normal);
+  line-height: 1.8;
   text-align: justify;
   color: var(--color-text-primary);
   font-family: var(--bible-font-family, inherit);

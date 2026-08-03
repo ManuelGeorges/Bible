@@ -55,7 +55,8 @@ export default function CapacitorFeatures() {
     const platform = Capacitor.getPlatform();
     if (platform === 'web' || platform === 'electron') return;
 
-    syncNotifications().catch(() => {});
+    // تمرير اللغة الحالية لضمان تحديث الإشعارات فوراً باللغة الصحيحة
+    syncNotifications(language).catch(() => {});
   }, [language]);
 
   useEffect(() => {

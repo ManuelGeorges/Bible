@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class DataHelper {
@@ -26,17 +27,49 @@ public class DataHelper {
         try {
             if (context == null) return "ar";
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-            String[] langKeys = {"language", "app_lang", "settings_lang", "selected_lang", "settings-language"};
+
+            // مفاتيح اللغة الأكثر شيوعاً في تطبيقات Capacitor و i18next
+            String[] langKeys = {
+                "i18nextLng",
+                "language",
+                "lang",
+                "app_lang",
+                "settings_lang",
+                "selected_lang",
+                "settings-language",
+                "locale"
+            };
+
             String lang = null;
             for (String key : langKeys) {
                 lang = cleanCapacitorString(getPrefsString(prefs, key));
-                if (lang != null && !lang.isEmpty()) break;
+                if (lang != null && !lang.isEmpty()) {
+                    Log.d(TAG, "Found language in prefs [" + key + "]: " + lang);
+                    break;
+                }
             }
             
+            // إذا لم نجد لغة مخزنة، نستخدم لغة الجهاز
+            if (lang == null || lang.isEmpty()) {
+                lang = Locale.getDefault().getLanguage();
+                Log.d(TAG, "Using system default language: " + lang);
+            }
+
             if (lang == null || lang.isEmpty()) lang = "ar";
+
+            // تنظيف الكود (مثلاً تحويل en-US إلى en)
             lang = lang.toLowerCase().split("-")[0].split("_")[0];
+
+            // التحقق من اللغات المدعومة في التطبيق
+            if (!lang.equals("ar") && !lang.equals("en") && !lang.equals("fr") && !lang.equals("de")) {
+                // إذا كانت لغة الجهاز غير مدعومة، نفضل الإنجليزية كبديل عالمي أو العربية حسب رغبتك
+                // هنا سنتركها تعود للعربية كخيار أخير إذا كانت هي اللغة الأساسية للمحتوى
+                lang = "ar";
+            }
+
             return lang;
         } catch (Exception e) {
+            Log.e(TAG, "Error detecting language", e);
             return "ar";
         }
     }
@@ -113,18 +146,13 @@ public class DataHelper {
         
         String[] searchPaths = {
                 path,
-                "public/" + path,
                 "public/data/" + path,
-                "public/translations/" + path,
                 "public/data/translations/" + path,
-                "www/" + path,
-                "www/data/" + path,
                 "data/" + path,
+                "data/translations/" + path,
                 "translations/" + path,
-                "arabic/" + path,
-                "English/" + path,
-                "French/" + path,
-                "german/" + path
+                "www/data/" + path,
+                "www/" + path
         };
 
         for (String p : searchPaths) {
@@ -155,11 +183,10 @@ public class DataHelper {
         
         JSONObject dataResult = null;
         String[] paths = {
-            folder + fileName,
-            "translations/" + folder + fileName,
-            "data/translations/" + folder + fileName,
             "dailyVerses.json",
             "data/dailyVerses.json",
+            folder + fileName,
+            "data/translations/" + folder + fileName,
             "dailyVerses_ar.json"
         };
 
@@ -193,8 +220,7 @@ public class DataHelper {
         JSONObject dataResult = null;
         String[] paths = {
             folder + fileName,
-            "public/translations/" + folder + fileName,
-            "public/data/translations/" + folder + fileName,
+            "data/translations/" + folder + fileName,
             "dailyQuestions.json",
             "data/dailyQuestions.json"
         };

@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @swift.UNNotificationPresentationOptions) -> Void {
         completionHandler([.banner, .sound, .badge])
     }
 
@@ -158,7 +158,11 @@ class AgiosNotificationHelper {
             "streak_start": "ابدأ سلسلة تفاعلك اليوم! اقرأ آية اليوم وشاركها لتبني عادة روحية جديدة.",
             "plans_msg_multi": "لديك %@ خطط جارية. تبقّى %@ يوم في %@",
             "plans_msg_single": "تبقّى لك %@ يوم لإكمال %@",
-            "new_content": "لديك محتوى روحي جديد في أجيوس ✨"
+            "new_content": "لديك محتوى روحي جديد في أجيوس ✨",
+            "reengage_3_t": "نفتقدك! ✨", "reengage_3_b": "مرت 3 أيام لم تفتح فيها آجيوس. هل نلقي نظرة على كلمة اليوم؟",
+            "reengage_7_t": "أين أنت؟ 🕊️", "reengage_7_b": "مضى أسبوع كامل! خصص دقائق قليلة لغذاء روحك.",
+            "reengage_14_t": "اشتقنا إليك 📖", "reengage_14_b": "أسبوعان مرا بسرعة. الكتاب المقدس ينتظرك.",
+            "reengage_30_t": "رسالة خاصة لك ❤️", "reengage_30_b": "شهر كامل غياب.. الرب يبارك حياتك، عد إلينا لنقرأ سوياً."
         ],
         "en": [
             "verse_title": "Verse of the Day", "question_title": "Daily Question", "streak_title": "Keep your streak!",
@@ -167,7 +171,23 @@ class AgiosNotificationHelper {
             "streak_start": "Start your streak today! Read and share the verse to build a new spiritual habit.",
             "plans_msg_multi": "You have %@ ongoing plans. %@ days left in %@",
             "plans_msg_single": "You have %@ days left to complete %@",
-            "new_content": "You have new spiritual content in Agios ✨"
+            "new_content": "You have new spiritual content in Agios ✨",
+            "reengage_3_t": "We miss you! ✨", "reengage_3_b": "It's been 3 days since you last opened Agios. Shall we look at today's verse?",
+            "reengage_7_t": "Where are you? 🕊️", "reengage_7_b": "A whole week has passed! Take a few minutes for your spiritual nourishment.",
+            "reengage_14_t": "We've missed you 📖", "reengage_14_b": "Two weeks went by so fast. The Bible is waiting for you.",
+            "reengage_30_t": "A special message for you ❤️", "reengage_30_b": "A whole month of absence.. God bless your life, come back to read together."
+        ],
+        "fr": [
+            "reengage_3_t": "Vous nous manquez ! ✨", "reengage_3_b": "Cela fait 3 jours que vous n'avez pas ouvert Agios. Regardons le verset du jour ?",
+            "reengage_7_t": "Où êtes-vous ? 🕊️", "reengage_7_b": "Une semaine entière s'est écoulée ! Prenez quelques minutes pour votre ressourcement.",
+            "reengage_14_t": "Vous nous avez manqué 📖", "reengage_14_b": "Deux semaines sont passées si vite. La Bible vous attend.",
+            "reengage_30_t": "Un message spécial ❤️", "reengage_30_b": "Un mois d'absence.. Que Dieu bénisse votre vie, revenez lire avec nous."
+        ],
+        "de": [
+            "reengage_3_t": "Wir vermissen dich! ✨", "reengage_3_b": "Es ist 3 Tage her, seit du Agios das letzte Mal geöffnet hast. Sollen wir den heutigen Vers ansehen?",
+            "reengage_7_t": "Wo bist du? 🕊️", "reengage_7_b": "Eine ganze Woche ist vergangen! Nimm dir ein paar Minuten für deine geistliche Nahrung.",
+            "reengage_14_t": "Wir haben dich vermisst 📖", "reengage_14_b": "Zwei Wochen vergingen wie im Flug. Die Bibel wartet auf dich.",
+            "reengage_30_t": "Eine Nachricht für dich ❤️", "reengage_30_b": "Ein ganzer Monat Abwesenheit.. Gott segne dich, komm zurück zum gemeinsamen Lesen."
         ]
     ]
 
@@ -212,6 +232,17 @@ class AgiosNotificationHelper {
                 self.scheduleStudyPlans(offset: i, settings: settings)
             }
             self.scheduleTip(settings: settings)
+            self.scheduleReengagement()
+        }
+    }
+
+    private func scheduleReengagement() {
+        let days = [3, 7, 14, 30]
+        for d in days {
+            schedule(identifier: "agios_reengage_\(d)",
+                     title: t("reengage_\(d)_t"),
+                     body: t("reengage_\(d)_b"),
+                     hour: 17, minute: 0, offset: d, deepLink: "/")
         }
     }
 

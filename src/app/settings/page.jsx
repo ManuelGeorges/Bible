@@ -21,11 +21,26 @@ import styles from './Settings.module.css'
 import { useLanguage } from '../context/LanguageContext';
 
 const fontOptions = [
-  { id: 'Cairo', name: 'Cairo (Default)', value: "'Cairo', sans-serif" },
-  { id: 'Amiri', name: 'Amiri (Classical)', value: "'Amiri', serif" },
-  { id: 'Almarai', name: 'Almarai (Modern)', value: "'Almarai', sans-serif" },
-  { id: 'Tajawal', name: 'Tajawal (Simple)', value: "'Tajawal', sans-serif" },
-  { id: 'ReemKufi', name: 'Reem Kufi (Traditional)', value: "'Reem Kufi', sans-serif" }
+  // Arabic Fonts
+  { id: 'Cairo', name: 'Cairo', value: "'Cairo', sans-serif", lang: 'ar' },
+  { id: 'Amiri', name: 'Amiri', value: "'Amiri', serif", lang: 'ar' },
+  { id: 'Almarai', name: 'Almarai', value: "'Almarai', sans-serif", lang: 'ar' },
+  { id: 'Tajawal', name: 'Tajawal', value: "'Tajawal', sans-serif", lang: 'ar' },
+  { id: 'ReemKufi', name: 'Reem Kufi', value: "'Reem Kufi', sans-serif", lang: 'ar' },
+  { id: 'NotoNaskh', name: 'Noto Naskh', value: "'Noto Naskh Arabic', serif", lang: 'ar' },
+  { id: 'Scheherazade', name: 'Scheherazade', value: "'Scheherazade New', serif", lang: 'ar' },
+  { id: 'ElMessiri', name: 'El Messiri', value: "'El Messiri', sans-serif", lang: 'ar' },
+  { id: 'Lemonada', name: 'Lemonada', value: "'Lemonada', cursive", lang: 'ar' },
+  { id: 'Lalezar', name: 'Lalezar', value: "'Lalezar', system-ui", lang: 'ar' },
+
+  // Latin Fonts (English, French, German)
+  { id: 'Inter', name: 'Inter', value: "'Inter', sans-serif", lang: 'en' },
+  { id: 'Lora', name: 'Lora', value: "'Lora', serif", lang: 'en' },
+  { id: 'EBGaramond', name: 'EB Garamond', value: "'EB Garamond', serif", lang: 'en' },
+  { id: 'Montserrat', name: 'Montserrat', value: "'Montserrat', sans-serif", lang: 'en' },
+  { id: 'Playfair', name: 'Playfair Display', value: "'Playfair Display', serif", lang: 'en' },
+  { id: 'Cinzel', name: 'Cinzel', value: "'Cinzel', serif", lang: 'en' },
+  { id: 'Spectral', name: 'Spectral', value: "'Spectral', serif", lang: 'en' }
 ]
 
 const languages = [
@@ -106,7 +121,7 @@ const Settings = () => {
       setFontSize(size)
       document.documentElement.style.setProperty('--bible-font-size', size + 'px')
 
-      const savedFont = localStorage.getItem('bibleFontFamily') || 'Cairo'
+      const savedFont = localStorage.getItem('bibleFontFamily') || (currentLang === 'ar' ? 'Cairo' : 'Inter')
       setFontFamily(savedFont)
       const selectedFont = fontOptions.find(f => f.id === savedFont) || fontOptions[0]
       document.documentElement.style.setProperty('--bible-font-family', selectedFont.value)
@@ -304,6 +319,7 @@ const Settings = () => {
   if (!mounted) return null
 
   const currentFontValue = fontOptions.find(f => f.id === fontFamily)?.value || fontOptions[0].value
+  const filteredFonts = fontOptions.filter(f => currentLang === 'ar' ? f.lang === 'ar' : f.lang === 'en')
 
   return (
     <div className={styles.container} dir={dir}>
@@ -496,7 +512,7 @@ const Settings = () => {
             </span>
           </div>
           <div className={styles.fontOptionsList}>
-            {fontOptions.map(option => (
+            {filteredFonts.map(option => (
               <button
                 key={option.id}
                 className={`${styles.fontChip} ${fontFamily === option.id ? styles.activeChip : ''}`}
@@ -787,6 +803,7 @@ const Settings = () => {
           </h2>
           <p className={styles.subText} style={{ marginBottom: '15px' }}>
             {strings.settings.account.desc}
+          }
           </p>
           <div className={styles.accountButtons}>
             <button className={styles.logoutButton} onClick={handleLogout}>

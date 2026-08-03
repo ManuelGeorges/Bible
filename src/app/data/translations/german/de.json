@@ -1,4 +1,12 @@
 {
+  "welcome": {
+    "title": "Willkommen bei Agios",
+    "subtitle": "Wählen Sie Ihre bevorzugte Sprache, um fortzufahren",
+    "theme_title": "App-Erscheinungsbild",
+    "theme_subtitle": "Wählen Sie den Look, der Ihren Augen schmeichelt. Sie können dies später in den Einstellungen ändern",
+    "light_mode": "Heller Modus",
+    "dark_mode": "Dunkler Modus"
+  },
   "common": {
     "or": "Oder",
     "google": "Google",

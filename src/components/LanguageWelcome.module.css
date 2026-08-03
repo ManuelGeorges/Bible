@@ -80,6 +80,49 @@
     font-size: 0.8rem;
 }
 
+/* Theme Step Styles */
+.themeGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.themeOption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.themeOption:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.themeIconBox {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.themeLabel {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -100,4 +143,37 @@
 [data-theme='light'] .langButton:hover {
     background: #f1f5f9;
     border-color: #cbd5e1;
+}
+
+[data-theme='light'] .themeOption {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme='light'] .themeLabel {
+    color: #1e293b;
+}
+
+[data-theme='light'] .themeOption:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+@media (max-width: 480px) {
+    .themeGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .themeOption {
+        flex-direction: row;
+        padding: 15px 20px;
+        justify-content: flex-start;
+        gap: 20px;
+    }
+
+    .themeIconBox {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 0;
+    }
 }

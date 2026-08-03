@@ -1,4 +1,12 @@
 {
+  "welcome": {
+    "title": "Bienvenue sur Agios",
+    "subtitle": "Choisissez votre langue préférée pour continuer",
+    "theme_title": "Apparence de l'application",
+    "theme_subtitle": "Choisissez le look qui convient à vos yeux, vous pourrez le changer plus tard dans les paramètres",
+    "light_mode": "Mode Clair",
+    "dark_mode": "Mode Sombre"
+  },
   "common": {
     "or": "Ou",
     "google": "Google",
@@ -255,7 +263,7 @@
     "thanks": {
       "title": "Remerciements",
       "priest_name": "Rév. Père Athanasios",
-      "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant envers ce travail depuis ses débuts.",
+      "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} for son soin paternel constant envers ce travail depuis ses débuts.",
       "priest_abraam_name": "Très Révérend Père Abraam Emil",
       "priest_abraam_desc": "Nous exprimons notre gratitude particulière et notre profonde reconnaissance au {name} (Vicaire Général du Patriarcat à Alexandrie) pour son immense soutien paternel lors des premières phases de lancement de l'application, ainsi que pour son aide précieuse dans sa diffusion, son financement et la mobilisation de tous les moyens matériels et moraux nécessaires à la réussite de ce projet.",
       "fcbh": "Merci spécial à Faith Comes By Hearing pour avoir fourni la merveilleuse bibliothèque audio de M. Adel Noshy, et pour leur soutien technique continu.",
@@ -281,7 +289,10 @@
     "share_title": "Verset de la Sainte Bible",
     "share_dialog": "Partager le verset via...",
     "share_not_supported": "Partage non supporté, texte copié à la place",
-    "Reading_history": "Historique de lecture",
+    "reading_history": "Historique de lecture",
+    "no_history": "Pas encore d'historique",
+    "start_reading": "Commencer la lecture maintenant",
+    "clear_history_confirm": "Êtes-vous sûr de vouloir effacer votre historique de lecture ?",
     "reasons": {
       "share_verse": "Partager un verset",
       "copy_verse": "Copier un verset",

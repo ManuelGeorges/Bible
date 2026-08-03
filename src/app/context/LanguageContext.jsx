@@ -15,7 +15,7 @@ export function LanguageProvider({ children }) {
     const [language, setLanguage] = useState('ar');
     const [parallelLanguage, setParallelLanguage] = useState(null);
     const [strings, setStrings] = useState(null);
-    const { theme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const [useTashkeel, setUseTashkeel] = useState(false);
 
     // إعدادات إبقاء الشاشة مضيئة
@@ -46,9 +46,15 @@ export function LanguageProvider({ children }) {
 
     useEffect(() => {
         const init = async () => {
-            const savedLang = localStorage.getItem('app_lang') || 'ar';
-            setLanguage(savedLang);
-            await loadTranslations(savedLang);
+            const savedLang = localStorage.getItem('app_lang');
+            if (!savedLang) {
+                setIsFirstTime(true);
+                setLanguage('ar');
+                await loadTranslations('ar');
+            } else {
+                setLanguage(savedLang);
+                await loadTranslations(savedLang);
+            }
 
             const savedParallel = localStorage.getItem('parallel_lang');
             if (savedParallel) {
@@ -139,17 +145,20 @@ export function LanguageProvider({ children }) {
     }, [theme, isHydrated]);
 
     const changeLanguage = async (newLang) => {
-        setIsHydrated(false); // إظهار حالة التحميل البسيطة
+        setIsHydrated(false);
         await loadTranslations(newLang);
         setLanguage(newLang);
         localStorage.setItem('app_lang', newLang);
         setIsHydrated(true);
-        setIsFirstTime(false);
 
         if (parallelLanguage === newLang) {
             setParallelLanguage(null);
             localStorage.removeItem('parallel_lang');
         }
+    };
+
+    const finishFirstTime = () => {
+        setIsFirstTime(false);
     };
 
     const changeParallelLanguage = (newLang) => {
@@ -212,6 +221,7 @@ export function LanguageProvider({ children }) {
         toggleKeepBibleAwake,
         isFirstTime,
         setIsFirstTime,
+        finishFirstTime,
         isHydrated,
         formatNumber
     };

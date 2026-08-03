@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { kv } from "../../../lib/kv";
 
-// FIX: was unconditionally 'force-static', which is meant for GET routes and
-// doesn't make sense forced onto a POST handler that reads a per-request body.
 export const dynamic = 'force-dynamic';
 
 const apiKeys = [
@@ -29,23 +27,32 @@ const corsHeaders = {
 };
 
 const PROMPTS = {
-  derivatives: {
-    ar: (term) => `أنت مرجع لغوي عربي فائق الدقة متخصص في فقه اللغة. الكلمة المستهدفة: "${term}". الرد JSON فقط: {"root": "...", "isStatic": boolean, "explanation": "...", "derivatives": ["...", "..."]}`,
-    en: (term) => `Linguistic expert. Word: "${term}". JSON only: {"root": "...", "isStatic": boolean, "explanation": "...", "derivatives": []}`,
-    fr: (term) => `Expert linguistique. Mot: "${term}". JSON uniquement.`,
-    de: (term) => `Sprachexperte. Wort: "${term}". JSON nur.`
-  },
-  semantic: {
-    ar: (term, allowedBooks, filterContext) => `أنت محرك بحث لاهوتي لتطبيق "أجيوس". استخرج 5-7 مراجع مرتبطة بـ: "${term}". السياق: ${filterContext}. JSON فقط: {"results": [{"book": "...", "chapter": 1, "verses": [1], "title": "...", "reason": "..."}]}. الأسفار: [${allowedBooks}]`,
-    en: (term, allowedBooks, filterContext) => `Theological search for "Agios". 5-7 refs for: "${term}". Context: ${filterContext}. JSON: {"results": []}`,
-    fr: (term, allowedBooks, filterContext) => `Recherche théologique "Agios". 5-7 refs. JSON uniquement.`,
-    de: (term, allowedBooks, filterContext) => `Theologische Suche "Agios". 5-7 refs. JSON nur.`
-  },
   analysis: {
-    ar: (targetText) => `أنت "مساعد آجيوس الذكي". تفسير النص المرفق لاهوتياً ولغوياً بدقة: ${targetText}. المنهجية: ١. مقدمة، ٢. لغويات، ٣. تاريخ، ٤. تفسير (تادرس يعقوب/أنطونيوس فكري)، ٥. تطبيق، ٦. شبهات. لا تستخدم Markdown. في النهاية أضف: "ودائماً ننصح بالرجوع لأب اعترافك".`,
-    en: (targetText) => `Agios Assistant. Analyze: ${targetText}. Sections: 1. Intro, 2. Linguistics, 3. History, 4. Exegesis, 5. Application, 6. Objections. No markdown.`,
-    fr: (targetText) => `Assistant Agios. Analyse: ${targetText}. Répondez en français. Pas de Markdown.`,
-    de: (targetText) => `Agios-Assistent. Analyse: ${targetText}. Antworten Sie auf Deutsch. Kein Markdown.`
+    ar: (targetText) => `أنت "مساعد آجيوس الذكي". مهمتك هي تحليل النص الكتابي المرفق فقط بدقة متناهية: "${targetText}".
+قواعد صارمة:
+1. حلل النص المرفق حصراً. لا تخلط بينه وبين آيات أخرى.
+2. إذا كان النص غير واضح أو لم تجد له تفسيراً آبائياً موثوقاً، صرح بذلك ولا تخترع تفسيراً.
+3. التزم بالمنهجية التالية: ١. مقدمة مختصرة عن سياق النص، ٢. معاني الكلمات لغوياً، ٣. الخلفية التاريخية، ٤. التفسير الروحي (بناءً على القمص تادرس يعقوب والقمص أنطونيوس فكري)، ٥. تطبيق حياتي، ٦. رد على أي شبهات مرتبطة بالنص.
+4. لا تستخدم Markdown (مثل ** أو #).
+5. في النهاية أضف: "ودائماً ننصح بالرجوع لأب اعترافك".`,
+    en: (targetText) => `You are "Agios Assistant". Analyze ONLY the following biblical text: "${targetText}".
+Rules:
+1. Strictly analyze the provided text. Do not confuse it with other verses.
+2. If the text is ambiguous or you cannot find reliable patristic commentary, state it. Do NOT hallucinate.
+3. Structure: 1. Intro (Context), 2. Linguistics, 3. History, 4. Exegesis (Based on Church Fathers like Fr. Tadros Malaty and Fr. Antonios Fekry), 5. Application, 6. Clarifying common misconceptions.
+4. No markdown formatting.`,
+    fr: (targetText) => `Vous êtes "Assistant Agios". Analysez UNIQUEMENT le texte biblique suivant: "${targetText}".
+Règles:
+1. Analysez strictement le texte fourni. Ne pas confondre avec d'autres versets.
+2. Ne pas inventer d'informations. Si vous n'êtes pas sûr, dites-le.
+3. Structure: 1. Intro, 2. Linguistique, 3. Histoire, 4. Exégèse (Pères de l'Église), 5. Application, 6. Objections.
+4. Pas de Markdown.`,
+    de: (targetText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR den folgenden biblischen Text: "${targetText}".
+Regeln:
+1. Analysieren Sie ausschließlich den bereitgestellten Text. Nicht mit anderen Versen verwechseln.
+2. Erfinden Sie keine Informationen. Wenn Sie unsicher sind, sagen Sie es.
+3. Struktur: 1. Intro, 2. Linguistik, 3. Geschichte, 4. Exegese, 5. Anwendung, 6. Einwände.
+4. Kein Markdown.`
   },
   studyPlan: {
     ar: (mood, durationDays, intensityLabel, allowedBooks) => `أنت "أجيوس"، خبير الإرشاد الروحي. صياغة رحلة قراءة لـ: "${mood}"، مدة: ${durationDays} أيام، كثافة: ${intensityLabel}.
@@ -95,7 +102,7 @@ export async function POST(req) {
     const genAI = getGenAI(attempt);
     const model = genAI.getGenerativeModel({
       model: "gemini-3.1-flash-lite",
-      generationConfig: task === 'analysis' ? { maxOutputTokens: 2048 } : (task === 'studyPlan' ? { temperature: 0.7 } : undefined)
+      generationConfig: task === 'analysis' ? { maxOutputTokens: 2048, temperature: 0.1 } : (task === 'studyPlan' ? { temperature: 0.7 } : undefined)
     });
 
     let prompt = "";

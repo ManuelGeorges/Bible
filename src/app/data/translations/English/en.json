@@ -1,4 +1,12 @@
 {
+  "welcome": {
+    "title": "Welcome to Agios",
+    "subtitle": "Choose your preferred language to continue",
+    "theme_title": "App Appearance",
+    "theme_subtitle": "Choose the look that suits your eyes, you can change it later in settings",
+    "light_mode": "Light Mode",
+    "dark_mode": "Dark Mode"
+  },
   "common": {
     "or": "or",
     "google": "Google",
@@ -289,7 +297,10 @@
     "share_title": "Verse from the Holy Bible",
     "share_dialog": "Share verse via...",
     "share_not_supported": "Sharing not supported, text copied instead",
-    "Reading_history": "Reading History",
+    "reading_history": "Reading History",
+    "no_history": "No history yet",
+    "start_reading": "Start reading now",
+    "clear_history_confirm": "Are you sure you want to clear your reading history?",
     "reasons": {
       "share_verse": "Share a verse",
       "copy_verse": "Copy a verse",
@@ -380,6 +391,7 @@
     "chapter_all": "All",
     "status_analyzing": "Analyzing word linguistically...",
     "status_searching": "Searching in the Holy Bible...",
+    "comma_space": ", ",
     "warning_static_word": "Warning: Static word or proper noun",
     "warning_static_word_desc": "This word has no actual conjugation derivatives in Arabic. Searched only for direct occurrences.",
     "ai_verified": "Linguistically verified by the intelligent Agios assistant",
@@ -434,7 +446,8 @@
       "profile": "Profile",
       "settings": "Settings",
       "points": "Achievements",
-      "widgets": "Widgets"
+      "widgets": "Widgets",
+      "readingHistory": "Reading History"
     },
     "footer": {
       "about": "About Us",
