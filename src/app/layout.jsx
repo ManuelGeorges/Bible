@@ -106,17 +106,17 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <LanguageProvider>
-          <LanguageWelcome />
-          <BadgeProvider>
-            <AudioProvider>
-              <StatsWatcher />
-              <ThemeProvider
-                attribute="data-theme"
-                defaultTheme="system"
-                enableSystem={true}
-                storageKey="theme"
-              >
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="system"
+          enableSystem={true}
+          storageKey="theme"
+        >
+          <LanguageProvider>
+            <LanguageWelcome />
+            <BadgeProvider>
+              <AudioProvider>
+                <StatsWatcher />
                 <Toaster
                   position="top-center"
                   containerStyle={{
@@ -150,10 +150,10 @@ export default function RootLayout({ children }) {
                     gtag('config', 'G-J90H6JXHNG');
                   `}
                 </Script>
-              </ThemeProvider>
-            </AudioProvider>
-          </BadgeProvider>
-        </LanguageProvider>
+              </AudioProvider>
+            </BadgeProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

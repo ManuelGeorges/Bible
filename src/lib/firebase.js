@@ -62,9 +62,9 @@ export const getFirebaseRemoteConfig = async () => {
     try {
         const supported = await isSupported();
         if (supported) {
-            remoteConfigInstance = getRemoteConfig(app);
-            remoteConfigInstance.settings.minimumFetchIntervalMillis = 3600000; // ساعة واحدة
-            remoteConfigInstance.defaultConfig = {
+            const remoteConfig = getRemoteConfig(app);
+            remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
+            remoteConfig.defaultConfig = {
                 'show_sync_login': true,
                 'show_maptiler_features': true,
                 'app_news': JSON.stringify({
@@ -77,10 +77,11 @@ export const getFirebaseRemoteConfig = async () => {
                     bgColor: "#eff6ff"
                 })
             };
+            remoteConfigInstance = remoteConfig;
             return remoteConfigInstance;
         }
     } catch (e) {
-        console.error("Remote Config Support Error:", e);
+        console.warn("Remote Config / Installations Error (expected in some environments):", e.message);
     }
     return null;
 };

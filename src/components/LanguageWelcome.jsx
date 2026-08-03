@@ -3,7 +3,7 @@
 import React from 'react';
 import { useLanguage } from '../app/context/LanguageContext';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Laptop } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import styles from './LanguageWelcome.module.css';
 
 const languages = [
@@ -85,16 +85,6 @@ export default function LanguageWelcome() {
                                     <Moon size={32} />
                                 </div>
                                 <span className={styles.themeLabel}>{strings.welcome?.dark_mode || "Dark Mode"}</span>
-                            </button>
-
-                            <button
-                                className={styles.themeOption}
-                                onClick={() => handleThemeSelect('system')}
-                            >
-                                <div className={styles.themeIconBox} style={{ background: 'linear-gradient(135deg, #f8fafc 50%, #1e293b 50%)', color: '#94a3b8' }}>
-                                    <Laptop size={32} />
-                                </div>
-                                <span className={styles.themeLabel}>{strings.settings?.appearance?.system || "System"}</span>
                             </button>
                         </div>
                     </>
