@@ -372,8 +372,9 @@ function PlanDetailsContent() {
   }, [bookNames, completedChapters, findBookIndexFlexibly, parseReading]);
 
   const isDayAutoCompleted = (reading) => {
-    if (!reading.books || reading.books.length === 0) return false;
-    return reading.books.every(b => isReadingDone(b));
+    const books = reading.books || reading.chapters || reading.content || reading.items || [];
+    if (books.length === 0) return false;
+    return books.every(b => isReadingDone(b));
   };
 
   const handleCheck = async (day) => {
@@ -503,6 +504,7 @@ function PlanDetailsContent() {
           const isManual = completedDays[reading.day]?.isCompleted;
           const isAuto = isDayAutoCompleted(reading);
           const isCompleted = isManual || isAuto;
+          const books = reading.books || reading.chapters || reading.content || reading.items || [];
 
           return (
             <li key={reading.day} className={`${styles.readingItem} ${isCompleted ? styles.completed : ''}`}>
@@ -518,7 +520,7 @@ function PlanDetailsContent() {
                 </div>
               </div>
               <div className={styles.booksGrid}>
-                {reading.books.map((b, i) => {
+                {books.map((b, i) => {
                   const isDone = isReadingDone(b);
                   const parsed = parseReading(b);
 
