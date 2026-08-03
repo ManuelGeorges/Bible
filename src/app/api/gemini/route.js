@@ -32,7 +32,7 @@ const PROMPTS = {
 قواعد صارمة:
 1. حلل النص المرفق حصراً. لا تخلط بينه وبين آيات أخرى.
 2. إذا كان النص غير واضح أو لم تجد له تفسيراً آبائياً موثوقاً، صرح بذلك ولا تخترع تفسيراً.
-3. التزم بالمنهجية التالية: ١. مقدمة مختصرة عن سياق النص، ٢. معاني الكلمات لغوياً، ٣. خلفية تاريخية، ٤. التفسير الروحي (بناءً على القمص تادرس يعقوب والقمص أنطونيوس فكري)، ٥. تطبيق حياتي، ٦. رد على أي شبهات مرتبطة بالنص.
+3. التزم بالمنهجية التالية: ١. مقدمة مختصرة عن سياق النص، ٢. معاني الكلمات لغوياً، ٣. الخلفية التاريخية، ٤. التفسير الروحي (بناءً على القمص تادرس يعقوب والقمص أنطونيوس فكري)، ٥. تطبيق حياتي، ٦. رد على أي شبهات مرتبطة بالنص.
 4. لا تستخدم Markdown (مثل ** أو #).
 5. في النهاية أضف: "ودائماً ننصح بالرجوع لأب اعترافك".`,
     en: (targetText) => `You are "Agios Assistant". Analyze ONLY the following biblical text: "${targetText}".
@@ -42,10 +42,10 @@ Rules:
 3. Structure: 1. Intro (Context), 2. Linguistics, 3. History, 4. Exegesis (Based on Church Fathers like Fr. Tadros Malaty and Fr. Antonios Fekry), 5. Application, 6. Clarifying common misconceptions.
 4. No markdown formatting.`,
     fr: (targetText) => `Vous êtes "Assistant Agios". Analysez UNIQUEMENT le texte biblique suivant: "${targetText}".
-Règles:
+Règles :
 1. Analysez strictement le texte fourni. Ne pas confondre avec d'autres versets.
 2. Ne pas inventer d'informations. Si vous n'êtes pas sûr, dites-le.
-3. Structure: 1. Intro, 2. Linguistique, 3. Histoire, 4. Exégèse (Pères de l'Église), 5. Application, 6. Objections.
+3. Structure : 1. Intro, 2. Linguistique, 3. Histoire, 4. Exégèse (Pères de l'Église), 5. Application, 6. Objections.
 4. Pas de Markdown.`,
     de: (targetText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR den folgenden biblischen Text: "${targetText}".
 Regeln:
@@ -53,6 +53,18 @@ Regeln:
 2. Erfinden Sie keine Informationen. Wenn Sie unsicher sind, sagen Sie es.
 3. Struktur: 1. Intro, 2. Linguistik, 3. Geschichte, 4. Exegese, 5. Anwendung, 6. Einwände.
 4. Kein Markdown.`
+  },
+  derivatives: {
+    ar: (term) => `أنت خبير لغوي. استخرج الجذر الثلاثي وقائمة شاملة من المشتقات للكلمة "${term}". الرد JSON فقط: {"root": "الجذر", "derivatives": ["مشتق1", "مشتق2"]}`,
+    en: (term) => `You are a linguist. Extract the root and a comprehensive list of derivatives for the word "${term}". Response JSON only: {"root": "root", "derivatives": ["der1", "der2"]}`,
+    fr: (term) => `Vous êtes linguiste. Extrayez la racine et une liste complète de dérivés pour le mot "${term}". Réponse JSON uniquement : {"root": "racine", "derivatives": ["der1", "der2"]}`,
+    de: (term) => `Sie sind Linguist. Extrahieren Sie die Wurzel und eine umfassende Liste von Derivaten für das Wort "${term}". Antwort nur JSON: {"root": "Wurzel", "derivatives": ["der1", "der2"]}`
+  },
+  semantic: {
+    ar: (term, allowedBooks, filterContext) => `ابحث عن أكثر الآيات صلة بمفهوم: "${term}". السياق: ${filterContext}. الأسفار المتاحة: [${allowedBooks}]. الرد JSON فقط: {"results": [{"book": "اسم السفر", "chapter": 1, "verses": [1, 2], "explanation": "السبب"}]}`,
+    en: (term, allowedBooks, filterContext) => `Find the most relevant Bible verses for: "${term}". Context: ${filterContext}. Allowed books: [${allowedBooks}]. Response JSON only: {"results": [{"book": "Book Name", "chapter": 1, "verses": [1, 2], "explanation": "Reason"}]}`,
+    fr: (term, allowedBooks, filterContext) => `Trouvez les versets bibliques les plus pertinents pour : "${term}". Contexte : ${filterContext}. Livres autorisés : [${allowedBooks}]. Réponse JSON uniquement : {"results": [{"book": "Nom du livre", "chapter": 1, "verses": [1, 2], "explanation": "Raison"}]}`,
+    de: (term, allowedBooks, filterContext) => `Finden Sie die relevantesten Bibelseiten für: "${term}". Kontext : ${filterContext}. Erlaubte Bücher: [${allowedBooks}]. Antwort nur JSON: {"results": [{"book": "Buchname", "chapter": 1, "verses": [1, 2], "explanation": "Grund"}]}`
   },
   studyPlan: {
     ar: (mood, durationDays, intensityLabel, allowedBooks) => `أنت "أجيوس"، خبير الإرشاد الروحي. صياغة رحلة قراءة لـ: "${mood}"، مدة: ${durationDays} أيام، كثافة: ${intensityLabel}.
