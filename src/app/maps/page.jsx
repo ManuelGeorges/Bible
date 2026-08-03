@@ -40,8 +40,8 @@ if (typeof window !== 'undefined') {
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
-const API_BASE_URL = 'https://www.agiosbible.com';
-const API_MAPS_URL = `${API_BASE_URL}/api/maps`;
+// Using relative path for internal API to avoid CORS and domain issues
+const API_MAPS_URL = '/api/maps';
 
 const INITIAL_VIEW_STATE = {
   longitude: 35.0,
@@ -56,12 +56,8 @@ const MAX_BOUNDS = [
   [65.0, 50.0]
 ];
 
-// Total number of badges awarded from this page (era_traveler, map_pioneer, ancient_navigator).
-// Update this if more map-related badges are added elsewhere in the app.
 const TOTAL_MAP_BADGES = 3;
 
-// Bold, saturated accent per era — indexed by era order (not by translated name),
-// so it stays consistent across ar/en/fr/de. Add/reorder colors if you add more eras.
 const ERA_COLORS = [
   '#E67E22', // 1. Abraham
   '#D4AC0D', // 2. Exodus & Conquest
@@ -72,9 +68,6 @@ const ERA_COLORS = [
   '#27AE60', // 7. Early Church & Apostles' Journeys
 ];
 
-// Computed here in JS (not via CSS color-mix()) because color-mix() silently fails
-// on older mobile WebViews, which drops the whole declaration and makes cards
-// look "empty" — only elements with hardcoded colors (like the button) survive.
 const FALLBACK_HEX = '#00c8ff';
 const hexToRgb = (hex) => {
   const clean = /^#([0-9a-f]{6})$/i.test(hex) ? hex : FALLBACK_HEX;
@@ -91,7 +84,6 @@ const darkenHex = (hex, amount = 0.18) => {
   return `rgb(${d(r)}, ${d(g)}, ${d(b)})`;
 };
 
-// Haversine distance in kilometers between two lat/lng points.
 const toRad = (deg) => (deg * Math.PI) / 180;
 const getDistanceKm = (lat1, lng1, lat2, lng2) => {
   const R = 6371;
@@ -109,7 +101,7 @@ export default function MapsPage() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
-  const [selectedEra, setSelectedEra] = useState(strings.maps.eras_placeholder);
+  const [selectedEra, setSelectedEra] = useState(strings?.maps?.eras_placeholder || '');
   const [mapStyle, setMapStyle] = useState(null);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [isLoading, setIsLoading] = useState(true);
@@ -122,7 +114,6 @@ export default function MapsPage() {
   const [user, setUser] = useState(null);
   const [visitedPoints, setVisitedPoints] = useState(new Set());
   const [visitedEras, setVisitedEras] = useState(new Set());
-  const [infoReads, setInfoReads] = useState(0);
   const [badgesCount, setBadgesCount] = useState(0);
 
   const mapRef = useRef(null);
@@ -130,7 +121,9 @@ export default function MapsPage() {
   const placeRef = useRef(null);
   const searchRef = useRef(null);
 
-  const eras = Object.values(strings.maps.era_names);
+  const eras = useMemo(() => {
+    return strings?.maps?.era_names ? Object.values(strings.maps.era_names) : [];
+  }, [strings]);
 
   const getEraColors = (eraName) => {
     const idx = eras.indexOf(eraName);
@@ -208,7 +201,6 @@ export default function MapsPage() {
             const data = snap.data();
             setVisitedPoints(new Set(data.visitedMapPoints || []));
             setVisitedEras(new Set(data.visitedEras || []));
-            setInfoReads(data.mapInfoReads || 0);
             setBadgesCount((data.badges || []).length);
           }
         });
@@ -225,7 +217,10 @@ export default function MapsPage() {
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
     fetch(`${API_MAPS_URL}/?task=style`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`Style error: ${res.status}`);
+        return res.json();
+      })
       .then((style) => setMapStyle(style))
       .catch((err) => console.error('Failed to load map style:', err));
 
@@ -237,9 +232,26 @@ export default function MapsPage() {
     const initPage = async () => {
       try {
         const response = await fetch(`${API_MAPS_URL}/?task=places&lang=${language}`);
+        if (!response.ok) {
+           console.error(`API response error: ${response.status}`);
+           setAllPlaces([]);
+           return;
+        }
         const data = await response.json();
-        setAllPlaces(data);
-      } catch (error) { console.error("Error loading places:", error); }
+        // Ensure data is an array before setting state
+        if (Array.isArray(data)) {
+          setAllPlaces(data);
+        } else if (data && typeof data === 'object' && !Array.isArray(data)) {
+          // If the API returned an object with an error or something else
+          console.warn("API returned non-array data:", data);
+          setAllPlaces([]);
+        } else {
+          setAllPlaces([]);
+        }
+      } catch (error) {
+        console.error("Error loading places:", error);
+        setAllPlaces([]);
+      }
       finally { setIsLoading(false); }
     };
     initPage();
@@ -249,11 +261,11 @@ export default function MapsPage() {
     setSelectedEra(era);
     setIsEraOpen(false);
     setSelectedPoint(null);
-    if (era !== strings.maps.eras_placeholder && !visitedEras.has(era)) {
+    if (era !== strings?.maps?.eras_placeholder && !visitedEras.has(era)) {
       const newEras = new Set(visitedEras).add(era);
       setVisitedEras(newEras);
       if (user) await updateDoc(doc(firestore, 'users', user.uid), { visitedEras: arrayUnion(era) });
-      if (newEras.size === eras.length) await unlockBadge('era_traveler');
+      if (newEras.size === eras.length && eras.length > 0) await unlockBadge('era_traveler');
     }
   };
 
@@ -284,20 +296,19 @@ export default function MapsPage() {
   };
 
   const filteredSearchPlaces = useMemo(() => {
-    if (!searchQuery.trim()) return [];
+    if (!searchQuery.trim() || !Array.isArray(allPlaces)) return [];
     const normalizedQuery = normalizeArabic(searchQuery);
-    return allPlaces.filter(p => normalizeArabic(p.name).includes(normalizedQuery)).slice(0, 8);
+    return allPlaces.filter(p => p.name && normalizeArabic(p.name).includes(normalizedQuery)).slice(0, 8);
   }, [allPlaces, searchQuery]);
 
-  // Points belonging to the currently selected era (all points if no era is chosen).
-  // Drives both the "choose a place" dropdown and the random discovery button.
   const eraFilteredPoints = useMemo(() => {
+    if (!Array.isArray(allPlaces)) return [];
     return allPlaces
-      .filter(p => p.type === 'point' && (selectedEra === strings.maps.eras_placeholder || p.era === selectedEra))
-      .sort((a, b) => a.name.localeCompare(b.name, language));
-  }, [allPlaces, selectedEra, language, strings.maps.eras_placeholder]);
+      .filter(p => p.type === 'point' && (!selectedEra || selectedEra === strings?.maps?.eras_placeholder || p.era === selectedEra))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', language));
+  }, [allPlaces, selectedEra, language, strings]);
 
-  const totalPointsCount = useMemo(() => allPlaces.filter(p => p.type === 'point').length, [allPlaces]);
+  const totalPointsCount = useMemo(() => Array.isArray(allPlaces) ? allPlaces.filter(p => p.type === 'point').length : 0, [allPlaces]);
 
   const progressPercent = totalPointsCount > 0
     ? Math.round((visitedPoints.size / totalPointsCount) * 100)
@@ -309,7 +320,7 @@ export default function MapsPage() {
   }, [selectedPoint, eras]);
 
   const nearbyPlaces = useMemo(() => {
-    if (!selectedPoint) return [];
+    if (!selectedPoint || !Array.isArray(allPlaces)) return [];
     return allPlaces
       .filter(p => p.type === 'point' && p.era === selectedPoint.era && p.name !== selectedPoint.name)
       .map(p => ({ ...p, distanceKm: getDistanceKm(selectedPoint.lat, selectedPoint.lng, p.lat, p.lng) }))
@@ -327,25 +338,25 @@ export default function MapsPage() {
 
   const geojsonPoints = useMemo(() => ({
     type: 'FeatureCollection',
-    features: allPlaces
-      .filter(p => (selectedEra === strings.maps.eras_placeholder || p.era === selectedEra) && p.type === 'point')
+    features: (Array.isArray(allPlaces) ? allPlaces : [])
+      .filter(p => (!selectedEra || selectedEra === strings?.maps?.eras_placeholder || p.era === selectedEra) && p.type === 'point')
       .map(p => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
         properties: { ...p }
       }))
-  }), [allPlaces, selectedEra]);
+  }), [allPlaces, selectedEra, strings]);
 
   const geojsonPaths = useMemo(() => ({
     type: 'FeatureCollection',
-    features: allPlaces
-      .filter(p => (selectedEra === strings.maps.eras_placeholder || p.era === selectedEra) && p.type === 'polyline')
+    features: (Array.isArray(allPlaces) ? allPlaces : [])
+      .filter(p => (!selectedEra || selectedEra === strings?.maps?.eras_placeholder || p.era === selectedEra) && p.type === 'polyline')
       .map(p => ({
         type: 'Feature',
         geometry: { type: 'LineString', coordinates: p.coordinates },
         properties: { ...p }
       }))
-  }), [allPlaces, selectedEra]);
+  }), [allPlaces, selectedEra, strings]);
 
   const handleMapClick = (e) => {
     const feature = e.features && e.features[0];
@@ -369,7 +380,7 @@ export default function MapsPage() {
   return (
     <div dir={dir} className={styles.container}>
       <header className={styles.headerSection}>
-        <h1 className={styles.heading}>{strings.maps.title}</h1>
+        <h1 className={styles.heading}>{strings?.maps?.title || 'الخرائط الكتابية'}</h1>
       </header>
 
       <div className={styles.searchContainer} ref={searchRef}>
@@ -377,7 +388,7 @@ export default function MapsPage() {
           <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder={strings.maps.search_placeholder}
+            placeholder={strings?.maps?.search_placeholder || 'ابحث عن مكان...'}
             className={styles.searchInput}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -401,7 +412,6 @@ export default function MapsPage() {
         )}
       </div>
 
-      {/* Progress panel: visited places + badges earned */}
       <div className={styles.progressPanel}>
         <div className={styles.progressStat}>
           <MapPin size={18} className={styles.progressIcon} />
@@ -410,7 +420,7 @@ export default function MapsPage() {
               {formatNumber(visitedPoints.size)}/{formatNumber(totalPointsCount)}
             </span>
             <span className={styles.progressLabel}>
-              {strings.maps.progress_places_label || 'أماكن مكتشفة'}
+              {strings?.maps?.progress_places_label || 'أماكن مكتشفة'}
             </span>
           </div>
         </div>
@@ -421,7 +431,7 @@ export default function MapsPage() {
               {formatNumber(badgesCount)}/{formatNumber(TOTAL_MAP_BADGES)}
             </span>
             <span className={styles.progressLabel}>
-              {strings.maps.progress_badges_label || 'أوسمة'}
+              {strings?.maps?.progress_badges_label || 'أوسمة'}
             </span>
           </div>
         </div>
@@ -433,23 +443,22 @@ export default function MapsPage() {
       <div className={styles.controls}>
         <div className={`${styles.customSelectWrapper} ${isEraOpen ? styles.activeWrapper : ''}`} ref={eraRef}>
           <div className={styles.selectTrigger} onClick={() => setIsEraOpen(!isEraOpen)}>
-            <Globe size={18} /> <span>{selectedEra}</span>
+            <Globe size={18} /> <span>{selectedEra || strings?.maps?.eras_placeholder || 'كل العصور'}</span>
             <ChevronDown size={18} className={isEraOpen ? styles.rotateIcon : ''} />
           </div>
           <ul className={`${styles.dropdownMenu} ${isEraOpen ? styles.open : ''}`}>
-            <li className={styles.dropdownItem} onClick={() => handleEraSelection(strings.maps.eras_placeholder)}>{strings.maps.all_eras}</li>
+            <li className={styles.dropdownItem} onClick={() => handleEraSelection(strings?.maps?.eras_placeholder)}>{strings?.maps?.all_eras || 'كل العصور'}</li>
             {eras.map(era => <li key={era} className={styles.dropdownItem} onClick={() => handleEraSelection(era)}>{era}</li>)}
           </ul>
         </div>
 
-        {/* Choose a place — scoped to the currently selected era */}
         <div className={`${styles.customSelectWrapper} ${isPlaceOpen ? styles.activeWrapper : ''}`} ref={placeRef}>
           <div
             className={`${styles.selectTrigger} ${eraFilteredPoints.length === 0 ? styles.disabledTrigger : ''}`}
             onClick={() => eraFilteredPoints.length > 0 && setIsPlaceOpen(!isPlaceOpen)}
           >
             <MapPin size={18} />
-            <span>{selectedPoint ? selectedPoint.name : (strings.maps.choose_place_placeholder || 'اختر مكانًا')}</span>
+            <span>{selectedPoint ? selectedPoint.name : (strings?.maps?.choose_place_placeholder || 'اختر مكانًا')}</span>
             <ChevronDown size={18} className={isPlaceOpen ? styles.rotateIcon : ''} />
           </div>
           <ul className={`${styles.dropdownMenu} ${isPlaceOpen ? styles.open : ''}`}>
@@ -471,7 +480,7 @@ export default function MapsPage() {
 
       <button className={styles.discoverBtn} onClick={handleRandomDiscover} disabled={eraFilteredPoints.length === 0}>
         <Shuffle size={18} />
-        {strings.maps.discover_button_label || 'اكتشف مكانًا عشوائيًا'}
+        {strings?.maps?.discover_button_label || 'اكتشف مكانًا عشوائيًا'}
       </button>
 
       <div className={styles.mapContainer}>
@@ -514,11 +523,11 @@ export default function MapsPage() {
                 <div
                   className={styles.popupCard}
                   style={{
-                    '--era-color': popupEraColors.base,
-                    '--era-color-dark': popupEraColors.dark,
-                    '--era-color-tint-10': popupEraColors.tint10,
-                    '--era-color-tint-15': popupEraColors.tint15,
-                    '--era-color-tint-25': popupEraColors.tint25,
+                    '--era-color': popupEraColors?.base || FALLBACK_HEX,
+                    '--era-color-dark': popupEraColors?.dark || '#000',
+                    '--era-color-tint-10': popupEraColors?.tint10 || 'rgba(0,0,0,0.1)',
+                    '--era-color-tint-15': popupEraColors?.tint15 || 'rgba(0,0,0,0.15)',
+                    '--era-color-tint-25': popupEraColors?.tint25 || 'rgba(0,0,0,0.25)',
                   }}
                 >
                   <div className={styles.popupBand}>
@@ -537,14 +546,14 @@ export default function MapsPage() {
                         className={styles.bibleLinkBtn}
                         onClick={() => router.push(`/bible?book=${encodeURIComponent(selectedPoint.book)}&chapter=${selectedPoint.chapter || 1}`)}
                       >
-                        <BookOpen size={18} /> {strings.maps.read_in_bible}
+                        <BookOpen size={18} /> {strings?.maps?.read_in_bible || 'اقرأ في الكتاب'}
                       </button>
                     )}
 
                     {nearbyPlaces.length > 0 && (
                       <div className={styles.nearbyWrapper}>
                         <span className={styles.nearbyTitle}>
-                          <Navigation size={14} /> {strings.maps.nearby_places_label || 'أماكن قريبة'}
+                          <Navigation size={14} /> {strings?.maps?.nearby_places_label || 'أماكن قريبة'}
                         </span>
                         <div className={styles.nearbyList}>
                           {nearbyPlaces.map((np, idx) => (
@@ -552,7 +561,7 @@ export default function MapsPage() {
                               <span className={styles.nearbyDot} />
                               <span className={styles.nearbyName}>{np.name}</span>
                               <span className={styles.nearbyDistance}>
-                                {np.distanceKm.toFixed(1)} {strings.maps.km_unit || 'كم'}
+                                {np.distanceKm.toFixed(1)} {strings?.maps?.km_unit || 'كم'}
                               </span>
                             </button>
                           ))}

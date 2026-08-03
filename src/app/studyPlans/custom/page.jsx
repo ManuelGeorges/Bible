@@ -95,16 +95,38 @@ export default function CustomPlanForm() {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    /**
+     * تنظيف وتحويل بيانات الخطة القادمة من الذكاء الاصطناعي لضمان وجود الأصحاحات
+     */
     const cleanPlanData = (plan) => {
         if (!plan.readings || !Array.isArray(plan.readings)) return plan;
+
         return {
             ...plan,
-            readings: plan.readings.map(reading => ({
-                ...reading,
-                books: Array.isArray(reading.books)
-                    ? reading.books.map(book => book.replace(/إنجيل\s+/g, '').replace(/سفر\s+/g, '').trim())
-                    : []
-            }))
+            readings: plan.readings.map(reading => {
+                // محاولة استخراج الكتب من مفاتيح مختلفة قد يرجعها الذكاء الاصطناعي
+                let books = reading.books || reading.chapters || reading.content || reading.items || [];
+
+                // التأكد من أنها مصفوفة
+                if (!Array.isArray(books)) {
+                    if (typeof books === 'string') {
+                        books = [books];
+                    } else {
+                        books = [];
+                    }
+                }
+
+                return {
+                    ...reading,
+                    books: books.map(book =>
+                        String(book)
+                            .replace(/إنجيل\s+/g, '')
+                            .replace(/سفر\s+/g, '')
+                            .replace(/رسالة\s+/g, '')
+                            .trim()
+                    ).filter(b => b.length > 0)
+                };
+            }).filter(r => r.books.length > 0) // إزالة الأيام التي لا تحتوي على قراءات
         };
     };
 
@@ -113,7 +135,7 @@ export default function CustomPlanForm() {
         const cacheKey = `${CACHE_KEYS.STUDY_PLAN}${language}:${data.mood.trim().toLowerCase()}:${durationDays}:${data.level}`;
 
         try {
-            // 1. التحقق من Redis أولاً (Client-side cache check)
+            // 1. التحقق من الكاش
             const cached = await kv.get(cacheKey);
             if (cached) return cached;
 
@@ -121,7 +143,6 @@ export default function CustomPlanForm() {
             const intensityLabel = intensities.find(i => i.id === data.level)?.label || strings.studyPlans.custom.intensities.default;
 
             const attemptGeneration = async (attemptIndex) => {
-                // 2. طلب السيرفر بدلاً من طلب Gemini مباشرة
                 const response = await fetch(`${API_BASE_URL}/api/gemini/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -146,7 +167,7 @@ export default function CustomPlanForm() {
 
                 const planResult = JSON.parse(jsonMatch[0]);
 
-                // 3. تخزين النتيجة في Redis بعد النجاح
+                // تخزين النتيجة في الكاش
                 await kv.set(cacheKey, planResult);
                 return planResult;
             };
@@ -167,14 +188,13 @@ export default function CustomPlanForm() {
 
     const handleSubmit = async () => {
         if (loading) return;
-        const actualDuration = formData.duration === 'custom' ? parseInt(formData.customDays) : parseInt(formData.duration);
 
         if (!formData.mood.trim() || !formData.duration || !formData.level) {
             toast.error(strings.studyPlans.custom.error_incomplete);
             return;
         }
 
-        if (formData.mood.trim().length < 10) {
+        if (formData.mood.trim().length < 5) {
             toast.error(strings.studyPlans.custom.error_mood_short);
             return;
         }
@@ -185,8 +205,15 @@ export default function CustomPlanForm() {
         try {
             const rawPlan = await generatePlanWithAI(formData);
 
-            if (rawPlan && rawPlan.readings) {
-                const plan = cleanPlanData(rawPlan);
+            if (rawPlan && (rawPlan.readings || rawPlan.plan?.readings)) {
+                // التعامل مع احتمالية وجود كائن متداخل
+                const actualPlanData = rawPlan.readings ? rawPlan : rawPlan.plan;
+                const plan = cleanPlanData(actualPlanData);
+
+                if (!plan.readings || plan.readings.length === 0) {
+                    throw new Error(language === 'ar' ? "فشل في استخراج الأصحاحات. يرجى المحاولة مرة أخرى." : "Failed to extract chapters. Please try again.");
+                }
+
                 const planId = `ai_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
                 const currentUser = auth.currentUser;
 
@@ -207,7 +234,7 @@ export default function CustomPlanForm() {
                         customPlans: { [planId]: newPlanObject }
                     }, { merge: true });
                 } else {
-                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || await StorageService.get('local_custom_plans') || {};
+                    const localCustom = await StorageService.get(KEYS.CUSTOM_PLANS) || {};
                     localCustom[planId] = newPlanObject;
                     await StorageService.save(KEYS.CUSTOM_PLANS, localCustom);
                 }
@@ -231,6 +258,7 @@ export default function CustomPlanForm() {
                 throw new Error(strings.studyPlans.custom.ai_error);
             }
         } catch (error) {
+            console.error("Submit error:", error);
             toast.error(error.message || strings.studyPlans.custom.generic_error);
         } finally {
             setLoading(false);

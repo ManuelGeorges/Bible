@@ -4,13 +4,7 @@ import { kv } from "../../../lib/kv";
 
 // FIX: was unconditionally 'force-static', which is meant for GET routes and
 // doesn't make sense forced onto a POST handler that reads a per-request body.
-// This only needs to be 'force-static' during the mobile *export* build (so
-// `next build` with output:'export' doesn't fail on a dynamic route it will
-// never actually call). On your real hosted server (agiosbible.com), this
-// evaluates to 'force-dynamic' so every request is handled live, uncached.
-// NEXT_PUBLIC_ vars are inlined at build time, so this is safe as a static export.
-export const dynamic = 'force-static';
-
+export const dynamic = 'force-dynamic';
 
 const apiKeys = [
   "AIzaSyDY3uFV5mupj3tgj6PDx3A_xKtZkLDvTcQ",
@@ -54,8 +48,18 @@ const PROMPTS = {
     de: (targetText) => `Agios-Assistent. Analyse: ${targetText}. Antworten Sie auf Deutsch. Kein Markdown.`
   },
   studyPlan: {
-    ar: (mood, durationDays, intensityLabel, allowedBooks) => `أنت "أجيوس"، خبير الإرشاد الروحي. صياغة رحلة قراءة لـ: "${mood}"، مدة: ${durationDays} أيام، كثافة: ${intensityLabel}. المطلوب JSON فقط: {"title": "...", "description": "...", "readings": []}. الأسفار: [${allowedBooks}]`,
-    en: (mood, durationDays, intensityLabel, allowedBooks) => `Create study plan for: "${mood}". JSON only.`,
+    ar: (mood, durationDays, intensityLabel, allowedBooks) => `أنت "أجيوس"، خبير الإرشاد الروحي. صياغة رحلة قراءة لـ: "${mood}"، مدة: ${durationDays} أيام، كثافة: ${intensityLabel}.
+المطلوب JSON فقط بنفس الهيكل التالي بدقة:
+{
+  "title": "عنوان الخطة",
+  "description": "وصف الخطة",
+  "readings": [
+    { "day": 1, "books": ["اسم السفر رقم الأصحاح", "مثال: تكوين 1"] },
+    { "day": 2, "books": ["..."] }
+  ]
+}
+الأسفار المتاحة للاستخدام: [${allowedBooks}]`,
+    en: (mood, durationDays, intensityLabel, allowedBooks) => `Create study plan for: "${mood}". JSON only following this structure: {"title": "...", "description": "...", "readings": [{"day": 1, "books": ["Genesis 1"]}]}`,
     fr: (mood, durationDays, intensityLabel, allowedBooks) => `Créer un plan d'étude. JSON uniquement.`,
     de: (mood, durationDays, intensityLabel, allowedBooks) => `Studienplan erstellen. JSON nur.`
   }
@@ -69,8 +73,6 @@ export async function OPTIONS() {
 }
 
 export async function POST(req) {
-  // Skip real execution only during the mobile static-export build itself.
-  // The deployed server (agiosbible.com) never sets this, so it always runs live.
   if (process.env.NEXT_PUBLIC_EXPORT === 'true') {
     return NextResponse.json({ static: true }, { headers: corsHeaders });
   }
