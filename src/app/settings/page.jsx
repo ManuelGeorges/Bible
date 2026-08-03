@@ -296,12 +296,12 @@ const Settings = () => {
       try {
         const userId = currentUser.uid;
 
-        // 2. محاولة حذف المستخدم من Auth أولاً
-        await deleteUser(currentUser);
-
-        // 3. إذا نجح حذف الـ Auth، نقوم بحذف بيانات Firestore
+        // 1. حذف بيانات Firestore أولاً (بينما لا يزال المستخدم مسجلاً دخوله)
         const userDocRef = doc(db, 'users', userId);
         await deleteDoc(userDocRef);
+
+        // 2. ثم حذف المستخدم من Auth
+        await deleteUser(currentUser);
 
         alert(strings.settings.account.delete_success);
         router.push('/intro');
@@ -803,7 +803,6 @@ const Settings = () => {
           </h2>
           <p className={styles.subText} style={{ marginBottom: '15px' }}>
             {strings.settings.account.desc}
-          }
           </p>
           <div className={styles.accountButtons}>
             <button className={styles.logoutButton} onClick={handleLogout}>

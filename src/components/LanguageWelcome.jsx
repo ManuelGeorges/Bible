@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useLanguage } from '../app/context/LanguageContext';
 import { useTheme } from 'next-themes';
 import { Sun, Moon, Laptop } from 'lucide-react';
@@ -14,15 +14,22 @@ const languages = [
 ];
 
 export default function LanguageWelcome() {
-    const { changeLanguage, isFirstTime, isHydrated, strings, finishFirstTime } = useLanguage();
+    const {
+        changeLanguage,
+        isFirstTime,
+        isHydrated,
+        strings,
+        finishFirstTime,
+        onboardingStep,
+        setOnboardingStep
+    } = useLanguage();
     const { setTheme } = useTheme();
-    const [step, setStep] = useState('language'); // steps: 'language', 'theme'
 
     if (!isHydrated || !isFirstTime) return null;
 
     const handleLanguageSelect = async (code) => {
         await changeLanguage(code);
-        setStep('theme');
+        setOnboardingStep('theme');
     };
 
     const handleThemeSelect = (themeName) => {
@@ -33,7 +40,7 @@ export default function LanguageWelcome() {
     return (
         <div className={styles.overlay}>
             <div className={styles.card}>
-                {step === 'language' ? (
+                {onboardingStep === 'language' ? (
                     <>
                         <h1 className={styles.title}>Welcome to Agios</h1>
                         <p className={styles.subtitle}>Please choose your preferred language</p>

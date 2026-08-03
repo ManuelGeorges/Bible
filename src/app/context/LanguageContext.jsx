@@ -23,6 +23,7 @@ export function LanguageProvider({ children }) {
     const [keepBibleAwake, setKeepBibleAwake] = useState(true);
 
     const [isFirstTime, setIsFirstTime] = useState(false);
+    const [onboardingStep, setOnboardingStep] = useState('language'); // 'language' or 'theme'
     const [isHydrated, setIsHydrated] = useState(false);
 
     // دالة لتحميل الترجمة ديناميكياً لتقليل حجم الحزمة الابتدائية
@@ -47,10 +48,15 @@ export function LanguageProvider({ children }) {
     useEffect(() => {
         const init = async () => {
             const savedLang = localStorage.getItem('app_lang');
-            if (!savedLang) {
+            const onboardingDone = localStorage.getItem('onboarding_done') === 'true';
+
+            if (!savedLang || !onboardingDone) {
                 setIsFirstTime(true);
-                setLanguage('ar');
-                await loadTranslations('ar');
+                const langToLoad = savedLang || 'ar';
+                setLanguage(langToLoad);
+                await loadTranslations(langToLoad);
+                // إذا كان اختار اللغة مسبقاً ولكن لم يكمل الثيم
+                if (savedLang) setOnboardingStep('theme');
             } else {
                 setLanguage(savedLang);
                 await loadTranslations(savedLang);
@@ -64,7 +70,6 @@ export function LanguageProvider({ children }) {
             const savedTashkeel = localStorage.getItem('useTashkeel') === 'true';
             setUseTashkeel(savedTashkeel);
 
-            // تحميل إعدادات إبقاء الشاشة (تفعيل تلقائي إذا لم يكن هناك إعداد مسبق)
             const appAwakeRaw = localStorage.getItem('keepAppAwake');
             const bibleAwakeRaw = localStorage.getItem('keepBibleAwake');
 
@@ -159,6 +164,7 @@ export function LanguageProvider({ children }) {
 
     const finishFirstTime = () => {
         setIsFirstTime(false);
+        localStorage.setItem('onboarding_done', 'true');
     };
 
     const changeParallelLanguage = (newLang) => {
@@ -221,6 +227,8 @@ export function LanguageProvider({ children }) {
         toggleKeepBibleAwake,
         isFirstTime,
         setIsFirstTime,
+        onboardingStep,
+        setOnboardingStep,
         finishFirstTime,
         isHydrated,
         formatNumber
