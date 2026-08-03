@@ -1,28 +1,16 @@
 /**
- * توحيد التعامل مع التوقيت ليكون دائماً بتوقيت القاهرة
+ * التعامل مع التوقيت ليكون حسب توقيت المستخدم المحلي
  */
 
 export const getCairoDateInfo = (date = new Date()) => {
     try {
-        const formatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Africa/Cairo',
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hour12: false
-        });
-        const parts = formatter.formatToParts(date);
-        const getPart = (type) => parseInt(parts.find(p => p.type === type)?.value);
-
-        const year = getPart('year');
-        const month = getPart('month');
-        const day = getPart('day');
-        const hour = getPart('hour');
-        const minute = getPart('minute');
-        const second = getPart('second');
+        // نستخدم التوقيت المحلي للمستخدم بدلاً من توقيت القاهرة
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hour = date.getHours();
+        const minute = date.getMinutes();
+        const second = date.getSeconds();
 
         return {
             year,
@@ -32,7 +20,7 @@ export const getCairoDateInfo = (date = new Date()) => {
             minute,
             second,
             key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-            fullIso: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}.000Z`
+            fullIso: date.toISOString()
         };
     } catch (e) {
         // Fallback
@@ -45,6 +33,9 @@ export const getCairoDateInfo = (date = new Date()) => {
         };
     }
 };
+
+// ملاحظة: حافظنا على أسماء الدوال كما هي لتجنب كسر الكود في باقي الملفات،
+// ولكن المنطق أصبح يعتمد على التوقيت المحلي للمستخدم.
 
 export const getCairoDate = (date = new Date()) => getCairoDateInfo(date).key;
 

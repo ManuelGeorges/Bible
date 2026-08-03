@@ -9,7 +9,7 @@ import { doc, onSnapshot, updateDoc, arrayUnion, increment, getDoc } from 'fireb
 import { 
   FaBookOpen, FaFeatherAlt, FaHeart, FaChevronDown, FaEye, FaEyeSlash,
   FaTrophy, FaChartLine, FaHistory, FaMapMarkedAlt, FaSearch,
-  FaShareAlt, FaFire, FaSignInAlt, FaCheckCircle, FaStar
+  FaShareAlt, FaFire, FaSignInAlt, FaCheckCircle, FaStar, FaMagic
 } from 'react-icons/fa';
 import Badge from '../../components/Badge/Badge';
 import { toast } from 'react-hot-toast';
@@ -77,7 +77,9 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
     share: 15,
     favouriteVerse: 5,
     mapExploration: 40,
-    studyPlanDay: 30
+    studyPlanDay: 30,
+    studyPlanProgress: 30,
+    verseAnalysis: 15
   };
 
   const historyData = data.pointsHistory || data.history || [];
@@ -140,7 +142,9 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
     { id: 'mapExploration', label: String(S.points?.goals?.mapExploration || 'Explore map'), points: 40, icon: <FaMapMarkedAlt />, completed: history.some(h => h.activity === 'mapExploration' && h.dateStr === today) },
     { id: 'share', label: String(S.points?.goals?.share || 'Share'), points: 15, icon: <FaShareAlt />, completed: history.some(h => h.activity === 'share' && h.dateStr === today) },
     { id: 'completedChapter', label: String(S.points?.goals?.completedChapter || 'Complete chapter'), points: 20, icon: <FaBookOpen />, completed: history.some(h => h.activity === 'completedChapter' && h.dateStr === today) },
-    { id: 'favouriteVerse', label: String(S.points?.goals?.favouriteVerse || 'Favourite verse'), points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) }
+    { id: 'favouriteVerse', label: String(S.points?.goals?.favouriteVerse || 'Favourite verse'), points: 5, icon: <FaHeart />, completed: history.some(h => h.activity === 'favouriteVerse' && h.dateStr === today) },
+    { id: 'verseAnalysis', label: String(S.points?.goals?.verseAnalysis || 'AI Analysis'), points: 15, icon: <FaMagic />, completed: history.some(h => h.activity === 'verseAnalysis' && h.dateStr === today) },
+    { id: 'studyPlanProgress', label: String(S.points?.goals?.studyPlanProgress || 'Study Plan'), points: 30, icon: <FaChartLine />, completed: history.some(h => (h.activity === 'studyPlanProgress' || h.activity === 'studyPlanDay') && h.dateStr === today) }
   ];
 
   return { 
@@ -187,10 +191,10 @@ const categorizeActivities = (history) => {
     if (chartDay) chartDay.points += Math.max(0, item.points);
 
     summary.totalPoints += item.points;
-    if (['dailyLogin', 'search', 'share', 'favouriteVerse', 'dailyQuestion'].includes(item.activity)) {
+    if (['dailyLogin', 'search', 'share', 'favouriteVerse', 'dailyQuestion', 'verseAnalysis'].includes(item.activity)) {
       summary.dailyActions.count++;
       summary.dailyActions.points += item.points;
-    } else if (['completedChapter', 'studyPlanDay'].includes(item.activity)) {
+    } else if (['completedChapter', 'studyPlanDay', 'studyPlanProgress'].includes(item.activity)) {
       summary.reading.count++;
       summary.reading.points += item.points;
     } else if (item.activity === 'mapExploration') {
@@ -226,6 +230,8 @@ export default function Points() {
         case 'share': router.push('/#daily-verse'); break;
         case 'completedChapter': router.push('/bible'); break;
         case 'favouriteVerse': router.push('/bible'); break;
+        case 'verseAnalysis': router.push('/bible'); break;
+        case 'studyPlanProgress': router.push('/studyPlans'); break;
         default: break;
     }
   };

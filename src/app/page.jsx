@@ -430,10 +430,12 @@ const LandingPage = () => {
                         const goals = [
                             { id: 'dailyLogin', label: strings.home.goals.dailyLogin, completed: data.lastActiveDate === today },
                             { id: 'dailyQuestion', label: strings.home.goals.dailyQuestion, completed: !!data.answeredQuestions?.[today]?.answered },
-                            { id: 'verseAnalysis', label: strings.home.goals.verseAnalysis, completed: completedTodayTypes.has('verseAnalysis') },
-                            { id: 'studyPlanProgress', label: strings.home.goals.studyPlanProgress, completed: completedTodayTypes.has('studyPlanProgress') },
+                            { id: 'mapExploration', label: strings.home.goals.mapExploration, completed: completedTodayTypes.has('mapExploration') },
                             { id: 'share', label: strings.home.goals.share, completed: completedTodayTypes.has('share') },
                             { id: 'completedChapter', label: strings.home.goals.completedChapter, completed: completedTodayTypes.has('completedChapter') },
+                            { id: 'favouriteVerse', label: strings.home.goals.favouriteVerse, completed: completedTodayTypes.has('favouriteVerse') },
+                            { id: 'verseAnalysis', label: strings.home.goals.verseAnalysis, completed: completedTodayTypes.has('verseAnalysis') },
+                            { id: 'studyPlanProgress', label: strings.home.goals.studyPlanProgress, completed: completedTodayTypes.has('studyPlanProgress') || completedTodayTypes.has('studyPlanDay') },
                         ];
                         setDailyGoals(goals);
                         setIsLoading(false);
@@ -494,7 +496,11 @@ const LandingPage = () => {
                 setStartedPlans(allStarted);
 
                 const completedTodayTypes = new Set(
-                    localHistory.filter(h => getCairoDate(new Date(h.timestamp)) === today).map(h => h.type)
+                    localHistory.filter(h => {
+                        try {
+                            return getCairoDate(new Date(h.timestamp)) === today;
+                        } catch(e) { return false; }
+                    }).map(h => h.type)
                 );
 
                 const lastActive = await StorageService.get(KEYS.LAST_ACTIVE);
@@ -502,10 +508,12 @@ const LandingPage = () => {
                 const goals = [
                     { id: 'dailyLogin', label: strings.home.goals.dailyLogin, completed: lastActive === today },
                     { id: 'dailyQuestion', label: strings.home.goals.dailyQuestion, completed: !!localAnswered[today]?.answered },
-                    { id: 'verseAnalysis', label: strings.home.goals.verseAnalysis, completed: completedTodayTypes.has('verseAnalysis') },
-                    { id: 'studyPlanProgress', label: strings.home.goals.studyPlanProgress, completed: completedTodayTypes.has('studyPlanProgress') },
+                    { id: 'mapExploration', label: strings.home.goals.mapExploration, completed: completedTodayTypes.has('mapExploration') },
                     { id: 'share', label: strings.home.goals.share, completed: completedTodayTypes.has('share') },
                     { id: 'completedChapter', label: strings.home.goals.completedChapter, completed: completedTodayTypes.has('completedChapter') },
+                    { id: 'favouriteVerse', label: strings.home.goals.favouriteVerse, completed: completedTodayTypes.has('favouriteVerse') },
+                    { id: 'verseAnalysis', label: strings.home.goals.verseAnalysis, completed: completedTodayTypes.has('verseAnalysis') },
+                    { id: 'studyPlanProgress', label: strings.home.goals.studyPlanProgress, completed: completedTodayTypes.has('studyPlanProgress') || completedTodayTypes.has('studyPlanDay') },
                 ];
                 setDailyGoals(goals);
 
@@ -741,6 +749,9 @@ const LandingPage = () => {
                 router.push('/maps');
                 break;
             case 'completedChapter':
+                router.push('/bible');
+                break;
+            case 'favouriteVerse':
                 router.push('/bible');
                 break;
             case 'dailyLogin':
