@@ -82,7 +82,9 @@
       "mapExploration": "Map Exploration",
       "share": "Daily Share",
       "completedChapter": "Read a Chapter",
-      "favouriteVerse": "Highlight a Verse"
+      "favouriteVerse": "Highlight a Verse",
+      "verseAnalysis": "Verse Analysis (AI)",
+      "studyPlanProgress": "Plan Progress"
     },
     "quick_links": {
       "bible": "Holy Bible",
@@ -505,12 +507,16 @@
       "mapExploration": "Explore a landmark on map",
       "share": "Share a verse or content",
       "completedChapter": "Read a full chapter",
-      "favouriteVerse": "Highlight a verse"
+      "favouriteVerse": "Highlight a verse",
+      "verseAnalysis": "AI Verse Analysis",
+      "studyPlanProgress": "Study Plan Progress"
     },
     "points_reasons": {
       "daily_login": "Daily Login",
       "share_daily_verse": "Share daily verse from home page",
-      "highlight_daily_verse": "Highlight daily verse from home page"
+      "highlight_daily_verse": "Highlight daily verse from home page",
+      "verse_analysis": "Verse analysis by Agios AI Assistant",
+      "study_plan_progress": "Progress in daily study plan"
     }
   },
   "competitions": {
@@ -833,8 +839,7 @@
       },
       {
         "version": "2.0.0",
-        "date": "Previous Update",
-        "title": "Major Update & Multilingual Support",
+        "date": "Major Update & Multilingual Support",
         "features": [
           "Complete restructuring of the app for multilingual support",
           "Added support for 3 new languages (English, French, German) with core features",

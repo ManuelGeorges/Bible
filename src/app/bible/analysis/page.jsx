@@ -9,6 +9,11 @@ import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../../lib/kv';
 import { useLanguage } from '../../context/LanguageContext';
+import { getAuth } from "firebase/auth";
+import { doc, updateDoc, increment, arrayUnion, getDoc } from "firebase/firestore";
+import { db } from '../../../lib/firebase';
+import { StorageService, KEYS } from '../../../lib/storage';
+import { getCairoIsoString, getCairoDate } from '../../../lib/dateUtils';
 
 const API_BASE_URL = 'https://www.agiosbible.com';
 
@@ -102,6 +107,48 @@ function AnalysisContent() {
     setSectionAnchors(anchors);
   }, [analysis]);
 
+  const recordAnalysisGoal = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const today = getCairoDate();
+
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        const history = data.pointsHistory || [];
+        const alreadyDone = history.some(h => h.type === 'verseAnalysis' && h.timestamp && getCairoDate(h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)) === today);
+
+        if (!alreadyDone) {
+          await updateDoc(userRef, {
+            totalPoints: increment(15),
+            pointsHistory: arrayUnion({
+              type: 'verseAnalysis',
+              points: 15,
+              reason: strings.points.points_reasons.verse_analysis || 'تحليل آية بالذكاء الاصطناعي',
+              timestamp: getCairoIsoString()
+            })
+          });
+        }
+      }
+    } else {
+      const localHistory = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+      const alreadyDone = localHistory.some(h => h.type === 'verseAnalysis' && getCairoDate(new Date(h.timestamp)) === today);
+
+      if (!alreadyDone) {
+        await StorageService.addPoints(15);
+        localHistory.push({
+          type: 'verseAnalysis',
+          points: 15,
+          reason: strings.points.points_reasons.verse_analysis || 'تحليل آية بالذكاء الاصطناعي',
+          timestamp: getCairoIsoString()
+        });
+        await StorageService.save(KEYS.POINTS_HISTORY, localHistory);
+      }
+    }
+  };
+
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
@@ -122,6 +169,7 @@ function AnalysisContent() {
             analysisRef.current = content;
             setIsLoading(false);
             setCountdown(0);
+            recordAnalysisGoal();
             return;
           }
         } catch (e) {
@@ -129,6 +177,7 @@ function AnalysisContent() {
           analysisRef.current = cachedRaw;
           setIsLoading(false);
           setCountdown(0);
+          recordAnalysisGoal();
           return;
         }
       }
@@ -198,6 +247,7 @@ function AnalysisContent() {
           }
           storeObj[language || 'en'] = text;
           await kv.set(cacheKeyBase, JSON.stringify(storeObj));
+          recordAnalysisGoal();
         } catch (e) {
           console.error("KV Write Error:", e);
         }

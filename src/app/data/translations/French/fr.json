@@ -74,7 +74,9 @@
       "mapExploration": "Exploration de la carte",
       "share": "Partage quotidien",
       "completedChapter": "Lire un chapitre",
-      "favouriteVerse": "Surligner un verset"
+      "favouriteVerse": "Surligner un verset",
+      "verseAnalysis": "Analyse de verset (IA)",
+      "studyPlanProgress": "Progrès du plan"
     },
     "quick_links": {
       "bible": "Bible",
@@ -495,12 +497,16 @@
       "mapExploration": "Explorer un lieu sur la carte",
       "share": "Partager un verset ou du contenu",
       "completedChapter": "Lire un chapitre complet",
-      "favouriteVerse": "Surligner un verset"
+      "favouriteVerse": "Surligner un verset",
+      "verseAnalysis": "Analyse de verset (IA)",
+      "studyPlanProgress": "Progrès dans le plan"
     },
     "points_reasons": {
       "daily_login": "Connexion quotidienne",
       "share_daily_verse": "Partager le verset du jour depuis la page d'accueil",
-      "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil"
+      "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil",
+      "verse_analysis": "Analyse de verset par l'assistant IA Agios",
+      "study_plan_progress": "Progrès dans le plan d'étude quotidien"
     }
   },
   "competitions": {

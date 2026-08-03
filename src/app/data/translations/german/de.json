@@ -82,7 +82,9 @@
       "mapExploration": "Kartenerkundung",
       "share": "Tägliches Teilen",
       "completedChapter": "Kapitel gelesen",
-      "favouriteVerse": "Vers markiert"
+      "favouriteVerse": "Vers markiert",
+      "verseAnalysis": "Vers-Analyse (KI)",
+      "studyPlanProgress": "Plan-Fortschritt"
     },
     "quick_links": {
       "bible": "Bibel",
@@ -339,7 +341,7 @@
   },
   "maps": {
     "title": "Bibelkarten",
-    "search_placeholder": "Suche nach einem Ort oder einer Stadt...",
+    "search_placeholder": "Suche nach einem ort oder einer Stadt...",
     "no_results": "Keine Ergebnisse für deine Suche",
     "eras_placeholder": "Epochen",
     "choose_era": "Epoche wählen",
@@ -501,12 +503,16 @@
       "mapExploration": "Wahrzeichen auf Karte erkunden",
       "share": "Vers oder Inhalt teilen",
       "completedChapter": "Ganzes Kapitel lesen",
-      "favouriteVerse": "Einen Vers markieren"
+      "favouriteVerse": "Einen Vers markieren",
+      "verseAnalysis": "Vers-Analyse durch KI",
+      "studyPlanProgress": "Fortschritt im Leseplan"
     },
     "points_reasons": {
       "daily_login": "Tägliche Anmeldung",
       "share_daily_verse": "Täglichen Vers von der Startseite teilen",
-      "highlight_daily_verse": "Täglichen Vers von der Startseite markieren"
+      "highlight_daily_verse": "Täglichen Vers von der Startseite markieren",
+      "verse_analysis": "Vers-Analyse durch den Agios KI-Assistenten",
+      "study_plan_progress": "Fortschritt im täglichen Leseplan"
     }
   },
   "competitions": {
@@ -708,7 +714,7 @@
         "date": "Aktuelles Update",
         "title": "Umfassende Verbesserungen & wichtige Korrekturen",
         "features": [
-          "Radikale Fehlerbehebung und Verbesserung der Karten für ein besseres Erkundungserlebnis",
+          "Radikale Fehlerbehebung und Verbesserung der Karten für ein besseres Erkundungسرlebnis",
           "Erhebliche Absicherung der App und Daten zur Gewährleistung höchster Privatsphäre",
           "Verbesserte KI-Leistung für Reaktionsfähigkeit auch bei schwacher Internetverbindung",
           "Möglichkeit zur getrennten Auswahl von Buch und Kapitel für einfachere Navigation hinzugefügt",

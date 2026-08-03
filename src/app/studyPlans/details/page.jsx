@@ -6,11 +6,11 @@ import Link from 'next/link';
 import styles from './PlanDetails.module.css';
 import studyPlansData from '../studyPlansData.json';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, arrayUnion, getDoc, increment } from "firebase/firestore";
 import { db } from '../../../lib/firebase';
 import toast from 'react-hot-toast';
 import { useBadge } from '../../context/BadgeContext';
-import { getCairoIsoString } from '../../../lib/dateUtils';
+import { getCairoIsoString, getCairoDate } from '../../../lib/dateUtils';
 import { StorageService, KEYS } from '../../../lib/storage';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -377,6 +377,46 @@ function PlanDetailsContent() {
     return books.every(b => isReadingDone(b));
   };
 
+  const recordPlanProgressGoal = async () => {
+    const today = getCairoDate();
+
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        const history = data.pointsHistory || [];
+        const alreadyDone = history.some(h => h.type === 'studyPlanProgress' && h.timestamp && getCairoDate(h.timestamp.toDate ? h.timestamp.toDate() : new Date(h.timestamp)) === today);
+
+        if (!alreadyDone) {
+          await updateDoc(userRef, {
+            totalPoints: increment(10),
+            pointsHistory: arrayUnion({
+              type: 'studyPlanProgress',
+              points: 10,
+              reason: strings.points.points_reasons.study_plan_progress || 'التقدم في خطة دراسية',
+              timestamp: getCairoIsoString()
+            })
+          });
+        }
+      }
+    } else {
+      const localHistory = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+      const alreadyDone = localHistory.some(h => h.type === 'studyPlanProgress' && getCairoDate(new Date(h.timestamp)) === today);
+
+      if (!alreadyDone) {
+        await StorageService.addPoints(10);
+        localHistory.push({
+          type: 'studyPlanProgress',
+          points: 10,
+          reason: strings.points.points_reasons.study_plan_progress || 'التقدم في خطة دراسية',
+          timestamp: getCairoIsoString()
+        });
+        await StorageService.save(KEYS.POINTS_HISTORY, localHistory);
+      }
+    }
+  };
+
   const handleCheck = async (day) => {
     if (!plan) return;
     const isCurrentlyManual = completedDays[day]?.isCompleted;
@@ -391,6 +431,7 @@ function PlanDetailsContent() {
         dateCompleted: getCairoIsoString()
       };
       toast.success(strings.studyPlans.details.done_manual);
+      recordPlanProgressGoal();
     }
 
     const totalDays = plan.readings.length;

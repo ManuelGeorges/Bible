@@ -430,10 +430,10 @@ const LandingPage = () => {
                         const goals = [
                             { id: 'dailyLogin', label: strings.home.goals.dailyLogin, completed: data.lastActiveDate === today },
                             { id: 'dailyQuestion', label: strings.home.goals.dailyQuestion, completed: !!data.answeredQuestions?.[today]?.answered },
-                            { id: 'mapExploration', label: strings.home.goals.mapExploration, completed: completedTodayTypes.has('mapExploration') },
+                            { id: 'verseAnalysis', label: strings.home.goals.verseAnalysis, completed: completedTodayTypes.has('verseAnalysis') },
+                            { id: 'studyPlanProgress', label: strings.home.goals.studyPlanProgress, completed: completedTodayTypes.has('studyPlanProgress') },
                             { id: 'share', label: strings.home.goals.share, completed: completedTodayTypes.has('share') },
                             { id: 'completedChapter', label: strings.home.goals.completedChapter, completed: completedTodayTypes.has('completedChapter') },
-                            { id: 'favouriteVerse', label: strings.home.goals.favouriteVerse, completed: completedTodayTypes.has('favouriteVerse') },
                         ];
                         setDailyGoals(goals);
                         setIsLoading(false);
@@ -493,20 +493,6 @@ const LandingPage = () => {
                 const allStarted = [...activeCustom, ...activeStatic, ...activeShared];
                 setStartedPlans(allStarted);
 
-                if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
-                    try {
-                        const plansSummary = allStarted.map(p => ({
-                            id: p.id,
-                            title: p.title,
-                            percent: p.stats?.percent || 0,
-                            remainingDays: (p.stats?.totalDays || 0) - (p.stats?.daysDone || 0)
-                        }));
-                        window.AgiosScannerNative.updateUserStats(localStats.streak, JSON.stringify(plansSummary), localStats.points);
-                    } catch (err) {
-                        console.error("Native Bridge Error:", err);
-                    }
-                }
-
                 const completedTodayTypes = new Set(
                     localHistory.filter(h => getCairoDate(new Date(h.timestamp)) === today).map(h => h.type)
                 );
@@ -516,10 +502,10 @@ const LandingPage = () => {
                 const goals = [
                     { id: 'dailyLogin', label: strings.home.goals.dailyLogin, completed: lastActive === today },
                     { id: 'dailyQuestion', label: strings.home.goals.dailyQuestion, completed: !!localAnswered[today]?.answered },
-                    { id: 'mapExploration', label: strings.home.goals.mapExploration, completed: completedTodayTypes.has('mapExploration') },
+                    { id: 'verseAnalysis', label: strings.home.goals.verseAnalysis, completed: completedTodayTypes.has('verseAnalysis') },
+                    { id: 'studyPlanProgress', label: strings.home.goals.studyPlanProgress, completed: completedTodayTypes.has('studyPlanProgress') },
                     { id: 'share', label: strings.home.goals.share, completed: completedTodayTypes.has('share') },
                     { id: 'completedChapter', label: strings.home.goals.completedChapter, completed: completedTodayTypes.has('completedChapter') },
-                    { id: 'favouriteVerse', label: strings.home.goals.favouriteVerse, completed: completedTodayTypes.has('favouriteVerse') },
                 ];
                 setDailyGoals(goals);
 
@@ -738,6 +724,16 @@ const LandingPage = () => {
             case 'dailyQuestion':
                 document.getElementById('daily-question')?.scrollIntoView({ behavior: 'smooth' });
                 break;
+            case 'verseAnalysis':
+                if (dailyVerse) {
+                    router.push(`/bible/analysis?book=${encodeURIComponent(dailyVerse.bookId)}&chapter=${dailyVerse.chapter}`);
+                } else {
+                    router.push('/bible');
+                }
+                break;
+            case 'studyPlanProgress':
+                router.push('/studyPlans');
+                break;
             case 'share':
                 document.getElementById('daily-verse')?.scrollIntoView({ behavior: 'smooth' });
                 break;
@@ -745,7 +741,6 @@ const LandingPage = () => {
                 router.push('/maps');
                 break;
             case 'completedChapter':
-            case 'favouriteVerse':
                 router.push('/bible');
                 break;
             case 'dailyLogin':

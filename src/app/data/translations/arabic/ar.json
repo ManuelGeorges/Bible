@@ -82,7 +82,9 @@
       "mapExploration": "استكشاف الخريطة",
       "share": "المشاركة اليومية",
       "completedChapter": "قراءة أصحاح",
-      "favouriteVerse": "تظليل آية"
+      "favouriteVerse": "تظليل آية",
+      "verseAnalysis": "تحليل آية (AI)",
+      "studyPlanProgress": "تقدم في خطة"
     },
     "quick_links": {
       "bible": "الكتاب المقدس",
@@ -496,13 +498,17 @@
       "dailyQuestion": "حل سؤال التحدي",
       "mapExploration": "استكشاف معلم في الخريطة",
       "share": "المشاركة اليومية",
-      "completedChapter": "قراءة إصحاح",
-      "favouriteVerse": "تظليل آية"
+      "completedChapter": "قراءة أصحاح",
+      "favouriteVerse": "تظليل آية",
+      "verseAnalysis": "تحليل آية بالذكاء الاصطناعي",
+      "studyPlanProgress": "تقدم في الخطة الدراسية"
     },
     "points_reasons": {
       "daily_login": "تسجيل دخول يومي",
       "share_daily_verse": "مشاركة آية اليوم من الصفحة الرئيسية",
-      "highlight_daily_verse": "تظليل آية اليوم من الصفحة الرئيسية"
+      "highlight_daily_verse": "تظليل آية اليوم من الصفحة الرئيسية",
+      "verse_analysis": "تحليل آية بواسطة مساعد أجيوس الذكي",
+      "study_plan_progress": "التقدم في خطة القراءة اليومية"
     }
   },
   "competitions": {
