@@ -23,8 +23,8 @@ import {
   Award,
   Navigation
 } from 'lucide-react';
-import { getCairoIsoString } from '../../lib/dateUtils';
-import { StorageService } from '../../lib/storage';
+import { getCairoIsoString, getCairoDate } from '../../lib/dateUtils';
+import { StorageService, KEYS } from '../../lib/storage';
 import { useLanguage } from '../context/LanguageContext';
 
 if (typeof window !== 'undefined') {
@@ -115,6 +115,7 @@ export default function MapsPage() {
   const [visitedPoints, setVisitedPoints] = useState(new Set());
   const [visitedEras, setVisitedEras] = useState(new Set());
   const [badgesCount, setBadgesCount] = useState(0);
+  const [dailyTaskDone, setDailyTaskDone] = useState(false);
 
   const mapRef = useRef(null);
   const eraRef = useRef(null);
@@ -173,11 +174,23 @@ export default function MapsPage() {
             timestamp: getCairoIsoString()
           })
         });
-        toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
+        if (amount > 0) {
+          toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
+        }
       } catch (e) { console.error(e); }
     } else {
       await StorageService.addPoints(amount);
-      toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
+      const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+      history.push({
+        type: 'mapExploration',
+        points: amount,
+        reason: reason,
+        timestamp: getCairoIsoString()
+      });
+      await StorageService.save(KEYS.POINTS_HISTORY, history);
+      if (amount > 0) {
+        toast.success(strings.maps.toasts.points_earned.replace('{amount}', formatNumber(amount)).replace('{reason}', reason));
+      }
     }
   };
 
@@ -195,6 +208,7 @@ export default function MapsPage() {
     if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
       setUser(u);
+      const today = getCairoDate();
       if (u) {
         getDoc(doc(firestore, 'users', u.uid)).then(snap => {
           if (snap.exists()) {
@@ -202,11 +216,23 @@ export default function MapsPage() {
             setVisitedPoints(new Set(data.visitedMapPoints || []));
             setVisitedEras(new Set(data.visitedEras || []));
             setBadgesCount((data.badges || []).length);
+
+            const history = data.pointsHistory || [];
+            const done = history.some(h => {
+              if (!h.timestamp) return false;
+              const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
+              return getCairoDate(ts) === today && h.type === 'mapExploration';
+            });
+            setDailyTaskDone(done);
           }
         });
       } else {
         const localBadges = await StorageService.get('local_badges') || [];
         setBadgesCount(localBadges.length);
+
+        const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
+        const done = history.some(h => h.type === 'mapExploration' && getCairoDate(new Date(h.timestamp)) === today);
+        setDailyTaskDone(done);
       }
     });
     return () => unsubscribe();
@@ -274,13 +300,22 @@ export default function MapsPage() {
     setSelectedJourney(null);
     if (point) {
       const pointId = point.id || point.name;
-      if (!visitedPoints.has(pointId)) {
+
+      const isNewDiscovery = !visitedPoints.has(pointId);
+
+      if (isNewDiscovery) {
         const newVisited = new Set(visitedPoints).add(pointId);
         setVisitedPoints(newVisited);
-        await updateUserPoints(40, strings.maps.points_reason.replace('{name}', point.name));
+        const reason = (strings?.maps?.points_reason || "Discovered landmark: {name}").replace('{name}', point.name);
+        await updateUserPoints(40, reason);
         if (user) await updateDoc(doc(firestore, 'users', user.uid), { visitedMapPoints: arrayUnion(pointId) });
         if (newVisited.size === 5) await unlockBadge('map_pioneer');
         if (newVisited.size === 20) await unlockBadge('ancient_navigator');
+        setDailyTaskDone(true);
+      } else if (!dailyTaskDone) {
+        // Record daily interaction for existing points to complete the daily task
+        await updateUserPoints(10, strings?.maps?.title || 'Map Exploration');
+        setDailyTaskDone(true);
       }
     }
   };

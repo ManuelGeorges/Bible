@@ -41,30 +41,30 @@ Rules:
 2. If the text is ambiguous or you cannot find reliable patristic commentary, state it. Do NOT hallucinate.
 3. Structure: 1. Intro (Context), 2. Linguistics, 3. History, 4. Exegesis (Based on Church Fathers like Fr. Tadros Malaty and Fr. Antonios Fekry), 5. Application, 6. Clarifying common misconceptions.
 4. No markdown formatting.`,
-    fr: (targetText) => `Vous êtes "Assistant Agios". Analysez UNIQUEMENT le texte biblique suivant: "${targetText}".
+    fr: (targetText) => `Vous êtes "Assistant Agios". Analysez UNIQUEMENT le texte biblique suivant : "${targetText}".
 Règles :
 1. Analysez strictement le texte fourni. Ne pas confondre avec d'autres versets.
 2. Ne pas inventer d'informations. Si vous n'êtes pas sûr, dites-le.
-3. Structure : 1. Intro, 2. Linguistique, 3. Histoire, 4. Exégèse (Pères de l'Église), 5. Application, 6. Objections.
+3. Structure : 1. Intro (Contexte), 2. Linguistique, 3. Histoire, 4. Exégèse (Basée sur les Pères de l'Église comme Fr. Tadros Malaty et Fr. Antonios Fekry), 5. Application, 6. Clarification des idées reçues.
 4. Pas de Markdown.`,
     de: (targetText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR den folgenden biblischen Text: "${targetText}".
-Regeln:
+Regeln :
 1. Analysieren Sie ausschließlich den bereitgestellten Text. Nicht mit anderen Versen verwechseln.
 2. Erfinden Sie keine Informationen. Wenn Sie unsicher sind, sagen Sie es.
-3. Struktur: 1. Intro, 2. Linguistik, 3. Geschichte, 4. Exegese, 5. Anwendung, 6. Einwände.
+3. Struktur : 1. Intro (Context), 2. Linguistik, 3. Geschichte, 4. Exegese (Basierend auf Kirchenvätern wie Fr. Tadros Malaty und Fr. Antonios Fekry), 5. Anwendung, 6. Klärung von Missverständnissen.
 4. Kein Markdown.`
   },
   derivatives: {
-    ar: (term) => `أنت خبير لغوي. استخرج الجذر الثلاثي وقائمة شاملة من المشتقات للكلمة "${term}". الرد JSON فقط: {"root": "الجذر", "derivatives": ["مشتق1", "مشتق2"]}`,
-    en: (term) => `You are a linguist. Extract the root and a comprehensive list of derivatives for the word "${term}". Response JSON only: {"root": "root", "derivatives": ["der1", "der2"]}`,
-    fr: (term) => `Vous êtes linguiste. Extrayez la racine et une liste complète de dérivés pour le mot "${term}". Réponse JSON uniquement : {"root": "racine", "derivatives": ["der1", "der2"]}`,
-    de: (term) => `Sie sind Linguist. Extrahieren Sie die Wurzel und eine umfassende Liste von Derivaten für das Wort "${term}". Antwort nur JSON: {"root": "Wurzel", "derivatives": ["der1", "der2"]}`
+    ar: (term) => `أنت خبير لغوي. استخرج الجذر الثلاثي وقائمة شاملة جداً من المشتقات (أفعال، أسماء، مصادر) للكلمة "${term}". الرد يجب أن يكون بصيغة JSON فقط كالتالي: {"root": "الجذر", "derivatives": ["مشتق1", "مشتق2"]}`,
+    en: (term) => `You are a linguist. Extract the tri-literal root and a comprehensive list of derivatives (verbs, nouns, sources) for the word "${term}". Response must be JSON only: {"root": "root", "derivatives": ["der1", "der2"]}`,
+    fr: (term) => `Vous êtes linguiste. Extrayez la racine tri-littère et une liste complète de dérivés (verbes, noms, sources) pour le mot "${term}". La réponse doit être en JSON uniquement : {"root": "racine", "derivatives": ["der1", "der2"]}`,
+    de: (term) => `Sie sind Linguist. Extrahieren Sie die trilitere Wurzel und eine umfassende Liste von Derivaten (Verben, Substantive, Quellen) für das Wort "${term}". Die Antwort muss nur JSON sein : {"root": "Wurzel", "derivatives": ["der1", "der2"]}`
   },
   semantic: {
-    ar: (term, allowedBooks, filterContext) => `ابحث عن أكثر الآيات صلة بمفهوم: "${term}". السياق: ${filterContext}. الأسفار المتاحة: [${allowedBooks}]. الرد JSON فقط: {"results": [{"book": "اسم السفر", "chapter": 1, "verses": [1, 2], "explanation": "السبب"}]}`,
-    en: (term, allowedBooks, filterContext) => `Find the most relevant Bible verses for: "${term}". Context: ${filterContext}. Allowed books: [${allowedBooks}]. Response JSON only: {"results": [{"book": "Book Name", "chapter": 1, "verses": [1, 2], "explanation": "Reason"}]}`,
-    fr: (term, allowedBooks, filterContext) => `Trouvez les versets bibliques les plus pertinents pour : "${term}". Contexte : ${filterContext}. Livres autorisés : [${allowedBooks}]. Réponse JSON uniquement : {"results": [{"book": "Nom du livre", "chapter": 1, "verses": [1, 2], "explanation": "Raison"}]}`,
-    de: (term, allowedBooks, filterContext) => `Finden Sie die relevantesten Bibelseiten für: "${term}". Kontext : ${filterContext}. Erlaubte Bücher: [${allowedBooks}]. Antwort nur JSON: {"results": [{"book": "Buchname", "chapter": 1, "verses": [1, 2], "explanation": "Grund"}]}`
+    ar: (term, allowedBooks, filterContext) => `ابحث عن أكثر الآيات صلة بمفهوم: "${term}". السياق: ${filterContext}. الأسفار المتاحة للاستخدام: [${allowedBooks}]. الرد يجب أن يكون JSON فقط بنفس الهيكل التالي: {"results": [{"book": "اسم السفر", "chapter": 1, "verses": [1, 2], "explanation": "سبب اختيار هذه الآيات"}]}`,
+    en: (term, allowedBooks, filterContext) => `Find the most relevant Bible verses for the concept: "${term}". Context: ${filterContext}. Allowed books: [${allowedBooks}]. Response must be JSON only: {"results": [{"book": "Book Name", "chapter": 1, "verses": [1, 2], "explanation": "Reason for selection"}]}`,
+    fr: (term, allowedBooks, filterContext) => `Trouvez les versets bibliques les plus pertinents pour le concept : "${term}". Contexte : ${filterContext}. Livres autorisés : [${allowedBooks}]. La réponse doit être en JSON uniquement : {"results": [{"book": "Nom du livre", "chapter": 1, "verses": [1, 2], "explanation": "Raison de la sélection"}]}`,
+    de: (term, allowedBooks, filterContext) => `Finden Sie die relevantesten Bibelseiten für das Konzept: "${term}". Kontext : ${filterContext}. Erlaubte Bücher: [${allowedBooks}]. Die Antwort muss nur JSON sein : {"results": [{"book": "Buchname", "chapter": 1, "verses": [1, 2], "explanation": "Grund für die Auswahl"}]}`
   },
   studyPlan: {
     ar: (mood, durationDays, intensityLabel, allowedBooks) => `أنت "أجيوس"، خبير الإرشاد الروحي. صياغة رحلة قراءة لـ: "${mood}"، مدة: ${durationDays} أيام، كثافة: ${intensityLabel}.
