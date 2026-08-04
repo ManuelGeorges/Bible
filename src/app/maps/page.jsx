@@ -40,8 +40,19 @@ if (typeof window !== 'undefined') {
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
-// Using relative path for internal API to avoid CORS and domain issues
-const API_MAPS_URL = '/api/maps';
+// On web (Next.js server running), a relative path works fine because
+// the API route lives on the same origin serving the page.
+//
+// On mobile (Capacitor static export via `output: 'export'`), there is NO
+// server bundled into the app — Next.js strips out API routes entirely
+// during static export. A relative fetch to '/api/maps' resolves against
+// capacitor://localhost (or file://) and 404s, silently, forever.
+//
+// So for the mobile build we must hit the real deployed backend directly.
+const API_MAPS_URL =
+  process.env.NEXT_PUBLIC_EXPORT === 'true'
+    ? 'https://www.agiosbible.com/api/maps'
+    : '/api/maps';
 
 const INITIAL_VIEW_STATE = {
   longitude: 35.0,

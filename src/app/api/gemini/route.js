@@ -47,7 +47,7 @@ Règles :
 2. Ne pas inventer d'informations. Si vous n'êtes pas sûr, dites-le.
 3. Structure : 1. Intro (Contexte), 2. Linguistique, 3. Histoire, 4. Exégèse (Basée sur les Pères de l'Église comme Fr. Tadros Malaty et Fr. Antonios Fekry), 5. Application, 6. Clarification des idées reçues.
 4. Pas de Markdown.`,
-    de: (targetText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR den folgenden biblischen Text: "${targetText}".
+    de: (targetText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR den folgenden bibli学schen Text: "${targetText}".
 Regeln :
 1. Analysieren Sie ausschließlich den bereitgestellten Text. Nicht mit anderen Versen verwechseln.
 2. Erfinden Sie keine Informationen. Wenn Sie unsicher sind, sagen Sie es.
@@ -61,10 +61,10 @@ Regeln :
     de: (term) => `Sie sind Linguist. Extrahieren Sie die trilitere Wurzel und eine umfassende Liste von Derivaten (Verben, Substantive, Quellen) für das Wort "${term}". Die Antwort muss nur JSON sein : {"root": "Wurzel", "derivatives": ["der1", "der2"]}`
   },
   semantic: {
-    ar: (term, allowedBooks, filterContext) => `ابحث عن أكثر الآيات صلة بمفهوم: "${term}". السياق: ${filterContext}. الأسفار المتاحة للاستخدام: [${allowedBooks}]. الرد يجب أن يكون JSON فقط بنفس الهيكل التالي: {"results": [{"book": "اسم السفر", "chapter": 1, "verses": [1, 2], "explanation": "سبب اختيار هذه الآيات"}]}`,
-    en: (term, allowedBooks, filterContext) => `Find the most relevant Bible verses for the concept: "${term}". Context: ${filterContext}. Allowed books: [${allowedBooks}]. Response must be JSON only: {"results": [{"book": "Book Name", "chapter": 1, "verses": [1, 2], "explanation": "Reason for selection"}]}`,
-    fr: (term, allowedBooks, filterContext) => `Trouvez les versets bibliques les plus pertinents pour le concept : "${term}". Contexte : ${filterContext}. Livres autorisés : [${allowedBooks}]. La réponse doit être en JSON uniquement : {"results": [{"book": "Nom du livre", "chapter": 1, "verses": [1, 2], "explanation": "Raison de la sélection"}]}`,
-    de: (term, allowedBooks, filterContext) => `Finden Sie die relevantesten Bibelseiten für das Konzept: "${term}". Kontext : ${filterContext}. Erlaubte Bücher: [${allowedBooks}]. Die Antwort muss nur JSON sein : {"results": [{"book": "Buchname", "chapter": 1, "verses": [1, 2], "explanation": "Grund für die Auswahl"}]}`
+    ar: (term, allowedBooks, filterContext) => `ابحث عن أكثر الآيات صلة بمفهوم: "${term}". السياق: ${filterContext}. الأسفار المتاحة للاستخدام: [${allowedBooks}]. الرد يجب أن يكون JSON فقط بنفس الهيكل التالي: {"results": [{"title": "عنوان موجز للمجموعة", "book": "اسم السفر", "chapter": 1, "verses": [1, 2], "reason": "سبب اختيار هذه الآيات"}]}`,
+    en: (term, allowedBooks, filterContext) => `Find the most relevant Bible verses for the concept: "${term}". Context: ${filterContext}. Allowed books: [${allowedBooks}]. Response must be JSON only: {"results": [{"title": "Brief title", "book": "Book Name", "chapter": 1, "verses": [1, 2], "reason": "Reason for selection"}]}`,
+    fr: (term, allowedBooks, filterContext) => `Trouvez les versets bibliques les plus pertinents pour le concept : "${term}". Contexte : ${filterContext}. Livres autorisés : [${allowedBooks}]. La réponse doit être en JSON uniquement : {"results": [{"title": "Titre bref", "book": "Nom du livre", "chapter": 1, "verses": [1, 2], "reason": "Raison de la sélection"}]}`,
+    de: (term, allowedBooks, filterContext) => `Finden Sie die relevantesten Bibelseiten für das Konzept: "${term}". Kontext : ${filterContext}. Erlaubte Bücher: [${allowedBooks}]. Die Antwort muss nur JSON sein : {"results": [{"title": "Kurzer Titel", "book": "Buchname", "chapter": 1, "verses": [1, 2], "reason": "Grund für die Auswahl"}]}`
   },
   studyPlan: {
     ar: (mood, durationDays, intensityLabel, allowedBooks) => `أنت "أجيوس"، خبير الإرشاد الروحي. صياغة رحلة قراءة لـ: "${mood}"، مدة: ${durationDays} أيام، كثافة: ${intensityLabel}.
