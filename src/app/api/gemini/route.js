@@ -28,26 +28,30 @@ const corsHeaders = {
 
 const PROMPTS = {
   analysis: {
-    ar: (targetText) => `أنت "مساعد آجيوس الذكي". مهمتك هي تحليل الشاهد الكتابي المرفق بدقة متناهية: "${targetText}".
+    ar: (targetText, verseText) => `أنت "مساعد آجيوس الذكي". مهمتك هي تحليل الشاهد الكتابي المرفق بدقة متناهية: "${targetText}".
+نص الآية: "${verseText}"
 قواعد صارمة:
-1. استخرج النص الكتابي المقابل لهذا الشاهد من الكتاب المقدس (ترجمة فان دايك SVD) وحلله حصراً. لا تخلط بينه وبين آيات أخرى.
+1. حلل هذا النص الكتابي تحديداً وحصراً. لا تخلط بينه وبين آيات أخرى.
 2. إذا كان الشاهد غير واضح أو لم تجد له تفسيراً آبائياً موثوقاً، صرح بذلك ولا تخترع تفسيراً.
 3. التزم بالمنهجية التالية: ١. مقدمة مختصرة عن سياق النص، ٢. معاني الكلمات لغوياً (يجب ذكر الكلمات المحورية باللغة الأصلية "عبري للعهد القديم ويوناني للعهد الجديد" مع كتابة الكلمة الأصلية، نطقها، وشرح معناها اللغوي العميق)، ٣. الخلفية التاريخية، ٤. التفسير الروحي (بناءً على القمص تادرس يعقوب والقمص أنطونيوس فكري)، ٥. تطبيق حياتي، ٦. رد على أي شبهات مرتبطة بالنص.
 4. لا تستخدم Markdown (مثل ** أو #) في الرد نهائياً.
 5. في النهاية أضف: "ودائماً ننصح بالرجوع لأب اعترافك".`,
-    en: (targetText) => `You are "Agios Assistant". Analyze ONLY the following biblical reference using World English Bible (WEB) translation: "${targetText}".
+    en: (targetText, verseText) => `You are "Agios Assistant". Analyze ONLY the following biblical reference: "${targetText}".
+Verse Text: "${verseText}"
 Rules:
-1. Identify the exact text for this reference and analyze it strictly. Do not confuse it with other verses.
+1. Analyze this specific text strictly. Do not confuse it with other verses.
 2. If the reference is ambiguous or you cannot find reliable patristic commentary, state it. Do NOT hallucinate.
 3. Structure: 1. Intro (Context), 2. Linguistics (Include key words in their original languages - Hebrew for OT, Greek for NT - with transliteration and precise linguistic meaning), 3. History, 4. Exegesis (Based on Church Fathers like Fr. Tadros Malaty and Fr. Antonios Fekry), 5. Application, 6. Clarifying common misconceptions.
 4. Do not use Markdown formatting (like ** or #).`,
-    fr: (targetText) => `Vous êtes "Assistant Agios". Analysez UNIQUEMENT la référence biblique suivante (Traduction Louis Segond) : "${targetText}".
+    fr: (targetText, verseText) => `Vous êtes "Assistant Agios". Analysez UNIQUEMENT la référence biblique suivante : "${targetText}".
+Texte du verset : "${verseText}"
 Règles :
 1. Identifiez le texte exact de cette référence et analysez-le strictement. Ne pas confondre avec d'autres versets.
 2. Ne pas inventer d'informations. Si vous n'êtes pas sûr, dites-le.
 3. Structure : 1. Intro (Contexte), 2. Linguistique (Inclure les mots-clés dans leurs langues originales - hébreu pour l'AT, grec pour le NT - avec translittération et explication linguistique), 3. Histoire, 4. Exégèse (Basée sur les Pères de l'Église comme Fr. Tadros Malaty et Fr. Antonios Fekry), 5. Application, 6. Clarification des idées reçues.
 4. Pas de Markdown.`,
-    de: (targetText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR die folgende biblische Referenz (Luther-Bibel) : "${targetText}".
+    de: (targetText, verseText) => `Sie sind "Agios-Assistent". Analysieren Sie NUR die folgende biblische Referenz : "${targetText}".
+Vers-Text: "${verseText}"
 Regeln :
 1. Identifizieren Sie den exakten Text dieser Referenz und analysieren Sie ihn streng. Nicht mit anderen Versen verwechseln.
 2. Erfinden Sie keine Informationen. Wenn Sie unsicher sind, sagen Sie es.
@@ -110,7 +114,7 @@ Erforderlich: Nur JSON mit folgender Struktur:
     { "day": 2, "books": ["..."] }
   ]
 }
-Erlaubte Bücher: [${allowedBooks}]`
+Allowed books: [${allowedBooks}]`
   }
 };
 
@@ -150,7 +154,7 @@ export async function POST(req) {
     let prompt = "";
     if (task === 'derivatives' || task === 'derivatives_stream') prompt = (PROMPTS.derivatives[lang] || PROMPTS.derivatives.en)(payload.term);
     else if (task === 'semantic') prompt = (PROMPTS.semantic[lang] || PROMPTS.semantic.en)(payload.term, payload.allowedBooks, payload.filterContext);
-    else if (task === 'analysis') prompt = (PROMPTS.analysis[lang] || PROMPTS.analysis.en)(payload.targetText);
+    else if (task === 'analysis') prompt = (PROMPTS.analysis[lang] || PROMPTS.analysis.en)(payload.targetText, payload.verseText);
     else if (task === 'studyPlan') prompt = (PROMPTS.studyPlan[lang] || PROMPTS.studyPlan.en)(payload.mood, payload.durationDays, payload.intensityLabel, payload.allowedBooks);
     else if (task === 'general') prompt = payload.prompt;
 
