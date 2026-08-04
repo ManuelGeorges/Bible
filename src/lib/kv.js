@@ -8,6 +8,6 @@ export const kv = new Redis({
 
 export const CACHE_KEYS = {
   SEMANTIC: 'semantic:',
-  ANALYSIS: 'analysis:',
+  ANALYSIS: 'analysis_v4:',
   STUDY_PLAN: 'study_plan:',
 };

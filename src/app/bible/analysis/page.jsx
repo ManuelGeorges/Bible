@@ -152,6 +152,7 @@ function AnalysisContent() {
   const fetchAnalysis = async () => {
     if (!book || !chapter) return;
 
+    // Cache key should be reliable
     const cacheKeyBase = `${CACHE_KEYS.ANALYSIS}${book}:${chapter}:${verses || 'all'}`;
 
     try {
@@ -207,9 +208,10 @@ function AnalysisContent() {
     const updatedRequests = [...recentRequests, now];
     localStorage.setItem(QUOTA_KEY, JSON.stringify(updatedRequests));
 
+    // Improved targetText for better AI understanding
     const targetText = verses
-      ? `${book}\n${chapter}\n${verses}`
-      : `${book}\n${chapter}`;
+      ? `${book} ${chapter}:${verses}`
+      : `${book} ${chapter}`;
 
     const attemptGeneration = async (attemptIndex) => {
       const response = await fetch(`${API_BASE_URL}/api/gemini/`, {
