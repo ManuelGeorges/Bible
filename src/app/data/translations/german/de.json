@@ -283,14 +283,6 @@
     },
     "footer": "© 2026 Agios System - Alle Rechte vorbehalten"
   },
-  "audio": {
-    "artist_default": "Heilige Schrift",
-    "album": "Agios Media",
-    "track_title": "Luther Bibel - {book} {chapter}",
-    "download_success": "Kapitel erfolgreich für das Offline-Hören gespeichert",
-    "download_error": "Fehler beim Herunterladen der Datei, bitte überprüfe deine Verbindung",
-    "deleted": "Heruntergeladene Datei gelöscht"
-  },
   "bible": {
     "title": "Heilige Schrift",
     "chapter_label": "Kapitel",
@@ -445,7 +437,8 @@
       "settings": "Einstellungen",
       "points": "Erfolge",
       "widgets": "Widgets",
-      "readingHistory": "Verlauf"
+      "readingHistory": "Verlauf",
+      "shop": "Shop"
     },
     "footer": {
       "about": "Über uns",
@@ -513,6 +506,33 @@
       "highlight_daily_verse": "Täglichen Vers von der Startseite markieren",
       "verse_analysis": "Vers-Analyse durch den Agios KI-Assistenten",
       "study_plan_progress": "Fortschritt im täglichen Leseplan"
+    }
+  },
+  "shop": {
+    "title": "Agios Shop",
+    "subtitle": "Tausche deine Punkte gegen exklusive Funktionen ein",
+    "insufficient_points": "Entschuldigung, deine Punkte reichen nicht aus",
+    "purchase_success": "Herzlichen Glückwunsch! Du hast {item} erfolgreich gekauft",
+    "owned": "Besessen",
+    "use_freeze_toast": "Streak-Schutz verwendet, um dich zu schützen! ❄️",
+    "categories": {
+      "utility": "Hilfsmittel",
+      "appearance": "Erscheinungsbild & Stil",
+      "social": "Soziale Interaktion"
+    },
+    "items": {
+      "streak_freeze": {
+        "name": "Streak-Schutz",
+        "desc": "Schützt deinen Streak vor dem Abreißen, wenn du mal einen Tag vergisst, die App zu öffnen."
+      },
+      "theme_gold": {
+        "name": "Goldenes Design",
+        "desc": "Genieße eine luxuriöse goldene Benutzeroberfläche, die eines herausragenden Lesers würdig ist."
+      },
+      "title_word_lover": {
+        "name": "Titel: Wortliebhaber",
+        "desc": "Ein Ehrentitel, der neben deinem Namen in der Rangliste erscheint."
+      }
     }
   },
   "competitions": {

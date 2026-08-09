@@ -18,7 +18,7 @@
     { "name": "نحميا", "testament": "OT", "id": "Sefr-Nehemiah", "book_id": "NEH", "type": "old", "chapters": 13 },
     { "name": "طوبيا", "testament": "OT", "id": "Sefr-Tubia", "book_id": "TOB", "type": "old", "chapters": 14 },
     { "name": "يهوديت", "testament": "OT", "id": "Sefr-Judith", "book_id": "JDT", "type": "old", "chapters": 16 },
-    { "name": "أستير", "testament": "OT", "id": "Sefr-Esther", "book_id": "EST", "type": "old", "chapters": 10 },
+    { "name": "أستير", "testament": "OT", "id": "Sefr-Esther", "book_id": "EST", "type": "old", "chapters": 16 },
     { "name": "أيوب", "testament": "OT", "id": "Sefr-Ayob", "book_id": "JOB", "type": "old", "chapters": 42 },
     { "name": "المزامير", "testament": "OT", "id": "Sefr-El-Mazameer", "book_id": "PSA", "type": "old", "chapters": 151 },
     { "name": "الأمثال", "testament": "OT", "id": "Sefr-El-Amthal", "book_id": "PRO", "type": "old", "chapters": 31 },

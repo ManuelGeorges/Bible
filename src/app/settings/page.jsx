@@ -7,14 +7,14 @@ import {
   Clock, X, Settings as SettingsIcon,
   Type, LayoutList, Flame, RefreshCw, Sparkles, Monitor, Palette,
   Trash2, LogOut, LogIn, CloudSync, CaseSensitive, Bold, Languages,
-  Columns, Zap, Book
+  Columns, Zap, Book, Crown
 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { syncNotifications } from '../../lib/notificationService';
 import { signOut, deleteUser, onAuthStateChanged } from 'firebase/auth';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, getFirebaseRemoteConfig } from '../../lib/firebase';
 import { fetchAndActivate, getBoolean } from 'firebase/remote-config';
 import styles from './Settings.module.css'
@@ -76,6 +76,7 @@ const Settings = () => {
   const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [masterNotifications, setMasterNotifications] = useState(false)
   const [user, setUser] = useState(null)
+  const [userData, setUserData] = useState(null)
   const [showSyncLogin, setShowSyncLogin] = useState(true)
   const [notifications, setNotifications] = useState({
     verse: true,
@@ -95,8 +96,16 @@ const Settings = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
+      if (currentUser) {
+        const unsubDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            setUserData(docSnap.data())
+          }
+        })
+        return () => unsubDoc()
+      }
     })
 
     const initSettings = async () => {
@@ -104,7 +113,6 @@ const Settings = () => {
       const native = Capacitor.isNativePlatform()
       setIsNative(native)
 
-      // Remote Config
       const remoteConfig = await getFirebaseRemoteConfig();
       if (remoteConfig) {
         try {
@@ -159,10 +167,9 @@ const Settings = () => {
       }
     }
     initSettings()
-    return () => unsubscribe()
-  }, [])
+    return () => unsubscribeAuth()
+  }, [currentLang])
 
-  // مزامنة الثيم مع النظام الأصلي (Android) لتحديث الويدجت
   useEffect(() => {
     if (mounted && Capacitor.isNativePlatform() && theme) {
       const syncTheme = async () => {
@@ -277,13 +284,11 @@ const Settings = () => {
 
   const handleDeleteAccount = async () => {
     const currentUser = auth.currentUser;
-
     if (!currentUser) return;
 
-    // 1. التحقق الاستباقي من "حداثة" تسجيل الدخول
     const lastSignInTime = new Date(currentUser.metadata.lastSignInTime).getTime();
     const now = new Date().getTime();
-    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000); // 5 دقائق
+    const isFreshSession = (now - lastSignInTime) < (5 * 60 * 1000);
 
     if (!isFreshSession) {
       alert(strings.settings.account.fresh_login_required);
@@ -295,14 +300,9 @@ const Settings = () => {
     if (confirmed) {
       try {
         const userId = currentUser.uid;
-
-        // 1. حذف بيانات Firestore أولاً (بينما لا يزال المستخدم مسجلاً دخوله)
         const userDocRef = doc(db, 'users', userId);
         await deleteDoc(userDocRef);
-
-        // 2. ثم حذف المستخدم من Auth
         await deleteUser(currentUser);
-
         alert(strings.settings.account.delete_success);
         router.push('/intro');
       } catch (error) {
@@ -320,6 +320,7 @@ const Settings = () => {
 
   const currentFontValue = fontOptions.find(f => f.id === fontFamily)?.value || fontOptions[0].value
   const filteredFonts = fontOptions.filter(f => currentLang === 'ar' ? f.lang === 'ar' : f.lang === 'en')
+  const isGoldUnlocked = userData?.inventory?.includes('theme_gold');
 
   return (
     <div className={styles.container} dir={dir}>
@@ -368,6 +369,18 @@ const Settings = () => {
             </div>
             <span className={styles.themeLabel}>{strings.settings.appearance.dark}</span>
           </div>
+
+          {isGoldUnlocked && (
+            <div
+              className={`${styles.themeOption} ${theme === 'gold' ? styles.active : ''}`}
+              onClick={() => setTheme('gold')}
+            >
+              <div className={`${styles.themeCircle} ${styles.gold}`}>
+                <Crown size={24} />
+              </div>
+              <span className={styles.themeLabel}>{strings.shop?.items?.theme_gold?.name || 'الذهبي'}</span>
+            </div>
+          )}
 
           <div
             className={`${styles.themeOption} ${theme === 'system' ? styles.active : ''}`}

@@ -439,7 +439,9 @@
       "profile": "Profil",
       "settings": "Paramètres",
       "points": "Exploits",
-      "widgets": "Widgets"
+      "widgets": "Widgets",
+      "readingHistory": "Historique",
+      "shop": "Boutique"
     },
     "footer": {
       "about": "À propos",
@@ -507,6 +509,33 @@
       "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil",
       "verse_analysis": "Analyse de verset par l'assistant IA Agios",
       "study_plan_progress": "Progrès dans le plan d'étude quotidien"
+    }
+  },
+  "shop": {
+    "title": "Boutique Agios",
+    "subtitle": "Échangez vos points contre des avantages et des fonctionnalités exclusives",
+    "insufficient_points": "Désolé, vos points sont insuffisants pour cette opération",
+    "purchase_success": "Félicitations ! Vous avez obtenu {item} avec succès",
+    "owned": "Possédé",
+    "use_freeze_toast": "Gel de série utilisé pour vous protéger ! ❄️",
+    "categories": {
+      "utility": "Outils d'aide",
+      "appearance": "Apparence et distinction",
+      "social": "Interaction sociale"
+    },
+    "items": {
+      "streak_freeze": {
+        "name": "Gel de série",
+        "desc": "Protège votre série de jours contre la rupture si vous oubliez d'ouvrir l'application un jour."
+      },
+      "theme_gold": {
+        "name": "Thème Doré",
+        "desc": "Profitez d'une interface dorée luxueuse digne d'un lecteur exceptionnel."
+      },
+      "title_word_lover": {
+        "name": "Titre : Amoureux de la Parole",
+        "desc": "Un titre honorifique qui apparaît à côté de votre nom dans le classement."
+      }
     }
   },
   "competitions": {

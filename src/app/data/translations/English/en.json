@@ -283,14 +283,6 @@
     },
     "footer": "© 2026 Agios System - All Rights Reserved"
   },
-  "audio": {
-    "artist_default": "Holy Bible",
-    "album": "Agios Media",
-    "track_title": "World English Bible - {book} {chapter}",
-    "download_success": "Chapter saved successfully for offline listening",
-    "download_error": "Failed to download file, please check your connection",
-    "deleted": "Downloaded file deleted"
-  },
   "bible": {
     "title": "Holy Bible",
     "chapter_label": "Chapter",
@@ -449,7 +441,8 @@
       "settings": "Settings",
       "points": "Achievements",
       "widgets": "Widgets",
-      "readingHistory": "Reading History"
+      "readingHistory": "Reading History",
+      "shop": "Shop"
     },
     "footer": {
       "about": "About Us",
@@ -517,6 +510,33 @@
       "highlight_daily_verse": "Highlight daily verse from home page",
       "verse_analysis": "Verse analysis by Agios AI Assistant",
       "study_plan_progress": "Progress in daily study plan"
+    }
+  },
+  "shop": {
+    "title": "Agios Shop",
+    "subtitle": "Exchange your points for exclusive features",
+    "insufficient_points": "Sorry, you don't have enough points",
+    "purchase_success": "Congratulations! You successfully bought {item}",
+    "owned": "Owned",
+    "use_freeze_toast": "Streak Freeze used to protect you! ❄️",
+    "categories": {
+      "utility": "Utilities",
+      "appearance": "Appearance & Style",
+      "social": "Social Interaction"
+    },
+    "items": {
+      "streak_freeze": {
+        "name": "Streak Freeze",
+        "desc": "Protects your streak from breaking if you forget to open the app for one day."
+      },
+      "theme_gold": {
+        "name": "Golden Theme",
+        "desc": "Enjoy a luxurious golden interface worthy of an outstanding reader."
+      },
+      "title_word_lover": {
+        "name": "Title: Word Lover",
+        "desc": "An honorary title that appears next to your name in the leaderboard."
+      }
     }
   },
   "competitions": {

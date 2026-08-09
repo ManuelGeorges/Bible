@@ -17,13 +17,13 @@ export default function StatsWatcher() {
   const checkConsistencyBadges = (streak) => {
     const badges = [];
     if (streak >= 365) badges.push('streak_365');
-    else if (streak >= 180) badges.push('streak_180');
-    else if (streak >= 90) badges.push('streak_90');
-    else if (streak >= 60) badges.push('streak_60');
-    else if (streak >= 30) badges.push('streak_30');
-    else if (streak >= 15) badges.push('streak_15');
-    else if (streak >= 7) badges.push('streak_7');
-    else if (streak >= 3) badges.push('streak_3');
+    if (streak >= 180) badges.push('streak_180');
+    if (streak >= 90) badges.push('streak_90');
+    if (streak >= 60) badges.push('streak_60');
+    if (streak >= 30) badges.push('streak_30');
+    if (streak >= 15) badges.push('streak_15');
+    if (streak >= 7) badges.push('streak_7');
+    if (streak >= 3) badges.push('streak_3');
     return badges;
   };
 
@@ -108,12 +108,12 @@ export default function StatsWatcher() {
             ...deviceInfo
         }, { merge: true });
 
-        // تفعيل شاشة التهنئة لأوسمة الولاء فوراً للمستخدم الجديد
         loyaltyBadges.forEach(id => triggerBadgeUnlock(id));
       } else {
         let data = docSnap.data();
         const updates = { ...deviceInfo };
 
+        // تحويل البيانات القديمة إذا وجدت
         if (data.stats) {
           const legacy = data.stats;
           updates.totalPoints = data.totalPoints || legacy.total_points || 0;
@@ -123,35 +123,22 @@ export default function StatsWatcher() {
           updates.stats = deleteField();
         }
 
-        if (!data.email && user.email) {
-          updates.email = user.email;
-        }
-
-        const lastActive = data.lastActiveDate;
-        let currentStreak = data.streak || 0;
-
-        if (lastActive !== today) {
-          const now = new Date();
-          const yesterdayObj = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-          const yesterdayStr = getCairoDate(yesterdayObj);
-
-          let newStreak = (lastActive === yesterdayStr) ? currentStreak + 1 : 1;
-          updates.streak = newStreak;
-          updates.lastActiveDate = today;
-
-          const consistencyBadges = checkConsistencyBadges(newStreak);
-          const currentBadges = data.badges || [];
-          for (const id of consistencyBadges) {
-            if (!currentBadges.includes(id)) {
-                await unlockBadge(id, data);
-            }
-          }
-        }
-
         if (Object.keys(updates).length > 0) {
             await updateDoc(userRef, updates);
         }
 
+        // تم نقل منطق زيادة الستريك إلى UserTracker.js لمنع التضارب
+        // هنا نقوم فقط بفحص الأوسمة بناءً على الستريك الحالي
+        const currentStreak = data.streak || 0;
+        const consistencyBadges = checkConsistencyBadges(currentStreak);
+        const currentBadges = data.badges || [];
+        for (const id of consistencyBadges) {
+          if (!currentBadges.includes(id)) {
+              await unlockBadge(id, data);
+          }
+        }
+
+        // فحص أوسمة الخطط الدراسية
         const completedPlans = data.completedPlans || {};
         const customPlans = data.customPlans || {};
         const allPlans = { ...completedPlans, ...customPlans };
@@ -169,40 +156,18 @@ export default function StatsWatcher() {
         const planStreakBadges = checkPlanStreakBadges(totalPlanDays);
         const planAchievementBadges = checkPlanAchievementBadges(finishedCount, startedCount);
 
-        const currentBadges = data.badges || [];
         for (const id of [...planStreakBadges, ...planAchievementBadges]) {
           if (!currentBadges.includes(id)) {
             await unlockBadge(id, data);
           }
         }
 
+        // أوسمة الوقت
         const hours = cairoInfo.hour;
         const minutes = cairoInfo.minute;
-
         if (hours < 7) await unlockBadge('early_bird', data);
         if (hours >= 0 && hours < 3) await unlockBadge('night_owl', data);
-
-        if (hours === 3 && minutes === 0) {
-            await unlockBadge('ghost_user', data);
-        }
-
-        const savedTheme = localStorage.getItem('theme') || 'system';
-        const isDark = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-        if (isDark) {
-            const darkStart = localStorage.getItem('dark_mode_start');
-            if (!darkStart) {
-                localStorage.setItem('dark_mode_start', today);
-            } else {
-                const startParts = darkStart.split('-').map(Number);
-                const startDate = new Date(startParts[0], startParts[1]-1, startParts[2]);
-                const todayParts = today.split('-').map(Number);
-                const todayDate = new Date(todayParts[0], todayParts[1]-1, todayParts[2]);
-
-                const days = (todayDate - startDate) / (1000 * 60 * 60 * 24);
-                if (days >= 30) await unlockBadge('shadow_reader', data);
-            }
-        }
+        if (hours === 3 && minutes === 0) await unlockBadge('ghost_user', data);
       }
     } catch (error) { console.error("StatsWatcher Sync Error:", error); }
   };

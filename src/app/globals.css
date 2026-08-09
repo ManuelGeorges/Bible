@@ -46,6 +46,22 @@
   --color-shadow-medium: rgba(0, 0, 0, 0.4);
 }
 
+[data-theme='gold'] {
+  --color-bg-start: #1e1b01;
+  --color-bg-end: #3f3101;
+  --color-text-primary: #fef9c3;
+  --color-text-secondary: #fde047;
+  --color-card-bg: rgba(63, 49, 1, 0.8);
+  --color-border: rgba(254, 249, 195, 0.15);
+  --glass-blur: 24px;
+  --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  --color-accent: #f59e0b;
+  --btn-bg: #f59e0b;
+  --btn-text: #1e1b01;
+  --btn-hover: #fbbf24;
+  --color-shadow-medium: rgba(0, 0, 0, 0.5);
+}
+
 /* ============================================================
    NATIVE CORE RESET (Making it feel like an App)
    ============================================================ */

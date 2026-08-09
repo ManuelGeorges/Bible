@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck, LayoutGrid, Clock } from 'lucide-react';
+import { Heart, Trophy, BookOpen, User, Coins, Info, Mail, History, X, Settings, ShieldCheck, LayoutGrid, Clock, ShoppingBag } from 'lucide-react';
 import styles from './more.module.css';
 import { useLanguage } from '../context/LanguageContext';
 import { Capacitor } from '@capacitor/core';
@@ -19,6 +19,7 @@ export default function MoreSidebar({ isOpen, onClose, user }) {
     { name: strings.more.items.profile, icon: <User size={20} />, href: '/profile' },
     { name: strings.more.items.settings, icon: <Settings size={20} />, href: '/settings' },
     { name: strings.more.items.points, icon: <Coins size={20} />, href: '/points' },
+    { name: strings.more.items.shop || "المتجر", icon: <ShoppingBag size={20} />, href: '/shop' },
   ].filter(Boolean);
 
   return (

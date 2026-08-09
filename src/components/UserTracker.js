@@ -31,27 +31,40 @@ export default function UserTracker() {
               email: user.email,
               photoURL: user.photoURL,
               streak: 1,
-              lastLoginDate: today,
+              lastActiveDate: today,
               totalPoints: 10,
               dailyInteractionPoints: 0,
               badges: [],
+              streakFreezes: 0,
+              inventory: [],
               createdAt: serverTimestamp(),
               favorites: { verses: {} },
               completedChapters: {},
               completedPlans: {}
             });
             await StorageService.updateStreak(1);
+            await StorageService.save('agios_last_active', today);
             toast(strings.home.toasts.welcome_new, { icon: '✨' });
           } else {
             const userData = userSnap.data();
-            const lastLogin = userData.lastLoginDate;
+            const lastActive = userData.lastActiveDate || userData.lastLoginDate;
 
-            if (lastLogin !== today) {
+            if (lastActive !== today) {
               let newStreak = (userData.streak || 0) + 1;
+              let usedFreeze = false;
 
-              if (lastLogin) {
-                const diffDays = calculateDiffDays(lastLogin, today);
-                if (diffDays > 1) newStreak = 1;
+              if (lastActive) {
+                const diffDays = calculateDiffDays(lastActive, today);
+
+                if (diffDays > 1) {
+                  // محاولة استخدام تجميد الستريك إذا وجد
+                  if (userData.streakFreezes > 0) {
+                    newStreak = (userData.streak || 0) + 1;
+                    usedFreeze = true;
+                  } else {
+                    newStreak = 1;
+                  }
+                }
               }
 
               const streakBonuses = { 3: 50, 7: 150, 15: 400, 30: 1000, 90: 3000 };
@@ -66,11 +79,17 @@ export default function UserTracker() {
               };
 
               let updates = {
+                lastActiveDate: today,
                 lastLoginDate: today,
                 streak: newStreak,
                 totalPoints: increment(10 + bonusPoints),
                 dailyInteractionPoints: 0
               };
+
+              if (usedFreeze) {
+                updates.streakFreezes = increment(-1);
+                toast(strings.shop?.use_freeze_toast || "تم استخدام تجميد الستريك لحمايتك! ❄️", { icon: '❄️' });
+              }
 
               if (bonusPoints > 0) {
                 toast.success(strings.home.toasts.streak_bonus.replace('{points}', formatNumber(bonusPoints)));
@@ -83,10 +102,17 @@ export default function UserTracker() {
 
               await updateDoc(userRef, updates);
               await StorageService.updateStreak(newStreak);
-              toast(strings.home.toasts.good_morning.replace('{userName}', userName), { icon: '💰' });
+              await StorageService.save('agios_last_active', today);
+
+              if (!usedFreeze) {
+                toast(strings.home.toasts.good_morning.replace('{userName}', userName), { icon: '💰' });
+              }
+            } else {
+              await StorageService.save('agios_last_active', today);
             }
           }
         } else {
+          // المنطق المحلي (بدون تسجيل دخول)
           const localStats = await StorageService.getLocalStats();
           const lastActive = await StorageService.get('agios_last_active');
 
@@ -102,7 +128,6 @@ export default function UserTracker() {
             await StorageService.save('agios_last_active', today);
             await StorageService.addPoints(10);
 
-            // إضافة النشاط للسجل المحلي ليظهر كمكتمل في صفحة النقاط
             const history = await StorageService.get('points_history') || [];
             history.push({
               type: 'dailyLogin',
@@ -116,7 +141,6 @@ export default function UserTracker() {
           }
         }
 
-        // تحديث إحصائيات الويدجت (النقاط، الستريك، الخطط)
         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
           const userData = user ? (await getDoc(doc(db, 'users', user.uid))).data() : null;
           const currentStreak = userData ? userData.streak : (await StorageService.get('agios_streak'));
@@ -131,12 +155,15 @@ export default function UserTracker() {
     };
 
     const calculateDiffDays = (lastDate, today) => {
+      if (!lastDate || !today) return 0;
       const lastParts = lastDate.split('-').map(Number);
       const todayParts = today.split('-').map(Number);
       const lastDateObj = new Date(lastParts[0], lastParts[1] - 1, lastParts[2]);
       const todayDateObj = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
-      const diffTime = Math.abs(todayDateObj - lastDateObj);
-      return Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      const diffTime = todayDateObj.getTime() - lastDateObj.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
     };
 
     if (!auth) return;
