@@ -9,16 +9,21 @@ import { FaCoins, FaSnowflake, FaPalette, FaMedal, FaShoppingCart } from 'react-
 import { toast } from 'react-hot-toast';
 import { useLanguage } from '../context/LanguageContext';
 import { getCairoIsoString } from '../../lib/dateUtils';
+import { StorageService, KEYS } from '../../lib/storage';
+import { useTheme } from 'next-themes';
 
 export default function Shop() {
   const { strings, dir, formatNumber } = useLanguage();
-  const [userData, setUserData] = useState(null);
+  const { setTheme } = useTheme();
+  const [userData, setUserData] = useState({ totalPoints: 0, streakFreezes: 0, inventory: [] });
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userRef = doc(db, 'users', user.uid);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const userRef = doc(db, 'users', currentUser.uid);
         const unsubDoc = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             setUserData(docSnap.data());
@@ -27,6 +32,13 @@ export default function Shop() {
         });
         return () => unsubDoc();
       } else {
+        // تحميل البيانات المحلية للضيف
+        const stats = await StorageService.getLocalStats();
+        setUserData({
+          totalPoints: stats.points || 0,
+          streakFreezes: stats.streakFreezes || 0,
+          inventory: stats.inventory || []
+        });
         setLoading(false);
       }
     });
@@ -64,36 +76,74 @@ export default function Shop() {
   ];
 
   const handleBuy = async (item) => {
-    if (!auth.currentUser) {
-      toast.error(strings.common.internet_required);
-      return;
-    }
+    const currentPoints = userData?.totalPoints || 0;
 
-    if ((userData?.totalPoints || 0) < item.price) {
+    if (currentPoints < item.price) {
       toast.error(strings.shop?.insufficient_points || 'نقاطك غير كافية');
       return;
     }
 
     try {
-      const userRef = doc(db, 'users', auth.currentUser.uid);
-      const updates = {
-        totalPoints: increment(-item.price),
-        pointsHistory: arrayUnion({
+      if (user) {
+        // الشراء للمستخدم المسجل (Firebase)
+        const userRef = doc(db, 'users', user.uid);
+        const updates = {
+          totalPoints: increment(-item.price),
+          pointsHistory: arrayUnion({
+            type: 'shop_purchase',
+            points: -item.price,
+            reason: `شراء: ${item.name}`,
+            timestamp: getCairoIsoString()
+          })
+        };
+
+        if (item.id === 'streak_freeze') {
+          updates.streakFreezes = increment(1);
+        } else {
+          updates.inventory = arrayUnion(item.id);
+        }
+
+        await updateDoc(userRef, updates);
+      } else {
+        // الشراء للضيف (Local Storage)
+        await StorageService.addPoints(-item.price);
+
+        if (item.id === 'streak_freeze') {
+          const currentFreezes = (await StorageService.get(KEYS.STREAK_FREEZES)) || 0;
+          await StorageService.save(KEYS.STREAK_FREEZES, currentFreezes + 1);
+        } else {
+          const currentInventory = (await StorageService.get(KEYS.INVENTORY)) || [];
+          if (!currentInventory.includes(item.id)) {
+            currentInventory.push(item.id);
+            await StorageService.save(KEYS.INVENTORY, currentInventory);
+          }
+        }
+
+        const history = (await StorageService.get(KEYS.POINTS_HISTORY)) || [];
+        history.push({
           type: 'shop_purchase',
           points: -item.price,
           reason: `شراء: ${item.name}`,
           timestamp: getCairoIsoString()
-        })
-      };
+        });
+        await StorageService.save(KEYS.POINTS_HISTORY, history);
 
-      if (item.id === 'streak_freeze') {
-        updates.streakFreezes = increment(1);
-      } else {
-        updates.inventory = arrayUnion(item.id);
+        // تحديث الواجهة فوراً للضيف
+        setUserData(prev => ({
+          ...prev,
+          totalPoints: prev.totalPoints - item.price,
+          streakFreezes: item.id === 'streak_freeze' ? prev.streakFreezes + 1 : prev.streakFreezes,
+          inventory: item.id !== 'streak_freeze' ? [...prev.inventory, item.id] : prev.inventory
+        }));
       }
 
-      await updateDoc(userRef, updates);
       toast.success(strings.shop?.purchase_success?.replace('{item}', item.name) || `تم شراء ${item.name} بنجاح!`);
+
+      // إذا اشترى الثيم الذهبي، حوله إليه فوراً
+      if (item.id === 'theme_gold') {
+        setTheme('gold');
+      }
+
     } catch (error) {
       console.error("Purchase Error:", error);
       toast.error(strings.common.error_occurred);
@@ -120,13 +170,12 @@ export default function Shop() {
               <div className={styles.iconContainer}>{item.icon}</div>
               <h3 className={styles.itemName}>{item.name}</h3>
               <p className={styles.itemDesc}>{item.desc}</p>
-              {item.id === 'streak_freeze' && userData?.streakFreezes > 0 && (
+              {userData?.streakFreezes > 0 && item.id === 'streak_freeze' && (
                 <span className={styles.ownedBadge}>{formatNumber(userData.streakFreezes)} مملوك</span>
               )}
               <button
                 className={styles.buyButton}
                 onClick={() => handleBuy(item)}
-                disabled={!auth.currentUser}
               >
                 <FaShoppingCart /> {formatNumber(item.price)} {strings.points?.points_unit || 'نقطة'}
               </button>
@@ -149,7 +198,7 @@ export default function Shop() {
                 <button
                   className={styles.buyButton}
                   onClick={() => handleBuy(item)}
-                  disabled={!auth.currentUser || isOwned}
+                  disabled={isOwned}
                 >
                   {isOwned ? strings.shop?.owned || 'مملوك' : <><FaShoppingCart /> {formatNumber(item.price)} {strings.points?.points_unit || 'نقطة'}</>}
                 </button>

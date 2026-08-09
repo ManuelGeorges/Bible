@@ -18,7 +18,9 @@ const KEYS = {
     VISITED_MAP_POINTS: 'agios_visited_map_points',
     COMPLETED_QUIZZES: 'agios_completed_quizzes',
     SHARED_PLANS_CACHE: 'agios_shared_plans_cache',
-    LAST_SHARED_PLANS_FETCH: 'agios_last_shared_plans_fetch'
+    LAST_SHARED_PLANS_FETCH: 'agios_last_shared_plans_fetch',
+    STREAK_FREEZES: 'agios_streak_freezes',
+    INVENTORY: 'agios_inventory'
 };
 
 export const StorageService = {
@@ -39,16 +41,12 @@ export const StorageService = {
             const { value } = await Preferences.get({ key });
             if (value === null || value === undefined) return null;
 
-            // محاولة التحويل من JSON
             try {
                 return JSON.parse(value);
             } catch (jsonError) {
-                // إذا لم يكن JSON (ربما نص عادي)، نرجعه كما هو
                 return value;
             }
         } catch (e) {
-            // في حال حدوث ClassCastException في أندرويد (مثل حالتنا)
-            // نقوم بمسح المفتاح التالف لمنع الكراش المتكرر
             console.warn(`Storage error for key ${key}, removing it...`, e);
             try {
                 await Preferences.remove({ key });
@@ -96,18 +94,15 @@ export const StorageService = {
         try {
             const history = (await this.get(KEYS.READING_HISTORY)) || [];
 
-            // إضافة القراءة الجديدة في بداية المصفوفة
             const newEntry = {
                 ...readingData,
                 id: Date.now().toString(),
                 timestamp: readingData.timestamp || new Date().toISOString()
             };
 
-            // تجنب التكرار المتتالي لنفس الفصل
             if (history.length > 0) {
                 const lastEntry = history[0];
                 if (lastEntry.bookIndex === newEntry.bookIndex && lastEntry.chapterIndex === newEntry.chapterIndex) {
-                    // تحديث الوقت فقط إذا كان نفس الفصل
                     history[0].timestamp = newEntry.timestamp;
                 } else {
                     history.unshift(newEntry);
@@ -116,7 +111,6 @@ export const StorageService = {
                 history.unshift(newEntry);
             }
 
-            // الاحتفاظ بآخر 100 قراءة مثلاً لعدم تضخم حجم الملف
             const limitedHistory = history.slice(0, 100);
             await this.save(KEYS.READING_HISTORY, limitedHistory);
             return limitedHistory;
@@ -129,6 +123,8 @@ export const StorageService = {
         return {
             points: (await this.get(KEYS.POINTS)) || 0,
             streak: (await this.get(KEYS.STREAK)) || 0,
+            streakFreezes: (await this.get(KEYS.STREAK_FREEZES)) || 0,
+            inventory: (await this.get(KEYS.INVENTORY)) || [],
             notes: (await this.get(KEYS.NOTES)) || [],
             favorites: (await this.get(KEYS.FAVORITES)) || {},
             readingHistory: (await this.get(KEYS.READING_HISTORY)) || [],

@@ -7,7 +7,7 @@ import { db } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
 import { getCairoDate, getCairoIsoString } from '../lib/dateUtils';
 import { Capacitor } from '@capacitor/core';
-import { StorageService } from '../lib/storage';
+import { StorageService, KEYS } from '../lib/storage';
 import { useLanguage } from '../app/context/LanguageContext';
 
 const auth = typeof window !== 'undefined' ? getAuth() : null;
@@ -57,7 +57,7 @@ export default function UserTracker() {
                 const diffDays = calculateDiffDays(lastActive, today);
 
                 if (diffDays > 1) {
-                  // محاولة استخدام تجميد الستريك إذا وجد
+                  // محاولة استخدام تجميد الستريك إذا وجد (للمسجلين)
                   if (userData.streakFreezes > 0) {
                     newStreak = (userData.streak || 0) + 1;
                     usedFreeze = true;
@@ -112,38 +112,53 @@ export default function UserTracker() {
             }
           }
         } else {
-          // المنطق المحلي (بدون تسجيل دخول)
+          // المنطق المحلي للضيوف (Local First)
           const localStats = await StorageService.getLocalStats();
           const lastActive = await StorageService.get('agios_last_active');
 
           if (lastActive !== today) {
             let newStreak = (localStats.streak || 0) + 1;
+            let usedFreeze = false;
 
             if (lastActive) {
               const diffDays = calculateDiffDays(lastActive, today);
-              if (diffDays > 1) newStreak = 1;
+              if (diffDays > 1) {
+                // محاولة استخدام التجميد المحلي للضيف
+                const currentFreezes = localStats.streakFreezes || 0;
+                if (currentFreezes > 0) {
+                  newStreak = (localStats.streak || 0) + 1;
+                  usedFreeze = true;
+                  await StorageService.save(KEYS.STREAK_FREEZES, currentFreezes - 1);
+                } else {
+                  newStreak = 1;
+                }
+              }
             }
 
             await StorageService.updateStreak(newStreak);
             await StorageService.save('agios_last_active', today);
             await StorageService.addPoints(10);
 
-            const history = await StorageService.get('points_history') || [];
+            const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
             history.push({
               type: 'dailyLogin',
               points: 10,
               reason: strings.points?.points_reasons?.daily_login || 'Daily login',
               timestamp: getCairoIsoString()
             });
-            await StorageService.save('points_history', history);
+            await StorageService.save(KEYS.POINTS_HISTORY, history);
 
-            toast(strings.home.toasts.welcome_back.replace('{streak}', formatNumber(newStreak)), { icon: '✨' });
+            if (usedFreeze) {
+              toast(strings.shop?.use_freeze_toast || "تم استخدام تجميد الستريك لحمايتك! ❄️", { icon: '❄️' });
+            } else {
+              toast(strings.home.toasts.welcome_back.replace('{streak}', formatNumber(newStreak)), { icon: '✨' });
+            }
           }
         }
 
         if (Capacitor.isNativePlatform() && window.AgiosScannerNative?.updateUserStats) {
           const userData = user ? (await getDoc(doc(db, 'users', user.uid))).data() : null;
-          const currentStreak = userData ? userData.streak : (await StorageService.get('agios_streak'));
+          const currentStreak = userData ? userData.streak : (await StorageService.get(KEYS.STREAK));
           const currentPoints = userData ? (userData.totalPoints || 0) : (await StorageService.getLocalStats()).points;
 
           window.AgiosScannerNative.updateUserStats(currentStreak || 0, null, currentPoints || 0);

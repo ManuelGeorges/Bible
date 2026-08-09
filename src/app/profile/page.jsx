@@ -4,13 +4,13 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut, getAuth, deleteUser } from 'firebase/auth';
 import { doc, getDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { db, auth } from '../../lib/firebase';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { 
   User, Mail, Calendar, Share2, LogOut, Trash2,
   BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon,
-  LogIn, UserPlus, CloudSync
+  LogIn, UserPlus, CloudSync, Crown, Medal
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { StorageService } from '../../lib/storage';
@@ -43,6 +43,14 @@ const ProfilePage = () => {
       joinDate: strings?.profile?.guest_date || 'Guest',
       points: localStats.points || 0
     });
+
+    // محاكاة بيانات المستخدم للضيف لدعم المشتريات المحلية
+    setUserData({
+      inventory: localStats.inventory || [],
+      streakFreezes: localStats.streakFreezes || 0,
+      displayName: strings?.profile?.guest_user
+    });
+
     setLoading(false);
     setIsGuest(true);
   }, [strings]);
@@ -61,7 +69,6 @@ const ProfilePage = () => {
           const staticPlansCount = data.completedPlans ? Object.keys(data.completedPlans).length : 0;
           const customPlansCount = data.customPlans ? Object.keys(data.customPlans).length : 0;
 
-          // توحيد التنسيق الزمني بناءً على اللغة المختارة
           const locale = language === 'ar' ? 'ar-EG' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : 'en-US';
 
           const registrationDate = currentUser.metadata.creationTime
@@ -92,7 +99,6 @@ const ProfilePage = () => {
   }, [language]);
 
   useEffect(() => {
-    const auth = getAuth();
     let unsubSnap = () => {};
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
@@ -109,7 +115,7 @@ const ProfilePage = () => {
         unsubscribeAuth();
         unsubSnap();
     };
-  }, [router, fetchProfileData, fetchLocalProfile]);
+  }, [fetchProfileData, fetchLocalProfile]);
 
   const handleShareApp = async () => {
     const shareData = {
@@ -131,13 +137,11 @@ const ProfilePage = () => {
   };
 
   const handleLogout = async () => {
-    const auth = getAuth();
     await signOut(auth);
     router.push('/');
   };
 
   const handleDeleteAccount = async () => {
-    const auth = getAuth();
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
@@ -145,8 +149,8 @@ const ProfilePage = () => {
     if (confirmed) {
       try {
         const userId = currentUser.uid;
-        await deleteUser(currentUser);
         await deleteDoc(doc(db, 'users', userId));
+        await deleteUser(currentUser);
         router.push('/');
       } catch (error) {
         alert("An error occurred. Please re-authenticate and try again.");
@@ -156,25 +160,34 @@ const ProfilePage = () => {
 
   if (loading) return <div className={styles.loading}>{strings?.common?.loading}</div>;
 
-  // إصلاح وقائي لخطأ الـ date المكتشف في اللغة الفرنسية
-  const memberSinceTemplate = String(strings?.profile?.member_since || "Member since: {date}");
-  const memberSinceText = memberSinceTemplate.replace('{date}', String(userStats.joinDate || ''));
+  const hasGoldTheme = userData?.inventory?.includes('theme_gold');
+  const hasWordLoverTitle = userData?.inventory?.includes('title_word_lover');
 
   return (
-    <div className={styles.container} dir={dir}>
+    <div className={`${styles.container} ${hasGoldTheme ? styles.goldProfile : ''}`} dir={dir}>
       <div className={styles.profileHeader}>
         <div className={styles.avatarWrapper}>
-          <div className={styles.avatar}>
+          {hasGoldTheme && <Crown className={styles.crownIcon} size={32} />}
+          <div className={`${styles.avatar} ${hasGoldTheme ? styles.goldAvatar : ''}`}>
             {isGuest ? <User size={40} /> : (userData?.displayName?.[0] || user?.displayName?.[0] || <User size={40} />)}
           </div>
         </div>
+
         <h1 className={styles.userName}>
           {isGuest ? strings?.profile?.guest_user : (userData?.displayName || user?.displayName || strings?.profile?.friend_agios)}
         </h1>
+
+        {hasWordLoverTitle && (
+            <div className={styles.titleBadge}>
+                <Medal size={14} />
+                <span>{strings?.shop?.items?.title_word_lover?.name || 'محب الكلمة'}</span>
+            </div>
+        )}
+
         {!isGuest && (
           <>
             <p className={styles.userEmail}><Mail size={14} /> {user?.email}</p>
-            <p className={styles.joinDate}><Calendar size={14} /> {memberSinceText}</p>
+            <p className={styles.joinDate}><Calendar size={14} /> {strings?.profile?.member_since?.replace('{date}', String(userStats.joinDate))}</p>
           </>
         )}
       </div>
@@ -185,7 +198,7 @@ const ProfilePage = () => {
           <span className={styles.statValue}>{userStats.verses}</span>
           <span className={styles.statLabel}>{strings?.profile?.fav_verses}</span>
         </div>
-        <div className={styles.statBox}>
+        <div className={styles.statBox} onClick={() => router.push('/points')}>
           <Trophy className={styles.statIcon} size={20} />
           <span className={styles.statValue}>{userStats.points}</span>
           <span className={styles.statLabel}>{strings?.profile?.points_label || 'XP'}</span>
