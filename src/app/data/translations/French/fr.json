@@ -471,7 +471,22 @@
     "share_text": "Téléchargez l'application Agios and lisez la Bible d'une nouvelle façon !",
     "share_dialog": "Partager l'application with des amis",
     "share_not_supported": "Partage non supporté par le navigateur",
-    "points_label": "XP"
+    "points_label": "XP",
+    "search_friends": "Rechercher des amis...",
+    "streak_days": "jours consécutifs",
+    "community": "Communauté",
+    "leaderboard": "Classement",
+    "friends": "Amis",
+    "my_activity": "Mon activité",
+    "my_notes_reflections": "Mes notes et réflexions",
+    "achievements": "Succès",
+    "start_collecting_badges": "Commencez votre voyage pour collecter des badges",
+    "badges_section": "Badges",
+    "private_profile": "Compte privé",
+    "private_profile_desc": "Masquer votre profil des autres",
+    "private_account_title": "Ce compte est privé",
+    "private_account_message": "Le propriétaire de ce compte préfère garder ses exploits privés.",
+    "no_badges_yet": "Pas encore de badges"
   },
   "points": {
     "title": "Points & Exploits",

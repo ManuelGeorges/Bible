@@ -13,7 +13,7 @@
 
   color-scheme: light dark;
 
-  /* Colors */
+  /* Standard Colors */
   --color-bg-start: #f8fafc;
   --color-bg-end: #f1f5f9;
   --color-text-primary: #0f172a;
@@ -47,63 +47,83 @@
 }
 
 /* ============================================================
-   SUPREME ROYAL GOLD THEME (The Game Finisher)
+   SUPREME ROYAL GOLD THEME (The Ultimate Masterpiece)
    ============================================================ */
 [data-theme='gold'] {
-  /* Obsidian Royal Background */
-  --color-bg-start: #0a0a02;
-  --color-bg-end: #1a1900;
+  /* Absolute Deep Obsidian Foundation */
+  --color-bg-start: #030303;
+  --color-bg-end: #0a0a0a;
 
   /* Luxury Champagne & Pure Gold Text */
-  --color-text-primary: #fffcf0; /* Warm pearly white, very eye-friendly */
-  --color-text-secondary: #cf992d; /* Classical metallic gold */
+  --color-text-primary: #fdfae6; /* Soft warm ivory glow */
+  --color-text-secondary: #d4af37; /* Authentic 24K Burnished Gold */
 
-  /* Deep Black Glass with Golden Aura */
-  --color-card-bg: rgba(15, 14, 0, 0.94);
-  --color-border: rgba(207, 153, 45, 0.35);
+  /* Pure Black Glass with Intense Gold Framing */
+  --color-card-bg: rgba(5, 5, 5, 0.98);
+  --color-border: rgba(212, 175, 55, 0.5);
 
-  --glass-blur: 32px;
-  --glass-shadow: 0 15px 50px rgba(207, 153, 45, 0.12);
+  --glass-blur: 40px;
+  --glass-shadow: 0 40px 100px rgba(0, 0, 0, 1), 0 0 50px rgba(212, 175, 55, 0.08);
 
-  /* 24K Gold Accent with Multi-stop Gradient */
-  --color-accent: #eab308;
-  --btn-bg: linear-gradient(135deg, #cf992d 0%, #fcf6ba 45%, #b38728 55%, #fbf5b7 100%);
-  --btn-text: #0a0a02; /* Sharp contrast for readability */
-  --btn-hover: #fde047;
+  /* Solid Gold Accent with High-Gloss Gradients */
+  --color-accent: #d4af37;
+  --btn-bg: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 55%, #fbf5b7 100%);
+  --btn-text: #000000; /* Absolute black text on gold buttons */
+  --btn-hover: #f1c40f;
 
-  --color-shadow-medium: rgba(0, 0, 0, 0.9);
-  --color-accent-gold: #fde047;
+  --color-shadow-medium: rgba(0, 0, 0, 1);
+  --color-accent-gold: #f1c40f;
 }
 
-/* Unique Shimmer Animation for Gold Buttons */
-@keyframes gold-shimmer {
+/* Dynamic Golden Liquid Animation */
+@keyframes royal-shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-[data-theme='gold'] button,
+[data-theme='gold'] button:not(.closeBtn),
 [data-theme='gold'] .activeChip,
-[data-theme='gold'] .navBtn.active {
+[data-theme='gold'] .navBtn.active,
+[data-theme='gold'] .active {
   background-size: 200% 100% !important;
-  animation: gold-shimmer 5s infinite linear !important;
-  border: 1px solid rgba(255, 252, 240, 0.2) !important;
+  animation: royal-shimmer 6s infinite linear !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  font-weight: 900 !important;
 }
 
-/* Headings in Gold Theme look like engraved metal */
+/* Deep Engraved Metallic Typography */
 [data-theme='gold'] h1,
 [data-theme='gold'] h2,
-[data-theme='gold'] .royal-text {
-  background: linear-gradient(to bottom, #cf992d, #fcf6ba, #cf992d);
+[data-theme='gold'] .header {
+  background: linear-gradient(to bottom, #d4af37 0%, #fdfae6 50%, #d4af37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.8));
-  font-weight: 900;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,1));
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-[data-theme='gold'] .liquid-glass {
-    border: 1px solid rgba(207, 153, 45, 0.4) !important;
-    background: rgba(10, 10, 2, 0.96) !important;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.9), 0 0 20px rgba(207, 153, 45, 0.05) !important;
+/* High-End Glass Overrides */
+[data-theme='gold'] .liquid-glass,
+[data-theme='gold'] .card {
+    border: 1.5px solid rgba(212, 175, 55, 0.4) !important;
+    background: rgba(3, 3, 3, 0.99) !important;
+    box-shadow: 0 50px 100px rgba(0,0,0,1) !important;
+}
+
+/* Golden Halo Pulse for Avatars/Badges */
+@keyframes golden-aura {
+  0% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); }
+  100% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+}
+
+[data-theme='gold'] .avatar,
+[data-theme='gold'] .statBox {
+  border: 2px solid #d4af37 !important;
+  animation: golden-aura 4s infinite ease-in-out;
 }
 
 /* ============================================================
@@ -113,9 +133,17 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+
+  /* منع اللون الأزرق عند اللمس */
   -webkit-tap-highlight-color: transparent;
+
+  /* منع سحب العناصر والصور */
   -webkit-user-drag: none;
+
+  /* تسريع الاستجابة للمس */
   touch-action: manipulation;
+
+  /* تحسين الأداء الرسومي */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
@@ -124,9 +152,15 @@ html, body {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
+
+  /* منع اهتزاز الصفحة Pull-to-refresh */
   overscroll-behavior-y: none;
+
+  /* منع اختيار النصوص في الواجهة */
   user-select: none;
   -webkit-user-select: none;
+
+  /* منع قائمة المتصفح عند الضغط المطول */
   -webkit-touch-callout: none;
 }
 
@@ -134,34 +168,63 @@ body {
   font-family: 'Inter', 'Cairo', sans-serif;
   background-color: var(--color-bg-start);
   color: var(--color-text-primary);
+
+  /* تحسين جودة الخطوط لتشبه الـ Native */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
 }
 
-::-webkit-scrollbar { display: none; }
-* { scrollbar-width: none; -ms-overflow-style: none; }
+/* إخفاء الـ Scrollbars تماماً */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 
-img { pointer-events: none; user-select: none; }
+/* منع سحب الصور تماماً */
+img {
+  pointer-events: none;
+  user-select: none;
+}
 
+/* Animations */
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-.animate-spin-slow { animation: spin-slow 8s linear infinite; }
 
-/* Feedback interaction effects */
-button, a, [role="button"], .clickable {
-  transition: transform 0.1s var(--transition-smooth), opacity 0.1s ease;
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* ============================================================
+   NATIVE INTERACTION EFFECTS
+   ============================================================ */
+
+/* تأثير الضغط (Feedback) للأزرار وكل ما هو قابل للنقر */
+button,
+a,
+[role="button"],
+.clickable {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.1s ease;
   outline: none !important;
 }
-button:active, a:active, [role="button"]:active, .clickable:active {
-  transform: scale(0.96);
+
+button:active,
+a:active,
+[role="button"]:active,
+.clickable:active {
+  transform: scale(0.96); /* تصغير فيزيائي */
   opacity: 0.8;
 }
 
+/* استثناء: السماح باختيار النص داخل حقول الإدخال */
 input, textarea {
   user-select: text !important;
   -webkit-user-select: text !important;
@@ -169,8 +232,11 @@ input, textarea {
   outline: none;
 }
 
+/* إلغاء الـ Hover في أجهزة اللمس لمنع الـ "Sticky Hover" */
 @media (hover: hover) {
-  button:hover, a:hover { filter: brightness(1.1); }
+  button:hover, a:hover {
+    filter: brightness(1.1);
+  }
 }
 
 .liquid-glass {
@@ -181,7 +247,9 @@ input, textarea {
   box-shadow: var(--glass-shadow) !important;
 }
 
-.sr-only { display: none; }
+.sr-only {
+  display: none;
+}
 
 /* ============================================================
    EXCELLENT & READABLE UPDATE POPUP STYLE
@@ -216,6 +284,7 @@ input, textarea {
   animation: modalPop var(--transition-bounce) 0.5s;
 }
 
+/* Decorative subtle glow inside the modal for depth */
 .update-modal::before {
   content: '';
   position: absolute;

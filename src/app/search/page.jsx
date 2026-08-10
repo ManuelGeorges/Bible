@@ -20,6 +20,27 @@ import { StorageService, KEYS } from '../../lib/storage';
 
 const API_BASE_URL = 'https://www.agiosbible.com';
 
+const highlightColors = [
+  { color: '#FFC107', name: 'Yellow' },
+  { color: '#FF5722', name: 'Orange' },
+  { color: '#F44336', name: 'Red' },
+  { color: '#E91E63', name: 'Pink' },
+  { color: '#9C27B0', name: 'Purple' },
+  { color: '#673AB7', name: 'Deep Purple' },
+  { color: '#3F51B5', name: 'Indigo' },
+  { color: '#2196F3', name: 'Blue' },
+  { color: '#03A9F4', name: 'Light Blue' },
+  { color: '#00BCD4', name: 'Cyan' },
+  { color: '#009688', name: 'Teal' },
+  { color: '#4CAF50', name: 'Green' },
+  { color: '#8BC34A', name: 'Light Green' },
+  { color: '#CDDC39', name: 'Lime' },
+  { color: '#FFECB3', name: 'Amber' },
+  { color: '#F8BBD0', name: 'Light Pink' },
+  { color: '#E1BEE7', name: 'Lavender' },
+  { color: '#CFD8DC', name: 'Blue Grey' }
+];
+
 async function withRetry(fn, onRetry, maxAttempts = 5, baseDelayMs = 2000) {
   let lastError;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -336,8 +357,10 @@ function SearchContent() {
       newFavorites[verseId] = {
         text: v.text,
         book: v.book,
-        chapter: v.chapter,
-        verse: v.verse,
+        ch: v.chapter, // Unifying with BibleContent (ch instead of chapter)
+        v: v.verse,    // Unifying with BibleContent (v instead of verse)
+        chapter: v.chapter, // Keeping for backward compatibility
+        verse: v.verse,     // Keeping for backward compatibility
         book_index: v.book_index,
         color: color !== null ? color : (newFavorites[verseId]?.color || "#FFC107"),
         note: noteText,
@@ -372,8 +395,10 @@ function SearchContent() {
         newFavorites[vId] = {
           text: v.text,
           book: v.book,
-          chapter: v.chapter,
-          verse: v.verse,
+          ch: v.chapter, // Unifying
+          v: v.verse,    // Unifying
+          chapter: v.chapter, // Backward compatibility
+          verse: v.verse,     // Backward compatibility
           book_index: v.book_index,
           color: color,
           note: '',

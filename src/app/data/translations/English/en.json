@@ -472,7 +472,22 @@
     "share_text": "Download the Agios app and read the Bible in a new way!",
     "share_dialog": "Share the app with friends",
     "share_not_supported": "Sharing not supported in browser",
-    "points_label": "XP"
+    "points_label": "XP",
+    "search_friends": "Search for friends...",
+    "streak_days": "Days Streak",
+    "community": "Community",
+    "leaderboard": "Leaderboard",
+    "friends": "Friends",
+    "my_activity": "My Activity",
+    "my_notes_reflections": "My Notes & Reflections",
+    "achievements": "Achievements",
+    "start_collecting_badges": "Start your journey to collect badges",
+    "badges_section": "Badges",
+    "private_profile": "Private Account",
+    "private_profile_desc": "Hide your profile from others",
+    "private_account_title": "This account is private",
+    "private_account_message": "The owner of this account prefers to keep their achievements private.",
+    "no_badges_yet": "No badges yet"
   },
   "points": {
     "title": "Points & Achievements",

@@ -472,7 +472,22 @@
     "share_text": "حمل أبليكيشن أجيوس واقرأ الكتاب المقدس بطريقة جديدة!",
     "share_dialog": "مشاركة التطبيق مع الأصدقاء",
     "share_not_supported": "المشاركة غير مدعومة في المتصفح",
-    "points_label": "XP"
+    "points_label": "XP",
+    "search_friends": "البحث عن أصدقاء...",
+    "streak_days": "يوم متواصل",
+    "community": "المجتمع",
+    "leaderboard": "المتصدرين",
+    "friends": "الأصدقاء",
+    "my_activity": "نشاطي",
+    "my_notes_reflections": "ملاحظاتي وتأملاتي",
+    "achievements": "الإنجازات",
+    "start_collecting_badges": "ابدأ رحلتك لجمع الأوسمة",
+    "badges_section": "الأوسمة",
+    "private_profile": "حساب خاص",
+    "private_profile_desc": "إخفاء بروفايلك عن الآخرين",
+    "private_account_title": "هذا الحساب خاص",
+    "private_account_message": "صاحب هذا الحساب يفضل الحفاظ على خصوصية إنجازاته.",
+    "no_badges_yet": "لا توجد أوسمة بعد"
   },
   "points": {
     "title": "النقاط والإنجازات",
@@ -485,7 +500,7 @@
     "streak_label": "سلسلة تفاعل: {streak} يوم",
     "daily_goals_title": "أهداف اليوم",
     "rarity": {
-      "all": "كل الندرة",
+      "all": "الكل الندرة",
       "common": "عادي",
       "uncommon": "مميز",
       "rare": "نادر",

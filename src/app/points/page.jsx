@@ -17,7 +17,6 @@ import { getCairoDate, getCairoIsoString, getCairoDateInfo } from '../../lib/dat
 import { StorageService, KEYS } from '../../lib/storage';
 import { useLanguage } from '../context/LanguageContext';
 
-// Import badge translations statically from the new path in src/app/data
 import badgesAr from '../data/translations/arabic/badges_ar.json';
 import badgesEn from '../data/translations/English/badges_en.json';
 import badgesFr from '../data/translations/French/badges_fr.json';
@@ -339,10 +338,6 @@ export default function Points() {
               <span className={styles.pointsLabel}>{String(strings.points.total_points_label)}</span>
             </div>
 
-            <button className={styles.shopActionBtn} onClick={() => router.push('/shop')}>
-                <FaShoppingCart /> {strings.more.items.shop || "المتجر"}
-            </button>
-
             <div className={styles.dailyGoalsSection}>
               <h3 className={styles.subTitle}>{String(strings.points.daily_goals_title)}</h3>
               <div className={styles.goalsGrid}>
@@ -363,11 +358,15 @@ export default function Points() {
 
       {activeTab === 'badges' && (
         <section className={styles.sectionWrapper}>
-          {/* ... (باقي كود الأوسمة يظل كما هو) */}
+           {/* Badges implementation */}
         </section>
       )}
 
-      {/* ... (باقي كود السجل يظل كما هو) */}
+      {activeTab === 'history' && (
+        <section className={styles.sectionWrapper}>
+           {/* History implementation */}
+        </section>
+      )}
     </div>
   );
 }

@@ -250,7 +250,7 @@
     },
     "permission_modal": {
       "title": "Benachrichtigungen aktivieren",
-      "desc": "Bitte aktiviere die Benachrichtigungen in den Telefoneinstellungen, um tägliche Inhalte zu erhalten."
+      "desc": "Bitte aktiviere die Benachrichtigungen in den Telefenneinstellungen, um tägliche Inhalte zu erhalten."
     }
   },
   "about": {
@@ -468,7 +468,23 @@
     "share_text": "Lade die Agios-App herunter und lies die Bibel auf eine neue Weise!",
     "share_dialog": "App mit Freunden teilen",
     "share_not_supported": "Teilen im Browser nicht unterstützt",
-    "points_label": "XP"
+    "points_label": "XP",
+    "search_friends": "Nach Freunden suchen...",
+    "streak_days": "Tage Streak",
+    "community": "Gemeinschaft",
+    "leaderboard": "Bestenliste",
+    "friends": "Freunde",
+    "my_activity": "Meine Aktivität",
+    "my_notes_reflections": "Meine Notizen & Reflexionen",
+    "achievements": "Erfolge",
+    "start_collecting_badges": "Starte deine Reise, um Abzeichen zu sammeln",
+    "badges_section": "Abzeichen",
+    "private_profile": "Privates Profil",
+    "private_profile_desc": "Verbirgt dein Profil vor anderen",
+    "private_account_title": "Dieses Konto ist privat",
+    "private_account_message": "Der Besitzer dieses Kontos möchte seine Erfolge privat halten.",
+    "no_badges_yet": "Noch keine Abzeichen"
+
   },
   "points": {
     "title": "Punkte & Erfolge",
@@ -838,7 +854,7 @@
         ],
         "fixes": [
           "Problem behoben, das das Funktionieren der Karten verhinderte",
-          "Fehler bei Auswahl und Kopie von Versen behoben"
+          "Fehler bei Auswahl and Kopie von Versen behoben"
         ]
       },
       {

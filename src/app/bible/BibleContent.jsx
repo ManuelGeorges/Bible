@@ -445,7 +445,16 @@ export default function BibleContent() {
       const key = `${selectedBookIndex}-${selectedChapterIndex}-${sv.index}`;
       if (targetColor) {
         if (!next[key]) newlyAddedCount++;
-        next[key] = { text: sv.text, book: getBookName(selectedBookIndex), ch: selectedChapterIndex, v: sv.index, color: targetColor, dateAdded: getCairoIsoString(), synced: !!user };
+        next[key] = {
+          text: sv.text,
+          book: getBookName(selectedBookIndex),
+          ch: selectedChapterIndex,
+          v: sv.index,
+          book_index: selectedBookIndex,
+          color: targetColor,
+          dateAdded: getCairoIsoString(),
+          synced: !!user
+        };
       } else delete next[key];
     });
     setFavouriteVerses(next);
@@ -456,6 +465,17 @@ export default function BibleContent() {
       if (count >= 20) unlockBadge('fav_20');
       if (count >= 100) unlockBadge('fav_100');
     }
+
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          'favorites.verses': next
+        });
+      } catch (e) {
+        console.error("Firebase update failed", e);
+      }
+    }
+
     saveBibleData(next, completedChapters);
     setCopiedMessage(targetColor ? strings.bible.toasts.highlighted : strings.bible.toasts.highlight_removed);
     setSelectedVerses([]);
@@ -496,7 +516,16 @@ export default function BibleContent() {
     const next = { ...favouriteVerses };
     if (!next[targetVerseKey]) {
       const [b, c, v] = targetVerseKey.split('-');
-      next[targetVerseKey] = { text: bibleDataRef.current[b].chapters[c][v], book: getBookName(b), ch: parseInt(c), v: parseInt(v), color: '#FFC107', dateAdded: getCairoIsoString(), synced: !!user };
+      next[targetVerseKey] = {
+        text: bibleDataRef.current[b].chapters[c][v],
+        book: getBookName(b),
+        ch: parseInt(c),
+        v: parseInt(v),
+        book_index: parseInt(b),
+        color: '#FFC107',
+        dateAdded: getCairoIsoString(),
+        synced: !!user
+      };
     }
     next[targetVerseKey].note = currentNoteText;
     next[targetVerseKey].noteDate = getCairoIsoString();
@@ -510,6 +539,17 @@ export default function BibleContent() {
     });
 
     setFavouriteVerses(next);
+
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          'favorites.verses': next
+        });
+      } catch (e) {
+        console.error("Firebase update failed", e);
+      }
+    }
+
     saveBibleData(next, completedChapters);
     setIsNoteModalOpen(false);
     updateUserPoints(5, strings.bible.reasons.note, 'favouriteVerse');
