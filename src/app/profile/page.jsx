@@ -12,7 +12,7 @@ import {
   BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon,
   LogIn, CloudSync, Crown, Medal,
   ChevronRight, History, MessageSquare, Star,
-  Flame, Target, Award, ExternalLink
+  Flame, Target, Award, ExternalLink, Users
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { StorageService } from '../../lib/storage';
@@ -172,7 +172,6 @@ const ProfilePage = () => {
   };
 
   const getRarityColor = (rarity) => {
-    // Rarity names map to these colors (handled in both Arabic and other languages)
     const r = rarity?.toLowerCase();
     if (r === 'عادي' || r === 'common') return '#94a3b8';
     if (r === 'مميز' || r === 'uncommon') return '#10b981';
@@ -266,7 +265,7 @@ const ProfilePage = () => {
       <div className={styles.listSection}>
         <h3 className={styles.listTitle}>{strings?.profile?.my_activity}</h3>
         <div className={styles.menuCard}>
-          <button className={styles.menuItem} onClick={() => router.push('/bible/history')}>
+          <button className={styles.menuItem} onClick={() => router.push('/history')}>
             <div className={styles.menuItemLeft}>
               <div className={`${styles.iconCircle} ${styles.bgPurple}`}><History size={18} /></div>
               <span>{strings?.bible?.reading_history}</span>
