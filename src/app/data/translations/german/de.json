@@ -463,7 +463,7 @@
     "invite_friend": "Freund zur App einladen",
     "delete_account": "Konto löschen",
     "delete_confirm": "Bist du sicher, dass du dein Konto dauerhaft löschen möchtest?",
-    "version": "Agios App - Version 2.2.0",
+    "version": "Agios App - Version 2.5.0",
     "share_title": "Agios App",
     "share_text": "Lade die Agios-App herunter und lies die Bibel auf eine neue Weise!",
     "share_dialog": "App mit Freunden teilen",
@@ -484,7 +484,6 @@
     "private_account_title": "Dieses Konto ist privat",
     "private_account_message": "Der Besitzer dieses Kontos möchte seine Erfolge privat halten.",
     "no_badges_yet": "Noch keine Abzeichen"
-
   },
   "points": {
     "title": "Punkte & Erfolge",
@@ -746,8 +745,21 @@
     },
     "history": [
       {
-        "version": "2.3.0",
+        "version": "2.5.0",
         "date": "Aktuelles Update",
+        "title": "Umfassendes Profil-Update & allgemeine Verbesserungen",
+        "features": [
+          "Radikale Weiterentwicklung der persönlichen Profilseite, um sie interaktiver und moderner zu gestalten",
+          "Verbessertes und entwickeltes Abzeichen- und Punktesystem (XP), um die tägliche Interaktion zu fördern",
+          "Das Buch Ester wurde vollständig abgeschlossen und dem System hinzugefügt",
+          "Fehler bei der Berechnung des Interaktions-Streaks behoben, um Genauigkeit zu gewährleisten",
+          "Synchronisierungsprobleme bei Lieblingsversen zwischen verschiedenen Geräten behoben"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.3.0",
+        "date": "Vorheriges Update",
         "title": "Umfassende Verbesserungen & wichtige Korrekturen",
         "features": [
           "Radikale Fehlerbehebung und Verbesserung der Karten für ein besseres Erkundungسرlebnis",
@@ -974,7 +986,7 @@
   },
   "interpretations": {
     "no_data": "Auslegungsdaten nicht gefunden",
-    "title_prefix": "Buchauslegung",
+    "title_prefix": "Bookauslegung",
     "subtitle": "Analyse und Erklärung der Kapitel",
     "default_title": "Bibelauslegung",
     "chapter_title": "Kapitel {chapter}"
@@ -1019,7 +1031,7 @@
     }
   },
   "metadata": {
-    "title": "Offizielle Website | Agios Bibel",
+    "title": "Offizielle Website | Agios Bible",
     "description": "Eine integrierte Bibel-Website mit erweiterten Funktionen wie Suche, interaktiven Karten, Leseplänen und Wettbewerben."
   }
 }

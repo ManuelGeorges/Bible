@@ -2,17 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signOut, deleteUser } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../../lib/firebase';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
 import { 
-  User, Mail, Calendar, Share2, LogOut, Trash2,
+  Mail, Calendar, Share2, LogOut, Trash2,
   BookOpen, Heart, Activity, Trophy, Settings as SettingsIcon,
   LogIn, CloudSync, Crown, Medal,
   ChevronRight, History, MessageSquare, Star,
-  Flame, Target, Award, ExternalLink, Users
+  Flame, Target, Award, ExternalLink
 } from 'lucide-react';
 import styles from './profile.module.css';
 import { StorageService } from '../../lib/storage';
@@ -155,7 +155,6 @@ const ProfilePage = () => {
     if (confirmed && auth.currentUser) {
       try {
         await deleteDoc(doc(db, 'users', auth.currentUser.uid));
-        await deleteUser(auth.currentUser);
         router.push('/');
       } catch (error) {
         alert("Please re-authenticate and try again.");
@@ -164,6 +163,7 @@ const ProfilePage = () => {
   };
 
   const getBadgeDetails = (badgeId) => {
+    if (!badgesData?.badge_families) return null;
     for (const family of badgesData.badge_families) {
       const badge = family.badges.find(b => b.id === badgeId);
       if (badge) return badge;
@@ -207,7 +207,6 @@ const ProfilePage = () => {
             </div>
         )}
 
-        {/* XP Progress Bar */}
         <div className={styles.xpProgressContainerLarge}>
           <div className={styles.xpText}>
             <span>{userStats.points} XP</span>
@@ -261,7 +260,6 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Activity & History List */}
       <div className={styles.listSection}>
         <h3 className={styles.listTitle}>{strings?.profile?.my_activity}</h3>
         <div className={styles.menuCard}>
@@ -291,7 +289,6 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Actual Badges Showcase - EARNED BADGES */}
       <div className={styles.sectionTitleRow}>
         <h3>{strings?.profile?.badges_section}</h3>
         <span onClick={() => router.push('/points?tab=badges')}>{strings?.common?.view_all}</span>
@@ -337,28 +334,6 @@ const ProfilePage = () => {
         </div>
       )}
 
-      {/* Community Access Buttons */}
-      <div className={styles.listSection}>
-        <div className={styles.menuCard}>
-           <button className={styles.menuItem} onClick={() => router.push('/leaderboard')}>
-            <div className={styles.menuItemLeft}>
-              <div className={`${styles.iconCircle} ${styles.bgOrange}`}><Trophy size={18} /></div>
-              <span>{strings?.profile?.leaderboard}</span>
-            </div>
-            <ChevronRight size={18} className={styles.chevron} />
-          </button>
-
-          <button className={styles.menuItem} onClick={() => router.push('/friends')}>
-            <div className={styles.menuItemLeft}>
-              <div className={`${styles.iconCircle} ${styles.bgBlue}`}><Users size={18} /></div>
-              <span>{strings?.profile?.friends}</span>
-            </div>
-            <ChevronRight size={18} className={styles.chevron} />
-          </button>
-        </div>
-      </div>
-
-      {/* Settings Section */}
       <div className={styles.listSection}>
         <div className={styles.menuCard}>
           <button className={styles.menuItem} onClick={() => router.push('/settings')}>

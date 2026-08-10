@@ -467,7 +467,7 @@
     "invite_friend": "دعوة صديق للتطبيق",
     "delete_account": "حذف الحساب",
     "delete_confirm": "هل أنت متأكد من حذف حسابك نهائياً؟",
-    "version": "تطبيق أجيوس - الإصدار 2.2.0",
+    "version": "تطبيق أجيوس - الإصدار 2.5.0",
     "share_title": "تطبيق أجيوس",
     "share_text": "حمل أبليكيشن أجيوس واقرأ الكتاب المقدس بطريقة جديدة!",
     "share_dialog": "مشاركة التطبيق مع الأصدقاء",
@@ -500,7 +500,7 @@
     "streak_label": "سلسلة تفاعل: {streak} يوم",
     "daily_goals_title": "أهداف اليوم",
     "rarity": {
-      "all": "الكل الندرة",
+      "all": "كل الندرة",
       "common": "عادي",
       "uncommon": "مميز",
       "rare": "نادر",
@@ -750,8 +750,21 @@
     },
     "history": [
       {
-        "version": "2.3.0",
+        "version": "2.5.0",
         "date": "التحديث الحالي",
+        "title": "تطوير شامل للملف الشخصي وتحسينات عامة",
+        "features": [
+          "تطوير جذري لصفحة الحسابات الشخصية (البروفايل) لتصبح أكثر تفاعلية وعصرية",
+          "تحسين وتطوير نظام الأوسمة والنقاط (XP) لتشجيع التفاعل اليومي",
+          "إتمام سفر استير بالكامل وإضافته للمنظومة",
+          "حل مشكلة الخطأ في حساب سلسلة التفاعل (Streak) لضمان الدقة",
+          "حل مشكلة عدم مزامنة الآيات المفضلة بين الأجهزة المختلفة"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.3.0",
+        "date": "تحديث سابق",
         "title": "تحسينات شاملة وإصلاحات هامة",
         "features": [
           "إصلاح عطل الخرائط وتحسينها بشكل جذري لتجربة استكشاف أفضل",
@@ -864,13 +877,13 @@
       {
         "version": "2.0.1",
         "date": "تحديث سابق",
-        "title": "إصلاحات تقنية وتحسينات",
+        "title": "Technical Fixes & Enhancements",
         "features": [],
         "fixes": [
-          "تم اصلاح خطأ اتجاه الشاهد المعكوس في صفحة مشاركة الآية",
-          "تم اصلاح خطأ اختلاف ألوان الآيات المفضلة بين صفحتي البحث والكتاب المقدس",
-          "تم اصلاح خطأ عدم حفظ صورة آية اليوم بشكل صحيح عند مستخدمي الأيفون",
-          "تم اصلاح خطأ عند مغادرة التطبيق عند الضغط على زر العودة للخلف مرتين"
+          "Fixed reverse reference direction error in verse share page",
+          "Fixed color discrepancy for favorited verses between search and Bible pages",
+          "Fixed error in saving verse of the day image for iPhone users",
+          "Fixed error when exiting app by double-pressing back button"
         ]
       },
       {
@@ -890,15 +903,15 @@
       },
       {
         "version": "1.8.4",
-        "date": "التحديث الحالي",
-        "title": "دقة التشكيل وتحسينات البحث والأوسمة",
+        "date": "Previous Update",
+        "title": "Tashkeel Precision, Search Enhancements & Badges",
         "features": [
-          "استبدال التشكيل بنسخة دقيقة بنسبة 100%",
-          "تحسين بحث الخطط الدراسية ليصبح أكثر مرونة",
-          "تحسين تصميم صفحة الأوسمة"
+          "Replaced Tashkeel with a 100% precise version",
+          "Made search in study plans more flexible",
+          "Improved design of the badges page"
         ],
         "fixes": [
-          "حل مشكلة عدم عرض التتمات في صفحة الاصحاحات"
+          "Fixed issue where continuations were not displayed on the chapters page"
         ]
       },
       {

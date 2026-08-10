@@ -467,7 +467,7 @@
     "invite_friend": "Invite a friend",
     "delete_account": "Delete Account",
     "delete_confirm": "Are you sure you want to delete your account permanently?",
-    "version": "Agios App - Version 2.2.0",
+    "version": "Agios App - Version 2.5.0",
     "share_title": "Agios App",
     "share_text": "Download the Agios app and read the Bible in a new way!",
     "share_dialog": "Share the app with friends",
@@ -749,8 +749,21 @@
     },
     "history": [
       {
-        "version": "2.3.0",
+        "version": "2.5.0",
         "date": "Current Update",
+        "title": "Major Profile Overhaul & General Improvements",
+        "features": [
+          "Radical development of the personal profile page to be more interactive and modern",
+          "Improved and developed the badges and points (XP) system to encourage daily interaction",
+          "Completed the Book of Esther entirely and added it to the system",
+          "Fixed an issue in calculating the engagement streak to ensure accuracy",
+          "Resolved favorite verses synchronization issues across different devices"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.3.0",
+        "date": "Previous Update",
         "title": "Comprehensive Improvements & Important Fixes",
         "features": [
           "Radically fixed and improved maps for a better exploration experience",

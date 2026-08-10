@@ -466,7 +466,7 @@
     "invite_friend": "Inviter un ami",
     "delete_account": "Supprimer le compte",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte ?",
-    "version": "Agios App - Version 2.2.0",
+    "version": "Agios App - Version 2.5.0",
     "share_title": "Application Agios",
     "share_text": "Téléchargez l'application Agios and lisez la Bible d'une nouvelle façon !",
     "share_dialog": "Partager l'application with des amis",
@@ -748,8 +748,21 @@
     },
     "history": [
       {
-        "version": "2.3.0",
+        "version": "2.5.0",
         "date": "Mise à jour actuelle",
+        "title": "Développement complet du profil et améliorations générales",
+        "features": [
+          "Développement radical de la page de profil personnel pour être plus interactive et moderne",
+          "Amélioration et développement du système de badges et de points (XP) pour encourager l'interaction quotidienne",
+          "Achèvement complet du livre d'Esther et ajout au système",
+          "Correction d'un problème dans le calcul de la série d'engagement (Streak) pour garantir la précision",
+          "Résolution des problèmes de synchronisation des versets préférés entre différents appareils"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.3.0",
+        "date": "Mise à jour précédente",
         "title": "Améliorations complètes et corrections importantes",
         "features": [
           "Correction radicale et amélioration des cartes pour une meilleure expérience d'exploration",
