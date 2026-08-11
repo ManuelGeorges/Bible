@@ -1,16 +1,15 @@
 import OtherProfilePageClient from './OtherProfilePageClient';
 
-// لمنع الخطأ في Static Export، يجب تعريف المعاملات الثابتة.
-// نرجع مصفوفة فارغة لأننا سنعتمد على الجلب من طرف العميل (Client-side)
+// إخبار Next.js بالمسارات الثابتة المطلوبة للتصدير
 export function generateStaticParams() {
-  return [];
+  // نضع معرفاً افتراضياً لضمان عبور عملية الـ Build
+  return [{ id: 'default' }];
 }
 
-// هذا السطر مهم جداً عند استخدام output: export مع مسارات ديناميكية
+// إغلاق البارامترات الديناميكية (إلزامي مع output: export)
+export const dynamicParams = false;
 export const dynamic = 'force-static';
 
-const Page = (props) => {
+export default function Page(props) {
   return <OtherProfilePageClient {...props} />;
-};
-
-export default Page;
+}
