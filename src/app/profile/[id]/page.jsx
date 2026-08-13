@@ -1,14 +1,14 @@
 import OtherProfilePageClient from './OtherProfilePageClient';
 
-// إخبار Next.js بالمسارات الثابتة المطلوبة للتصدير
+// هذا التصدير ضروري لنجاح عملية output: export في المسارات الديناميكية
 export function generateStaticParams() {
-  // نضع معرفاً افتراضياً لضمان عبور عملية الـ Build
+  // نرجع معرفاً افتراضياً لضمان نجاح عملية التصدير وقت البناء
   return [{ id: 'default' }];
 }
 
-// إغلاق البارامترات الديناميكية (إلزامي مع output: export)
-export const dynamicParams = false;
+// إعدادات إجبارية لبيئة الموبايل (Static Export)
 export const dynamic = 'force-static';
+export const dynamicParams = false;
 
 export default function Page(props) {
   return <OtherProfilePageClient {...props} />;

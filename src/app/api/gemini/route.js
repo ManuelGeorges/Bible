@@ -4,12 +4,7 @@ import { kv } from "../../../lib/kv";
 
 export const dynamic = 'force-dynamic';
 
-const apiKeys = [
-  "AQ.Ab8RN6LigbOITB6dGvuB6hTinsPp-lIfuKcb5ed3oleq634oJA",
-  "AIzaSyB9a0OiIJGdlwcDdna511QZTLPp14gWoic",
-  "AQ.Ab8RN6J4tMmUaO2fXNoMSI3ZzAjJJzSdsonV8BJwA4hU8Qd-lg",
-  "AQ.Ab8RN6LcBmsh2-JOPw2nFABcCLRDuydaBPFsAtQktLh_UB654g"
-];
+const apiKeys = [process.env.GEMINI_API_KEY].filter(Boolean);
 
 const getGenAI = (index) => {
   if (apiKeys.length === 0) {
