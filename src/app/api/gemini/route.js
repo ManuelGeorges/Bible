@@ -142,7 +142,7 @@ export async function POST(req) {
 
     const genAI = getGenAI(attempt);
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite",
+      model: "gemini-2.5-flash-lite",
       generationConfig: task === 'analysis' ? { maxOutputTokens: 2048, temperature: 0.1 } : (task === 'studyPlan' ? { temperature: 0.7 } : undefined)
     });
 
