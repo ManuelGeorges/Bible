@@ -4,7 +4,7 @@ import { kv } from "../../../lib/kv";
 
 export const dynamic = 'force-dynamic';
 
-const apiKeys = [process.env.GEMINI_API_KEY].filter(Boolean);
+const apiKeys = (process.env.GEMINI_API_KEY || "").split(",").map(k => k.trim()).filter(Boolean);
 const getGenAI = (index) => {
   if (apiKeys.length === 0) {
     throw new Error("No Gemini API keys configured on the server");
@@ -49,7 +49,7 @@ Vers-Text: "${verseText}"
 Regeln :
 1. Identifizieren Sie den exakten Text dieser Referenz und analysieren Sie ihn streng. Nicht mit anderen Versen verwechseln.
 2. Erfinden Sie keine Informationen. Wenn Sie unsicher sind, sagen Sie es.
-3. Struktur : 1. Intro (Context), 2. Linguistik (Schlüsselwörter in den Originalsprachen - Hebräisch für AT, Griechisch für NT - mit Transliteration und linguistischer Erklärung), 3. Geschichte, 4. Exegese (Basierend auf Kirchenvätern wie Fr. Tadros Malaty und Fr. Antonios Fekry), 5. Anwendung, 6. Klärung von Missverständnissen.
+3. Struktur : 1. Intro (Context), 2. Linguistik (Schlüsselwörter in den Originalsprachen - Hebräisch für AT, Griechisch für NT - mit Transliteration und linguistischer Erklärung), 3. Geschichte, 4. Exegese (Basierend auf Kirchenvätern wie Fr. Tadros Malaty and Fr. Antonios Fekry), 5. Anwendung, 6. Klärung von Missverständnissen.
 4. Kein Markdown.`
   },
   derivatives: {
@@ -141,7 +141,7 @@ export async function POST(req) {
 
     const genAI = getGenAI(attempt);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3.1-flash-lite",
       generationConfig: task === 'analysis' ? { maxOutputTokens: 2048, temperature: 0.1 } : (task === 'studyPlan' ? { temperature: 0.7 } : undefined)
     });
 
