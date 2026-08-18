@@ -113,7 +113,9 @@ export default function MapsPage() {
   const [visitedEras, setVisitedEras] = useState(new Set());
   const [badgesCount, setBadgesCount] = useState(0);
   const [dailyTaskDone, setDailyTaskDone] = useState(false);
-
+  const [isMobile, setIsMobile] = useState(false);
+ const [sheetExpanded, setSheetExpanded] = useState(true);
+const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const eraRef = useRef(null);
   const placeRef = useRef(null);
@@ -133,6 +135,26 @@ export default function MapsPage() {
       setSelectedEra(strings.maps.eras_placeholder);
     }
   }, [strings]);
+
+useEffect(() => {
+  if (selectedPoint && mapContainerRef.current) {
+    // slight delay lets the UI/BottomSheet render first
+    const timer = setTimeout(() => {
+      mapContainerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: isMobile ? 'start' : 'center'
+      });
+    }, 150);
+    return () => clearTimeout(timer);
+  }
+}, [selectedPoint, isMobile]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getEraColors = (eraName) => {
     const idx = eras.indexOf(eraName);
@@ -158,13 +180,11 @@ export default function MapsPage() {
     return () => maplibregl.removeProtocol('pmtiles');
   }, [API_MAPS_URL]);
 
-  // تعديل منطق جلب الأماكن ليعتمد على الـ API الداخلي الذي يدعم اللغات والملفات المحلية
   useEffect(() => {
     setMounted(true);
     const loadMapData = async () => {
       setIsLoading(true);
       try {
-        // نطلب الأماكن من الـ API الداخلي مع تمرير اللغة الحالية
         const res = await fetch(`${API_MAPS_URL}/?task=places&lang=${language}`);
         if (!res.ok) throw new Error("Failed to fetch map data");
         const data = await res.json();
@@ -219,7 +239,19 @@ export default function MapsPage() {
   };
 
   const flyToPlace = (place) => {
-    mapRef.current?.flyTo({ center: [place.lng, place.lat], zoom: 12 });
+    if (mapRef.current) {
+        const flyOptions = {
+            center: [place.lng, place.lat],
+            zoom: isMobile ? 13 : 14,
+            pitch: 45,
+            duration: 2000,
+            essential: true
+        };
+        if (isMobile) {
+            flyOptions.padding = { bottom: 250 };
+        }
+        mapRef.current.flyTo(flyOptions);
+    }
     handlePointSelection(place);
   };
 
@@ -359,12 +391,70 @@ export default function MapsPage() {
     }
   };
 
+  const renderPointContent = (point) => {
+    const colors = getEraColors(point.era);
+    return (
+        <div
+            className={styles.popupCard}
+            style={{
+                '--era-color': colors?.base || FALLBACK_HEX,
+                '--era-color-dark': colors?.dark || '#000',
+                '--era-color-tint-10': colors?.tint10 || 'rgba(0,0,0,0.1)',
+                '--era-color-tint-15': colors?.tint15 || 'rgba(0,0,0,0.15)',
+                '--era-color-tint-25': colors?.tint25 || 'rgba(0,0,0,0.25)',
+            }}
+        >
+            <div className={styles.popupBand}>
+                <MapPin size={26} className={styles.popupBandIcon} />
+            </div>
+
+            <div className={styles.popupBody}>
+                {point.era && (
+                    <span className={styles.popupEraTag}>{point.era}</span>
+                )}
+                <h3 className={styles.popupTitle}>{point.name}</h3>
+                <p className={styles.popupInfo}>{point.info}</p>
+
+                {point.book && (
+                    <button
+                        className={styles.bibleLinkBtn}
+                        onClick={() => router.push(`/bible?book=${encodeURIComponent(point.book)}&chapter=${point.chapter || 1}`)}
+                    >
+                        <BookOpen size={18} /> {strings?.maps?.read_in_bible || 'اقرأ في الكتاب'}
+                    </button>
+                )}
+
+                {nearbyPlaces.length > 0 && (
+                    <div className={styles.nearbyWrapper}>
+                        <span className={styles.nearbyTitle}>
+                            <Navigation size={14} /> {strings?.maps?.nearby_places_label || 'أماكن قريبة'}
+                        </span>
+                        <div className={styles.nearbyList}>
+                            {nearbyPlaces.map((np, idx) => (
+                                <button key={idx} className={styles.nearbyItem} onClick={() => flyToPlace(np)}>
+                                    <span className={styles.nearbyDot} />
+                                    <span className={styles.nearbyName}>{np.name}</span>
+                                    <span className={styles.nearbyDistance}>
+                                        {np.distanceKm.toFixed(1)} {strings?.maps?.km_unit || 'كم'}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+  };
+
   if (!mounted) return null;
 
   return (
     <div dir={dir} className={styles.container}>
       <header className={styles.headerSection}>
-        <h1 className={styles.heading}>{strings?.maps?.title || 'الخرائط الكتابية'}</h1>
+        {!selectedPoint || !isMobile ? (
+             <h1 className={styles.heading}>{strings?.maps?.title || 'الخرائط الكتابية'}</h1>
+        ) : <div style={{height: '40px'}} />}
       </header>
 
       <div className={styles.searchContainer} ref={searchRef}>
@@ -396,33 +486,35 @@ export default function MapsPage() {
         )}
       </div>
 
-      <div className={styles.progressPanel}>
-        <div className={styles.progressStat}>
-          <MapPin size={18} className={styles.progressIcon} />
-          <div className={styles.progressText}>
-            <span className={styles.progressValue}>
-              {formatNumber(visitedPoints.size)}/{formatNumber(totalPointsCount)}
-            </span>
-            <span className={styles.progressLabel}>
-              {strings?.maps?.progress_places_label || 'أماكن مكتشفة'}
-            </span>
+      {!isMobile && (
+          <div className={styles.progressPanel}>
+            <div className={styles.progressStat}>
+              <MapPin size={18} className={styles.progressIcon} />
+              <div className={styles.progressText}>
+                <span className={styles.progressValue}>
+                  {formatNumber(visitedPoints.size)}/{formatNumber(totalPointsCount)}
+                </span>
+                <span className={styles.progressLabel}>
+                  {strings?.maps?.progress_places_label || 'أماكن مكتشفة'}
+                </span>
+              </div>
+            </div>
+            <div className={styles.progressStat}>
+              <Award size={18} className={styles.progressIcon} />
+              <div className={styles.progressText}>
+                <span className={styles.progressValue}>
+                  {formatNumber(badgesCount)}/{formatNumber(TOTAL_MAP_BADGES)}
+                </span>
+                <span className={styles.progressLabel}>
+                  {strings?.maps?.progress_badges_label || 'أوسمة'}
+                </span>
+              </div>
+            </div>
+            <div className={styles.progressBarOuter}>
+              <div className={styles.progressBarInner} style={{ width: `${progressPercent}%` }} />
+            </div>
           </div>
-        </div>
-        <div className={styles.progressStat}>
-          <Award size={18} className={styles.progressIcon} />
-          <div className={styles.progressText}>
-            <span className={styles.progressValue}>
-              {formatNumber(badgesCount)}/{formatNumber(TOTAL_MAP_BADGES)}
-            </span>
-            <span className={styles.progressLabel}>
-              {strings?.maps?.progress_badges_label || 'أوسمة'}
-            </span>
-          </div>
-        </div>
-        <div className={styles.progressBarOuter}>
-          <div className={styles.progressBarInner} style={{ width: `${progressPercent}%` }} />
-        </div>
-      </div>
+      )}
 
       <div className={styles.controls}>
         <div className={`${styles.customSelectWrapper} ${isEraOpen ? styles.activeWrapper : ''}`} ref={eraRef}>
@@ -467,7 +559,7 @@ export default function MapsPage() {
         {strings?.maps?.discover_button_label || 'اكتشف مكانًا عشوائيًا'}
       </button>
 
-      <div className={styles.mapContainer}>
+      <div className={`${styles.mapContainer} ${selectedPoint ? styles.mapFocused : ''}`} ref={mapContainerRef}>
         {!isLoading && mapStyle ? (
           <Map
             ref={mapRef}
@@ -482,7 +574,7 @@ export default function MapsPage() {
             maxBounds={MAX_BOUNDS}
             style={{ width: '100%', height: '100%' }}
             reuseMaps
-            trackResize={false}
+            trackResize={true}
           >
             <NavigationControl position="top-right" showCompass={false} />
             <FullscreenControl position="top-right" />
@@ -498,7 +590,7 @@ export default function MapsPage() {
               <Layer id="label-layer" type="symbol" filter={['!', ['has', 'point_count']]} layout={{ 'text-field': ['get', 'name'], 'text-size': 14, 'text-anchor': 'top', 'text-offset': [0, 1.5], 'text-font': ['Noto Sans Arabic Bold'] }} paint={{ 'text-color': '#fff', 'text-halo-color': '#000', 'text-halo-width': 2 }} />
             </Source>
 
-            {selectedPoint && (
+            {selectedPoint && !isMobile && (
               <Popup
                 longitude={selectedPoint.lng}
                 latitude={selectedPoint.lat}
@@ -506,56 +598,7 @@ export default function MapsPage() {
                 maxWidth="300px"
                 onClose={() => setSelectedPoint(null)}
               >
-                <div
-                  className={styles.popupCard}
-                  style={{
-                    '--era-color': popupEraColors?.base || FALLBACK_HEX,
-                    '--era-color-dark': popupEraColors?.dark || '#000',
-                    '--era-color-tint-10': popupEraColors?.tint10 || 'rgba(0,0,0,0.1)',
-                    '--era-color-tint-15': popupEraColors?.tint15 || 'rgba(0,0,0,0.15)',
-                    '--era-color-tint-25': popupEraColors?.tint25 || 'rgba(0,0,0,0.25)',
-                  }}
-                >
-                  <div className={styles.popupBand}>
-                    <MapPin size={26} className={styles.popupBandIcon} />
-                  </div>
-
-                  <div className={styles.popupBody}>
-                    {selectedPoint.era && (
-                      <span className={styles.popupEraTag}>{selectedPoint.era}</span>
-                    )}
-                    <h3 className={styles.popupTitle}>{selectedPoint.name}</h3>
-                    <p className={styles.popupInfo}>{selectedPoint.info}</p>
-
-                    {selectedPoint.book && (
-                      <button
-                        className={styles.bibleLinkBtn}
-                        onClick={() => router.push(`/bible?book=${encodeURIComponent(selectedPoint.book)}&chapter=${selectedPoint.chapter || 1}`)}
-                      >
-                        <BookOpen size={18} /> {strings?.maps?.read_in_bible || 'اقرأ في الكتاب'}
-                      </button>
-                    )}
-
-                    {nearbyPlaces.length > 0 && (
-                      <div className={styles.nearbyWrapper}>
-                        <span className={styles.nearbyTitle}>
-                          <Navigation size={14} /> {strings?.maps?.nearby_places_label || 'أماكن قريبة'}
-                        </span>
-                        <div className={styles.nearbyList}>
-                          {nearbyPlaces.map((np, idx) => (
-                            <button key={idx} className={styles.nearbyItem} onClick={() => flyToPlace(np)}>
-                              <span className={styles.nearbyDot} />
-                              <span className={styles.nearbyName}>{np.name}</span>
-                              <span className={styles.nearbyDistance}>
-                                {np.distanceKm.toFixed(1)} {strings?.maps?.km_unit || 'كم'}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                {renderPointContent(selectedPoint)}
               </Popup>
             )}
           </Map>
@@ -563,6 +606,16 @@ export default function MapsPage() {
           <div className={styles.loadingWrapper}>
             <div className={styles.spinner} />
           </div>
+        )}
+
+        {selectedPoint && isMobile && (
+<div className={styles.mobileBottomSheet} style={{ maxHeight: sheetExpanded ? '45vh' : '80px' }}>
+  <div className={styles.sheetHeader} onClick={() => setSheetExpanded(!sheetExpanded)}>
+    <div className={styles.sheetHandle} />
+  </div>
+  <button className={styles.sheetClose} onClick={() => setSelectedPoint(null)}><X size={20}/></button>
+  {sheetExpanded && renderPointContent(selectedPoint)}
+</div>
         )}
 
         {selectedJourney && (

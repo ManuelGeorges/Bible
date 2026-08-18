@@ -337,31 +337,37 @@
   "maps": {
     "title": "Cartes Bibliques",
     "search_placeholder": "Rechercher un lieu ou une ville...",
-    "no_results": "Aucune résultat ne correspond à votre recherche",
+    "no_results": "Aucun résultat ne correspond à votre recherche",
     "eras_placeholder": "Époques",
-    "choose_era": "Choisir l'époque",
+    "choose_era": "Choisir une époque",
     "all_eras": "Toutes les époques",
-    "jump_to_place": "Aller au lieu...",
+    "choose_place_placeholder": "Choisir un lieu",
+    "discover_button_label": "Découvrir un lieu au hasard",
+    "jump_to_place": "Aller à un lieu...",
     "style_map": "Carte",
     "style_satellite": "Satellite",
-    "style_topo": "Topo 3D",
-    "default_point_book": "Lieu historique",
+    "style_topo": "Relief 3D",
+    "default_point_book": "Site historique",
     "no_info": "Aucune information supplémentaire disponible pour ce lieu.",
     "read_in_bible": "Lire dans la Bible",
+    "progress_places_label": "Lieux découverts",
+    "progress_badges_label": "Badges",
+    "nearby_places_label": "Lieux à proximité",
+    "km_unit": "km",
     "era_names": {
-      "0": "Épouse d'Abraham",
-      "1": "Exode & Conquête",
-      "2": "Juges & Royaume Uni",
-      "3": "Royaume Divisé & Exil",
-      "4": "Post-Exil & Ancien Testament",
+      "0": "Les jours d'Abraham",
+      "1": "Exode et Conquête",
+      "2": "Juges et Royaume Uni",
+      "3": "Royaume divisé et Exil",
+      "4": "Post-Exil et Ancien Testament",
       "5": "Évangiles",
-      "6": "Église primitive & Voyages des Apôtres"
+      "6": "Église primitive et Voyages apostoliques"
     },
-    "points_reason": "Lieu découvert : {name}",
+    "points_reason": "Site découvert : {name}",
     "toasts": {
       "points_earned": "+{amount} points : {reason}"
     },
-    "error_offline": "Les cartes 3D nécessitent une connexion internet"
+    "error_offline": "Les cartes 3D nécessitent une connexion Internet"
   },
   "search": {
     "title": "Recherche Biblique",

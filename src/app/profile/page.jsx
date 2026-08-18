@@ -284,7 +284,7 @@ const ProfilePage = () => {
       <div className={styles.listSection}>
         <h3 className={styles.listTitle}>{strings?.profile?.my_activity}</h3>
         <div className={styles.menuCard}>
-          <button className={styles.menuItem} onClick={() => router.push('/history')}>
+          <button className={styles.menuItem} onClick={() => router.push('/bible/history')}>
             <div className={styles.menuItemLeft}>
               <div className={`${styles.iconCircle} ${styles.bgPurple}`}><History size={18} /></div>
               <span>{strings?.bible?.reading_history}</span>
