@@ -1,6 +1,14 @@
 {
+  "welcome": {
+    "title": "Welcome to Agios",
+    "subtitle": "Choose your preferred language to continue",
+    "theme_title": "App Appearance",
+    "theme_subtitle": "Choose the look that suits your eyes, you can change it later in settings",
+    "light_mode": "Light Mode",
+    "dark_mode": "Dark Mode"
+  },
   "common": {
-    "or": "Or",
+    "or": "or",
     "google": "Google",
     "apple": "Apple",
     "email": "Email",
@@ -29,7 +37,16 @@
     "back": "Back",
     "retry": "Retry",
     "error_occurred": "Sorry, an error occurred",
-    "internet_required": "This feature requires an internet connection"
+    "internet_required": "This feature requires internet connection",
+    "confirm_delete": "Do you want to delete this file from your device?"
+  },
+  "audio": {
+    "artist_default": "Holy Bible",
+    "album": "Agios Media",
+    "track_title": "World English Bible - {book} {chapter}",
+    "download_success": "Chapter saved successfully for offline listening",
+    "download_error": "Failed to download file, please check your connection",
+    "deleted": "Downloaded file deleted"
   },
   "login": {
     "title": "Login",
@@ -48,7 +65,7 @@
     "submit": "Create Account",
     "submitting": "Creating account...",
     "error_name_required": "Please enter your full name",
-    "error_generic": "Account creation failed. Email might already be in use.",
+    "error_generic": "Account creation failed. Email might be already in use.",
     "error_google": "Google signup failed.",
     "error_apple": "Apple signup failed.",
     "has_account": "Already have an account?",
@@ -58,17 +75,19 @@
     "greeting_guest": "Welcome to your journey",
     "greeting_user": "Hello, {name}",
     "daily_goals": "Today's Tasks",
-    "goals_progress": "Completed {done} of {total} tasks",
+    "goals_progress": "{done} of {total} tasks completed",
     "goals": {
       "dailyLogin": "Daily Interaction",
       "dailyQuestion": "Challenge Question",
       "mapExploration": "Map Exploration",
       "share": "Daily Share",
-      "completedChapter": "Read Chapter",
-      "favouriteVerse": "Highlight Verse"
+      "completedChapter": "Read a Chapter",
+      "favouriteVerse": "Highlight a Verse",
+      "verseAnalysis": "Verse Analysis (AI)",
+      "studyPlanProgress": "Plan Progress"
     },
     "quick_links": {
-      "bible": "Bible",
+      "bible": "Holy Bible",
       "maps": "Maps",
       "search": "Search",
       "plans": "Study Plans",
@@ -87,7 +106,7 @@
     "verse_highlighted": "Highlighted",
     "ask_agios": "Ask Agios",
     "color_palette_title": "Choose highlight color",
-    "clear_highlight": "Remove highlight",
+    "clear_highlight": "Remove Highlight",
     "daily_challenge": "Today's Challenge",
     "ai_features_title": "Try AI Features",
     "ai_features": {
@@ -96,12 +115,12 @@
         "desc": "Smart search for words and their linguistic roots"
       },
       "semantic": {
-        "title": "Semantic & Explanation Search",
-        "desc": "Search for Bible verses by explaining their meaning or context with the smart Agios assistant"
+        "title": "Semantic & Explanatory Search",
+        "desc": "Search for Bible verses by explaining their meaning or context with the intelligent Agios assistant"
       },
       "custom_plan": {
-        "title": "Create AI Plan",
-        "desc": "Tell 'Agios' how you feel and it will suggest a plan for you"
+        "title": "Create AI Study Plan",
+        "desc": "Tell 'Agios' how you feel and it will suggest a plan"
       },
       "analysis": {
         "title": "Agios Assistant (Analysis & Interpretation)",
@@ -113,26 +132,26 @@
     "toasts": {
       "copied": "Copied",
       "share_success": "Well done! Daily share recorded +10 points",
-      "correct_answer": "Correct answer!",
-      "wrong_answer": "Wrong answer",
+      "correct_answer": "Correct Answer!",
+      "wrong_answer": "Wrong Answer",
       "deleted_from_treasures": "Removed from your treasures",
       "deleted_from_favs": "Removed from your favorites",
       "added_to_favs_points": "Great! Added to favorites +5 points",
       "highlight_updated": "Highlight color updated",
-      "added_points": "Great! Added +5 points",
-      "welcome_new": "Welcome to Agios! 📖",
-      "streak_bonus": "Consistency Bonus! +{points} points 🔥",
-      "badge_unlocked": "🎉 Congratulations! You unlocked: {badgeName}",
-      "good_morning": "Good morning {userName}! +10 points ☀️",
-      "welcome_back": "Welcome back! Today's streak: {streak} 🔥"
+      "added_points": "Great! +5 points added",
+      "welcome_new": "Welcome to Agios! ",
+      "streak_bonus": "Consistency Bonus! +{points} points ",
+      "badge_unlocked": " Congratulations! You unlocked: {badgeName}",
+      "good_morning": "Good morning {userName}! +10 points ",
+      "welcome_back": "Welcome back! Today's streak: {streak}"
     }
   },
   "widgets": {
     "title": "Widgets",
     "subtitle": "Add your most important info to your home screen for quick access",
     "add_to_home": "Add to Home Screen",
-    "android_only": "This feature is only available for Android users",
-    "how_to_ios": "To add a Widget on iPhone, long press the home screen and select Agios Bible",
+    "android_only": "This feature is now available for both Android and iOS users",
+    "how_to_ios": "To add a widget on iPhone, long press on the home screen and select Agios Bible",
     "items": {
       "verse": {
         "title": "Verse of the Day",
@@ -143,12 +162,12 @@
         "desc": "Quick daily challenges and questions"
       },
       "studyPlan": {
-        "title": "Reading Plan",
-        "desc": "Follow your progress in the current reading plan"
+        "title": "Study Plan",
+        "desc": "Track your progress in the current study plan"
       },
       "points": {
         "title": "My Points & Streak",
-        "desc": "Monitor your points and consecutive engagement days"
+        "desc": "Monitor your points and consecutive interaction days"
       }
     },
     "success_toast": "The system will now ask you to confirm adding the tool"
@@ -166,15 +185,22 @@
       "title": "Verse Settings",
       "verse_per_line": "Each verse on a new line",
       "verse_per_line_desc": "Display text as a list instead of a paragraph",
-      "show_tashkeel": "Show Tashkeel (Vocalisation)",
+      "show_tashkeel": "Show Tashkeel (Vocalization)",
       "show_tashkeel_desc": "Display text with or without diacritics",
+      "parallel_language": "Parallel Language (Side-by-Side)",
+      "parallel_language_desc": "Display another translation next to the primary text",
+      "none": "Off",
       "font_type": "Font Type (Arabic)",
       "font_weight": "Font Weight ({weight})",
       "font_size": "Reading Font Size ({size}px)",
+      "keep_app_awake": "Keep App Screen Awake",
+      "keep_app_awake_desc": "Prevent screen from turning off in all app sections",
+      "keep_bible_awake": "Keep Bible Screen Awake",
+      "keep_bible_awake_desc": "Prevent screen from turning off during reading only",
       "preview": {
         "line_1": "1 This is how verses will look",
-        "line_2": "2 When the 'Each verse on a new line' option is enabled",
-        "paragraph": "1 This is how verses will look in continuous paragraph system where numbers appear next to each other."
+        "line_2": "2 When 'Each verse on a new line' option is enabled",
+        "paragraph": "1 This is how verses will look in the continuous paragraph system where numbers appear next to each other."
       }
     },
     "notifications": {
@@ -183,19 +209,19 @@
       "alert_time": "Alert Time:",
       "verse": {
         "title": "Verse of the Day",
-        "desc": "Receive an encouraging verse daily"
+        "desc": "Receive a daily encouraging verse"
       },
       "question": {
         "title": "Question of the Day",
         "desc": "Daily challenges and competitions"
       },
       "study_plans": {
-        "title": "Study Plans Reminder",
+        "title": "Study Plan Reminder",
         "desc": "Reminder to follow up on remaining daily readings"
       },
       "streak": {
         "title": "Streak Protection Alert",
-        "desc": "Reminder before the day ends to maintain your streak"
+        "desc": "Remind you before the day ends to keep your streak"
       },
       "app_suggestions": {
         "title": "App Suggestions & Features",
@@ -210,16 +236,16 @@
       "title": "Account Management",
       "desc": "Manage your account here. Please note that deleting the account will permanently erase all your data.",
       "logout": "Logout",
-      "delete_account": "Delete Account Permanently",
+      "delete_account": "Delete account permanently",
       "delete_confirm": "Are you sure you want to delete your account permanently? This action cannot be undone and all your data will be cleared from the cloud.",
-      "fresh_login_required": "For security reasons, deleting the account requires a recent login. Please log out and then log back in and try again.",
+      "fresh_login_required": "For security reasons, account deletion requires a recent login. Please logout, log back in, and try again.",
       "delete_success": "Account and data deleted successfully.",
       "delete_error": "An error occurred while deleting the account. Please try again later.",
       "reauth_required": "Security session expired. Please log in again and try again."
     },
     "sync": {
       "title": "Sync & Cloud",
-      "desc": "Log in now to keep your progress, notes, and points from being lost, and sync them across all your devices.",
+      "desc": "Log in now to save your progress, notes, and points, and sync them across all your devices.",
       "login_button": "Login to Sync"
     },
     "permission_modal": {
@@ -229,36 +255,33 @@
   },
   "about": {
     "title": "About Agios App",
-    "tagline": "\"Thy word is a lamp unto my feet, and a light unto my path\" (Ps 119:105)",
+    "tagline": "\"Your word is a lamp to my feet and a light to my path\" (Ps 119:105)",
     "story": {
       "title": "Story & Goal",
-      "p1": "The Agios project was launched with a vision to provide a sophisticated digital experience for Bible study. It started through participation in the St. Mark's Preaching Festival in Alexandria, where the project sought to provide innovative technical solutions, such as advanced linguistic search, interactive maps of holy places, and a modern user interface that helps with focus and spiritual growth.",
-      "p2": "After success in its early stages, work continued on developing the platform to become a comprehensive reference that combines daily study tools and modern technical features, serving the needs of youth and students in the digital age."
+      "p1": "The Agios project was launched with a vision to provide a sophisticated digital experience for studying the Bible. It started with participating in the St. Mark Kerygma Festival in Alexandria, where the project sought to provide innovative technical solutions such as advanced linguistic search, interactive maps of holy places, and a modern user interface that helps focus and spiritual growth.",
+      "p2": "After success in the early stages, work continued on developing the platform to become a comprehensive reference that combines daily study tools and modern technical features."
     },
     "developer": {
       "title": "About the Developer",
-      "desc": "Agios System was developed by Manuel Georges, a software developer specialized in building innovative web and mobile applications to serve the Church.",
-      "portfolio": "Portfolio"
+      "desc": "The Agios system was developed by Manuel George, a software developer specialized in building innovative web and mobile applications in the service of the Church.",
+      "portfolio": "Personal Portfolio"
     },
     "vision": {
       "title": "Our Vision",
-      "desc": "The vision of Agios is to be a technical bridge connecting generations to the Word of God, using modern tools to present biblical content in an attractive and simplified way, while fully adhering to the foundations of the sound Orthodox faith and the traditions of the universal church."
+      "desc": "The vision of Agios is to be a technical bridge connecting generations with the Word of God, using modern tools to present biblical content in an attractive and simplified way, with full commitment to the foundations of the sound Orthodox faith."
     },
     "thanks": {
       "title": "Acknowledgements",
-      "priest_name": "Rev. Fr. Athanasius",
-      "priest_desc": "We extend our deepest gratitude and love to {name} for his constant fatherly care for this work since its first moments, and for adopting the idea and supporting it to come out in a form worthy of the Word of God and be a blessing and benefit to all its users.",
-      "fcbh": "Special thanks to Faith Comes By Hearing for providing the wonderful audio library by Mr. Adel Noshy, and for their continuous technical support that contributed to enriching the user's listening experience in this app.",
-      "church": "We express our gratitude and appreciation to our home church, Archangel Michael Church in Mostafa Kamel - Alexandria, for the constant support and encouragement, and to the St. Mark's Preaching Festival committee that provides opportunities for creativity and innovation in the service of the church and society.",
-      "translations": "The Smith & Van Dyke translation is used for Arabic, the World English Bible for English, the Louis Segond translation for French, and the Luther translation for German. All of these translations are open-source and legally permitted for use.",
-      "general": "Special thanks to everyone who contributed by providing technical or spiritual advice, and to everyone who participated in spreading this work for the blessing to prevail. We ask God to make this application a cause for a deeper reading and understanding of His life-giving word."
+      "priest_name": "Rev. Fr. Athanasios",
+      "priest_desc": "We express our deep gratitude and love to {name} for his constant fatherly care for this work from its early moments.",
+      "priest_abraam_name": "Very Rev. Fr. Abraam Emil",
+      "priest_abraam_desc": "We express special appreciation and deep thanks to {name} (General Vicar of the Patriarchate in Alexandria) for his great fatherly support for the application in the early stages of its launch, and his effective help in its dissemination, financing, and providing all material and moral opportunities for the success of this work.",
+      "fcbh": "Special thanks to Faith Comes By Hearing for providing the wonderful audio library by Mr. Adel Noshy.",
+      "church": "We thank our home church, the Church of the Archangel Michael in Mostafa Kamel - Alexandria, for the continuous support.",
+      "translations": "The Van Dyke translation was used for Arabic, the World English Bible for English, the Louis Segond for French, and the Luther for German. All these translations are open source and legally permitted to use.",
+      "general": "Special thanks to everyone who contributed by providing technical or spiritual advice."
     },
     "footer": "© 2026 Agios System - All Rights Reserved"
-  },
-  "audio": {
-    "artist_default": "Holy Bible",
-    "album": "Agios Media",
-    "track_title": "World English Bible version - {book} {chapter}"
   },
   "bible": {
     "title": "Holy Bible",
@@ -269,23 +292,26 @@
     "share_dialog": "Share verse via...",
     "share_not_supported": "Sharing not supported, text copied instead",
     "reading_history": "Reading History",
+    "no_history": "No history yet",
+    "start_reading": "Start reading now",
+    "clear_history_confirm": "Are you sure you want to clear your reading history?",
     "reasons": {
-      "share_verse": "Share verse",
-      "copy_verse": "Copy verse",
+      "share_verse": "Share a verse",
+      "copy_verse": "Copy a verse",
       "share_verses": "Share multiple verses",
       "favourite": "Add verse to favorites",
-      "note": "Write personal reflection",
-      "undo_chapter": "Undo chapter read",
+      "note": "Write a personal reflection",
+      "undo_chapter": "Undo chapter reading",
       "complete_chapter": "Read full chapter"
     },
     "toasts": {
       "copied": "Copied",
-      "copied_precise": "Copied precisely",
-      "highlighted": "Highlighted",
-      "highlight_removed": "Highlight removed",
-      "note_saved": "Note saved",
-      "plan_day_complete": "Congratulations! Completed today's readings in the plan",
-      "plan_all_complete": "Great! You have finished the entire study plan",
+      "copied_precise": "Copied precisely ",
+      "highlighted": "Highlighted ",
+      "highlight_removed": "Highlight removed ",
+      "note_saved": "Note saved ",
+      "plan_day_complete": "Congratulations! You completed today's readings in the plan ",
+      "plan_all_complete": "Great! You finished the entire study plan ",
       "chapter_undo": "Chapter deselected",
       "audio_not_found": "Audio not available for this chapter",
       "audio_not_available_lang": "Audio not available for this language currently"
@@ -301,19 +327,19 @@
       "title": "Add your personal reflection",
       "placeholder": "Write here what touched your heart in this verse..."
     },
-    "chapter_complete_btn": "Finished Chapter",
-    "books_title": "Select Book",
+    "chapter_complete_btn": "Chapter Completed",
+    "books_title": "Choose Book",
     "testament_ot": "Old Testament",
     "testament_nt": "New Testament",
     "search_book": "Search for a book...",
-    "chapters_subtitle": "Select the chapter you wish to read:"
+    "chapters_subtitle": "Choose the chapter you want to read:"
   },
   "maps": {
     "title": "Bible Maps",
     "search_placeholder": "Search for a place or city...",
     "no_results": "No results match your search",
-    "eras_placeholder": "Eras",
-    "choose_era": "Select Era",
+    "eras_placeholder": "Time Eras",
+    "choose_era": "Choose Era",
     "all_eras": "All Eras",
     "jump_to_place": "Jump to place...",
     "style_map": "Map",
@@ -321,7 +347,7 @@
     "style_topo": "3D Topo",
     "default_point_book": "Historical Landmark",
     "no_info": "No additional information available for this location.",
-    "read_in_bible": "Read in Bible",
+    "read_in_bible": "Read in the Bible",
     "era_names": {
       "0": "Days of Abraham",
       "1": "Exodus & Conquest",
@@ -329,13 +355,13 @@
       "3": "Divided Kingdom & Exile",
       "4": "Post-Exile & Old Testament",
       "5": "Gospels",
-      "6": "Early Church & Apostles' Journeys"
+      "6": "Early Church & Apostolic Journeys"
     },
     "points_reason": "Discovered landmark: {name}",
     "toasts": {
       "points_earned": "+{amount} points: {reason}"
     },
-    "error_offline": "3D maps require internet connection"
+    "error_offline": "3D Maps require an internet connection"
   },
   "search": {
     "title": "Bible Search",
@@ -343,7 +369,7 @@
     "placeholder_default": "Enter search word...",
     "button_search": "Search Now",
     "type_literal": "Literal Search",
-    "type_derivatives": "Root Search (AI)",
+    "type_derivatives": "Derivative Search (AI)",
     "type_semantic": "Semantic Search (AI)",
     "cooldown_text": "Available in {time}s",
     "display_settings": "Display Settings:",
@@ -359,15 +385,16 @@
     "chapter_all": "All",
     "status_analyzing": "Analyzing word linguistically...",
     "status_searching": "Searching in the Holy Bible...",
+    "comma_space": ", ",
     "warning_static_word": "Warning: Static word or proper noun",
-    "warning_static_word_desc": "This word does not have actual conjugational derivatives in Arabic. Only direct occurrences were searched to ensure most accurate results.",
-    "ai_verified": "Linguistically verified by smart Agios assistant",
-    "toggle_derivatives_hide": "Hide root options ▲",
+    "warning_static_word_desc": "This word has no actual conjugation derivatives in Arabic. Searched only for direct occurrences.",
+    "ai_verified": "Linguistically verified by the intelligent Agios assistant",
+    "toggle_derivatives_hide": "Hide derivative options ▲",
     "toggle_derivatives_show": "Customize search words ▼",
-    "extracted_root": "Extracted root:",
+    "extracted_root": "Extracted Root:",
     "select_all": "Select All",
     "deselect_all": "Deselect All",
-    "loading_wait": "Searching, please wait...",
+    "loading_wait": "Search in progress, please wait...",
     "results_count_semantic": "Smart search results: {count} verses",
     "results_count_default": "Search results: {count} verses",
     "copy_all": "Copy All",
@@ -383,11 +410,11 @@
     "toast_delete_success": "Highlight deleted",
     "toast_save_success": "Saved successfully",
     "toast_fav_exists": "Selected verses already in favorites",
-    "toast_fav_added": "Added {count} verses to favorites",
-    "toast_analyze_chapter_limit": "Analysis is available only for verses from the same chapter",
-    "toast_copy_success": "Verse copied ✨",
-    "toast_semantic_error": "Sorry, server is currently busy. Please try again after a minute.",
-    "error_derivatives_limit": "Derivative search system requires only one word to ensure accuracy.",
+    "toast_fav_added": "{count} verses added to favorites",
+    "toast_analyze_chapter_limit": "Analysis available only for verses from the same chapter",
+    "toast_copy_success": "Verse copied ",
+    "toast_semantic_error": "Sorry, server is busy. Please try again in a minute.",
+    "error_derivatives_limit": "Derivative search system requires only one word for accuracy.",
     "error_arabic_only": "Please enter a correct Arabic word only.",
     "reason_search": "Search for verse/word",
     "reason_highlight": "Highlight verse from search",
@@ -398,22 +425,24 @@
     "reason_share_multi": "Share multiple verses",
     "reason_copy_all": "Copy all search results",
     "reason_share_all": "Share all search results",
-    "reason_copy_semantic": "Copy section from smart search",
-    "reason_share_semantic": "Share section from smart search",
+    "reason_copy_semantic": "Copy smart search section",
+    "reason_share_semantic": "Share smart search section",
     "note_placeholder": "Write your personal reflection here...",
-    "select_prompt": "Select {label}"
+    "select_prompt": "Select {label}",
+    "ai_disclaimer": "These results were generated or analyzed by AI to assist in research. Always verify the references and consult approved sources."
   },
   "more": {
     "title": "More",
     "items": {
       "favourites": "Notes & Favorites",
       "competitions": "Competitions",
-      "studyPlans": "Reading Plans",
+      "studyPlans": "Study Plans",
       "profile": "Profile",
       "settings": "Settings",
       "points": "Achievements",
       "widgets": "Widgets",
-      "readingHistory": "Reading History"
+      "readingHistory": "Reading History",
+      "shop": "Shop"
     },
     "footer": {
       "about": "About Us",
@@ -435,15 +464,30 @@
     "general_options": "General Options",
     "app_settings": "App Settings",
     "points_badges": "Points & Badges",
-    "invite_friend": "Invite a Friend to App",
+    "invite_friend": "Invite a friend",
     "delete_account": "Delete Account",
     "delete_confirm": "Are you sure you want to delete your account permanently?",
-    "version": "Agios App - Version 2.2.0",
+    "version": "Agios App - Version 2.5.0",
     "share_title": "Agios App",
-    "share_text": "Download the Agios application and read the Bible in a new way!",
-    "share_dialog": "Share App with friends",
+    "share_text": "Download the Agios app and read the Bible in a new way!",
+    "share_dialog": "Share the app with friends",
     "share_not_supported": "Sharing not supported in browser",
-    "points_label": "XP"
+    "points_label": "XP",
+    "search_friends": "Search for friends...",
+    "streak_days": "Days Streak",
+    "community": "Community",
+    "leaderboard": "Leaderboard",
+    "friends": "Friends",
+    "my_activity": "My Activity",
+    "my_notes_reflections": "My Notes & Reflections",
+    "achievements": "Achievements",
+    "start_collecting_badges": "Start your journey to collect badges",
+    "badges_section": "Badges",
+    "private_profile": "Private Account",
+    "private_profile_desc": "Hide your profile from others",
+    "private_account_title": "This account is private",
+    "private_account_message": "The owner of this account prefers to keep their achievements private.",
+    "no_badges_yet": "No badges yet"
   },
   "points": {
     "title": "Points & Achievements",
@@ -454,9 +498,9 @@
     "next_level": "{points} points left for next level",
     "total_points_label": "Total Points",
     "streak_label": "Engagement Streak: {streak} days",
-    "daily_goals_title": "Daily Goals",
+    "daily_goals_title": "Today's Goals",
     "rarity": {
-      "all": "All Rarities",
+      "all": "All Rarity",
       "common": "Common",
       "uncommon": "Uncommon",
       "rare": "Rare",
@@ -464,53 +508,84 @@
       "mythic": "Mythic"
     },
     "no_history": "No activity history yet.",
-    "daily_bonus_toast": "You got 10 points for your engagement today! ",
+    "daily_bonus_toast": "You received 10 points for your engagement today! ",
     "goals": {
       "dailyLogin": "Daily Login",
       "dailyQuestion": "Solve Challenge Question",
-      "mapExploration": "Explore landmark on Map",
-      "share": "Share verse or content",
-      "completedChapter": "Read full chapter",
-      "favouriteVerse": "Highlight a verse you liked"
+      "mapExploration": "Explore a landmark on map",
+      "share": "Share a verse or content",
+      "completedChapter": "Read a full chapter",
+      "favouriteVerse": "Highlight a verse",
+      "verseAnalysis": "AI Verse Analysis",
+      "studyPlanProgress": "Study Plan Progress"
     },
     "points_reasons": {
-      "daily_login": "Daily login",
+      "daily_login": "Daily Login",
       "share_daily_verse": "Share daily verse from home page",
-      "highlight_daily_verse": "Highlight daily verse from home page"
+      "highlight_daily_verse": "Highlight daily verse from home page",
+      "verse_analysis": "Verse analysis by Agios AI Assistant",
+      "study_plan_progress": "Progress in daily study plan"
+    }
+  },
+  "shop": {
+    "title": "Agios Shop",
+    "subtitle": "Exchange your points for exclusive features",
+    "insufficient_points": "Sorry, you don't have enough points",
+    "purchase_success": "Congratulations! You successfully bought {item}",
+    "owned": "Owned",
+    "use_freeze_toast": "Streak Freeze used to protect you! ❄️",
+    "categories": {
+      "utility": "Utilities",
+      "appearance": "Appearance & Style",
+      "social": "Social Interaction"
+    },
+    "items": {
+      "streak_freeze": {
+        "name": "Streak Freeze",
+        "desc": "Protects your streak from breaking if you forget to open the app for one day."
+      },
+      "theme_gold": {
+        "name": "Golden Theme",
+        "desc": "Enjoy a luxurious golden interface worthy of an outstanding reader."
+      },
+      "title_word_lover": {
+        "name": "Title: Word Lover",
+        "desc": "An honorary title that appears next to your name in the leaderboard."
+      }
     }
   },
   "competitions": {
     "title": "Agios Competitions",
     "greeting": "Hello, {name}",
     "guest_user": "Agios Guest",
-    "select_book": "Select a book to start",
-    "welcome_title": "Bible Books Challenge",
+    "select_book": "Choose a book to start",
+    "welcome_title": "Bible Books Challenge ",
     "welcome_desc": "Test your knowledge in the Word of God and collect points and badges",
     "history_title": "Your results history",
     "redo": "Redo",
-    "final_results": "Final Results",
+    "final_results": "Final Results ",
     "back_to_books": "Back to Books",
     "question_progress": "Question {current} of {total}",
     "streak_count": "{count} consecutive",
-    "correct_feedback": "Correct Answer",
+    "correct_feedback": "Correct Answer ",
     "incorrect_feedback": "The correct answer is: {answer}",
     "next_question": "Next Question",
     "cancel_quiz": "Cancel Competition",
-    "error_no_questions": "Sorry, no questions currently available for this category.",
-    "points_reason_complete": "Completion of competition: {category}",
+    "error_no_questions": "Sorry, no questions available for this category currently.",
+    "points_reason_complete": "Complete competition: {category}",
     "points_reason_perfect": "Perfect score: {category}"
   },
   "studyPlans": {
-    "title": "Reading Plans",
-    "ai_button": "Design smart plan now",
-    "search_placeholder": "Search for a plan (e.g., Gospel, Psalms...)",
+    "title": "Study Plans",
+    "ai_button": "Design Smart Plan Now",
+    "search_placeholder": "Search for a plan (e.g. Gospel, Psalms...)",
     "filters": {
       "all": "All",
       "custom": "Custom",
       "shared": "Shared Plans"
     },
     "card": {
-      "ai_badge": "Smart Agios Assistant",
+      "ai_badge": "Intelligent Agios Assistant",
       "shared_badge": "Shared Plan",
       "community_type": "Community Plan",
       "personal_type": "Personal Plan",
@@ -522,7 +597,7 @@
     "empty": {
       "no_search_results": "No results for this search",
       "no_plans": "No plans currently",
-      "reset_search": "Show all plans"
+      "reset_search": "View All Plans"
     },
     "delete_toast": {
       "confirm_title": "Do you want to delete this plan permanently?",
@@ -531,22 +606,22 @@
     "details": {
       "loading": "Loading your plan...",
       "not_found": "Plan not found",
-      "progress_label": "Progress percentage",
+      "progress_label": "Completion Rate",
       "by_author": "By: {name}",
       "undo_manual": "Manual selection undone",
-      "done_manual": "Manually selected",
-      "sync_error": "An error occurred while syncing data",
+      "done_manual": "Selected manually",
+      "sync_error": "Error syncing data",
       "day_label": "Day {day}"
     },
     "custom": {
       "loading_title": "Agios is designing a special spiritual journey for you...",
       "loading_sub": "This may take a few seconds",
       "form_title": "Smart Plan Designer",
-      "form_subtitle": "Tell 'Agios' what your heart is going through today, and it will suggest personalized biblical readings for you.",
-      "mood_label": "How are you feeling currently? Or what topic are you searching for?",
-      "mood_placeholder": "E.g., I feel anxious about the future, or I want a study on patience..",
+      "form_subtitle": "Tell 'Agios' what your heart is going through today, and it will suggest personalized biblical readings.",
+      "mood_label": "How do you feel currently? Or what topic are you looking for?",
+      "mood_placeholder": "E.g.: I feel anxious about the future, or I want a study about patience..",
       "duration_label": "What is the preferred duration of the plan?",
-      "duration_custom_placeholder": "E.g., 40",
+      "duration_custom_placeholder": "E.g.: 40",
       "duration_suffix": "Days",
       "duration_limit_hint": "(Maximum 180 days)",
       "intensity_label": "How many chapters would you like to read daily?",
@@ -555,30 +630,30 @@
       "author_check": "Show my name as the author of this plan",
       "author_preview": "The plan will appear by: {name}",
       "author_default": "Agios User",
-      "guest_hint": "The plan will be published as 'Anonymous contributor' because you are not logged in.",
-      "submit_btn": "Start my personalized journey",
+      "guest_hint": "The plan will be published as an 'Anonymous contributor' because you are not logged in.",
+      "submit_btn": "Start My Personalized Journey ",
       "submitting": "Preparing...",
       "error_incomplete": "Please complete the data first",
       "error_duration": "Please specify the number of days",
       "error_duration_max": "Maximum duration for custom plan is 180 days to ensure plan quality",
-      "error_mood_short": "Description is too short, tell us more details to design a better plan.",
-      "success_toast": "Your plan has been created successfully!",
+      "mood_short": "Description is too short, tell us more details to design a better plan.",
+      "success_toast": "Plan created successfully!",
       "ai_error": "AI failed to form the plan",
       "generic_error": "An error occurred while creating the plan",
       "durations": {
-        "3": "3 days",
-        "7": "A week",
-        "14": "Two weeks",
-        "30": "A month",
-        "90": "3 months",
-        "180": "6 months",
-        "custom": "Custom duration"
+        "3": "3 Days",
+        "7": "A Week",
+        "14": "Two Weeks",
+        "30": "A Month",
+        "90": "3 Months",
+        "180": "6 Months",
+        "custom": "Custom Duration"
       },
       "intensities": {
-        "1": "1 chapter daily",
-        "2": "2 chapters daily",
-        "3": "3 chapters daily",
-        "default": "One chapter daily"
+        "1": "1 Chapter Daily",
+        "2": "2 Chapters Daily",
+        "3": "3 Chapters Daily",
+        "default": "One Chapter Daily"
       }
     }
   },
@@ -587,13 +662,13 @@
     "subtitle": "Get more benefits after creating a new account",
     "features_title": "Why should you log in?",
     "features": [
-      { "title": "Completely free", "desc": "This system does not include any subscriptions, fees, or costs because it is primarily for service" },
-      { "title": "Your information is safe", "desc": "All information you enter is completely secure and encrypted, and you are not obligated to enter your real information" },
-      { "title": "More devices", "desc": "Now you can open the same account from many devices while keeping all information and progress" },
-      { "title": "Add verses to favorites", "desc": "You will no longer lose any of your favorite verses or notes" },
-      { "title": "Complete study plans", "desc": "Maintain your progress in biblical and study plans" },
-      { "title": "Points system", "desc": "Exclusively try the points system and track your spiritual life in reading the Bible" },
-      { "title": "More benefits", "desc": "Those with accounts get early access to new features and exclusive benefits" }
+      { "title": "Completely Free", "desc": "This system does not include any subscriptions or fees because it's primarily for service" },
+      { "title": "Your information is safe", "desc": "All information you enter is completely safe and encrypted" },
+      { "title": "More Devices", "desc": "Now you can open the same account from many devices while keeping all info and progress" },
+      { "title": "Add verses to favorites", "desc": "Never lose your favorite verses or notes again" },
+      { "title": "Complete Study Plans", "desc": "Maintain your progress in biblical and study plans" },
+      { "title": "Points System", "desc": "Try exclusively the points system and track your spiritual life in reading the Bible" },
+      { "title": "More Benefits", "desc": "Account holders get early access to new and exclusive features" }
     ],
     "cta_text": "Start your spiritual journey today and join us.",
     "signup_btn": "Don't have an account? Create a new one",
@@ -605,13 +680,13 @@
     "reasons_title": "Why might you need to contact us?",
     "reasons": [
       "Share suggestions for developing app features.",
-      "Report a technical problem or an error in the texts.",
-      "Provide technical support or volunteer in improving content.",
+      "Report a technical problem or an error in texts.",
+      "Provide technical support or volunteer in content improvement.",
       "General inquiries about Agios services."
     ],
-    "methods_title": "Official communication methods",
-    "email_btn": "Send an email",
-    "facebook_btn": "Facebook page",
+    "methods_title": "Official Communication Methods",
+    "email_btn": "Send Email",
+    "facebook_btn": "Facebook Page",
     "footer": "We work to respond to all inquiries as soon as possible."
   },
   "privacy": {
@@ -642,11 +717,11 @@
     "title": "My Favorites",
     "tab_favs": "Favorites",
     "tab_notes": "Notes",
-    "color_categories": "Color categories:",
-    "no_title": "No title",
-    "modal_title": "Color naming",
-    "modal_placeholder": "E.g., Comfort verses, Promises...",
-    "empty_color_prompt": "Select a category from above to view verses",
+    "color_categories": "Color Categories:",
+    "no_title": "No Title",
+    "modal_title": "Name the Color",
+    "modal_placeholder": "E.g.: Comfort verses, Promises...",
+    "empty_color_prompt": "Choose a category from above to view verses",
     "empty_list": "No items here yet",
     "error_save": "An error occurred while saving the name"
   },
@@ -674,86 +749,113 @@
     },
     "history": [
       {
+        "version": "2.5.0",
+        "date": "Current Update",
+        "title": "Major Profile Overhaul & General Improvements",
+        "features": [
+          "Radical development of the personal profile page to be more interactive and modern",
+          "Improved and developed the badges and points (XP) system to encourage daily interaction",
+          "Completed the Book of Esther entirely and added it to the system",
+          "Fixed an issue in calculating the engagement streak to ensure accuracy",
+          "Resolved favorite verses synchronization issues across different devices"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.3.0",
+        "date": "Previous Update",
+        "title": "Comprehensive Improvements & Important Fixes",
+        "features": [
+          "Radically fixed and improved maps for a better exploration experience",
+          "Significantly secured the application and data to ensure highest levels of privacy",
+          "Improved AI performance to ensure responsiveness even with poor internet connection",
+          "Added the ability to select book and chapter separately for easier navigation",
+          "Added a full record of all user readings to track spiritual growth",
+          "Fixed the issue of the screen turning off automatically while using the app"
+        ],
+        "fixes": []
+      },
+      {
         "version": "2.2.0",
         "date": "Latest Update",
         "title": "Security Update & AI Enhancements",
         "features": [
-          "Radical security update to protect app and user data",
+          "Radical security update to protect the app and user data",
           "Improved AI engine and more accurate semantic search support",
-          "Multi-language support and parallel translations in Bible page",
-          "Improved study plans performance to ensure high load stability"
+          "Multilingual support and parallel translations on the Bible page",
+          "Improved study plans performance to ensure work under high pressure"
         ],
         "fixes": [
-          "Fixed daily tasks completion issue in Local First mode"
+          "Fixed an issue where daily tasks were not completing in Local First mode"
         ]
       },
       {
         "version": "2.1.2",
         "date": "Previous Update",
-        "title": "App Size Reduction & iOS Widget Support",
+        "title": "App Size Reduction & iOS Widgets Support",
         "features": [
-          "Significant app size reduction for faster loading and performance",
-          "Comprehensive widget improvements and official support on iPhone",
-          "Updated and developed 'About' page for clearer information"
+          "Significantly reduced app size for faster loading and performance",
+          "Comprehensive widget improvements and official support for iPhone devices",
+          "Updated and developed 'About the App' page for clearer information"
         ],
         "fixes": [
-          "Fixed 'Verse of the Day' issue when using non-Arabic languages"
+          "Fixed an issue where 'Verse of the Day' didn't work for non-Arabic languages"
         ]
       },
       {
         "version": "2.1.1",
         "date": "Previous Update",
-        "title": "Audio, AI Improvements & UI Fixes",
+        "title": "Audio & AI Enhancements and UI Fixes",
         "features": [
-          "Comprehensive improvements in audible Bible system to support all languages and books",
-          "Improved responsiveness and reliability of AI search and analysis features"
+          "Comprehensive improvements to the Audio Bible system to support all languages and books",
+          "Enhanced response and reliability of AI features in search and analysis"
         ],
         "fixes": [
-          "Fixed issue where some AI features stopped working",
-          "Fixed duplicate back buttons on Analysis and Widgets pages"
+          "Fixed an issue where some AI features stopped working",
+          "Fixed duplicate back button issue on Analysis and Widgets pages"
         ]
       },
       {
         "version": "2.1.0",
         "date": "Previous Update",
-        "title": "Added Widgets & Comprehensive Improvements",
+        "title": "Widgets Support & Performance Overhaul",
         "features": [
-          "Added Widgets for home screen (Verse, Question, Points, Plan)",
-          "Significantly improved app performance for speed and stability",
-          "Simplified UI usage and navigation between app sections",
-          "Improved data sync system between app and widgets"
+          "Added Home Screen Widgets (Daily Verse, Daily Question, My Points, Study Plan)",
+          "Significantly improved app performance for a faster experience",
+          "Simplified UI navigation and interaction",
+          "Improved data synchronization between the app and widgets"
         ],
         "fixes": [
-          "General technical fixes and battery consumption improvements"
+          "General technical fixes and better battery consumption"
         ]
       },
       {
         "version": "2.0.4",
         "date": "Previous Update",
-        "title": "Critical Fixes, Language Support & Dev Links",
+        "title": "Critical Fixes, Language Support & Developer Links",
         "features": [
           "Added App Store, Google Play and Developer links in 'About' page",
-          "Enabled French language support in Bible Maps"
+          "Enabled French language support in Bible maps"
         ],
         "fixes": [
-          "Fixed AI Analysis page crashing issue",
-          "Fixed app crashing when French language is selected",
+          "Fixed AI analysis page crashing issue",
+          "Fixed app crash when selecting French language",
           "General system stability improvements"
         ]
       },
       {
         "version": "2.0.3",
         "date": "Previous Update",
-        "title": "Easier Access, Simpler Search & UI Improvements",
+        "title": "Simplified Access, Easier Search & UI Improvements",
         "features": [
-          "Made Facebook page access easier",
-          "Simplified the search experience so it is easier for more people to use",
-          "Improved the design of both the Bible and search pages",
-          "Simplified overall verse interaction experience"
+          "Easier access to the Facebook page",
+          "Simplified search experience for better accessibility",
+          "Improved design for Bible and search pages",
+          "General simplification of verse interaction"
         ],
         "fixes": [
-          "Fixed the issue where verse images were not sharing correctly on iPhone devices",
-          "Resolved the reference issue when sharing multiple verses"
+          "Fixed issue where verse image share was not working correctly on iPhone",
+          "Resolved reference issue when sharing multiple verses"
         ]
       },
       {
@@ -761,83 +863,82 @@
         "date": "Previous Update",
         "title": "Search, Selection & Daily Question Improvements",
         "features": [
-          "Improved search speed across the app",
-          "Enhanced verse selection and copy flow",
-          "Major improvements to the daily question experience",
-          "Simplified verse analysis presentation"
+          "Improved search speed in the app",
+          "Better selection and copying of verses",
+          "Significant improvements to the daily question",
+          "Simplified display of verse analysis"
         ],
         "fixes": [
           "Fixed the issue that prevented maps from working",
-          "Fixed verse selection and copying bugs"
+          "Fixed bugs in verse selection and copying"
         ]
       },
       {
         "version": "2.0.1",
         "date": "Previous Update",
-        "title": "Technical Fixes & Improvements",
+        "title": "Technical Fixes & Enhancements",
         "features": [],
         "fixes": [
-          "Fixed reversed reference direction in the verse sharing page",
-          "Fixed favorite verse color mismatch between search and Bible pages",
-          "Fixed issue with daily verse image not saving correctly for iPhone users",
-          "Fixed error when exiting the app via double back button press"
+          "Fixed reverse reference direction error in verse share page",
+          "Fixed color discrepancy for favorited verses between search and Bible pages",
+          "Fixed error in saving verse of the day image for iPhone users",
+          "Fixed error when exiting app by double-pressing back button"
         ]
       },
       {
         "version": "2.0.0",
-        "date": "Previous Update",
-        "title": "Major Update & Multi-language Support",
+        "date": "Major Update & Multilingual Support",
         "features": [
-          "Completely restructured the app to support multiple languages",
+          "Complete restructuring of the app for multilingual support",
           "Added support for 3 new languages (English, French, German) with core features",
-          "Improved Arabic text display and formatting in the Holy Bible",
+          "Improved display and formatting of Arabic text in Holy Bible",
           "Design improvements and better responsiveness for small screens",
-          "Enhanced user experience and homepage development"
+          "Improved user experience and homepage development"
         ],
         "fixes": [
-          "General performance improvements and system stability"
+          "General performance and system stability improvements"
         ]
       },
       {
         "version": "1.8.4",
         "date": "Previous Update",
-        "title": "Tashkeel Accuracy, Search Improvements, and Badges",
+        "title": "Tashkeel Precision, Search Enhancements & Badges",
         "features": [
-          "Replaced Tashkeel with a 100% accurate version",
-          "Improved study plans search to be more flexible",
-          "Enhanced the design of the Badges page"
+          "Replaced Tashkeel with a 100% precise version",
+          "Made search in study plans more flexible",
+          "Improved design of the badges page"
         ],
         "fixes": [
-          "Fixed an issue where sequels weren't displayed on the chapters page"
+          "Fixed issue where continuations were not displayed on the chapters page"
         ]
       },
       {
         "version": "1.8.3",
         "date": "Previous Update",
-        "title": "Font Customization and Study Plans Improvements",
+        "title": "Font Customization & Study Plan Improvements",
         "features": [
-          "Added ability to change the font family of biblical text",
-          "Added ability to change text weight (thickness)",
+          "Added ability to change the font of the biblical text",
+          "Added ability to change text weight",
           "Improved AI responsiveness in study plans"
         ],
         "fixes": [
-          "Fixed duplicate back button issue on the study plans page"
+          "Fixed duplicate back button issue on study plans page"
         ]
       },
       {
         "version": "1.8.2",
         "date": "Previous Update",
-        "title": "Performance Improvements and System Stability",
+        "title": "Performance Improvements & System Stability",
         "features": [
           "Improved system responsiveness for logged-in users",
-          "Enhanced the Bible book selection button",
-          "Improved the derivative search system"
+          "Improved book selection button in the Bible",
+          "Improved derivative search system"
         ],
         "fixes": [
           "Fixed map issues under high load",
-          "Fixed Facebook link not working on the contact page",
-          "Fixed verse control bar buttons not appearing in light mode",
-          "Fixed incorrect navigation bar button selection"
+          "Fixed Facebook link not working on contact page",
+          "Fixed issue where verse control bar buttons didn't appear in light mode",
+          "Fixed incorrect selection of navigation bar buttons"
         ]
       },
       {
@@ -845,15 +946,15 @@
         "date": "May 13, 2026",
         "title": "Enhanced Maps Release",
         "features": [
-          "Expanded the maps library with new maps",
+          "Expanded map library with new maps",
           "Added smart search for places and historical landmarks",
           "Added feature to view a landmark and navigate to its biblical mentions",
-          "Added 'Try AI' section on the homepage for easier user experience"
+          "Added 'Try AI' section on home page for better user experience"
         ],
         "fixes": [
-          "Fixed slowness in Bible book and chapter selection lists",
-          "Radical improvements in competitions page design",
-          "Fixed blurriness in dropdown menus"
+          "Fixed slowness in book and chapter selection lists",
+          "Radical improvements in competition page design",
+          "Fixed blur in dropdown menus"
         ]
       },
       {
@@ -871,32 +972,32 @@
   },
   "offline": {
     "title": "No Internet Connection",
-    "desc": "It seems you are not connected to the network currently. You can continue reading previously loaded parts."
+    "desc": "It seems you are not connected to the network currently. You can continue reading pre-loaded content."
   },
   "analysis": {
     "title_prefix": "Study",
-    "ai_badge": "AI Powered",
-    "status_analyzing": "Smart Agios Assistant is analyzing the text now...",
+    "ai_badge": "AI-powered",
+    "status_analyzing": "The intelligent Agios assistant is analyzing the text now...",
     "wait_title": "Please wait a little",
-    "wait_desc": "To protect the server, please wait before requesting a new analysis. Analysis will start automatically after the countdown ends.",
-    "streaming_text": "Smart Agios Assistant is writing for you now...",
-    "disclaimer": "This analysis was generated by AI to help in study. Please always refer to the priests and the approved interpretation books of the Coptic Church.",
+    "wait_desc": "To protect the server, please wait before a new analysis. Analysis starts automatically after countdown.",
+    "streaming_text": "The intelligent Agios assistant is writing for you now...",
+    "disclaimer": "This analysis was generated by AI. Always refer to priests and approved interpretation books of the Coptic Church.",
     "toast_copy": "Analysis copied successfully",
     "toast_copy_paragraph": "Paragraph copied",
     "error_incomplete": "Connection interrupted, analysis might be incomplete",
-    "error_generic": "An error occurred while loading the analysis. Please check your internet connection and try again."
+    "error_generic": "Error loading analysis. Please check your internet connection."
   },
   "interpretations": {
     "no_data": "Interpretation data not found",
     "title_prefix": "Book Interpretation",
-    "subtitle": "Analysis and explanation of the book chapters",
+    "subtitle": "Analysis and explanation of chapters",
     "default_title": "Bible Interpretation",
     "chapter_title": "Chapter {chapter}"
   },
   "components": {
     "bible_nav": {
       "title": "Quick Index",
-      "search_placeholder": "Search for a book...",
+      "search_placeholder": "Search book...",
       "home": "Home",
       "read": "Read",
       "maps": "Maps",
@@ -907,16 +1008,16 @@
       "loading": "Loading...",
       "speed": "Speed",
       "settings": "Playback Settings",
-      "volume": "Volume Level",
+      "volume": "Volume",
       "repeat": "Repeat",
-      "auto_play": "Auto Play",
+      "auto_play": "Auto",
       "highlight": "Highlight",
       "stop": "Stop"
     },
     "book_selector": {
       "title": "Read Books",
       "search_placeholder": "Search for a book...",
-      "no_results": "We did not find a book with this name \"{name}\"",
+      "no_results": "We didn't find a book with name \"{name}\"",
       "testament_ot": "Old Testament",
       "testament_nt": "New Testament"
     },
@@ -924,16 +1025,16 @@
       "back": "Back"
     },
     "badges": {
-      "congrats": "Congratulations! New Achievement",
+      "congrats": "Congrats! New Achievement",
       "share_achievement": "Share Achievement",
       "view_all": "View All Badges",
       "share_title": "New Badge!",
-      "share_text": "I got a new badge in Agios app: {badge}!\n\"{req}\"\nDownload the app and join us in our spiritual journey.",
-      "share_dialog": "Share Badge via..."
+      "share_text": "🎉 I got a new badge in Agios app: {badge}!\n\"{req}\"\nDownload the app and join us in our journey.",
+      "share_dialog": "Share badge via..."
     }
   },
   "metadata": {
-    "title": "Official Website | Agios Bible",
-    "description": "An integrated Bible website that includes unique features such as advanced search, interactive maps, study plans, and competitions"
+    "title": "Official Site | Agios Bible",
+    "description": "Integrated Bible website with advanced features like search, interactive maps, study plans, and competitions."
   }
 }

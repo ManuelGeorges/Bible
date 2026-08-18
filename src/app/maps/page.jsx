@@ -40,20 +40,6 @@ if (typeof window !== 'undefined') {
 const auth = typeof window !== 'undefined' ? getAuth() : null;
 const firestore = db;
 
-// On web (Next.js server running), a relative path works fine because
-// the API route lives on the same origin serving the page.
-//
-// On mobile (Capacitor static export via `output: 'export'`), there is NO
-// server bundled into the app — Next.js strips out API routes entirely
-// during static export. A relative fetch to '/api/maps' resolves against
-// capacitor://localhost (or file://) and 404s, silently, forever.
-//
-// So for the mobile build we must hit the real deployed backend directly.
-const API_MAPS_URL =
-  process.env.NEXT_PUBLIC_EXPORT === 'true'
-    ? 'https://www.agiosbible.com/api/maps'
-    : '/api/maps';
-
 const INITIAL_VIEW_STATE = {
   longitude: 35.0,
   latitude: 31.0,
@@ -112,7 +98,7 @@ export default function MapsPage() {
   const router = useRouter();
   const { triggerBadgeUnlock } = useBadge();
   const [allPlaces, setAllPlaces] = useState([]);
-  const [selectedEra, setSelectedEra] = useState(strings?.maps?.eras_placeholder || '');
+  const [selectedEra, setSelectedEra] = useState('');
   const [mapStyle, setMapStyle] = useState(null);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [isLoading, setIsLoading] = useState(true);
@@ -133,8 +119,19 @@ export default function MapsPage() {
   const placeRef = useRef(null);
   const searchRef = useRef(null);
 
+  const API_MAPS_URL = useMemo(() =>
+    process.env.NEXT_PUBLIC_EXPORT === 'true' ? 'https://www.agiosbible.com/api/maps' : '/api/maps'
+  , []);
+
   const eras = useMemo(() => {
     return strings?.maps?.era_names ? Object.values(strings.maps.era_names) : [];
+  }, [strings]);
+
+  // تحديث العصر المختار عند تحميل النصوص
+  useEffect(() => {
+    if (strings?.maps?.eras_placeholder) {
+      setSelectedEra(strings.maps.eras_placeholder);
+    }
   }, [strings]);
 
   const getEraColors = (eraName) => {
@@ -149,27 +146,81 @@ export default function MapsPage() {
     };
   };
 
-  const unlockBadge = async (badgeId) => {
-    if (user) {
+  useEffect(() => {
+    const protocol = new Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
+
+    fetch(`${API_MAPS_URL}/?task=style`)
+      .then((res) => res.json())
+      .then((style) => setMapStyle(style))
+      .catch((err) => console.error('Failed to load map style:', err));
+
+    return () => maplibregl.removeProtocol('pmtiles');
+  }, [API_MAPS_URL]);
+
+  // تعديل منطق جلب الأماكن ليعتمد على الـ API الداخلي الذي يدعم اللغات والملفات المحلية
+  useEffect(() => {
+    setMounted(true);
+    const loadMapData = async () => {
+      setIsLoading(true);
       try {
-        const userRef = doc(firestore, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        const currentBadges = userSnap.data()?.badges || [];
-        if (!currentBadges.includes(badgeId)) {
-          await updateDoc(userRef, { badges: arrayUnion(badgeId) });
-          setBadgesCount((prev) => prev + 1);
-          triggerBadgeUnlock(badgeId);
+        // نطلب الأماكن من الـ API الداخلي مع تمرير اللغة الحالية
+        const res = await fetch(`${API_MAPS_URL}/?task=places&lang=${language}`);
+        if (!res.ok) throw new Error("Failed to fetch map data");
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setAllPlaces(data);
+        } else {
+          setAllPlaces([]);
         }
-      } catch (e) { console.error(e); }
-    } else {
-      const localBadges = await StorageService.get('local_badges') || [];
-      if (!localBadges.includes(badgeId)) {
-        localBadges.push(badgeId);
-        await StorageService.save('local_badges', localBadges);
-        setBadgesCount((prev) => prev + 1);
-        triggerBadgeUnlock(badgeId);
+      } catch (error) {
+        console.error("Error loading map data via internal API:", error);
+        setAllPlaces([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadMapData();
+  }, [language, API_MAPS_URL]);
+
+  const handleEraSelection = async (era) => {
+    setSelectedEra(era);
+    setIsEraOpen(false);
+    setSelectedPoint(null);
+    if (era !== strings?.maps?.eras_placeholder && !visitedEras.has(era)) {
+      const newEras = new Set(visitedEras).add(era);
+      setVisitedEras(newEras);
+      if (user) await updateDoc(doc(firestore, 'users', user.uid), { visitedEras: arrayUnion(era) });
+      if (newEras.size === eras.length && eras.length > 0) await unlockBadge('era_traveler');
+    }
+  };
+
+  const handlePointSelection = async (point) => {
+    setSelectedPoint(point);
+    setSelectedJourney(null);
+    if (point) {
+      const pointId = point.id || point.name;
+      const isNewDiscovery = !visitedPoints.has(pointId);
+      if (isNewDiscovery) {
+        const newVisited = new Set(visitedPoints).add(pointId);
+        setVisitedPoints(newVisited);
+        const reason = (strings?.maps?.points_reason || "Discovered landmark: {name}").replace('{name}', point.name);
+        await updateUserPoints(40, reason);
+        if (user) await updateDoc(doc(firestore, 'users', user.uid), { visitedMapPoints: arrayUnion(pointId) });
+        if (newVisited.size === 5) await unlockBadge('map_pioneer');
+        if (newVisited.size === 20) await unlockBadge('ancient_navigator');
+        setDailyTaskDone(true);
+      } else if (!dailyTaskDone) {
+        await updateUserPoints(10, strings?.maps?.title || 'Map Exploration');
+        setDailyTaskDone(true);
       }
     }
+  };
+
+  const flyToPlace = (place) => {
+    mapRef.current?.flyTo({ center: [place.lng, place.lat], zoom: 12 });
+    handlePointSelection(place);
   };
 
   const updateUserPoints = async (amount, reason) => {
@@ -205,135 +256,27 @@ export default function MapsPage() {
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (eraRef.current && !eraRef.current.contains(event.target)) setIsEraOpen(false);
-      if (placeRef.current && !placeRef.current.contains(event.target)) setIsPlaceOpen(false);
-      if (searchRef.current && !searchRef.current.contains(event.target)) setSearchQuery("");
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = auth.onAuthStateChanged(async (u) => {
-      setUser(u);
-      const today = getCairoDate();
-      if (u) {
-        getDoc(doc(firestore, 'users', u.uid)).then(snap => {
-          if (snap.exists()) {
-            const data = snap.data();
-            setVisitedPoints(new Set(data.visitedMapPoints || []));
-            setVisitedEras(new Set(data.visitedEras || []));
-            setBadgesCount((data.badges || []).length);
-
-            const history = data.pointsHistory || [];
-            const done = history.some(h => {
-              if (!h.timestamp) return false;
-              const ts = h.timestamp?.toDate ? h.timestamp.toDate() : new Date(h.timestamp);
-              return getCairoDate(ts) === today && h.type === 'mapExploration';
-            });
-            setDailyTaskDone(done);
-          }
-        });
-      } else {
-        const localBadges = await StorageService.get('local_badges') || [];
-        setBadgesCount(localBadges.length);
-
-        const history = await StorageService.get(KEYS.POINTS_HISTORY) || [];
-        const done = history.some(h => h.type === 'mapExploration' && getCairoDate(new Date(h.timestamp)) === today);
-        setDailyTaskDone(done);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const protocol = new Protocol();
-    maplibregl.addProtocol('pmtiles', protocol.tile);
-
-    fetch(`${API_MAPS_URL}/?task=style`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Style error: ${res.status}`);
-        return res.json();
-      })
-      .then((style) => setMapStyle(style))
-      .catch((err) => console.error('Failed to load map style:', err));
-
-    return () => maplibregl.removeProtocol('pmtiles');
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
-    const initPage = async () => {
+  const unlockBadge = async (badgeId) => {
+    if (user) {
       try {
-        const response = await fetch(`${API_MAPS_URL}/?task=places&lang=${language}`);
-        if (!response.ok) {
-           console.error(`API response error: ${response.status}`);
-           setAllPlaces([]);
-           return;
+        const userRef = doc(firestore, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const currentBadges = userSnap.data()?.badges || [];
+        if (!currentBadges.includes(badgeId)) {
+          await updateDoc(userRef, { badges: arrayUnion(badgeId) });
+          setBadgesCount((prev) => prev + 1);
+          triggerBadgeUnlock(badgeId);
         }
-        const data = await response.json();
-        // Ensure data is an array before setting state
-        if (Array.isArray(data)) {
-          setAllPlaces(data);
-        } else if (data && typeof data === 'object' && !Array.isArray(data)) {
-          // If the API returned an object with an error or something else
-          console.warn("API returned non-array data:", data);
-          setAllPlaces([]);
-        } else {
-          setAllPlaces([]);
-        }
-      } catch (error) {
-        console.error("Error loading places:", error);
-        setAllPlaces([]);
-      }
-      finally { setIsLoading(false); }
-    };
-    initPage();
-  }, [language]);
-
-  const handleEraSelection = async (era) => {
-    setSelectedEra(era);
-    setIsEraOpen(false);
-    setSelectedPoint(null);
-    if (era !== strings?.maps?.eras_placeholder && !visitedEras.has(era)) {
-      const newEras = new Set(visitedEras).add(era);
-      setVisitedEras(newEras);
-      if (user) await updateDoc(doc(firestore, 'users', user.uid), { visitedEras: arrayUnion(era) });
-      if (newEras.size === eras.length && eras.length > 0) await unlockBadge('era_traveler');
-    }
-  };
-
-  const handlePointSelection = async (point) => {
-    setSelectedPoint(point);
-    setSelectedJourney(null);
-    if (point) {
-      const pointId = point.id || point.name;
-
-      const isNewDiscovery = !visitedPoints.has(pointId);
-
-      if (isNewDiscovery) {
-        const newVisited = new Set(visitedPoints).add(pointId);
-        setVisitedPoints(newVisited);
-        const reason = (strings?.maps?.points_reason || "Discovered landmark: {name}").replace('{name}', point.name);
-        await updateUserPoints(40, reason);
-        if (user) await updateDoc(doc(firestore, 'users', user.uid), { visitedMapPoints: arrayUnion(pointId) });
-        if (newVisited.size === 5) await unlockBadge('map_pioneer');
-        if (newVisited.size === 20) await unlockBadge('ancient_navigator');
-        setDailyTaskDone(true);
-      } else if (!dailyTaskDone) {
-        // Record daily interaction for existing points to complete the daily task
-        await updateUserPoints(10, strings?.maps?.title || 'Map Exploration');
-        setDailyTaskDone(true);
+      } catch (e) { console.error(e); }
+    } else {
+      const localBadges = await StorageService.get('local_badges') || [];
+      if (!localBadges.includes(badgeId)) {
+        localBadges.push(badgeId);
+        await StorageService.save('local_badges', localBadges);
+        setBadgesCount((prev) => prev + 1);
+        triggerBadgeUnlock(badgeId);
       }
     }
-  };
-
-  const flyToPlace = (place) => {
-    mapRef.current?.flyTo({ center: [place.lng, place.lat], zoom: 12 });
-    handlePointSelection(place);
   };
 
   const normalizeArabic = (text) => {
@@ -355,10 +298,7 @@ export default function MapsPage() {
   }, [allPlaces, selectedEra, language, strings]);
 
   const totalPointsCount = useMemo(() => Array.isArray(allPlaces) ? allPlaces.filter(p => p.type === 'point').length : 0, [allPlaces]);
-
-  const progressPercent = totalPointsCount > 0
-    ? Math.round((visitedPoints.size / totalPointsCount) * 100)
-    : 0;
+  const progressPercent = totalPointsCount > 0 ? Math.round((visitedPoints.size / totalPointsCount) * 100) : 0;
 
   const popupEraColors = useMemo(() => {
     if (!selectedPoint) return null;
@@ -420,8 +360,6 @@ export default function MapsPage() {
   };
 
   if (!mounted) return null;
-
-  const showMap = !isLoading && mapStyle;
 
   return (
     <div dir={dir} className={styles.container}>
@@ -530,7 +468,7 @@ export default function MapsPage() {
       </button>
 
       <div className={styles.mapContainer}>
-        {showMap ? (
+        {!isLoading && mapStyle ? (
           <Map
             ref={mapRef}
             {...viewState}
@@ -543,6 +481,8 @@ export default function MapsPage() {
             minZoom={4}
             maxBounds={MAX_BOUNDS}
             style={{ width: '100%', height: '100%' }}
+            reuseMaps
+            trackResize={false}
           >
             <NavigationControl position="top-right" showCompass={false} />
             <FullscreenControl position="top-right" />

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, updateDoc, arrayUnion, increment, getDoc } from 'firebase/firestore';
-import { 
+import {
   FaBookOpen, FaFeatherAlt, FaHeart, FaChevronDown, FaEye, FaEyeSlash,
   FaTrophy, FaChartLine, FaHistory, FaMapMarkedAlt, FaSearch,
   FaShareAlt, FaFire, FaSignInAlt, FaCheckCircle, FaStar, FaMagic, FaSnowflake
@@ -143,8 +143,8 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
     { id: 'studyPlanProgress', label: String(S.points?.goals?.studyPlanProgress || 'Study Plan'), points: 30, icon: <FaChartLine />, completed: history.some(h => (h.activity === 'studyPlanProgress' || h.activity === 'studyPlanDay') && h.dateStr === today) }
   ];
 
-  return { 
-    totalPoints, 
+  return {
+    totalPoints,
     levelInfo: calculateLevel(totalPoints),
     dailyGoals,
     history: history.sort((a, b) => b.timestamp - a.timestamp),
@@ -163,6 +163,50 @@ const calculatePointsFromData = (data, isLocal = false, stringsParam = null) => 
   };
 };
 
+const categorizeActivities = (history) => {
+  const summary = {
+    totalPoints: 0,
+    dailyActions: { count: 0, points: 0 },
+    reading: { count: 0, points: 0 },
+    maps: { count: 0, points: 0 },
+    bonuses: { count: 0, points: 0 },
+    filteredHistory: history,
+    chartData: []
+  };
+
+  const last7Days = [...Array(7)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dateKey = getCairoDate(d);
+    const label = d.toLocaleDateString('ar-EG', { weekday: 'short', timeZone: 'Africa/Cairo' });
+    return { date: String(dateKey), points: 0, label: String(label) };
+  });
+
+  history.forEach(item => {
+    const dateKey = item.dateStr || getCairoDate(item.timestamp);
+    const chartDay = last7Days.find(d => d.date === dateKey);
+    if (chartDay) chartDay.points += Math.max(0, item.points);
+
+    summary.totalPoints += item.points;
+    if (['dailyLogin', 'search', 'share', 'favouriteVerse', 'dailyQuestion', 'verseAnalysis'].includes(item.activity)) {
+      summary.dailyActions.count++;
+      summary.dailyActions.points += item.points;
+    } else if (['completedChapter', 'studyPlanDay', 'studyPlanProgress'].includes(item.activity)) {
+      summary.reading.count++;
+      summary.reading.points += item.points;
+    } else if (item.activity === 'mapExploration') {
+      summary.maps.count++;
+      summary.maps.points += item.points;
+    } else if (item.activity === 'streakBonus') {
+      summary.bonuses.count++;
+      summary.bonuses.points += item.points;
+    }
+  });
+
+  summary.chartData = last7Days;
+  return summary;
+};
+
 export default function Points() {
   const { strings, dir, language, formatNumber } = useLanguage();
   const router = useRouter();
@@ -178,19 +222,24 @@ export default function Points() {
 
   const handleGoalClick = (goalId) => {
     switch (goalId) {
-        case 'dailyQuestion': router.push('/#daily-question'); break;
-        case 'mapExploration': router.push('/maps'); break;
-        case 'share': router.push('/#daily-verse'); break;
-        case 'completedChapter': router.push('/bible'); break;
-        case 'favouriteVerse': router.push('/bible'); break;
-        case 'verseAnalysis': router.push('/bible'); break;
-        case 'studyPlanProgress': router.push('/studyPlans'); break;
-        default: break;
+      case 'dailyQuestion': router.push('/#daily-question'); break;
+      case 'mapExploration': router.push('/maps'); break;
+      case 'share': router.push('/#daily-verse'); break;
+      case 'completedChapter': router.push('/bible'); break;
+      case 'favouriteVerse': router.push('/bible'); break;
+      case 'verseAnalysis': router.push('/bible'); break;
+      case 'studyPlanProgress': router.push('/studyPlans'); break;
+      default: break;
     }
   };
 
   useEffect(() => {
-    const badgeFiles = { ar: badgesAr, en: badgesEn, fr: badgesFr, de: badgesDe };
+    const badgeFiles = {
+      ar: badgesAr,
+      en: badgesEn,
+      fr: badgesFr,
+      de: badgesDe
+    };
     setBadgesData(badgeFiles[language] || badgeFiles.ar);
   }, [language]);
 
@@ -201,9 +250,14 @@ export default function Points() {
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const unsubFirestore = onSnapshot(userDocRef, (docSnap) => {
-            if (docSnap.exists()) {
+          if (docSnap.exists()) {
             const data = docSnap.data();
             const newData = calculatePointsFromData(data, false, strings);
+            const today = getCairoDate();
+            if (data.lastActiveDate !== today) {
+              awardPoints(currentUser.uid, 'dailyLogin', 10, strings.points.points_reasons.daily_login);
+              toast.success(strings.points.daily_bonus_toast, { icon: '✨' });
+            }
             setPointsData(newData);
           }
           setLoading(false);
@@ -238,35 +292,35 @@ export default function Points() {
       const badges = family.badges.map(badge => {
         let progress = null;
         if (!userUnlockedBadges.includes(badge.id)) {
-            if (badge.id.startsWith('streak_')) {
-                const target = parseInt(badge.id.split('_')[1]);
-                progress = { current: pointsData?.streak || 0, target };
-            } else if (badge.id.startsWith('map_') || badge.id === 'ancient_navigator') {
-                const target = badge.id === 'map_pioneer' ? 5 : 20;
-                progress = { current: pointsData?.rawStats.maps || 0, target };
-            } else if (badge.id.startsWith('reader_')) {
-                const target = parseInt(badge.id.split('_')[1]);
-                progress = { current: pointsData?.rawStats.chapters || 0, target };
-            } else if (badge.id === 'bible_finisher') {
-                progress = { current: pointsData?.rawStats.chapters || 0, target: 1189 };
-            } else if (badge.id === 'reader_594') {
-                progress = { current: pointsData?.rawStats.chapters || 0, target: 594 };
-            } else if (badge.id.startsWith('scholar_')) {
-                const target = parseInt(badge.id.split('_')[1]);
-                progress = { current: pointsData?.rawStats.quizzes || 0, target };
-            } else if (badge.id === 'bible_master') {
-                progress = { current: pointsData?.rawStats.quizzes || 0, target: 73 };
-            } else if (badge.id.startsWith('perfect_')) {
-                const target = badge.id === 'perfect_all' ? 73 : parseInt(badge.id.split('_')[1]);
-                progress = { current: pointsData?.rawStats.perfectQuizzes || 0, target };
-            } else if (badge.id.startsWith('fav_')) {
-                const target = parseInt(badge.id.split('_')[1]);
-                progress = { current: pointsData?.rawStats.favorites || 0, target };
-            } else if (badge.id === 'share_1') {
-                progress = { current: pointsData?.rawStats.shares || 0, target: 1 };
-            } else if (badge.id === 'social_influencer') {
-                progress = { current: pointsData?.rawStats.shares || 0, target: 50 };
-            }
+          if (badge.id.startsWith('streak_')) {
+            const target = parseInt(badge.id.split('_')[1]);
+            progress = { current: pointsData?.streak || 0, target };
+          } else if (badge.id.startsWith('map_') || badge.id === 'ancient_navigator') {
+            const target = badge.id === 'map_pioneer' ? 5 : 20;
+            progress = { current: pointsData?.rawStats.maps || 0, target };
+          } else if (badge.id.startsWith('reader_')) {
+            const target = parseInt(badge.id.split('_')[1]);
+            progress = { current: pointsData?.rawStats.chapters || 0, target };
+          } else if (badge.id === 'bible_finisher') {
+            progress = { current: pointsData?.rawStats.chapters || 0, target: 1189 };
+          } else if (badge.id === 'reader_594') {
+            progress = { current: pointsData?.rawStats.chapters || 0, target: 594 };
+          } else if (badge.id.startsWith('scholar_')) {
+            const target = parseInt(badge.id.split('_')[1]);
+            progress = { current: pointsData?.rawStats.quizzes || 0, target };
+          } else if (badge.id === 'bible_master') {
+            progress = { current: pointsData?.rawStats.quizzes || 0, target: 73 };
+          } else if (badge.id.startsWith('perfect_')) {
+            const target = badge.id === 'perfect_all' ? 73 : parseInt(badge.id.split('_')[1]);
+            progress = { current: pointsData?.rawStats.perfectQuizzes || 0, target };
+          } else if (badge.id.startsWith('fav_')) {
+            const target = parseInt(badge.id.split('_')[1]);
+            progress = { current: pointsData?.rawStats.favorites || 0, target };
+          } else if (badge.id === 'share_1') {
+            progress = { current: pointsData?.rawStats.shares || 0, target: 1 };
+          } else if (badge.id === 'social_influencer') {
+            progress = { current: pointsData?.rawStats.shares || 0, target: 50 };
+          }
         }
         return { ...badge, progress };
       }).filter(badge => {
@@ -283,10 +337,10 @@ export default function Points() {
 
   if (loading || !badgesData) return (
     <div className={styles.container}>
-        <div className={styles.skeletonContainer}>
-            <div className={styles.skeletonHeader} /><div className={styles.skeletonCard} />
-            <div className={styles.skeletonGrid}>{[1,2,3,4].map(i => <div key={i} className={styles.skeletonItem} />)}</div>
-        </div>
+      <div className={styles.skeletonContainer}>
+        <div className={styles.skeletonHeader} /><div className={styles.skeletonCard} />
+        <div className={styles.skeletonGrid}>{[1, 2, 3, 4].map(i => <div key={i} className={styles.skeletonItem} />)}</div>
+      </div>
     </div>
   );
 
@@ -311,26 +365,26 @@ export default function Points() {
           <div className={styles.pointsSummary}>
             <div className={styles.levelContainer}>
               <div className={styles.levelBadge}>
-                  <FaStar className={styles.levelStar} />
-                  <span>{String(strings.points.level || 'Level').replace('{level}', formatNumber(pointsData?.levelInfo.level || 1))}</span>
+                <FaStar className={styles.levelStar} />
+                <span>{String(strings.points.level || 'Level').replace('{level}', formatNumber(pointsData?.levelInfo.level || 1))}</span>
               </div>
               <div className={styles.levelBarOuter}>
-                  <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
+                <div className={styles.levelBarInner} style={{ width: `${pointsData?.levelInfo.progress}%` }} />
               </div>
               <p className={styles.nextLevelText}>{String(strings.points.next_level || 'Next level in {points} XP').replace('{points}', formatNumber(pointsData?.levelInfo.nextXP || 0))}</p>
             </div>
 
             <div className={styles.statsRow}>
-                <div className={styles.streakBadge}>
-                    <FaFire className={styles.fireIcon} />
-                    <span>{String(strings.points.streak_label || '{streak} Days').replace('{streak}', formatNumber(pointsData?.streak || 0))}</span>
+              <div className={styles.streakBadge}>
+                <FaFire className={styles.fireIcon} />
+                <span>{String(strings.points.streak_label || '{streak} Days').replace('{streak}', formatNumber(pointsData?.streak || 0))}</span>
+              </div>
+              {pointsData?.streakFreezes > 0 && (
+                <div className={styles.freezeBadge}>
+                  <FaSnowflake className={styles.snowflakeIcon} />
+                  <span>{formatNumber(pointsData.streakFreezes)}</span>
                 </div>
-                {pointsData?.streakFreezes > 0 && (
-                    <div className={styles.freezeBadge}>
-                        <FaSnowflake className={styles.snowflakeIcon} />
-                        <span>{formatNumber(pointsData.streakFreezes)}</span>
-                    </div>
-                )}
+              )}
             </div>
 
             <div className={styles.pointsTotal}>
@@ -341,15 +395,15 @@ export default function Points() {
             <div className={styles.dailyGoalsSection}>
               <h3 className={styles.subTitle}>{String(strings.points.daily_goals_title)}</h3>
               <div className={styles.goalsGrid}>
-                  {pointsData?.dailyGoals.map(goal => (
-                      <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`} onClick={() => handleGoalClick(goal.id)}>
-                          <div className={goal.icon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
-                          <div className={styles.goalInfo}>
-                              <span>{String(goal.label)}</span>
-                              <small>+{formatNumber(goal.points)} {String(strings.points.points_unit || 'Points')}</small>
-                          </div>
-                      </div>
-                  ))}
+                {pointsData?.dailyGoals.map(goal => (
+                  <div key={goal.id} className={`${styles.goalCard} ${goal.completed ? styles.goalCompleted : ''}`} onClick={() => handleGoalClick(goal.id)}>
+                    <div className={goal.icon}>{goal.completed ? <FaCheckCircle color="#10b981" /> : goal.icon}</div>
+                    <div className={styles.goalInfo}>
+                      <span>{String(goal.label)}</span>
+                      <small>+{formatNumber(goal.points)} {String(strings.points.points_unit || 'Points')}</small>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -358,13 +412,42 @@ export default function Points() {
 
       {activeTab === 'badges' && (
         <section className={styles.sectionWrapper}>
-           {/* Badges implementation */}
+          <div className={styles.badgesGrid}>
+            {filteredBadges.map((family) => (
+              <div key={family.family_name} className={styles.familyRow}>
+                <h3 className={styles.familyTitleSmall}>{String(family.family_name)}</h3>
+                <div className={styles.badgesListHorizontal}>
+                  {family.badges.map((badge) => (
+                    <div key={badge.id} className={styles.badgeWrapper}>
+                      <Badge badge={badge} familyName={family.family_name} isUnlocked={userUnlockedBadges.includes(badge.id)} />
+                      {badge.progress && (
+                        <div className={styles.badgeProgressMini}>
+                          <div className={styles.progressText}>{formatNumber(badge.progress.current)}/{formatNumber(badge.progress.target)}</div>
+                          <div className={styles.progressLine}><div className={styles.progressFill} style={{ width: `${(badge.progress.current / badge.progress.target) * 100}%` }} /></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
       {activeTab === 'history' && (
         <section className={styles.sectionWrapper}>
-           {/* History implementation */}
+          <ul className={styles.activityList}>
+            {pointsData?.history.length > 0 ? pointsData.history.map((item, i) => (
+              <li key={i} className={styles.activityItem}>
+                <div className={styles.activityInfo}>
+                  <p>{String(item.description)}</p>
+                  <span>{new Date(item.timestamp).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</span>
+                </div>
+                <span className={styles.activityPoints}>+{formatNumber(item.points)}</span>
+              </li>
+            )) : <p>{String(strings.points.no_history)}</p>}
+          </ul>
         </section>
       )}
     </div>

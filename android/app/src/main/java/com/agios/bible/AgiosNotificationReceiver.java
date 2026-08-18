@@ -14,6 +14,8 @@ import androidx.core.app.NotificationCompat;
 import java.util.Calendar;
 import java.util.TimeZone;
 import org.json.JSONObject;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONArray;
@@ -233,93 +235,76 @@ public class AgiosNotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    // تم تحديث دالة handleVerseNotification في ملف:
-// F:/AlMalak system/Agios Bible/website/android/app/src/main/java/com/agios/bible/AgiosNotificationReceiver.java
+    private void handleVerseNotification(Context context, String lang) {
+        try {
+            JSONObject refData = getTodayData(context, "shared/dailyVerses.json", lang);
+            if (refData == null) refData = getTodayData(context, "data/dailyVerses.json", lang);
 
-private void handleVerseNotification(Context context, String lang) {
-    try {
-        String folder = getLanguageFolder(lang);
-        String localizedFileName = "dailyVerses_" + lang + ".json";
-        
-        // 1. محاولة تحميل البيانات من عدة مسارات محتملة (الترجمة أولاً)
-        JSONObject refData = getTodayData(context, folder + localizedFileName, lang);
-        if (refData == null) refData = getTodayData(context, "translations/" + folder + localizedFileName, lang);
-        if (refData == null) refData = getTodayData(context, "data/translations/" + folder + localizedFileName, lang);
-        if (refData == null) refData = getTodayData(context,"data/dailyVerses.json", lang);
+            if (refData == null) {
+                showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
+                return;
+            }
 
-        if (refData == null) {
-            showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
-            return;
-        }
+            if (refData.has("book") || refData.has("bookId")) {
+                String bookId = refData.optString("book", refData.optString("bookId"));
+                int chapter = refData.optInt("chapter", 1);
+                int verseNum = refData.optInt("verse", 1);
 
-        // 2. إذا كانت البيانات تحتوي على مفاتيح هيكلية (سفر، إصحاح، آية)
-        if (refData.has("book") || refData.has("bookId")) {
-            String bookId = refData.optString("book", refData.optString("bookId"));
-            int chapter = refData.optInt("chapter", 1);
-            int verseNum = refData.optInt("verse", 1);
-
-            // جلب نص الآية من ملف ترجمة الكتاب المقدس المتوافق مع لغة المستخدم
-            String biblePath = getBibleFilePath(lang);
-            JSONArray bibleArray = loadJsonArray(context, biblePath);
-            String verseText = "";
-            if (bibleArray != null) {
-                for (int i = 0; i < bibleArray.length(); i++) {
-                    JSONObject bookObj = bibleArray.getJSONObject(i);
-                    if (bookObj.optString("abbrev").equalsIgnoreCase(bookId)) {
-                        JSONArray chapters = bookObj.getJSONArray("chapters");
-                        if (chapter <= chapters.length()) {
-                            JSONArray verses = chapters.getJSONArray(chapter - 1);
-                            if (verseNum <= verses.length()) {
-                                verseText = verses.getString(verseNum - 1);
+                String biblePath = getBibleFilePath(lang);
+                JSONArray bibleArray = loadJsonArray(context, biblePath);
+                String verseText = "";
+                if (bibleArray != null) {
+                    for (int i = 0; i < bibleArray.length(); i++) {
+                        JSONObject bookObj = bibleArray.getJSONObject(i);
+                        if (bookObj.optString("abbrev").equalsIgnoreCase(bookId)) {
+                            JSONArray chapters = bookObj.getJSONArray("chapters");
+                            if (chapter <= chapters.length()) {
+                                JSONArray verses = chapters.getJSONArray(chapter - 1);
+                                if (verseNum <= verses.length()) {
+                                    verseText = verses.getString(verseNum - 1);
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
-            }
 
-            // جلب اسم السفر المترجم
-            String bookName = bookId;
-            JSONObject allBookNames = loadJsonObject(context, "bookNames.json");
-            if (allBookNames != null && allBookNames.has(lang)) {
-                JSONArray langBooks = allBookNames.getJSONArray(lang);
-                for (int i = 0; i < langBooks.length(); i++) {
-                    JSONObject b = langBooks.getJSONObject(i);
-                    if (b.optString("book_id").equalsIgnoreCase(bookId)) {
-                        bookName = b.getString("name");
-                        break;
+                String bookName = bookId;
+                JSONObject allBookNames = loadJsonObject(context, "bookNames.json");
+                if (allBookNames != null && allBookNames.has(lang)) {
+                    JSONArray langBooks = allBookNames.getJSONArray(lang);
+                    for (int i = 0; i < langBooks.length(); i++) {
+                        JSONObject b = langBooks.getJSONObject(i);
+                        if (b.optString("book_id").equalsIgnoreCase(bookId)) {
+                            bookName = b.getString("name");
+                            break;
+                        }
                     }
                 }
+
+                String cStr = lang.equals("ar") ? toArabicNumbers(chapter) : String.valueOf(chapter);
+                String vStr = lang.equals("ar") ? toArabicNumbers(verseNum) : String.valueOf(verseNum);
+                String title = String.format("%s %s:%s", bookName, cStr, vStr);
+
+                if (verseText.isEmpty()) verseText = refData.optString("verse", "...");
+                showNotification(context, title, verseText, 101, "/#daily-verse");
             }
-
-            String cStr = lang.equals("ar") ? toArabicNumbers(chapter) : String.valueOf(chapter);
-            String vStr = lang.equals("ar") ? toArabicNumbers(verseNum) : String.valueOf(verseNum);
-            String title = String.format("%s %s:%s", bookName, cStr, vStr);
-
-            if (verseText.isEmpty()) verseText = refData.optString("verse", "...");
-            showNotification(context, title, verseText, 101, "/#daily-verse");
-        } 
-        // 3. إذا كان الملف يحتوي على نص جاهز (مثل النسخة العربية الافتراضية)
-        else if (refData.has("verse")) {
-            String verseText = refData.getString("verse");
-            // إذا كانت اللغة ليست العربية، والنص يبدو عربياً، يفضل إظهار "آية اليوم" باللغة الصحيحة كعنوان
-            String title = refData.optString("reference", getLocalizedString("verse_title", lang));
-            showNotification(context, title, verseText, 101, "/#daily-verse");
+            else if (refData.has("verse")) {
+                String verseText = refData.getString("verse");
+                String title = refData.optString("reference", getLocalizedString("verse_title", lang));
+                showNotification(context, title, verseText, 101, "/#daily-verse");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Verse Notify Error", e);
+            showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
         }
-    } catch (Exception e) {
-        Log.e(TAG, "Verse Notify Error", e);
-        showNotification(context, getLocalizedString("verse_title", lang), "...", 101, "/#daily-verse");
     }
-}
-
     private void handleQuestionNotification(Context context, String lang) {
         try {
             String folder = getLanguageFolder(lang);
             String localizedFileName = "dailyQuestions_" + lang + ".json";
             
             JSONObject data = getTodayData(context, folder + localizedFileName, lang);
-            if (data == null) data = getTodayData(context, "public/translations/" + folder + localizedFileName, lang);
-            if (data == null) data = getTodayData(context, "public/data/translations/" + folder + localizedFileName, lang);
             if (data == null) data = getTodayData(context, "dailyQuestions.json", lang);
 
             if (data != null) {
@@ -355,15 +340,9 @@ private void handleVerseNotification(Context context, String lang) {
             String summaryRaw = getPrefsString(prefs, "studyPlansSummary");
             String summaryJson = cleanCapacitorString(summaryRaw);
             
-            Log.d(TAG, "Handling study plans. Raw: " + summaryRaw + ", Clean: " + summaryJson);
-
-            if (summaryJson == null || summaryJson.isEmpty()) {
-                Log.d(TAG, "Study plans summary is empty. Skipping notification.");
-                return;
-            }
+            if (summaryJson == null || summaryJson.isEmpty()) return;
 
             String msg = null;
-            // Case 1: It's an array of plans
             if (summaryJson.startsWith("[")) {
                 JSONArray plans = new JSONArray(summaryJson);
                 int count = plans.length();
@@ -385,7 +364,6 @@ private void handleVerseNotification(Context context, String lang) {
                     }
                 }
             } 
-            // Case 2: It's a single plan object
             else if (summaryJson.startsWith("{")) {
                 JSONObject plan = new JSONObject(summaryJson);
                 String title = plan.optString("title", "");
@@ -400,10 +378,7 @@ private void handleVerseNotification(Context context, String lang) {
             }
 
             if (msg != null) {
-                Log.d(TAG, "Showing study plans notification: " + msg);
                 showNotification(context, getLocalizedString("plans_title", lang), msg, 104, "/studyPlans");
-            } else {
-                Log.d(TAG, "Could not construct study plans message from JSON: " + summaryJson);
             }
         } catch (Exception e) {
             Log.e(TAG, "StudyPlans Notify Error", e);
@@ -427,7 +402,7 @@ private void handleVerseNotification(Context context, String lang) {
             case "en": return folder + "en_web.json";
             case "fr": return folder + "fr_segond.json";
             case "de": return folder + "de_luther.json";
-            default: return folder + "ar_svd_tashkeel_site.json";
+            default: return folder + "ar_svd_no_tashkeel.json";
         }
     }
 
@@ -482,6 +457,24 @@ private void handleVerseNotification(Context context, String lang) {
     }
 
     private String loadAssetString(Context context, String path) {
+        // 1. محاولة التحميل من نظام الملفات (الملفات التي تم تحميلها من R2)
+        try {
+            File internalFile = new File(context.getFilesDir(), "translations/" + path);
+            if (internalFile.exists()) {
+                FileInputStream fis = new FileInputStream(internalFile);
+                Scanner s = new Scanner(fis).useDelimiter("\\A");
+                String res = s.hasNext() ? s.next() : "";
+                fis.close();
+                if (!res.isEmpty()) {
+                    Log.d(TAG, "Loaded from Internal Storage: " + path);
+                    return res;
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error reading from internal storage: " + path, e);
+        }
+
+        // 2. البحث في الأصول (Assets) المدمجة كخيار احتياطي
         String[] searchPaths = {
                 path,
                 "public/" + path,
@@ -559,7 +552,6 @@ private void handleVerseNotification(Context context, String lang) {
         String master = cleanCapacitorString(getPrefsString(prefs, "masterNotifications"));
 
         if ("false".equals(master)) {
-            Log.d(TAG, "Master notifications disabled, cancelling alarm for: " + type);
             cancelAlarm(context, type);
             return;
         }
@@ -574,13 +566,10 @@ private void handleVerseNotification(Context context, String lang) {
                 JSONObject json = new JSONObject(cleanCapacitorString(jsonStr));
                 savedTime = json.optString(norm + "Time", json.optString(type + "Time", ""));
                 if (json.has(norm)) enabled = json.optBoolean(norm, true);
-            } catch (Exception e) {
-                Log.e(TAG, "Error parsing notification settings for: " + type, e);
-            }
+            } catch (Exception e) {}
         }
 
         if (!enabled) {
-            Log.d(TAG, "Alarm disabled for: " + type + ", cancelling.");
             cancelAlarm(context, type);
             return;
         }
@@ -612,7 +601,6 @@ private void handleVerseNotification(Context context, String lang) {
         } else {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
         }
-        Log.d(TAG, "Scheduled alarm: " + type + " at " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE));
     }
 
     private String getPrefsString(SharedPreferences prefs, String key) {

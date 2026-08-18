@@ -6,8 +6,23 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Preferences } from '@capacitor/preferences';
 import { useLanguage } from './LanguageContext';
+import { languageManager } from '../../services/languageManager';
 
 const AudioContext = createContext();
+
+const FOLDER_MAP = {
+    ar: 'arabic',
+    en: 'English',
+    de: 'german',
+    fr: 'French'
+};
+
+const BIBLE_FILE_MAP = {
+    ar: 'ar_svd_no_tashkeel.json',
+    en: 'en_web.json',
+    fr: 'fr_segond.json',
+    de: 'de_luther.json'
+};
 
 export function AudioProvider({ children }) {
     const { strings, language, bookNames } = useLanguage();
@@ -24,11 +39,9 @@ export function AudioProvider({ children }) {
     const [isAutoNext, setIsAutoNext] = useState(false);
     const [isAudioLoading, setIsAudioLoading] = useState(false);
 
-    // التحميلات
-    const [downloadedChapters, setDownloadedChapters] = useState({}); // { "bookId-chap": "localPath" }
-    const [downloadProgress, setDownloadProgress] = useState({}); // { "bookId-chap": 0-100 }
+    const [downloadedChapters, setDownloadedChapters] = useState({});
+    const [downloadProgress, setDownloadProgress] = useState({});
 
-    // Settings
     const [isRepeat, setIsRepeat] = useState(false);
     const [isAutoPlay, setIsAutoPlay] = useState(true);
     const [volume, setVolume] = useState(1);
@@ -36,7 +49,6 @@ export function AudioProvider({ children }) {
     const [sleepTimer, setSleepTimer] = useState(null);
     const [timeLeft, setTimeLeft] = useState(null);
 
-    // Navigation & Data
     const [currentLocation, setCurrentLocation] = useState({ bookIdx: -1, chapIdx: -1 });
     const [bibleData, setBibleData] = useState(null);
     const [navigationCallback, setNavigationCallback] = useState(null);
@@ -51,7 +63,6 @@ export function AudioProvider({ children }) {
         currentLocationRef.current = currentLocation;
     }, [currentLocation]);
 
-    // تحميل قائمة الفصول المحملة عند البداية
     useEffect(() => {
         const loadDownloads = async () => {
             const { value } = await Preferences.get({ key: 'downloaded_audio' });
@@ -120,8 +131,6 @@ export function AudioProvider({ children }) {
         }
 
         lastUrlRef.current = url;
-
-        // إذا كان رابطاً محلياً من Capacitor
         const finalUrl = (url && url.startsWith('file://')) ? Capacitor.convertFileSrc(url) : url;
 
         setAudioUrl(finalUrl);
@@ -156,7 +165,6 @@ export function AudioProvider({ children }) {
         const chapter = chapIdx + 1;
         const locKey = `${book.book_id}-${chapter}`;
 
-        // 1. التحقق من التحميلات المحلية أولاً
         if (downloadedChapters[locKey]) {
             try {
                 const fileResult = await Filesystem.getUri({
@@ -164,7 +172,6 @@ export function AudioProvider({ children }) {
                     path: `audio/${locKey}.mp3`
                 });
 
-                // جلب التوقيتات المخزنة محلياً أيضاً
                 const { value: storedTimes } = await Preferences.get({ key: `times_${locKey}` });
                 const times = storedTimes ? JSON.parse(storedTimes) : [];
 
@@ -240,7 +247,6 @@ export function AudioProvider({ children }) {
         }
     }, [bookNames, strings, language, downloadedChapters]);
 
-    // دالة التحميل
     const downloadChapter = async (bookIdx, chapIdx) => {
         if (!Capacitor.isNativePlatform()) {
             alert("التحميل متاح فقط على تطبيقات الموبايل");
@@ -256,27 +262,21 @@ export function AudioProvider({ children }) {
 
         try {
             setDownloadProgress(prev => ({ ...prev, [locKey]: 0 }));
-
-            // 1. إنشاء المجلد إذا لم يكن موجوداً
             await Filesystem.mkdir({ path: 'audio', directory: Directory.Data, recursive: true }).catch(() => {});
 
-            // 2. تحميل الملف
             const response = await fetch(data.url);
             const blob = await response.blob();
 
-            // تحويل الـ Blob لـ Base64 للحفظ (Capacitor Filesystem يحتاج Base64)
             const reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = async () => {
                 const base64Data = reader.result.split(',')[1];
-
                 await Filesystem.writeFile({
                     path: `audio/${locKey}.mp3`,
                     data: base64Data,
                     directory: Directory.Data
                 });
 
-                // 3. حفظ التوقيتات والمعلومات
                 const newDownloads = { ...downloadedChapters, [locKey]: true };
                 setDownloadedChapters(newDownloads);
                 await Preferences.set({ key: 'downloaded_audio', value: JSON.stringify(newDownloads) });
@@ -287,7 +287,6 @@ export function AudioProvider({ children }) {
                     delete next[locKey];
                     return next;
                 });
-
                 alert(strings.audio.download_success || "تم التحميل بنجاح");
             };
         } catch (e) {
@@ -337,23 +336,23 @@ export function AudioProvider({ children }) {
     useEffect(() => {
         const loadInitialData = async () => {
             try {
-                let bibleDataImport;
-                if (language === 'ar') {
-                    bibleDataImport = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
-                } else if (language === 'en') {
-                    bibleDataImport = (await import('../../../public/data/translations/English/en_web.json')).default;
-                } else if (language === 'fr') {
-                    bibleDataImport = (await import('../../../public/data/translations/French/fr_segond.json')).default;
-                } else if (language === 'de') {
-                    bibleDataImport = (await import('../../../public/data/translations/german/de_luther.json')).default;
-                } else {
-                    bibleDataImport = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
+                const folder = FOLDER_MAP[language] || 'arabic';
+                const fileName = BIBLE_FILE_MAP[language] || BIBLE_FILE_MAP.ar;
+
+                const data = await languageManager.getFile(folder, fileName);
+
+                if (!data) {
+                    throw new Error(`Failed to load ${fileName}`);
                 }
-                setBibleData(bibleDataImport);
-            } catch (e) { console.error("AudioContext Data Load Error:", e); }
+
+                setBibleData(data);
+            } catch (e) {
+                console.error("AudioContext Data Load Error:", e);
+                if (strings) setBibleData(strings);
+            }
         };
-        loadInitialData();
-    }, [language]);
+        if (language) loadInitialData();
+    }, [language, strings]);
 
     useEffect(() => {
         if (audioRef.current) {
@@ -366,7 +365,7 @@ export function AudioProvider({ children }) {
         if (typeof window !== 'undefined' && 'mediaSession' in navigator && audioUrl) {
             const book = bookNames[currentLocation.bookIdx];
             const chapter = currentLocation.chapIdx + 1;
-            const iconUrl = "https://agios-bible.vercel.app/agios.png";
+            const iconUrl = "https://agios-bible.vercel.app/images/agios.png";
 
             if ('MediaMetadata' in window) {
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -375,17 +374,13 @@ export function AudioProvider({ children }) {
                     album: strings.audio.album,
                     artwork: [
                         { src: iconUrl, sizes: '192x192', type: 'image/png' },
-                        { src: iconUrl.replace('192', '512'), sizes: '512x512', type: 'image/png' },
+                        { src: iconUrl, sizes: '512x512', type: 'image/png' },
                     ]
                 });
             }
 
             const handlers = {
-                play: () => {
-                    if (audioRef.current) {
-                        audioRef.current.play().catch(() => {});
-                    }
-                },
+                play: () => audioRef.current?.play().catch(() => {}),
                 pause: () => audioRef.current?.pause(),
                 previoustrack: () => goToChapter(-1),
                 nexttrack: () => goToChapter(1),
@@ -413,45 +408,6 @@ export function AudioProvider({ children }) {
             navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
         }
     }, [audioUrl, trackTitle, currentLocation, bookNames, goToChapter, strings, isPlaying]);
-
-    useEffect(() => {
-        if (Capacitor.isNativePlatform()) {
-            if (isPlaying) {
-                KeepAwake.keepAwake().catch(() => {});
-            } else {
-                KeepAwake.allowSleep().catch(() => {});
-            }
-        }
-    }, [isPlaying]);
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        const handleVisibility = () => {
-            if (document.visibilityState === 'hidden' && isPlaying && audioRef.current) {
-                audioRef.current.play().catch(() => {});
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibility);
-        return () => document.removeEventListener('visibilitychange', handleVisibility);
-    }, [isPlaying]);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-
-            if ('setPositionState' in navigator.mediaSession && audioRef.current && isFinite(duration)) {
-                try {
-                    navigator.mediaSession.setPositionState({
-                        duration: duration > 0 ? duration : 0,
-                        playbackRate: playbackSpeed || 1,
-                        position: currentTime || 0,
-                    });
-                } catch (e) {}
-            }
-        }
-    }, [isPlaying, currentTime, duration, playbackSpeed]);
 
     const togglePlay = useCallback(() => {
         if (!audioRef.current) return;

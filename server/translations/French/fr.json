@@ -1,4 +1,12 @@
 {
+  "welcome": {
+    "title": "Bienvenue sur Agios",
+    "subtitle": "Choisissez votre langue préférée pour continuer",
+    "theme_title": "Apparence de l'application",
+    "theme_subtitle": "Choisissez le look qui convient à vos yeux, vous pourrez le changer plus tard dans les paramètres",
+    "light_mode": "Mode Clair",
+    "dark_mode": "Mode Sombre"
+  },
   "common": {
     "or": "Ou",
     "google": "Google",
@@ -29,7 +37,8 @@
     "back": "Retour",
     "retry": "Réessayer",
     "error_occurred": "Désolé, une erreur est survenue",
-    "internet_required": "Cette fonctionnalité nécessite une connexion internet"
+    "internet_required": "Cette fonctionnalité nécessite une connexion internet",
+    "confirm_delete": "Voulez-vous supprimer ce fichier de votre appareil ?"
   },
   "login": {
     "title": "Connexion",
@@ -65,7 +74,9 @@
       "mapExploration": "Exploration de la carte",
       "share": "Partage quotidien",
       "completedChapter": "Lire un chapitre",
-      "favouriteVerse": "Surligner un verset"
+      "favouriteVerse": "Surligner un verset",
+      "verseAnalysis": "Analyse de verset (IA)",
+      "studyPlanProgress": "Progrès du plan"
     },
     "quick_links": {
       "bible": "Bible",
@@ -131,8 +142,8 @@
     "title": "Widgets",
     "subtitle": "Ajoutez vos infos les plus importantes à votre écran d'accueil pour un accès rapide",
     "add_to_home": "Ajouter à l'écran d'accueil",
-    "android_only": "Cette fonctionnalité n'est disponible que pour les utilisateurs Android",
-    "how_to_ios": "Pour ajouter un widget sur iPhone, appuyez longuement sur l'écran d'accueil et sélectionnez Agios Bible",
+    "android_only": "Cette fonctionnalité est désormais disponible pour les utilisateurs d'Android et d'iOS",
+    "how_to_ios": "Pour ajouter un widget on iPhone, appuyez longuement sur l'écran d'accueil et sélectionnez Agios Bible",
     "items": {
       "verse": {
         "title": "Verset du jour",
@@ -168,9 +179,16 @@
       "verse_per_line_desc": "Afficher le texte sous forme de liste au lieu d'un paragraphe",
       "show_tashkeel": "Afficher le Tashkeel (Vocalisation)",
       "show_tashkeel_desc": "Afficher le texte with ou sans diacritiques",
+      "parallel_language": "Langue parallèle (côte à côte)",
+      "parallel_language_desc": "Afficher une autre traduction à côté du texte principal",
+      "none": "Désactivé",
       "font_type": "Type de police (Arabe)",
       "font_weight": "Graisse de la police ({weight})",
       "font_size": "Taille de police de lecture ({size}px)",
+      "keep_app_awake": "Garder l'application éveillée",
+      "keep_app_awake_desc": "Empêche l'écran de s'éteindre dans toutes les sections de l'application",
+      "keep_bible_awake": "Garder la Bible éveillée",
+      "keep_bible_awake_desc": "Empêche l'écran de s'éteindre uniquement pendant la lecture",
       "preview": {
         "line_1": "1 Voici à quoi ressembleront les versets",
         "line_2": "2 Lorsque l'option 'Chaque verset sur une nouvelle ligne' est activée",
@@ -232,8 +250,8 @@
     "tagline": "\"Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier\" (Ps 119:105)",
     "story": {
       "title": "Histoire & Objectif",
-      "p1": "Le projet Agios a été lancé with la vision de fournir une expérience numérique sophistiquée pour l'étude de la Bible.",
-      "p2": "Après le succès de ses débuts, le développement de la plateforme s'est poursuivi pour en faire une référence complète combinant outils d'étude et fonctions techniques modernes."
+      "p1": "Le projet Agios a été lancé with la vision de fournir une expérience numérique sophistiquée pour l'étude de la Bible. La phase initiale a commencé par une participation au festival de Kérygme de Saint-Marc à Alexandrie, où le projet a cherché à fournir des solutions techniques innovantes telles que la recherche linguistique avancée, des cartes interactives des lieux saints et une interface utilisateur moderne.",
+      "p2": "Après le succès de ses débuts, le développement de la plateforme s'est poursuivi pour en faire une référence complète combinant outils d'étude et fonctions techniques modernes, répondant aux besoins des jeunes et des étudiants à l'ère numérique."
     },
     "developer": {
       "title": "À propos du développeur",
@@ -242,23 +260,28 @@
     },
     "vision": {
       "title": "Notre Vision",
-      "desc": "La vision d'Agios est d'être un pont technique reliant les générations à la Parole de Dieu, en utilisant des outils modernes pour présenter le contenu biblique de manière attrayante et simplifiée."
+      "desc": "La vision d'Agios est d'être un pont technique reliant les générations à la Parole de Dieu, en utilisant des outils modernes pour présenter le contenu biblique de manière attrayante et simplifiée, tout en restant pleinement engagé envers les fondements de la foi orthodoxe."
     },
     "thanks": {
       "title": "Remerciements",
       "priest_name": "Rév. Père Athanasios",
-      "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} pour son soin paternel constant.",
-      "fcbh": "Merci spécial à Faith Comes By Hearing pour la bibliothèque audio.",
-      "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie.",
+      "priest_desc": "Nous exprimons notre profonde gratitude et notre amour à {name} for son soin paternel constant envers ce travail depuis ses débuts.",
+      "priest_abraam_name": "Très Révérend Père Abraam Emil",
+      "priest_abraam_desc": "Nous exprimons notre gratitude particulière et notre profonde reconnaissance au {name} (Vicaire Général du Patriarcat à Alexandrie) pour son immense soutien paternel lors des premières phases de lancement de l'application, ainsi que pour son aide précieuse dans sa diffusion, son financement et la mobilisation de tous les moyens matériels et moraux nécessaires à la réussite de ce projet.",
+      "fcbh": "Merci spécial à Faith Comes By Hearing pour avoir fourni la merveilleuse bibliothèque audio de M. Adel Noshy, et pour leur soutien technique continu.",
+      "church": "Merci à notre église locale, l'Église de l'Archange Michel à Mostafa Kamel - Alexandrie, pour son soutien constant.",
       "translations": "La traduction Louis Segond est utilisée pour le français, Smith & Van Dyke pour l'arabe, World English Bible pour l'anglais et Luther pour l'allemand. Toutes ces traductions sont open-source et légalement autorisées.",
-      "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels."
+      "general": "Merci spécial à tous ceux qui ont contribué par des conseils techniques ou spirituels, et à tous ceux qui ont partagé ce travail."
     },
     "footer": "© 2026 Agios System - Tous droits réservés"
   },
   "audio": {
     "artist_default": "Sainte Bible",
     "album": "Agios Media",
-    "track_title": "Louis Segond version - {book} {chapter}"
+    "track_title": "Louis Segond version - {book} {chapter}",
+    "download_success": "Chapitre enregistré avec succès pour une écoute hors ligne",
+    "download_error": "Échec du téléchargement du fichier, veuillez vérifier votre connexion",
+    "deleted": "Fichier téléchargé supprimé"
   },
   "bible": {
     "title": "Sainte Bible",
@@ -269,6 +292,9 @@
     "share_dialog": "Partager le verset via...",
     "share_not_supported": "Partage non supporté, texte copié à la place",
     "reading_history": "Historique de lecture",
+    "no_history": "Pas encore d'historique",
+    "start_reading": "Commencer la lecture maintenant",
+    "clear_history_confirm": "Êtes-vous sûr de vouloir effacer votre historique de lecture ?",
     "reasons": {
       "share_verse": "Partager un verset",
       "copy_verse": "Copier un verset",
@@ -311,7 +337,7 @@
   "maps": {
     "title": "Cartes Bibliques",
     "search_placeholder": "Rechercher un lieu ou une ville...",
-    "no_results": "Aucun résultat ne correspond à votre recherche",
+    "no_results": "Aucune résultat ne correspond à votre recherche",
     "eras_placeholder": "Époques",
     "choose_era": "Choisir l'époque",
     "all_eras": "Toutes les époques",
@@ -401,7 +427,8 @@
     "reason_copy_semantic": "Copier la section de recherche intelligente",
     "reason_share_semantic": "Partager la section de recherche intelligente",
     "note_placeholder": "Écrivez votre réflexion personnelle ici...",
-    "select_prompt": "Sélectionner {label}"
+    "select_prompt": "Sélectionner {label}",
+    "ai_disclaimer": "Ces résultats ont été générés ou analysés par l'IA pour aider à la recherche. Vérifiez toujours les références et consultez les sources officielles."
   },
   "more": {
     "title": "Plus",
@@ -413,7 +440,8 @@
       "settings": "Paramètres",
       "points": "Exploits",
       "widgets": "Widgets",
-      "readingHistory": "Historique"
+      "readingHistory": "Historique",
+      "shop": "Boutique"
     },
     "footer": {
       "about": "À propos",
@@ -438,12 +466,27 @@
     "invite_friend": "Inviter un ami",
     "delete_account": "Supprimer le compte",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer votre compte ?",
-    "version": "Agios App - Version 2.2.0",
+    "version": "Agios App - Version 2.5.0",
     "share_title": "Application Agios",
     "share_text": "Téléchargez l'application Agios and lisez la Bible d'une nouvelle façon !",
     "share_dialog": "Partager l'application with des amis",
     "share_not_supported": "Partage non supporté par le navigateur",
-    "points_label": "XP"
+    "points_label": "XP",
+    "search_friends": "Rechercher des amis...",
+    "streak_days": "jours consécutifs",
+    "community": "Communauté",
+    "leaderboard": "Classement",
+    "friends": "Amis",
+    "my_activity": "Mon activité",
+    "my_notes_reflections": "Mes notes et réflexions",
+    "achievements": "Succès",
+    "start_collecting_badges": "Commencez votre voyage pour collecter des badges",
+    "badges_section": "Badges",
+    "private_profile": "Compte privé",
+    "private_profile_desc": "Masquer votre profil des autres",
+    "private_account_title": "Ce compte est privé",
+    "private_account_message": "Le propriétaire de ce compte préfère garder ses exploits privés.",
+    "no_badges_yet": "Pas encore de badges"
   },
   "points": {
     "title": "Points & Exploits",
@@ -463,7 +506,7 @@
       "epic": "Épique",
       "mythic": "Mythique"
     },
-    "no_history": "Aucun historique d'activité pour le moment.",
+    "no_history": "Aucun historique d'activity pour le moment.",
     "daily_bonus_toast": "Vous avez reçu 10 points aujourd'hui ! ",
     "goals": {
       "dailyLogin": "Connexion quotidienne",
@@ -471,12 +514,43 @@
       "mapExploration": "Explorer un lieu sur la carte",
       "share": "Partager un verset ou du contenu",
       "completedChapter": "Lire un chapitre complet",
-      "favouriteVerse": "Surligner un verset"
+      "favouriteVerse": "Surligner un verset",
+      "verseAnalysis": "Analyse de verset (IA)",
+      "studyPlanProgress": "Progrès dans le plan"
     },
     "points_reasons": {
       "daily_login": "Connexion quotidienne",
       "share_daily_verse": "Partager le verset du jour depuis la page d'accueil",
-      "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil"
+      "highlight_daily_verse": "Surligner le verset du jour depuis la page d'accueil",
+      "verse_analysis": "Analyse de verset par l'assistant IA Agios",
+      "study_plan_progress": "Progrès dans le plan d'étude quotidien"
+    }
+  },
+  "shop": {
+    "title": "Boutique Agios",
+    "subtitle": "Échangez vos points contre des avantages et des fonctionnalités exclusives",
+    "insufficient_points": "Désolé, vos points sont insuffisants pour cette opération",
+    "purchase_success": "Félicitations ! Vous avez obtenu {item} avec succès",
+    "owned": "Possédé",
+    "use_freeze_toast": "Gel de série utilisé pour vous protéger ! ❄️",
+    "categories": {
+      "utility": "Outils d'aide",
+      "appearance": "Apparence et distinction",
+      "social": "Interaction sociale"
+    },
+    "items": {
+      "streak_freeze": {
+        "name": "Gel de série",
+        "desc": "Protège votre série de jours contre la rupture si vous oubliez d'ouvrir l'application un jour."
+      },
+      "theme_gold": {
+        "name": "Thème Doré",
+        "desc": "Profitez d'une interface dorée luxueuse digne d'un lecteur exceptionnel."
+      },
+      "title_word_lover": {
+        "name": "Titre : Amoureux de la Parole",
+        "desc": "Un titre honorifique qui apparaît à côté de votre nom dans le classement."
+      }
     }
   },
   "competitions": {
@@ -485,7 +559,7 @@
     "guest_user": "Invité Agios",
     "select_book": "Choisissez un livre pour commencer",
     "welcome_title": "Défi des livres bibliques",
-    "welcome_desc": "Testez vos connaissances et collectez des points",
+    "welcome_desc": "Test vos connaissances et collectez des points",
     "history_title": "Historique des résultats",
     "redo": "Recommencer",
     "final_results": "Résultats finaux",
@@ -604,7 +678,7 @@
     "tagline": "Nous sommes ravis d'écouter vos suggestions",
     "reasons_title": "Pourquoi nous contacter ?",
     "reasons": [
-      "Suggestions pour de nouvelles fonctionnalités.",
+      "Suggestions for de nouvelles fonctionnalités.",
       "Signaler un bug ou une erreur.",
       "Support technique ou volontariat.",
       "Questions générales."
@@ -674,57 +748,84 @@
     },
     "history": [
       {
+        "version": "2.5.0",
+        "date": "Mise à jour actuelle",
+        "title": "Développement complet du profil et améliorations générales",
+        "features": [
+          "Développement radical de la page de profil personnel pour être plus interactive et moderne",
+          "Amélioration et développement du système de badges et de points (XP) pour encourager l'interaction quotidienne",
+          "Achèvement complet du livre d'Esther et ajout au système",
+          "Correction d'un problème dans le calcul de la série d'engagement (Streak) pour garantir la précision",
+          "Résolution des problèmes de synchronisation des versets préférés entre différents appareils"
+        ],
+        "fixes": []
+      },
+      {
+        "version": "2.3.0",
+        "date": "Mise à jour précédente",
+        "title": "Améliorations complètes et corrections importantes",
+        "features": [
+          "Correction radicale et amélioration des cartes pour une meilleure expérience d'exploration",
+          "Sécurisation importante de l'application et des données pour garantir la confidentialité",
+          "Amélioration des performances de l'IA pour assurer une réactivité même avec une faible connexion",
+          "Ajout de la possibilité de sélectionner le livre et le chapitre séparément",
+          "Ajout d'un historique complet de toutes les lectures de l'utilisateur",
+          "Correction du problème de mise en veille automatique de l'écran pendant l'utilisation"
+        ],
+        "fixes": []
+      },
+      {
         "version": "2.2.0",
-        "date": "Dernière mise à jour",
-        "title": "Mise à jour de sécurité & Améliorations IA",
+        "date": "Mise à jour précédente",
+        "title": "Mise à jour de sécurité & Améliorations de l'IA",
         "features": [
           "Mise à jour de sécurité radicale pour protéger l'application et les données utilisateur",
-          "Moteur IA amélioré et support de recherche sémantique plus précis",
-          "Support multilingue et traductions parallèles dans la page Bible",
-          "Amélioration des performances des plans d'étude pour assurer la stabilité sous forte charge"
+          "Moteur d'IA amélioré et prise en charge de la recherche sémantique plus précise",
+          "Support multilingue et traductions parallèles sur la page de la Bible",
+          "Amélioration des performances des plans d'étude pour garantir le fonctionnement sous haute pression"
         ],
         "fixes": [
-          "Correction du problème de complétion des tâches quotidiennes en mode Local First"
+          "Correction d'un problème où les tâches quotidiennes ne se terminaient pas en mode Local First"
         ]
       },
       {
         "version": "2.1.2",
-        "date": "Mise à jour précédente",
-        "title": "Réduction de la taille de l'application & Support Widget iOS",
+        "date": "Dernière mise à jour",
+        "title": "Réduction de la taille de l'application & Support des widgets iOS",
         "features": [
-          "Réduction significative de la taille de l'application pour un chargement et des performances plus rapides",
-          "Améliorations complètes des widgets et support officiel sur iPhone",
-          "Mise à jour et développement de la page 'À propos' pour des informations plus claires"
+          "Réduction significative de la taille de l'application pour une meilleure performance",
+          "Améliorations complètes des widgets et support officiel pour iPhone",
+          "Mise à jour de la page 'À propos' pour plus de clarté"
         ],
         "fixes": [
-          "Correction du problème 'Verset du jour' lors de l'utilisation de langues non arabes"
+          "Correction du problème où le 'Verset du jour' ne fonctionnait pas dans les langues non arabes"
         ]
       },
       {
         "version": "2.1.1",
         "date": "Mise à jour précédente",
-        "title": "Améliorations Audio, IA & Corrections UI",
+        "title": "Améliorations de l'Audio & de l'IA et corrections de l'interface",
         "features": [
-          "Améliorations complètes du système de Bible audible pour supporter toutes les langues et tous les livres",
-          "Amélioration de la réactivité et de la fiabilité des fonctionnalités de recherche et d'analyse IA"
+          "Améliorations complètes du système de Bible Audio pour prendre en charge toutes les langues et tous les livres",
+          "Amélioration de la réactivité et de la fiabilité des fonctionnalités d'IA dans la recherche et l'analyse"
         ],
         "fixes": [
-          "Correction du problème où certaines fonctionnalités IA cessaient de fonctionner",
-          "Correction des boutons de retour en double sur les pages Analyse et Widgets"
+          "Correction d'un problème où certaines fonctionnalités d'IA s'arrêtaient de fonctionner",
+          "Correction du problème de double bouton retour sur les pages d'Analyse et de Widgets"
         ]
       },
       {
         "version": "2.1.0",
         "date": "Mise à jour précédente",
-        "title": "Ajout de Widgets & Améliorations Complètes",
+        "title": "Support des Widgets et Refonte des Performances",
         "features": [
-          "Ajout de Widgets pour l'écran d'accueil (Verset, Question, Points, Plan)",
-          "Amélioration significative des performances de l'application pour la vitesse et la stabilité",
-          "Utilisation simplifiée de l'UI et navigation entre les sections de l'application",
-          "Système de synchronisation des données amélioré entre l'application et les widgets"
+          "Ajout de widgets sur l'écran d'accueil (Verset du jour, Question du jour, Mes points, Plan d'étude)",
+          "Amélioration significative des performances de l'application pour une expérience plus rapide",
+          "Navigation et interaction UI simplifiées",
+          "Amélioration de la synchronisation des données entre l'application et les widgets"
         ],
         "fixes": [
-          "Corrections techniques générales et améliorations de la consommation de batterie"
+          "Correctifs techniques généraux et meilleure consommation de la batterie"
         ]
       },
       {
@@ -834,7 +935,7 @@
           "Amélioration du système de recherche par racines"
         ],
         "fixes": [
-          "Correction des problèmes de carte sous charge élevée",
+          "Correction des problèmes de carte unter hoher Last",
           "Correction du lien Facebook ne fonctionnant pas sur la page de contact",
           "Correction des boutons de la barre de contrôle des versets n'apparaissant pas en mode clair",
           "Correction de la sélection incorrecte des boutons de la barre de navigation"

@@ -19,6 +19,7 @@ import { getCairoIsoString } from '../../lib/dateUtils';
 
 // Local-first imports
 import { StorageService, KEYS } from '../../lib/storage';
+import { languageManager } from '../../services/languageManager';
 
 const firestore = db;
 const allPlans = studyPlansData.plans;
@@ -193,21 +194,29 @@ export default function BibleContent() {
     const loadData = async () => {
       try {
         setIsLoading(true);
+
+        const folderMap = {
+          ar: 'arabic',
+          en: 'English',
+          de: 'german',
+          fr: 'French'
+        };
+
         // Load Primary
-        let folder = language === 'ar' ? 'arabic' : language === 'en' ? 'English' : language === 'fr' ? 'French' : 'german';
+        const folder = folderMap[language] || 'arabic';
         let fileName = "";
         if (language === 'ar') fileName = useTashkeel ? "ar_svd_tashkeel_site.json" : "ar_svd_no_tashkeel.json";
         else if (language === 'en') fileName = "en_web.json";
         else if (language === 'fr') fileName = "fr_segond.json";
         else if (language === 'de') fileName = "de_luther.json";
 
-        const res = await fetch(`/data/translations/${folder}/${fileName}`);
-        const data = await res.json();
+        // استخدام languageManager لجلب الملف بدلاً من fetch المباشر
+        const data = await languageManager.getFile(folder, fileName);
         bibleDataRef.current = data;
 
         // Load Parallel
         if (parallelLanguage) {
-           let folder2 = parallelLanguage === 'ar' ? 'arabic' : parallelLanguage === 'en' ? 'English' : parallelLanguage === 'fr' ? 'French' : 'german';
+           const folder2 = folderMap[parallelLanguage] || 'arabic';
            let fileName2 = "";
            if (parallelLanguage === 'ar') fileName2 = "ar_svd_no_tashkeel.json";
            else if (parallelLanguage === 'en') fileName2 = "en_web.json";
@@ -215,9 +224,12 @@ export default function BibleContent() {
            else if (parallelLanguage === 'de') fileName2 = "de_luther.json";
 
            try {
-             const res2 = await fetch(`/data/translations/${folder2}/${fileName2}`);
-             bibleData2Ref.current = await res2.json();
-           } catch(e) { bibleData2Ref.current = null; }
+             // استخدام languageManager للغة الموازية أيضاً
+             bibleData2Ref.current = await languageManager.getFile(folder2, fileName2);
+           } catch(e) {
+             console.error("Failed to load parallel bible:", e);
+             bibleData2Ref.current = null;
+           }
         } else {
            bibleData2Ref.current = null;
         }
@@ -239,7 +251,10 @@ export default function BibleContent() {
         syncVerses(bIdx, cIdx, data, bibleData2Ref.current);
 
         setIsLoading(false);
-      } catch (e) { setIsLoading(false); }
+      } catch (e) {
+        console.error("Bible Content Load Error:", e);
+        setIsLoading(false);
+      }
     };
     if (bookNamesData.length) loadData();
   }, [language, useTashkeel, parallelLanguage, bookNamesData, searchParams]);

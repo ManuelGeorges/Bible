@@ -9,6 +9,8 @@ import android.content.res.Configuration;
 import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,7 +30,6 @@ public class DataHelper {
             if (context == null) return "ar";
             SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
 
-            // مفاتيح اللغة الأكثر شيوعاً في تطبيقات Capacitor و i18next
             String[] langKeys = {
                 "i18nextLng",
                 "language",
@@ -43,33 +44,22 @@ public class DataHelper {
             String lang = null;
             for (String key : langKeys) {
                 lang = cleanCapacitorString(getPrefsString(prefs, key));
-                if (lang != null && !lang.isEmpty()) {
-                    Log.d(TAG, "Found language in prefs [" + key + "]: " + lang);
-                    break;
-                }
+                if (lang != null && !lang.isEmpty()) break;
             }
             
-            // إذا لم نجد لغة مخزنة، نستخدم لغة الجهاز
             if (lang == null || lang.isEmpty()) {
                 lang = Locale.getDefault().getLanguage();
-                Log.d(TAG, "Using system default language: " + lang);
             }
 
             if (lang == null || lang.isEmpty()) lang = "ar";
-
-            // تنظيف الكود (مثلاً تحويل en-US إلى en)
             lang = lang.toLowerCase().split("-")[0].split("_")[0];
 
-            // التحقق من اللغات المدعومة في التطبيق
             if (!lang.equals("ar") && !lang.equals("en") && !lang.equals("fr") && !lang.equals("de")) {
-                // إذا كانت لغة الجهاز غير مدعومة، نفضل الإنجليزية كبديل عالمي أو العربية حسب رغبتك
-                // هنا سنتركها تعود للعربية كخيار أخير إذا كانت هي اللغة الأساسية للمحتوى
                 lang = "ar";
             }
 
             return lang;
         } catch (Exception e) {
-            Log.e(TAG, "Error detecting language", e);
             return "ar";
         }
     }
@@ -110,18 +100,10 @@ public class DataHelper {
                         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
                         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
                         appCtx.sendBroadcast(intent);
-                        
-                        if (provider == StudyPlanWidgetProvider.class) {
-                            am.notifyAppWidgetViewDataChanged(ids, R.id.widget_plans_list);
-                        }
                     }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error updating provider: " + provider.getSimpleName(), e);
-                }
+                } catch (Exception ignored) {}
             }
-        } catch (Exception e) {
-            Log.e(TAG, "updateAllWidgets critical error", e);
-        }
+        } catch (Exception ignored) {}
     }
 
     public static String cleanCapacitorString(String val) {
@@ -143,7 +125,20 @@ public class DataHelper {
 
     public static String loadAssetString(Context context, String path) {
         if (context == null || path == null || path.isEmpty()) return null;
+
+        // 1. محاولة التحميل من نظام الملفات (R2)
+        try {
+            File internalFile = new File(context.getFilesDir(), "translations/" + path);
+            if (internalFile.exists()) {
+                FileInputStream fis = new FileInputStream(internalFile);
+                Scanner s = new Scanner(fis).useDelimiter("\\A");
+                String res = s.hasNext() ? s.next() : "";
+                fis.close();
+                if (!res.isEmpty()) return res;
+            }
+        } catch (Exception ignored) {}
         
+        // 2. محاولة التحميل من الأصول المدمجة
         String[] searchPaths = {
                 path,
                 "public/data/" + path,
@@ -183,10 +178,10 @@ public class DataHelper {
         
         JSONObject dataResult = null;
         String[] paths = {
-            "dailyVerses.json",
-            "data/dailyVerses.json",
             folder + fileName,
             "data/translations/" + folder + fileName,
+            "dailyVerses.json",
+            "data/dailyVerses.json",
             "dailyVerses_ar.json"
         };
 
@@ -250,9 +245,7 @@ public class DataHelper {
                 JSONObject obj = array.getJSONObject(i);
                 if (obj.optInt("month") == month && obj.optInt("day") == day) return obj;
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error parsing today data from " + path);
-        }
+        } catch (Exception ignored) {}
         return null;
     }
 
@@ -275,9 +268,7 @@ public class DataHelper {
                     planList.add(new JSONObject(summaryJson));
                 }
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error reading study plans", e);
-        }
+        } catch (Exception ignored) {}
         return planList;
     }
 
@@ -320,9 +311,7 @@ public class DataHelper {
                     break;
                 }
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error getting verse text from " + lang, e);
-        }
+        } catch (Exception ignored) {}
         return "";
     }
 

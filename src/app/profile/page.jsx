@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, deleteDoc } from 'firebase/firestore';
@@ -18,7 +18,7 @@ import styles from './profile.module.css';
 import { StorageService } from '../../lib/storage';
 import { useLanguage } from '../context/LanguageContext';
 
-// Import badge data for all supported languages
+// استيراد ملفات الأوسمة (النظام القديم للأوسمة كما هو متبع في الصفحة الرئيسية)
 import badgesAr from '../data/translations/arabic/badges_ar.json';
 import badgesEn from '../data/translations/English/badges_en.json';
 import badgesFr from '../data/translations/French/badges_fr.json';
@@ -42,10 +42,28 @@ const ProfilePage = () => {
   });
 
   const router = useRouter();
-  const { strings, dir, language } = useLanguage();
+  const { strings, dir, language, formatNumber } = useLanguage();
 
-  // Select the correct badges data based on current language
-  const badgesData = language === 'ar' ? badgesAr : language === 'fr' ? badgesFr : language === 'de' ? badgesDe : badgesEn;
+  // النظام الجديد لتحديد بيانات الأوسمة بناءً على اللغة
+  const badgesData = useMemo(() => {
+    const badgeFiles = {
+      ar: badgesAr,
+      en: badgesEn,
+      fr: badgesFr,
+      de: badgesDe
+    };
+    return badgeFiles[language] || badgeFiles.ar;
+  }, [language]);
+
+  const locale = useMemo(() => {
+    const localeMap = {
+        ar: 'ar-EG',
+        fr: 'fr-FR',
+        de: 'de-DE',
+        en: 'en-US'
+    };
+    return localeMap[language] || 'en-US';
+  }, [language]);
 
   const calculateLevel = (points) => {
     const level = Math.floor(Math.sqrt(points / 50)) + 1;
@@ -95,7 +113,6 @@ const ProfilePage = () => {
           const points = data.totalPoints || 0;
           const { level, nextLevelXP } = calculateLevel(points);
 
-          const locale = language === 'ar' ? 'ar-EG' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : 'en-US';
           const registrationDate = currentUser.metadata.creationTime
             ? new Date(currentUser.metadata.creationTime).toLocaleDateString(locale, { year: 'numeric', month: 'long' })
             : 'N/A';
@@ -118,7 +135,7 @@ const ProfilePage = () => {
     } catch (e) {
       setLoading(false);
     }
-  }, [language]);
+  }, [locale]);
 
   useEffect(() => {
     let unsubSnap = () => {};
@@ -140,9 +157,13 @@ const ProfilePage = () => {
       text: strings?.profile?.share_text || '',
       url: 'https://play.google.com/store/apps/details?id=com.agios.bible', 
     };
-    if (Capacitor.isNativePlatform()) await Share.share(shareData);
-    else if (navigator.share) navigator.share(shareData);
-    else alert('Not supported');
+    if (Capacitor.isNativePlatform()) {
+      await Share.share(shareData);
+    } else if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      toast.error(strings?.profile?.share_not_supported || 'Not supported');
+    }
   };
 
   const handleLogout = async () => {
@@ -157,19 +178,19 @@ const ProfilePage = () => {
         await deleteDoc(doc(db, 'users', auth.currentUser.uid));
         router.push('/');
       } catch (error) {
-        alert("Please re-authenticate and try again.");
+        alert(strings?.settings?.account?.reauth_required || "Please re-authenticate and try again.");
       }
     }
   };
 
-  const getBadgeDetails = (badgeId) => {
+  const getBadgeDetails = useCallback((badgeId) => {
     if (!badgesData?.badge_families) return null;
     for (const family of badgesData.badge_families) {
       const badge = family.badges.find(b => b.id === badgeId);
       if (badge) return badge;
     }
     return null;
-  };
+  }, [badgesData]);
 
   const getRarityColor = (rarity) => {
     const r = rarity?.toLowerCase();
@@ -192,7 +213,7 @@ const ProfilePage = () => {
 
       <div className={styles.profileHeaderNoImage}>
         <div className={styles.userInfoTop}>
-           <div className={styles.levelBadgeStandalone}>{userStats.level}</div>
+           <div className={styles.levelBadgeStandalone}>{formatNumber(userStats.level)}</div>
            <h1 className={styles.userNameLarge}>
              {hasGoldTheme && <Crown className={styles.inlineCrown} size={28} />}
              {isGuest ? strings?.profile?.guest_user : (userData?.displayName || user?.displayName)}
@@ -209,8 +230,8 @@ const ProfilePage = () => {
 
         <div className={styles.xpProgressContainerLarge}>
           <div className={styles.xpText}>
-            <span>{userStats.points} XP</span>
-            <span>{userStats.nextLevelXP} XP</span>
+            <span>{formatNumber(userStats.points)} XP</span>
+            <span>{formatNumber(userStats.nextLevelXP)} XP</span>
           </div>
           <div className={styles.xpBarOuter}>
             <div className={styles.xpBarInner} style={{ width: `${levelInfo.progress}%` }}></div>
@@ -234,7 +255,7 @@ const ProfilePage = () => {
             <Flame size={20} />
           </div>
           <div className={styles.statData}>
-            <span className={styles.statValue}>{userStats.streak}</span>
+            <span className={styles.statValue}>{formatNumber(userStats.streak)}</span>
             <span className={styles.statLabel}>{strings?.profile?.streak_days}</span>
           </div>
         </div>
@@ -244,7 +265,7 @@ const ProfilePage = () => {
             <Heart size={20} />
           </div>
           <div className={styles.statData}>
-            <span className={styles.statValue}>{userStats.verses}</span>
+            <span className={styles.statValue}>{formatNumber(userStats.verses)}</span>
             <span className={styles.statLabel}>{strings?.profile?.fav_verses}</span>
           </div>
         </div>
@@ -254,7 +275,7 @@ const ProfilePage = () => {
             <Target size={20} />
           </div>
           <div className={styles.statData}>
-            <span className={styles.statValue}>{userStats.plans}</span>
+            <span className={styles.statValue}>{formatNumber(userStats.plans)}</span>
             <span className={styles.statLabel}>{strings?.profile?.active_plans_count}</span>
           </div>
         </div>
@@ -284,7 +305,7 @@ const ProfilePage = () => {
               <div className={`${styles.iconCircle} ${styles.bgYellow}`}><Award size={18} /></div>
               <span>{strings?.profile?.achievements}</span>
             </div>
-            <div className={styles.badgeCount}>{userData?.badges?.length || 0}</div>
+            <div className={styles.badgeCount}>{formatNumber(userData?.badges?.length || 0)}</div>
           </button>
         </div>
       </div>
@@ -373,7 +394,7 @@ const ProfilePage = () => {
 
       <div className={styles.profileFooter}>
         <p>{strings?.profile?.version}</p>
-        <p>© 2026 Agios System</p>
+        <p>{strings?.about?.footer}</p>
       </div>
     </div>
   );

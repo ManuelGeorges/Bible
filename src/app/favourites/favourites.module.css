@@ -318,9 +318,14 @@
   font-style: italic;
 }
 
-.ar {
+.rtl {
   text-align: right;
   direction: rtl;
+}
+
+.ltr {
+  text-align: left;
+  direction: ltr;
 }
 
 @media (max-width: 768px) {

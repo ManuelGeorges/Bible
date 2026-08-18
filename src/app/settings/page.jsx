@@ -1,6 +1,6 @@
 "use client"
 import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Bell, Sun, Moon, BookOpen, HelpCircle,
@@ -34,13 +34,13 @@ const fontOptions = [
   { id: 'Lalezar', name: 'Lalezar', value: "'Lalezar', system-ui", lang: 'ar' },
 
   // Latin Fonts (English, French, German)
-  { id: 'Inter', name: 'Inter', value: "'Inter', sans-serif", lang: 'en' },
-  { id: 'Lora', name: 'Lora', value: "'Lora', serif", lang: 'en' },
-  { id: 'EBGaramond', name: 'EB Garamond', value: "'EB Garamond', serif", lang: 'en' },
-  { id: 'Montserrat', name: 'Montserrat', value: "'Montserrat', sans-serif", lang: 'en' },
-  { id: 'Playfair', name: 'Playfair Display', value: "'Playfair Display', serif", lang: 'en' },
-  { id: 'Cinzel', name: 'Cinzel', value: "'Cinzel', serif", lang: 'en' },
-  { id: 'Spectral', name: 'Spectral', value: "'Spectral', serif", lang: 'en' }
+  { id: 'Inter', name: 'Inter', value: "'Inter', sans-serif", lang: 'latin' },
+  { id: 'Lora', name: 'Lora', value: "'Lora', serif", lang: 'latin' },
+  { id: 'EBGaramond', name: 'EB Garamond', value: "'EB Garamond', serif", lang: 'latin' },
+  { id: 'Montserrat', name: 'Montserrat', value: "'Montserrat', sans-serif", lang: 'latin' },
+  { id: 'Playfair', name: 'Playfair Display', value: "'Playfair Display', serif", lang: 'latin' },
+  { id: 'Cinzel', name: 'Cinzel', value: "'Cinzel', serif", lang: 'latin' },
+  { id: 'Spectral', name: 'Spectral', value: "'Spectral', serif", lang: 'latin' }
 ]
 
 const languages = [
@@ -64,7 +64,8 @@ const Settings = () => {
     keepAppAwake,
     toggleKeepAppAwake,
     keepBibleAwake,
-    toggleKeepBibleAwake
+    toggleKeepBibleAwake,
+    formatNumber
   } = useLanguage();
 
   const [mounted, setMounted] = useState(false)
@@ -316,11 +317,17 @@ const Settings = () => {
     }
   };
 
-  if (!mounted) return null
+  const currentFontValue = useMemo(() => {
+    return fontOptions.find(f => f.id === fontFamily)?.value || fontOptions[0].value
+  }, [fontFamily]);
 
-  const currentFontValue = fontOptions.find(f => f.id === fontFamily)?.value || fontOptions[0].value
-  const filteredFonts = fontOptions.filter(f => currentLang === 'ar' ? f.lang === 'ar' : f.lang === 'en')
+  const filteredFonts = useMemo(() => {
+    return fontOptions.filter(f => currentLang === 'ar' ? f.lang === 'ar' : f.lang === 'latin')
+  }, [currentLang]);
+
   const isGoldUnlocked = userData?.inventory?.includes('theme_gold');
+
+  if (!mounted) return null;
 
   return (
     <div className={styles.container} dir={dir}>
@@ -329,7 +336,7 @@ const Settings = () => {
       {/* Language Section */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          <Languages size={22} className={styles.iconPrimary} /> {strings.settings.language || (dir === 'rtl' ? 'لغة التطبيق' : 'App Language')}
+          <Languages size={22} className={styles.iconPrimary} /> {strings.settings.language}
         </h2>
         <div className={styles.fontOptionsList}>
           {languages.map(lang => (
@@ -378,7 +385,7 @@ const Settings = () => {
               <div className={`${styles.themeCircle} ${styles.gold}`}>
                 <Crown size={24} />
               </div>
-              <span className={styles.themeLabel}>{strings.shop?.items?.theme_gold?.name || 'الذهبي'}</span>
+              <span className={styles.themeLabel}>{strings.shop?.items?.theme_gold?.name}</span>
             </div>
           )}
 
@@ -542,7 +549,7 @@ const Settings = () => {
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <span className={styles.settingLabel}>
               <Bold size={20} className={styles.iconPrimary} />
-              {strings.settings.bible.font_weight.replace('{weight}', fontWeight)}
+              {strings.settings.bible.font_weight.replace('{weight}', formatNumber(fontWeight))}
             </span>
           </div>
           <div className={styles.controlsWrapper}>
@@ -562,7 +569,7 @@ const Settings = () => {
           <div className={styles.settingInfo} style={{ marginBottom: '15px' }}>
             <span className={styles.settingLabel}>
               <Type size={20} className={styles.iconPrimary} />
-              {strings.settings.bible.font_size.replace('{size}', fontSize)}
+              {strings.settings.bible.font_size.replace('{size}', formatNumber(fontSize))}
             </span>
           </div>
 

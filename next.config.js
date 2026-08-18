@@ -13,7 +13,9 @@ const nextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
 
+  // Webpack configuration
   webpack: (config, { dev, isServer }) => {
+    // Optimization for large map libraries
     if (!isServer) {
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
@@ -29,6 +31,7 @@ const nextConfig = {
       };
     }
 
+    // Apply obfuscation only in production client builds
     if (!dev && !isServer) {
       config.plugins.push(
         new JavaScriptObfuscator({

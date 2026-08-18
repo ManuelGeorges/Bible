@@ -17,6 +17,7 @@ import { Capacitor } from '@capacitor/core';
 import { kv, CACHE_KEYS } from '../../lib/kv';
 import { useLanguage } from '../context/LanguageContext';
 import { StorageService, KEYS } from '../../lib/storage';
+import { languageManager } from '../../services/languageManager';
 
 const API_BASE_URL = 'https://www.agiosbible.com';
 
@@ -166,9 +167,9 @@ function SearchContent() {
         : 'Example: peace, Joseph, grace';
 
   const searchModeLabels = {
-    literal: language === 'ar' ? 'بحث مباشر' : language === 'fr' ? 'Recherche directe' : language === 'de' ? 'Direkte Suche' : 'Direct search',
-    derivatives: language === 'ar' ? 'بحث مشتق' : language === 'fr' ? 'Recherche dérivée' : language === 'de' ? 'Wortwurzel-Suche' : 'Root search',
-    semantic: language === 'ar' ? 'بحث معنوي' : language === 'fr' ? 'Recherche sémantique' : language === 'de' ? 'Semantische Suche' : 'Semantic search'
+    literal: strings.search.type_literal,
+    derivatives: strings.search.type_derivatives,
+    semantic: strings.search.type_semantic
   };
 
   const resultsRef = useRef(null);
@@ -203,18 +204,21 @@ function SearchContent() {
     const fetchData = async () => {
       if (bookNamesData.length === 0) return;
       try {
-        let bJson;
-        if (language === 'ar') {
-          bJson = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
-        } else if (language === 'en') {
-          bJson = (await import('../../../public/data/translations/English/en_web.json')).default;
-        } else if (language === 'fr') {
-          bJson = (await import('../../../public/data/translations/French/fr_segond.json')).default;
-        } else if (language === 'de') {
-          bJson = (await import('../../../public/data/translations/german/de_luther.json')).default;
-        } else {
-          bJson = (await import('../../../public/data/translations/arabic/ar_svd_no_tashkeel.json')).default;
-        }
+        const folderMap = {
+          ar: 'arabic',
+          en: 'English',
+          de: 'german',
+          fr: 'French'
+        };
+
+        const folder = folderMap[language] || 'arabic';
+        let fileName = "";
+        if (language === 'ar') fileName = "ar_svd_no_tashkeel.json";
+        else if (language === 'en') fileName = "en_web.json";
+        else if (language === 'fr') fileName = "fr_segond.json";
+        else if (language === 'de') fileName = "de_luther.json";
+
+        const bJson = await languageManager.getFile(folder, fileName);
 
         setBibleData(bJson);
 

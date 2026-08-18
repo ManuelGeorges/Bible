@@ -37,8 +37,8 @@ import { useLanguage } from './context/LanguageContext';
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
 import { openExternalLink } from '../lib/utils';
+import { languageManager } from '../services/languageManager';
 
-// تصحيح المسار لملفات الأوسمة
 import badgesAr from './data/translations/arabic/badges_ar.json';
 import badgesEn from './data/translations/English/badges_en.json';
 import badgesFr from './data/translations/French/badges_fr.json';
@@ -92,6 +92,13 @@ const formatReference = (ref) => {
     }
 
     return `${rlm}(${bookName} ${rawNumbers})`;
+};
+
+const FOLDER_MAP = {
+    ar: 'arabic',
+    en: 'English',
+    de: 'german',
+    fr: 'French'
 };
 
 const LandingPage = () => {
@@ -196,46 +203,38 @@ const LandingPage = () => {
         const { month, day } = getCairoDateInfo();
 
         try {
-            // 1. جلب مراجع آية اليوم
+            // 1. جلب مراجع آية اليوم (ملف ثابت)
             const verseRefsRes = await fetch('/data/dailyVerses.json');
             if (!verseRefsRes.ok) throw new Error("Daily verses file not found");
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
 
-            // 2. تحميل الأسئلة اليومية
-            let questPath = '';
-            if (language === 'ar') questPath = '/data/translations/arabic/dailyQuestions_ar.json';
-            else if (language === 'en') questPath = '/data/translations/English/dailyQuestions_en.json';
-            else if (language === 'fr') questPath = '/data/translations/French/dailyQuestions_fr.json';
-            else if (language === 'de') questPath = '/data/translations/german/dailyQuestions_de.json';
+            const folder = FOLDER_MAP[language] || 'arabic';
 
-            if (questPath) {
-                try {
-                    const qRes = await fetch(questPath);
-                    if (qRes.ok) {
-                        const questData = await qRes.json();
-                        // ملف الأسئلة عبارة عن مصفوفة، نبحث فيها عن اليوم والشهر
-                        const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
-                        setDailyQuestion(todayQuest);
-                    }
-                } catch (e) { console.error("Questions fetch error:", e); }
-            }
+            // 2. تحميل الأسئلة اليومية من R2 عبر Manager
+            const questFile = `dailyQuestions_${language}.json`;
+            try {
+                const questData = await languageManager.getFile(folder, questFile);
+                if (questData) {
+                    const todayQuest = questData.find(q => Number(q.month) === month && Number(q.day) === day);
+                    setDailyQuestion(todayQuest);
+                }
+            } catch (e) { console.error("Questions R2 fetch error:", e); }
 
-            // 3. تحميل الآية من الكتاب المقدس
+            // 3. تحميل الآية من الكتاب المقدس من R2 عبر Manager
             if (todayRef) {
-                let biblePath = '';
-                if (language === 'ar') biblePath = '/data/translations/arabic/ar_svd_no_tashkeel.json';
-                else if (language === 'en') biblePath = '/data/translations/English/en_web.json';
-                else if (language === 'fr') biblePath = '/data/translations/French/fr_segond.json';
-                else if (language === 'de') biblePath = '/data/translations/german/de_luther.json';
+                const bibleFileMap = {
+                    ar: 'ar_svd_no_tashkeel.json',
+                    en: 'en_web.json',
+                    fr: 'fr_segond.json',
+                    de: 'de_luther.json'
+                };
+                const bibleFile = bibleFileMap[language];
 
-                if (biblePath) {
+                if (bibleFile) {
                     try {
-                        const bRes = await fetch(biblePath);
-                        if (bRes.ok) {
-                            const bibleData = await bRes.json();
-
-                            // البحث عن السفر داخل ملف البيانات نفسه لضمان الحصول على السفر الصحيح
+                        const bibleData = await languageManager.getFile(folder, bibleFile);
+                        if (bibleData) {
                             const bibleBook = bibleData.find(b =>
                                 (b.abbrev && b.abbrev.toUpperCase() === todayRef.book.toUpperCase()) ||
                                 (b.book_id && b.book_id.toUpperCase() === todayRef.book.toUpperCase())
@@ -259,7 +258,7 @@ const LandingPage = () => {
                                 }
                             }
                         }
-                    } catch (e) { console.error("Bible fetch error:", e); }
+                    } catch (e) { console.error("Bible R2 fetch error:", e); }
                 }
             }
         } catch (e) {
@@ -275,8 +274,10 @@ const LandingPage = () => {
 
     useEffect(() => {
         setMounted(true);
-        setBadgesData(badgeFiles[language] || badgeFiles.ar);
         checkTimeBadges();
+
+        // الاعتماد على النظام القديم لملفات الأوسمة كما طُلب
+        setBadgesData(badgeFiles[language] || badgeFiles.ar);
     }, [checkTimeBadges, language]);
 
     useEffect(() => {
