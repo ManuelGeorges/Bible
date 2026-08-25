@@ -5,6 +5,7 @@ import { KeepAwake } from '@capacitor-community/keep-awake';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Preferences } from '@capacitor/preferences';
+import { toast } from 'react-hot-toast'; // FIX #7: replace alert() with toast for consistency
 import { useLanguage } from './LanguageContext';
 import { languageManager } from '../../services/languageManager';
 
@@ -40,6 +41,7 @@ export function AudioProvider({ children }) {
     const [isAudioLoading, setIsAudioLoading] = useState(false);
 
     const [downloadedChapters, setDownloadedChapters] = useState({});
+    // FIX #13: downloadProgress now holds a real 0-100 percentage per locKey, driven by XHR progress events
     const [downloadProgress, setDownloadProgress] = useState({});
 
     const [isRepeat, setIsRepeat] = useState(false);
@@ -51,13 +53,16 @@ export function AudioProvider({ children }) {
 
     const [currentLocation, setCurrentLocation] = useState({ bookIdx: -1, chapIdx: -1 });
     const [bibleData, setBibleData] = useState(null);
-    const [navigationCallback, setNavigationCallback] = useState(null);
+    // FIX #2/#28: navigationCallback now has a real contract - see registerNavigationCallback below.
+    const [navigationCallback, setNavigationCallbackState] = useState(null);
 
     const audioRef = useRef(null);
     const lastUrlRef = useRef(null);
     const timestampsRef = useRef([]);
     const fetchingRef = useRef(null);
     const currentLocationRef = useRef({ bookIdx: -1, chapIdx: -1 });
+    const downloadingRef = useRef({}); // FIX #29: prevents duplicate concurrent downloads per chapter
+    const dataLoadTokenRef = useRef(0); // FIX #15: stale-response guard for bible data load
 
     useEffect(() => {
         currentLocationRef.current = currentLocation;
@@ -65,8 +70,12 @@ export function AudioProvider({ children }) {
 
     useEffect(() => {
         const loadDownloads = async () => {
-            const { value } = await Preferences.get({ key: 'downloaded_audio' });
-            if (value) setDownloadedChapters(JSON.parse(value));
+            try {
+                const { value } = await Preferences.get({ key: 'downloaded_audio' });
+                if (value) setDownloadedChapters(JSON.parse(value));
+            } catch (e) {
+                console.error('Failed to load downloaded chapters list', e);
+            }
         };
         if (Capacitor.isNativePlatform()) loadDownloads();
     }, []);
@@ -149,12 +158,15 @@ export function AudioProvider({ children }) {
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.catch(e => {
-                    if (e.name !== 'AbortError') console.error("Playback error", e);
+                    if (e.name !== 'AbortError') {
+                        console.error("Playback error", e);
+                        toast.error(strings?.audio?.playback_error || 'Could not play audio.'); // FIX #6: surface playback failures
+                    }
                 });
             }
         }
         if (shouldOpenPanel) setIsPanelOpen(true);
-    }, [processTimestamps]);
+    }, [processTimestamps, strings]);
 
     const fetchAudioData = useCallback(async (bookIdx, chapIdx) => {
         if (language === 'de') return null;
@@ -240,6 +252,7 @@ export function AudioProvider({ children }) {
             return { url, title, times };
         } catch (error) {
             console.error("Fetch audio error", error);
+            toast.error(strings?.audio?.fetch_error || 'Could not load audio for this chapter.'); // FIX #6
             return null;
         } finally {
             if (fetchingRef.current === locKey) fetchingRef.current = null;
@@ -247,56 +260,90 @@ export function AudioProvider({ children }) {
         }
     }, [bookNames, strings, language, downloadedChapters]);
 
-    const downloadChapter = async (bookIdx, chapIdx) => {
+    // FIX #14: guard against re-downloading a chapter that's already saved locally
+    // FIX #29: guard against duplicate concurrent downloads of the same chapter (debounce)
+    // FIX #13: real progress via XHR instead of a fake 0 -> deleted flash
+    // FIX #7/#8: use toast + localized strings instead of alert() + hardcoded Arabic
+    const downloadChapter = useCallback(async (bookIdx, chapIdx) => {
         if (!Capacitor.isNativePlatform()) {
-            alert("التحميل متاح فقط على تطبيقات الموبايل");
+            toast.error(strings?.audio?.download_native_only || 'Downloads are only available in the mobile app.');
             return;
         }
 
-        const data = await fetchAudioData(bookIdx, chapIdx);
-        if (!data || data.url.startsWith('file://')) return;
-
         const book = bookNames[bookIdx];
+        if (!book) return;
         const chapter = chapIdx + 1;
         const locKey = `${book.book_id}-${chapter}`;
 
+        if (downloadedChapters[locKey]) {
+            toast(strings?.audio?.already_downloaded || 'This chapter is already downloaded.');
+            return;
+        }
+        if (downloadingRef.current[locKey]) return; // already in progress, ignore duplicate tap
+        downloadingRef.current[locKey] = true;
+
         try {
+            const data = await fetchAudioData(bookIdx, chapIdx);
+            if (!data || data.url.startsWith('file://')) {
+                downloadingRef.current[locKey] = false;
+                return;
+            }
+
             setDownloadProgress(prev => ({ ...prev, [locKey]: 0 }));
             await Filesystem.mkdir({ path: 'audio', directory: Directory.Data, recursive: true }).catch(() => {});
 
-            const response = await fetch(data.url);
-            const blob = await response.blob();
+            const base64Data = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', data.url, true);
+                xhr.responseType = 'blob';
+                xhr.onprogress = (evt) => {
+                    if (evt.lengthComputable) {
+                        const pct = Math.round((evt.loaded / evt.total) * 100);
+                        setDownloadProgress(prev => ({ ...prev, [locKey]: pct }));
+                    }
+                };
+                xhr.onload = () => {
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        reject(new Error(`Download failed with status ${xhr.status}`));
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(xhr.response);
+                };
+                xhr.onerror = () => reject(new Error('Network error during download'));
+                xhr.send();
+            });
 
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = async () => {
-                const base64Data = reader.result.split(',')[1];
-                await Filesystem.writeFile({
-                    path: `audio/${locKey}.mp3`,
-                    data: base64Data,
-                    directory: Directory.Data
-                });
+            await Filesystem.writeFile({
+                path: `audio/${locKey}.mp3`,
+                data: base64Data,
+                directory: Directory.Data
+            });
 
-                const newDownloads = { ...downloadedChapters, [locKey]: true };
-                setDownloadedChapters(newDownloads);
-                await Preferences.set({ key: 'downloaded_audio', value: JSON.stringify(newDownloads) });
-                await Preferences.set({ key: `times_${locKey}`, value: JSON.stringify(data.times) });
+            const newDownloads = { ...downloadedChapters, [locKey]: true };
+            setDownloadedChapters(newDownloads);
+            await Preferences.set({ key: 'downloaded_audio', value: JSON.stringify(newDownloads) });
+            await Preferences.set({ key: `times_${locKey}`, value: JSON.stringify(data.times) });
 
-                setDownloadProgress(prev => {
-                    const next = { ...prev };
-                    delete next[locKey];
-                    return next;
-                });
-                alert(strings.audio.download_success || "تم التحميل بنجاح");
-            };
+            toast.success(strings?.audio?.download_success || 'Download complete.');
         } catch (e) {
             console.error("Download Error:", e);
-            alert("فشل التحميل، يرجى المحاولة لاحقاً");
+            toast.error(strings?.audio?.download_failed || 'Download failed. Please try again.');
+        } finally {
+            setDownloadProgress(prev => {
+                const next = { ...prev };
+                delete next[locKey];
+                return next;
+            });
+            downloadingRef.current[locKey] = false;
         }
-    };
+    }, [bookNames, downloadedChapters, fetchAudioData, strings]);
 
-    const deleteDownload = async (bookIdx, chapIdx) => {
+    const deleteDownload = useCallback(async (bookIdx, chapIdx) => {
         const book = bookNames[bookIdx];
+        if (!book) return;
         const locKey = `${book.book_id}-${chapIdx + 1}`;
         try {
             await Filesystem.deleteFile({ path: `audio/${locKey}.mp3`, directory: Directory.Data });
@@ -304,42 +351,69 @@ export function AudioProvider({ children }) {
             delete newDownloads[locKey];
             setDownloadedChapters(newDownloads);
             await Preferences.set({ key: 'downloaded_audio', value: JSON.stringify(newDownloads) });
-        } catch (e) { console.error(e); }
-    };
+            toast.success(strings?.audio?.delete_success || 'Download removed.'); // FIX #6: feedback on delete too
+        } catch (e) {
+            console.error(e);
+            toast.error(strings?.audio?.delete_failed || 'Could not remove download.');
+        }
+    }, [bookNames, downloadedChapters, strings]);
+
+    // FIX #2/#3/#28: navigationCallback now has a real, documented contract.
+    // A consumer (BibleContent) registers a function: (direction) => { bookIdx, chapIdx } | null
+    // That function is the SINGLE source of truth for "what is the next/previous chapter",
+    // including cross-book wrap-around, and it is responsible for updating its own displayed
+    // chapter state as a side effect. goToChapter then just fetches + plays audio for whatever
+    // location the callback resolved to, so the visible chapter and the playing chapter can never
+    // drift apart (this fixes both the audio-vs-screen desync and the manual-paging-vs-audio
+    // cross-book inconsistency in one place).
+    const registerNavigationCallback = useCallback((fn) => {
+        setNavigationCallbackState(() => fn);
+    }, []);
 
     const goToChapter = useCallback(async (direction, forceOpen = false) => {
+        let target = null;
+
         if (navigationCallback) {
-            const handled = navigationCallback(direction);
-            if (handled) return;
+            target = navigationCallback(direction);
+        } else {
+            // Fallback path (e.g. no reading screen mounted yet, or called from media session
+            // controls before BibleContent has registered): fall back to internal bibleData lookup.
+            const { bookIdx, chapIdx } = currentLocationRef.current;
+            if (bookIdx === -1 || !bibleData) return;
+
+            let bIdx = bookIdx;
+            let cIdx = chapIdx + direction;
+            const currentBookChapters = bibleData[bIdx]?.chapters || [];
+
+            if (cIdx < 0 || cIdx >= currentBookChapters.length) {
+                if (direction > 0 && bIdx < bookNames.length - 1) {
+                    bIdx++; cIdx = 0;
+                } else if (direction < 0 && bIdx > 0) {
+                    bIdx--;
+                    cIdx = (bibleData[bIdx]?.chapters?.length || 1) - 1;
+                } else {
+                    return;
+                }
+            }
+            target = { bookIdx: bIdx, chapIdx: cIdx };
         }
 
-        const { bookIdx, chapIdx } = currentLocationRef.current;
-        if (bookIdx === -1 || !bibleData) return;
+        if (!target) return;
 
-        let bIdx = bookIdx;
-        let cIdx = chapIdx + direction;
-        const currentBookChapters = bibleData[bIdx]?.chapters || [];
-
-        if (cIdx < 0 || cIdx >= currentBookChapters.length) {
-            if (direction > 0 && bIdx < bookNames.length - 1) {
-                bIdx++; cIdx = 0;
-            } else if (direction < 0 && bIdx > 0) {
-                bIdx--;
-                cIdx = (bibleData[bIdx]?.chapters?.length || 1) - 1;
-            } else return;
-        }
-
-        const data = await fetchAudioData(bIdx, cIdx);
-        if (data) playTrack(data.url, data.title, data.times, bIdx, cIdx, forceOpen);
+        const data = await fetchAudioData(target.bookIdx, target.chapIdx);
+        if (data) playTrack(data.url, data.title, data.times, target.bookIdx, target.chapIdx, forceOpen);
     }, [navigationCallback, bibleData, bookNames, fetchAudioData, playTrack]);
 
     useEffect(() => {
         const loadInitialData = async () => {
+            const myToken = ++dataLoadTokenRef.current; // FIX #15: stale-response guard
             try {
                 const folder = FOLDER_MAP[language] || 'arabic';
                 const fileName = BIBLE_FILE_MAP[language] || BIBLE_FILE_MAP.ar;
 
                 const data = await languageManager.getFile(folder, fileName);
+
+                if (myToken !== dataLoadTokenRef.current) return; // a newer load has since started; discard this one
 
                 if (!data) {
                     throw new Error(`Failed to load ${fileName}`);
@@ -348,7 +422,7 @@ export function AudioProvider({ children }) {
                 setBibleData(data);
             } catch (e) {
                 console.error("AudioContext Data Load Error:", e);
-                if (strings) setBibleData(strings);
+                if (myToken === dataLoadTokenRef.current && strings) setBibleData(strings);
             }
         };
         if (language) loadInitialData();
@@ -412,8 +486,10 @@ export function AudioProvider({ children }) {
     const togglePlay = useCallback(() => {
         if (!audioRef.current) return;
         if (isPlaying) audioRef.current.pause();
-        else audioRef.current.play().catch(() => {});
-    }, [isPlaying]);
+        else audioRef.current.play().catch(() => {
+            toast.error(strings?.audio?.playback_error || 'Could not play audio.'); // FIX #6
+        });
+    }, [isPlaying, strings]);
 
     const handleTimeUpdate = () => {
         if (!audioRef.current) return;
@@ -462,12 +538,18 @@ export function AudioProvider({ children }) {
         fetchAudioData,
         downloadChapter,
         deleteDownload,
-        setIsRepeat, setIsAutoPlay, setVolume, setIsHighlightEnabled, setSleepTimer, setNavigationCallback, goToChapter
+        setIsRepeat, setIsAutoPlay, setVolume, setIsHighlightEnabled, setSleepTimer,
+        // FIX #2/#28: expose the new, documented registration function. Keep the old name as an
+        // alias so any other existing caller of setNavigationCallback keeps working.
+        setNavigationCallback: registerNavigationCallback,
+        registerNavigationCallback,
+        goToChapter
     }), [
         audioUrl, isPlaying, currentTime, duration, playbackSpeed, isPanelOpen, trackTitle, currentVerseId,
         isRepeat, isAutoPlay, volume, isHighlightEnabled, sleepTimer, timeLeft, currentLocation, bookNames, isAutoNext, isAudioLoading,
         downloadedChapters, downloadProgress,
-        playTrack, togglePlay, goToChapter, processTimestamps, fetchAudioData, downloadChapter, deleteDownload
+        playTrack, togglePlay, goToChapter, processTimestamps, fetchAudioData, downloadChapter, deleteDownload,
+        registerNavigationCallback
     ]);
 
     return (

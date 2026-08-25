@@ -16,7 +16,29 @@ export const openExternalLink = async (url) => {
       window.open(url, '_blank');
     }
   } else {
-    // على الويب نفتح الرابط بشكل طبيعي
     window.open(url, '_blank');
   }
 };
+
+/**
+ * وظيفة لجلب البيانات مع مهلة زمنية (Timeout)
+ * إذا تأخر الرد، يتم إلغاء الطلب واعتباره فشلاً في الشبكة
+ */
+export async function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 4000 } = options; // مهلة افتراضية 8 ثوانٍ للنت الضعيف
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}

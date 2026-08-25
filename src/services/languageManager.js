@@ -1,6 +1,7 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
+import { fetchWithTimeout } from '../lib/utils';
 
 const R2_URL = 'https://translations.agiosbible.com';
 const MANIFEST_URL = `${R2_URL}/manifest.json`;
@@ -183,10 +184,13 @@ async function deleteNativeFile(path) {
 export const languageManager = {
     async init() {
         try {
-            const response = await fetch(
+            // نستخدم مهلة زمنية قصيرة (5 ثوانٍ) لتحميل المانيفست
+            // إذا كان النت ضعيفاً، سيفشل الطلب بسرعة وننتقل للنسخة المحلية
+            const response = await fetchWithTimeout(
                 `${MANIFEST_URL}?t=${Date.now()}`,
                 {
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    timeout: 3000
                 }
             );
 
@@ -201,7 +205,7 @@ export const languageManager = {
             return true;
         } catch (error) {
             console.error(
-                '[LanguageManager] Manifest error:',
+                '[LanguageManager] Manifest error (Network might be too slow):',
                 error
             );
 
@@ -392,37 +396,46 @@ export const languageManager = {
         const url =
             `${R2_URL}/${manifestFile.path}`;
 
-        const response = await fetch(url);
+        try {
+            // نستخدم مهلة زمنية 10 ثوانٍ لتحميل ملف الترجمة
+            const response = await fetchWithTimeout(url, { timeout: 10000 });
 
-        if (!response.ok) {
-            throw new Error(
-                `Failed to download ${url}: ${response.status}`
-            );
-        }
+            if (!response.ok) {
+                throw new Error(
+                    `Failed to download ${url}: ${response.status}`
+                );
+            }
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (isNative()) {
-            const path =
-                `translations/${langFolder}/${fileName}`;
+            if (isNative()) {
+                const path =
+                    `translations/${langFolder}/${fileName}`;
 
-            await saveNativeFile(path, data);
-        } else {
-            await idbSet({
+                await saveNativeFile(path, data);
+            } else {
+                await idbSet({
+                    key,
+                    language: langFolder,
+                    fileName,
+                    data,
+                    cachedAt: Date.now()
+                });
+            }
+
+            await setFileMetadata(
                 key,
-                language: langFolder,
-                fileName,
-                data,
-                cachedAt: Date.now()
-            });
+                version
+            );
+
+            return data;
+        } catch (error) {
+            console.error(`[LanguageManager] Download failed for ${fileName}:`, error);
+            // محاولة جلب النسخة المحلية إذا فشل التحميل بسبب النت الضعيف
+            const fallback = await this.getLocalCopy(langFolder, fileName);
+            if (fallback) return fallback;
+            throw error;
         }
-
-        await setFileMetadata(
-            key,
-            version
-        );
-
-        return data;
     },
 
     async clearCache(langFolder) {

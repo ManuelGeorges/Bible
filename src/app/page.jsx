@@ -36,7 +36,7 @@ import { useLanguage } from './context/LanguageContext';
 
 import { StorageService, KEYS } from '../lib/storage';
 import { syncLocalDataToFirebase } from '../lib/SyncService';
-import { openExternalLink } from '../lib/utils';
+import { openExternalLink, fetchWithTimeout } from '../lib/utils';
 import { languageManager } from '../services/languageManager';
 
 import badgesAr from './data/translations/arabic/badges_ar.json';
@@ -112,6 +112,7 @@ const LandingPage = () => {
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [hasAnswered, setHasAnswered] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDailyLoading, setIsDailyLoading] = useState(true); // حالة تحميل مستقلة للمحتوى اليومي
     const [startedPlans, setStartedPlans] = useState([]);
     const [user, setUser] = useState(null);
     const [userStats, setUserStats] = useState({ points: 0, streak: 0 });
@@ -200,11 +201,12 @@ const LandingPage = () => {
 
     const fetchDailyContent = useCallback(async () => {
         if (!allBookNames || Object.keys(allBookNames).length === 0) return;
+        setIsDailyLoading(true);
         const { month, day } = getCairoDateInfo();
 
         try {
-            // 1. جلب مراجع آية اليوم (ملف ثابت)
-            const verseRefsRes = await fetch('/data/dailyVerses.json');
+            // 1. جلب مراجع آية اليوم بمهلة زمنية
+            const verseRefsRes = await fetchWithTimeout('/data/dailyVerses.json', { timeout: 3000 });
             if (!verseRefsRes.ok) throw new Error("Daily verses file not found");
             const verseRefs = await verseRefsRes.json();
             const todayRef = verseRefs.find(v => Number(v.month) === month && Number(v.day) === day);
@@ -262,7 +264,9 @@ const LandingPage = () => {
                 }
             }
         } catch (e) {
-            console.error("Home Fetch Error:", e);
+            console.error("Home Fetch Error (Slow Connection?):", e);
+        } finally {
+            setIsDailyLoading(false);
         }
     }, [language, allBookNames]);
 
@@ -276,7 +280,6 @@ const LandingPage = () => {
         setMounted(true);
         checkTimeBadges();
 
-        // الاعتماد على النظام القديم لملفات الأوسمة كما طُلب
         setBadgesData(badgeFiles[language] || badgeFiles.ar);
     }, [checkTimeBadges, language]);
 
@@ -309,7 +312,10 @@ const LandingPage = () => {
             try {
                 const config = await getFirebaseRemoteConfig();
                 if (config) {
+                    // تحديد مهلة زمنية لمحاولة جلب الإعدادات من سيرفر Firebase
                     config.settings.minimumFetchIntervalMillis = 3600000;
+                    config.settings.fetchTimeoutMillis = 5000;
+
                     await fetchAndActivate(config);
 
                     const newsJson = getValue(config, 'app_news').asString();
@@ -323,7 +329,7 @@ const LandingPage = () => {
                     }
                 }
             } catch (err) {
-                console.error("Remote Config Fetch Failed.");
+                console.error("Remote Config Fetch Failed or Timed out.");
             }
         };
         fetchRemoteConfig();
@@ -367,7 +373,6 @@ const LandingPage = () => {
                         const lastReadData = data.lastRead || null;
                         setLastRead(lastReadData);
 
-                        // جلب الهستوري المحلي للمستخدم المسجل أيضاً
                         const ls = await StorageService.getLocalStats();
                         setReadingHistory(ls.readingHistory || []);
 
@@ -1098,7 +1103,7 @@ const LandingPage = () => {
             <section className={styles.dailyHighlight} id="daily-verse">
                 <div className={styles.verseGlass}>
                     <div className={styles.glassHeader}><Sparkles size={18} color="#ffd700" /><span>{strings.home.daily_verse}</span></div>
-                    {isLoading || !dailyVerse ? <div className={styles.skeletonText} /> : (
+                    {isDailyLoading ? <div className={styles.skeletonText} /> : dailyVerse ? (
                         <>
                             <p className={styles.verseText} style={{
                                 backgroundColor: favouriteVerses[dailyVerseKey]?.color ? `${favouriteVerses[dailyVerseKey].color}66` : 'transparent',
@@ -1158,23 +1163,19 @@ const LandingPage = () => {
                                 </div>
                             )}
                         </>
-                    )}
+                    ) : null}
                     <div className={styles.bottomDivider} style={{margin: '20px 0', opacity: 0.1, height: '1px', background: 'var(--color-text-primary)'}} />
-                    {dailyQuestion && (
+                    {isDailyLoading ? <div className={styles.skeletonText} style={{height: '100px'}} /> : dailyQuestion ? (
                         <div className={styles.questionSection} id="daily-question">
                             <div className={styles.glassHeader}><Trophy size={18} color="#f59e0b" /><span>{strings.home.daily_challenge}</span></div>
-                            {isLoading ? <div className={styles.skeletonText} style={{height: '100px'}} /> : (
-                                <>
-                                    <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
-                                    <div className={styles.optionsList}>
-                                        {dailyQuestion.options.map((opt, i) => (
-                                            <button key={i} disabled={hasAnswered} onClick={() => handleOptionClick(i)} className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}>{opt}</button>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
+                            <p className={styles.questionTitle} style={{fontWeight: '700', marginBottom: '12px'}}>{dailyQuestion.question}</p>
+                            <div className={styles.optionsList}>
+                                {dailyQuestion.options.map((opt, i) => (
+                                    <button key={i} disabled={hasAnswered} onClick={() => handleOptionClick(i)} className={`${styles.optBtn} ${hasAnswered && i === dailyQuestion.answerIndex ? styles.correct : ''} ${hasAnswered && selectedAnswer === i && i !== dailyQuestion.answerIndex ? styles.wrong : ''}`}>{opt}</button>
+                                ))}
+                            </div>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </section>
 
